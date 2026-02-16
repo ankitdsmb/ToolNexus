@@ -8,4 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="../ToolNexus.Tools.Common/ToolNexus.Tools.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUglify" Version="1.21.9" />
+  </ItemGroup>
 </Project>
