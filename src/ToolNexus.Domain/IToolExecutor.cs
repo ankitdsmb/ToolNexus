@@ -1,4 +1,4 @@
-namespace ToolNexus.Tools.Common;
+namespace ToolNexus.Domain;
 
 public interface IToolExecutor
 {

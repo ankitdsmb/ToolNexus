@@ -1,7 +1,7 @@
 using System.Text;
-using ToolNexus.Tools.Common;
+using ToolNexus.Domain;
 
-namespace ToolNexus.Tools.Base64;
+namespace ToolNexus.Infrastructure.Executors;
 
 public sealed class Base64ToolExecutor : IToolExecutor
 {

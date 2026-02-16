@@ -6,7 +6,7 @@
     <LangVersion>12.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../ToolNexus.Tools.Common/ToolNexus.Tools.Common.csproj" />
-    <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <ProjectReference Include="../ToolNexus.Domain/ToolNexus.Domain.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
   </ItemGroup>
 </Project>

@@ -2,23 +2,57 @@ MODE=B (backend + tool services)
 
 # ToolNexus
 
-ToolNexus is a .NET 8 developer tools platform inspired by CodeBeautify, with a new cinematic dark UI, manifest-driven routes, and pluggable tool executors.
+ToolNexus is a .NET 8 developer tools platform inspired by CodeBeautify, with a cinematic dark UI, manifest-driven routes, and pluggable tool executors.
 
-## Architecture
+## Clean Architecture Solution Layout
 
-- `src/ToolNexus.Web` — ASP.NET Core MVC web front-end with:
-  - `/` home page (featured tools + search)
-  - `/tools` tools index
-  - `/tools/{category}` category listing
-  - `/tools/{slug}` tool page with CodeMirror editor, sample panel, copy/download, and privacy banner
-- `src/ToolNexus.Api` — ASP.NET Core Web API exposing:
-  - `POST /api/tools/{slug}/{action}`
-- `src/ToolNexus.Tools.Common` — shared contracts (`IToolExecutor`, `ToolRequest`, `ToolResult`)
-- `src/ToolNexus.Tools.Json` — complete JSON implementation (`format`, `minify`, `validate`, `to-csv`)
-- `src/ToolNexus.Tools.Xml`, `src/ToolNexus.Tools.Csv`, `src/ToolNexus.Tools.Base64`, `src/ToolNexus.Tools.Html`, `src/ToolNexus.Tools.Minifier` — starter executors with TODO hooks
-- `src/ToolNexus.ConsoleRunner` — plugin runner demo that calls `ExecuteAsync`
-- `tests/ToolNexus.Tools.Json.Tests` — xUnit sample tests for JSON tool behavior
-- `tools.manifest.json` — 25 initial tools and metadata
+- `src/ToolNexus.Domain`
+  - Core contracts and entities (`IToolExecutor`, `ToolRequest`, `ToolResult`)
+- `src/ToolNexus.Application`
+  - Use-case orchestration (`IToolService`, `ToolService`)
+  - Application DTOs (`ToolExecutionRequest`, `ToolExecutionResponse`)
+  - `AddApplication()` DI extension
+- `src/ToolNexus.Infrastructure`
+  - Tool executor implementations (`JsonToolExecutor`, `XmlToolExecutor`, `CsvToolExecutor`, `Base64ToolExecutor`, `HtmlToolExecutor`, `MinifierToolExecutor`)
+- `src/ToolNexus.Api`
+  - API controllers (`ToolsController`)
+  - Composition root for API + runtime executor registration
+  - Depends only on `ToolNexus.Application`
+- `src/ToolNexus.Web`
+  - Razor MVC UI, manifest services, static assets
+  - No dependency on `ToolNexus.Infrastructure`
+- `src/ToolNexus.ConsoleRunner`
+  - Console demo of executor usage
+- `tests/ToolNexus.Tools.Json.Tests`
+  - xUnit tests for JSON executor behavior
+
+## Dependency Rules
+
+- `Domain` has no dependencies on other solution layers.
+- `Application` depends on `Domain`.
+- `Infrastructure` depends on `Domain`.
+- `Api` depends on `Application` only.
+- `Web` does not depend on `Infrastructure`.
+
+## DI Setup
+
+### Application registration
+
+`ToolNexus.Application` exposes:
+
+- `services.AddApplication()`
+  - Registers `IToolService -> ToolService`
+
+### API registration
+
+`ToolNexus.Api/Program.cs`:
+
+- calls `AddApplication()`
+- loads `ToolNexus.Infrastructure` assembly at runtime
+- scans for `IToolExecutor` implementations
+- registers all executors as scoped services
+
+This keeps API compile-time dependency focused on Application while still composing Infrastructure at runtime.
 
 ## Routes
 
@@ -30,13 +64,6 @@ Web:
 
 API:
 - `POST /api/tools/{slug}/{action}`
-
-## Tool Manifest
-
-All tool pages and metadata are generated from `tools.manifest.json`. Slugs are referenced by:
-- MVC route resolution
-- Client tool modules under `wwwroot/js/tools/{slug}.js`
-- API execution requests
 
 ## Local Run
 
@@ -61,83 +88,3 @@ Terminal 3 (tests):
 ```bash
 dotnet test tests/ToolNexus.Tools.Json.Tests
 ```
-
-Terminal 4 (console runner):
-```bash
-dotnet run --project src/ToolNexus.ConsoleRunner
-```
-
-## Production Deployment
-
-### Azure App Service (MODE=B)
-
-1. Create two App Services:
-   - `toolnexus-web`
-   - `toolnexus-api`
-2. Configure `ApiBaseUrl` in `ToolNexus.Web` settings to the API URL.
-3. Publish:
-
-```bash
-dotnet publish src/ToolNexus.Api -c Release -o ./artifacts/api
-dotnet publish src/ToolNexus.Web -c Release -o ./artifacts/web
-```
-
-4. Deploy `./artifacts/api` and `./artifacts/web` to their matching services.
-
-### Static Host Option
-
-If you need a static-only deployment, switch to MODE=A in a follow-up branch. Current scaffold is MODE=B and requires ASP.NET hosting.
-
-## Add a New Tool
-
-1. Add entry to `tools.manifest.json`.
-2. Add module `src/ToolNexus.Web/wwwroot/js/tools/{slug}.js`.
-3. Implement backend executor (recommended) in `src/ToolNexus.Tools.*`:
-   - implement `IToolExecutor`
-   - set `Slug`
-   - support actions in `ExecuteAsync`
-4. Register executor in `src/ToolNexus.Api/Program.cs`.
-5. Add unit tests.
-
-## NuGet Packaging for tools.*
-
-Each tool library can be packed and published independently.
-
-```bash
-dotnet pack src/ToolNexus.Tools.Json -c Release -o ./artifacts/nuget
-# repeat for other ToolNexus.Tools.* projects
-```
-
-Publish to nuget.org:
-
-```bash
-dotnet nuget push ./artifacts/nuget/ToolNexus.Tools.Json.*.nupkg \
-  --api-key <NUGET_API_KEY> \
-  --source https://api.nuget.org/v3/index.json
-```
-
-## ZIP-Friendly File List
-
-```
-ToolNexus.sln
-.editorconfig
-.gitattributes
-tools.manifest.json
-README.md
-src/ToolNexus.Web/**
-src/ToolNexus.Api/**
-src/ToolNexus.Tools.Common/**
-src/ToolNexus.Tools.Json/**
-src/ToolNexus.Tools.Xml/**
-src/ToolNexus.Tools.Csv/**
-src/ToolNexus.Tools.Base64/**
-src/ToolNexus.Tools.Html/**
-src/ToolNexus.Tools.Minifier/**
-src/ToolNexus.ConsoleRunner/**
-tests/ToolNexus.Tools.Json.Tests/**
-```
-
-## Notes
-
-- TODO markers are intentionally included where advanced AI-assisted transforms should be attached.
-- Current setup prioritizes clean separation and DI extensibility for future tool packages.

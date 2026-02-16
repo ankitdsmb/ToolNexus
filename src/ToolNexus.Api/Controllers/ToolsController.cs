@@ -1,34 +1,31 @@
 using Microsoft.AspNetCore.Mvc;
-using ToolNexus.Api.Infrastructure;
-using ToolNexus.Tools.Common;
+using ToolNexus.Application.Models;
+using ToolNexus.Application.Services;
 
 namespace ToolNexus.Api.Controllers;
 
 [ApiController]
 [Route("api/tools")]
-public sealed class ToolsController(IToolExecutorFactory factory) : ControllerBase
+public sealed class ToolsController(IToolService toolService) : ControllerBase
 {
     [HttpPost("{slug}/{action}")]
-    public async Task<ActionResult<ToolResult>> Execute(
+    public async Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute] string slug,
         [FromRoute] string action,
-        [FromBody] ToolRequest request,
+        [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
     {
-        var executor = factory.Resolve(slug);
-        if (executor is null)
+        var result = await toolService.ExecuteAsync(
+            new ToolExecutionRequest(slug, action, request.Input, request.Options),
+            cancellationToken);
+
+        if (result.NotFound)
         {
-            return NotFound(ToolResult.Fail($"Tool '{slug}' not found."));
+            return NotFound(result);
         }
 
-        var options = request.Options is null
-            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : new Dictionary<string, string>(request.Options, StringComparer.OrdinalIgnoreCase);
-
-        options["action"] = action;
-        var enrichedRequest = request with { Options = options };
-
-        var result = await executor.ExecuteAsync(enrichedRequest, cancellationToken);
         return result.Success ? Ok(result) : BadRequest(result);
     }
+
+    public sealed record ExecuteToolRequest(string Input, IDictionary<string, string>? Options = null);
 }

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using ToolNexus.Tools.Common;
+using ToolNexus.Domain;
 
-namespace ToolNexus.Tools.Minifier;
+namespace ToolNexus.Infrastructure.Executors;
 
 public sealed class MinifierToolExecutor : IToolExecutor
 {
