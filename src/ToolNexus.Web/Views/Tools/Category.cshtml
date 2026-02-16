@@ -1,0 +1,16 @@
+@model ToolCategoryViewModel
+@{
+    ViewData["Title"] = $"{Model.Category} tools";
+    ViewData["Description"] = $"Explore {Model.Category} developer tools on ToolNexus.";
+}
+
+<h1>@Model.Category tools</h1>
+<div class="grid">
+  @foreach (var tool in Model.Tools)
+  {
+    <a class="card" href="/tools/@tool.Slug">
+      <h3>@tool.Title</h3>
+      <p>@tool.SeoDescription</p>
+    </a>
+  }
+</div>

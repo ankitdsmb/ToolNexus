@@ -1,0 +1,30 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["Description"] = "Cinematic dark themed online developer tools.";
+}
+
+<section>
+  <h1>Developer tools that stay out of your way</h1>
+  <input id="toolSearch" class="search" placeholder="Search tools..." />
+  <div class="grid" id="featuredGrid">
+    @foreach (var tool in Model.FeaturedTools)
+    {
+      <a class="card" href="/tools/@tool.Slug">
+        <h3>@tool.Title</h3>
+        <p>@tool.SeoDescription</p>
+      </a>
+    }
+  </div>
+</section>
+
+@section Scripts {
+<script>
+  const searchBox = document.getElementById('toolSearch');
+  const cards = Array.from(document.querySelectorAll('#featuredGrid .card'));
+  searchBox?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    cards.forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none');
+  });
+</script>
+}

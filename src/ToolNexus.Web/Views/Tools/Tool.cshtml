@@ -1,0 +1,39 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Tool.SeoTitle;
+    ViewData["Description"] = Model.Tool.SeoDescription;
+}
+
+<article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl">
+  <h1>@Model.Tool.Title</h1>
+  <p>@Model.Tool.SeoDescription</p>
+
+  <div class="sample-panel">
+    <h4>Sample Data</h4>
+    <pre id="sampleInput">@Model.Tool.ExampleInput</pre>
+  </div>
+
+  <label for="actionSelect">Action</label>
+  <select id="actionSelect">
+    @foreach (var action in Model.Tool.Actions)
+    {
+      <option value="@action">@action</option>
+    }
+  </select>
+
+  <div class="editor-row">
+    <textarea id="inputEditor">@Model.Tool.ExampleInput</textarea>
+    <textarea id="outputEditor" readonly></textarea>
+  </div>
+
+  <div class="actions">
+    <button id="runBtn">Run</button>
+    <button id="copyBtn">Copy Output</button>
+    <button id="downloadBtn">Download Output</button>
+  </div>
+</article>
+
+@section Scripts {
+  <script type="module" src="~/js/tool-page.js"></script>
+  <script type="module" src="~/js/tools/@(Model.Tool.Slug).js"></script>
+}

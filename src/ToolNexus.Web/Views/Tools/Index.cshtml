@@ -1,0 +1,22 @@
+@model ToolIndexViewModel
+@{
+    ViewData["Title"] = "Tools";
+    ViewData["Description"] = "Browse all ToolNexus developer utilities.";
+}
+
+<h1>All Tools</h1>
+<div class="chips">
+  @foreach (var category in Model.Categories)
+  {
+    <a class="chip" href="/tools/@category">@category</a>
+  }
+</div>
+<div class="grid">
+  @foreach (var tool in Model.Tools)
+  {
+    <a class="card" href="/tools/@tool.Slug">
+      <h3>@tool.Title</h3>
+      <p>@tool.Category</p>
+    </a>
+  }
+</div>
