@@ -35,4 +35,22 @@ public sealed class JsonToolExecutorTests
         Assert.Contains("name", result.Output);
         Assert.Contains("Ada", result.Output);
     }
+
+    [Fact]
+    public async Task UnsupportedAction_ReturnsFailedResult()
+    {
+        var result = await _executor.ExecuteAsync(new ToolRequest("{}", new Dictionary<string, string> { ["action"] = "unknown" }));
+
+        Assert.False(result.Success);
+        Assert.Contains("not supported", result.Error);
+    }
+
+    [Fact]
+    public async Task InvalidJson_ReturnsFailedResult()
+    {
+        var result = await _executor.ExecuteAsync(new ToolRequest("{invalid json}", new Dictionary<string, string> { ["action"] = "format" }));
+
+        Assert.False(result.Success);
+        Assert.False(string.IsNullOrWhiteSpace(result.Error));
+    }
 }

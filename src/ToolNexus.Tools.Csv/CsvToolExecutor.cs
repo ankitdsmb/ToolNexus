@@ -2,14 +2,14 @@ using ToolNexus.Tools.Common;
 
 namespace ToolNexus.Tools.Csv;
 
-public sealed class CsvToolExecutor : IToolExecutor
+public sealed class CsvToolExecutor : ToolExecutorBase
 {
-    public string Slug => "csv-viewer";
-    public IReadOnlyCollection<string> SupportedActions { get; } = ["preview", "convert"];
+    public override string Slug => "csv-viewer";
+    public override IReadOnlyCollection<string> SupportedActions { get; } = ["preview", "convert"];
 
-    public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
+    protected override Task<string> ExecuteActionAsync(string action, ToolRequest request, CancellationToken cancellationToken)
     {
         // TODO: Replace placeholder with rich CSV parsing/conversion.
-        return Task.FromResult(ToolResult.Ok(request.Input));
+        return Task.FromResult(request.Input);
     }
 }

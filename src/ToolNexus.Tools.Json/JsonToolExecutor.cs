@@ -1,38 +1,28 @@
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using CsvHelper;
 using ToolNexus.Tools.Common;
 
 namespace ToolNexus.Tools.Json;
 
-public sealed class JsonToolExecutor : IToolExecutor
+public sealed class JsonToolExecutor : ToolExecutorBase
 {
-    public string Slug => "json-formatter";
+    public override string Slug => "json-formatter";
 
-    public IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate", "to-csv"];
+    public override IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate", "to-csv"];
 
-    public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
+    protected override Task<string> ExecuteActionAsync(string action, ToolRequest request, CancellationToken cancellationToken)
     {
-        var action = request.Options?.GetValueOrDefault("action")?.Trim().ToLowerInvariant() ?? "format";
-
-        try
+        var output = action.ToLowerInvariant() switch
         {
-            var output = action switch
-            {
-                "format" => Format(request.Input),
-                "minify" => Minify(request.Input),
-                "validate" => Validate(request.Input),
-                "to-csv" => ToCsv(request.Input),
-                _ => throw new NotSupportedException($"Action '{action}' is not supported by {Slug}.")
-            };
+            "format" => Format(request.Input),
+            "minify" => Minify(request.Input),
+            "validate" => Validate(request.Input),
+            "to-csv" => ToCsv(request.Input),
+            _ => throw new NotSupportedException($"Action '{action}' is not supported by {Slug}.")
+        };
 
-            return Task.FromResult(ToolResult.Ok(output));
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult(ToolResult.Fail(ex.Message));
-        }
+        return Task.FromResult(output);
     }
 
     private static string Format(string input)
