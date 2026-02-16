@@ -31,6 +31,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IToolService, ToolService>();
+        services.AddScoped<IOrchestrationService, OrchestrationService>();
         return services;
     }
 

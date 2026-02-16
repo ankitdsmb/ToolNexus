@@ -9,6 +9,13 @@ public sealed class JsonToolExecutor : ToolExecutorBase
 {
     public override string Slug => "json-formatter";
 
+    public override ToolMetadata Metadata { get; } = new(
+        "JSON Formatter",
+        "Format, minify, validate, and convert JSON data.",
+        "json",
+        "{\"name\":\"Ada\",\"skills\":[\"C#\",\"TypeScript\"]}",
+        ["json", "formatting", "validation", "conversion"]);
+
     public override IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate", "to-csv"];
 
     protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)

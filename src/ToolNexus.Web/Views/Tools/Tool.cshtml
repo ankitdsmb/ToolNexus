@@ -1,28 +1,9 @@
 @model ToolPageViewModel
 @{
-    ViewData["Title"] = Model.Tool.SeoTitle;
-    ViewData["Description"] = Model.Tool.SeoDescription;
-    var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/tools/{Model.Tool.Slug}";
-    ViewData["CanonicalUrl"] = canonicalUrl;
-
-    var jsonLd = System.Text.Json.JsonSerializer.Serialize(new
-    {
-      @context = "https://schema.org",
-      @type = "SoftwareApplication",
-      name = Model.Tool.Title,
-      description = Model.Tool.SeoDescription,
-      applicationCategory = $"{Model.Tool.Category} Developer Tool",
-      operatingSystem = "Any",
-      url = canonicalUrl,
-      offers = new
-      {
-        @type = "Offer",
-        price = "0",
-        priceCurrency = "USD"
-      }
-    });
-
-    ViewData["JsonLd"] = jsonLd;
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+    ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["JsonLd"] = Model.Seo.JsonLd;
 }
 
 <article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl">

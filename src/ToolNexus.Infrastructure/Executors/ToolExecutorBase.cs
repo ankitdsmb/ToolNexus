@@ -6,6 +6,8 @@ public abstract class ToolExecutorBase : IToolExecutor
 {
     public abstract string Slug { get; }
 
+    public abstract ToolMetadata Metadata { get; }
+
     public abstract IReadOnlyCollection<string> SupportedActions { get; }
 
     public async Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)

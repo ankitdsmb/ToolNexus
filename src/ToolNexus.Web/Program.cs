@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<IManifestService, ManifestService>();
+builder.Services.AddSingleton<ISitemapService, SitemapService>();
 
 var app = builder.Build();
 
