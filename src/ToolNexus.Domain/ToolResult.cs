@@ -1,4 +1,4 @@
-namespace ToolNexus.Tools.Common;
+namespace ToolNexus.Domain;
 
 public sealed record ToolResult(bool Success, string Output, string? Error = null)
 {

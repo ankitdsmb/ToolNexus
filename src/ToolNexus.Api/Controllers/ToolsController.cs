@@ -1,27 +1,39 @@
 using Microsoft.AspNetCore.Mvc;
-using ToolNexus.Api.Application;
-using ToolNexus.Tools.Common;
+using ToolNexus.Application.Models;
+using ToolNexus.Application.Services;
 
 namespace ToolNexus.Api.Controllers;
 
 [ApiController]
-[Route("api/tools")]
-public sealed class ToolsController(IToolExecutionService toolExecutionService) : ControllerBase
+[Route("api/v1/tools")]
+public sealed class ToolsController(IToolService toolService) : ControllerBase
 {
-    [HttpPost("{slug}/{action}")]
-    public async Task<ActionResult<ToolResult>> Execute(
+    [HttpPost("{slug}")]
+    public async Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute] string slug,
-        [FromRoute] string action,
-        [FromBody] ToolRequest request,
+        [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
     {
-        var outcome = await toolExecutionService.ExecuteAsync(slug, action, request, cancellationToken);
-        if (!outcome.ToolFound)
+        var result = await toolService.ExecuteAsync(
+            new ToolExecutionRequest(
+                slug,
+                request.Action,
+                request.Input,
+                request.Options),
+            cancellationToken);
+
+        if (result.NotFound)
         {
-            return NotFound(outcome.Result);
+            return NotFound(result);
         }
 
-        var result = outcome.Result;
-        return result.Success ? Ok(result) : BadRequest(result);
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result);
     }
+
+    public sealed record ExecuteToolRequest(
+        string Action,
+        string Input,
+        IDictionary<string, string>? Options = null);
 }

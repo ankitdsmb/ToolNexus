@@ -1,5 +1,5 @@
-using ToolNexus.Tools.Common;
-using ToolNexus.Tools.Json;
+using ToolNexus.Domain;
+using ToolNexus.Infrastructure.Executors;
 
 namespace ToolNexus.Tools.Json.Tests;
 

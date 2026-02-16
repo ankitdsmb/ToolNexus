@@ -11,7 +11,7 @@ public sealed class ToolsController(IManifestService manifestService, IConfigura
     public IActionResult Index()
     {
         var tools = manifestService.GetAllTools();
-        var categories = tools.Select(x => x.Category).Distinct(StringComparer.OrdinalIgnoreCase).Order().ToList();
+        var categories = manifestService.GetAllCategories();
         return View(new ToolIndexViewModel { Tools = tools, Categories = categories });
     }
 

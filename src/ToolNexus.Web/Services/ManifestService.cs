@@ -6,6 +6,7 @@ namespace ToolNexus.Web.Services;
 public interface IManifestService
 {
     IReadOnlyCollection<ToolDefinition> GetAllTools();
+    IReadOnlyCollection<string> GetAllCategories();
     ToolDefinition? GetBySlug(string slug);
     IReadOnlyCollection<ToolDefinition> GetByCategory(string category);
     bool CategoryExists(string category);
@@ -21,6 +22,13 @@ public sealed class ManifestService : IManifestService
     }
 
     public IReadOnlyCollection<ToolDefinition> GetAllTools() => _tools.Value;
+
+    public IReadOnlyCollection<string> GetAllCategories() =>
+        _tools.Value
+            .Select(x => x.Category)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
     public ToolDefinition? GetBySlug(string slug) => _tools.Value.FirstOrDefault(x => x.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
 
