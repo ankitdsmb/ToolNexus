@@ -42,11 +42,11 @@ builder.Services.AddToolExecutorsFromAssembly(infrastructureAssembly);
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "ToolNexus API v1");
+});
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseRateLimiter();
