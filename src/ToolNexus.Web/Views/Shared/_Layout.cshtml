@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>@ViewData["Title"] - ToolNexus</title>
+  <meta name="description" content="@ViewData["Description"]" />
+  <link rel="stylesheet" href="~/css/site.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand">ToolNexus</a>
+    <nav>
+      <a href="/tools">Tools</a>
+    </nav>
+  </header>
+  <div class="banner">Do not paste secrets.</div>
+  <main class="container">
+    @RenderBody()
+  </main>
+  <footer class="footer">© @DateTime.UtcNow.Year ToolNexus</footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
