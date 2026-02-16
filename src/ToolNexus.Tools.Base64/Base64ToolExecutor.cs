@@ -6,6 +6,14 @@ namespace ToolNexus.Tools.Base64;
 public sealed class Base64ToolExecutor : IToolExecutor
 {
     public string Slug => "base64-encode";
+
+    public ToolMetadata Metadata { get; } = new(
+        Name: "Base64 Encoder/Decoder",
+        Description: "Encode plain text to Base64 and decode Base64 back to text.",
+        Category: "Encoding",
+        ExampleInput: "hello world",
+        CapabilityTags: ["base64", "encoding", "decoding"]);
+
     public IReadOnlyCollection<string> SupportedActions { get; } = ["encode", "decode"];
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)

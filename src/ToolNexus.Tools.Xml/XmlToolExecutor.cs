@@ -6,6 +6,14 @@ namespace ToolNexus.Tools.Xml;
 public sealed class XmlToolExecutor : IToolExecutor
 {
     public string Slug => "xml-formatter";
+
+    public ToolMetadata Metadata { get; } = new(
+        Name: "XML Formatter",
+        Description: "Format, minify, and validate XML documents.",
+        Category: "Data Conversion",
+        ExampleInput: "<root><item>Hello</item></root>",
+        CapabilityTags: ["xml", "formatting", "validation"]);
+
     public IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate"];
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)

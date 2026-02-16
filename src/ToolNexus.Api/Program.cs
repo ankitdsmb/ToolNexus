@@ -20,6 +20,7 @@ builder.Services.AddScoped<IToolExecutor, Base64ToolExecutor>();
 builder.Services.AddScoped<IToolExecutor, HtmlToolExecutor>();
 builder.Services.AddScoped<IToolExecutor, MinifierToolExecutor>();
 builder.Services.AddScoped<IToolExecutorFactory, ToolExecutorFactory>();
+builder.Services.AddScoped<IOrchestrationService, OrchestrationService>();
 
 var app = builder.Build();
 

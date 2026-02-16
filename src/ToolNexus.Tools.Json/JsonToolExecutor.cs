@@ -10,6 +10,13 @@ public sealed class JsonToolExecutor : IToolExecutor
 {
     public string Slug => "json-formatter";
 
+    public ToolMetadata Metadata { get; } = new(
+        Name: "JSON Formatter",
+        Description: "Format, minify, validate, and convert JSON payloads.",
+        Category: "Data Conversion",
+        ExampleInput: "{\"hello\":\"world\"}",
+        CapabilityTags: ["json", "formatting", "validation", "conversion", "csv"]);
+
     public IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate", "to-csv"];
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
