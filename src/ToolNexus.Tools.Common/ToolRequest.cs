@@ -1,3 +1,3 @@
 namespace ToolNexus.Tools.Common;
 
-public sealed record ToolRequest(string Input, IDictionary<string, string>? Options = null);
+public sealed record ToolRequest(string Action, string Input, IDictionary<string, string>? Options = null);

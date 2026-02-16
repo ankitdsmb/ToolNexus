@@ -12,7 +12,7 @@ ToolNexus is a .NET 8 developer tools platform inspired by CodeBeautify, with a 
   - `/tools/{category}` category listing
   - `/tools/{slug}` tool page with CodeMirror editor, sample panel, copy/download, and privacy banner
 - `src/ToolNexus.Api` — ASP.NET Core Web API exposing:
-  - `POST /api/tools/{slug}/{action}`
+  - `POST /api/v1/tools/{slug}`
 - `src/ToolNexus.Tools.Common` — shared contracts (`IToolExecutor`, `ToolRequest`, `ToolResult`)
 - `src/ToolNexus.Tools.Json` — complete JSON implementation (`format`, `minify`, `validate`, `to-csv`)
 - `src/ToolNexus.Tools.Xml`, `src/ToolNexus.Tools.Csv`, `src/ToolNexus.Tools.Base64`, `src/ToolNexus.Tools.Html`, `src/ToolNexus.Tools.Minifier` — starter executors with TODO hooks
@@ -29,7 +29,7 @@ Web:
 - `/tools/{slug}`
 
 API:
-- `POST /api/tools/{slug}/{action}`
+- `POST /api/v1/tools/{slug}`
 
 ## Tool Manifest
 

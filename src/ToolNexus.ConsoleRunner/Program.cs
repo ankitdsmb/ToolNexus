@@ -7,7 +7,7 @@ var executors = new List<IToolExecutor>
 };
 
 var tool = executors.First(x => x.Slug == "json-formatter");
-var request = new ToolRequest("{\"hello\":\"world\"}", new Dictionary<string, string> { ["action"] = "format" });
+var request = new ToolRequest("format", "{\"hello\":\"world\"}");
 var result = await tool.ExecuteAsync(request);
 
 Console.WriteLine($"Success: {result.Success}");

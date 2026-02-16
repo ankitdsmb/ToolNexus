@@ -13,10 +13,10 @@ const inputEditor = CodeMirror.fromTextArea(inputTextArea, { lineNumbers: true, 
 const outputEditor = CodeMirror.fromTextArea(outputTextArea, { lineNumbers: true, mode: 'application/json', readOnly: true });
 
 async function run() {
-  const response = await fetch(`${apiBase}/api/tools/${slug}/${actionSelect.value}`, {
+  const response = await fetch(`${apiBase}/api/v1/tools/${slug}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ input: inputEditor.getValue() })
+    body: JSON.stringify({ action: actionSelect.value, input: inputEditor.getValue(), options: {} })
   });
 
   const result = await response.json();

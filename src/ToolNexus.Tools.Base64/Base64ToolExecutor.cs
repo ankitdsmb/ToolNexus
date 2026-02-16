@@ -10,7 +10,7 @@ public sealed class Base64ToolExecutor : IToolExecutor
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
     {
-        var action = request.Options?.GetValueOrDefault("action") ?? "encode";
+        var action = request.Action.Trim().ToLowerInvariant();
 
         try
         {

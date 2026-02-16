@@ -10,7 +10,7 @@ public sealed class XmlToolExecutor : IToolExecutor
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
     {
-        var action = request.Options?.GetValueOrDefault("action") ?? "format";
+        var action = request.Action.Trim().ToLowerInvariant();
 
         try
         {

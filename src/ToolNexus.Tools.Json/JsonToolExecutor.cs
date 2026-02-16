@@ -14,7 +14,7 @@ public sealed class JsonToolExecutor : IToolExecutor
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
     {
-        var action = request.Options?.GetValueOrDefault("action")?.Trim().ToLowerInvariant() ?? "format";
+        var action = request.Action.Trim().ToLowerInvariant();
 
         try
         {
