@@ -8,5 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="../ToolNexus.Domain/ToolNexus.Domain.csproj" />
     <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <PackageReference Include="NUglify" Version="1.21.18" />
   </ItemGroup>
 </Project>
