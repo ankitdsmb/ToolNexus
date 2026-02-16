@@ -7,9 +7,14 @@ WORKDIR /app
 # Copy everything
 COPY . ./
 
-# Restore & publish
-RUN dotnet restore
-RUN dotnet publish ToolNexus.Api/ToolNexus.Api.csproj -c Release -o /publish
+# Restore
+RUN dotnet restore src/ToolNexus.Api/ToolNexus.Api.csproj
+
+# Publish API project
+RUN dotnet publish src/ToolNexus.Api/ToolNexus.Api.csproj \
+    -c Release \
+    -o /publish \
+    /p:UseAppHost=false
 
 # ----------------------------
 # Stage 2: Runtime
