@@ -3,29 +3,20 @@ using ToolNexus.Domain;
 
 namespace ToolNexus.Infrastructure.Executors;
 
-public sealed class XmlToolExecutor : IToolExecutor
+public sealed class XmlToolExecutor : ToolExecutorBase
 {
-    public string Slug => "xml-formatter";
-    public IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate"];
+    public override string Slug => "xml-formatter";
+    public override IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify", "validate"];
 
-    public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
+    protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)
     {
-        var action = request.Options?.GetValueOrDefault("action") ?? "format";
-
-        try
+        return Task.FromResult(action switch
         {
-            return Task.FromResult(action switch
-            {
-                "format" => ToolResult.Ok(XDocument.Parse(request.Input).ToString()),
-                "minify" => ToolResult.Ok(XDocument.Parse(request.Input).ToString(SaveOptions.DisableFormatting)),
-                "validate" => Validate(request.Input),
-                _ => ToolResult.Fail($"Unsupported action: {action}")
-            });
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult(ToolResult.Fail(ex.Message));
-        }
+            "format" => ToolResult.Ok(XDocument.Parse(request.Input).ToString()),
+            "minify" => ToolResult.Ok(XDocument.Parse(request.Input).ToString(SaveOptions.DisableFormatting)),
+            "validate" => Validate(request.Input),
+            _ => throw new InvalidOperationException($"Unsupported action: {action}")
+        });
     }
 
     private static ToolResult Validate(string input)

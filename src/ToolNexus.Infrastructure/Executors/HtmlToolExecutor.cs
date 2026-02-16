@@ -2,13 +2,20 @@ using ToolNexus.Domain;
 
 namespace ToolNexus.Infrastructure.Executors;
 
-public sealed class HtmlToolExecutor : IToolExecutor
+public sealed class HtmlToolExecutor : ToolExecutorBase
 {
-    public string Slug => "html-formatter";
-    public IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify"];
+    public override string Slug => "html-formatter";
+    public override IReadOnlyCollection<string> SupportedActions { get; } = ["format", "minify"];
 
-    public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
+    protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(ToolResult.Ok(request.Input.Trim()));
+        var output = action switch
+        {
+            "format" => request.Input.Trim(),
+            "minify" => request.Input.Trim(),
+            _ => throw new InvalidOperationException($"Unsupported action: {action}")
+        };
+
+        return Task.FromResult(ToolResult.Ok(output));
     }
 }

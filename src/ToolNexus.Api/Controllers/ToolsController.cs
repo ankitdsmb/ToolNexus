@@ -5,18 +5,17 @@ using ToolNexus.Application.Services;
 namespace ToolNexus.Api.Controllers;
 
 [ApiController]
-[Route("api/tools")]
+[Route("api/v1/tools")]
 public sealed class ToolsController(IToolService toolService) : ControllerBase
 {
-    [HttpPost("{slug}/{action}")]
+    [HttpPost("{slug}")]
     public async Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute] string slug,
-        [FromRoute] string action,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
     {
         var result = await toolService.ExecuteAsync(
-            new ToolExecutionRequest(slug, action, request.Input, request.Options),
+            new ToolExecutionRequest(slug, request.Action, request.Input, request.Options),
             cancellationToken);
 
         if (result.NotFound)
@@ -27,5 +26,5 @@ public sealed class ToolsController(IToolService toolService) : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    public sealed record ExecuteToolRequest(string Input, IDictionary<string, string>? Options = null);
+    public sealed record ExecuteToolRequest(string Action, string Input, IDictionary<string, string>? Options = null);
 }
