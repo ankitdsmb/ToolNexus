@@ -96,7 +96,16 @@ Web:
 - `/tools/{slug}`
 
 API:
-- `POST /api/tools/{slug}/{action}`
+- `POST /api/v1/tools/{slug}`
+
+Request body:
+```json
+{
+  "action": "format",
+  "input": "...",
+  "options": {}
+}
+```
 
 ## Local Run
 

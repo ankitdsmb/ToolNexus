@@ -3,14 +3,20 @@ using ToolNexus.Domain;
 
 namespace ToolNexus.Infrastructure.Executors;
 
-public sealed class MinifierToolExecutor : IToolExecutor
+public sealed class MinifierToolExecutor : ToolExecutorBase
 {
-    public string Slug => "css-minifier";
-    public IReadOnlyCollection<string> SupportedActions { get; } = ["minify", "format"];
+    public override string Slug => "css-minifier";
+    public override IReadOnlyCollection<string> SupportedActions { get; } = ["minify", "format"];
 
-    public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
+    protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)
     {
-        var minified = Regex.Replace(request.Input, "\\s+", " ").Trim();
-        return Task.FromResult(ToolResult.Ok(minified));
+        var output = action switch
+        {
+            "minify" => Regex.Replace(request.Input, "\\s+", " ").Trim(),
+            "format" => request.Input,
+            _ => throw new InvalidOperationException($"Unsupported action: {action}")
+        };
+
+        return Task.FromResult(ToolResult.Ok(output));
     }
 }
