@@ -11,7 +11,9 @@ public sealed class OrchestrationService(IEnumerable<IToolExecutor> executors) :
             return null;
         }
 
+        var normalizedCapability = capabilityTag.Trim();
+
         return executors.FirstOrDefault(executor =>
-            executor.Metadata.CapabilityTags.Any(tag => tag.Equals(capabilityTag, StringComparison.OrdinalIgnoreCase)));
+            executor.Metadata.CapabilityTags.Any(tag => tag.Equals(normalizedCapability, StringComparison.OrdinalIgnoreCase)));
     }
 }
