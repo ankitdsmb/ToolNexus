@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
@@ -10,7 +11,7 @@ public sealed class ToolsController(IToolService toolService) : ControllerBase
 {
     [HttpPost("{slug}")]
     public async Task<ActionResult<ToolExecutionResponse>> Execute(
-        [FromRoute] string slug,
+        [FromRoute, Required, MinLength(1)] string slug,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
     {
@@ -26,5 +27,8 @@ public sealed class ToolsController(IToolService toolService) : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    public sealed record ExecuteToolRequest(string Action, string Input, IDictionary<string, string>? Options = null);
+    public sealed record ExecuteToolRequest(
+        [property: Required(AllowEmptyStrings = false), MinLength(1)] string Action,
+        [property: Required] string Input,
+        IDictionary<string, string>? Options = null);
 }
