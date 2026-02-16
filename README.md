@@ -4,55 +4,88 @@ MODE=B (backend + tool services)
 
 ToolNexus is a .NET 8 developer tools platform inspired by CodeBeautify, with a cinematic dark UI, manifest-driven routes, and pluggable tool executors.
 
-## Clean Architecture Solution Layout
+## Updated Clean Architecture Solution Structure
 
-- `src/ToolNexus.Domain`
-  - Core contracts and entities (`IToolExecutor`, `ToolRequest`, `ToolResult`)
-- `src/ToolNexus.Application`
-  - Use-case orchestration (`IToolService`, `ToolService`)
-  - Application DTOs (`ToolExecutionRequest`, `ToolExecutionResponse`)
-  - `AddApplication()` DI extension
-- `src/ToolNexus.Infrastructure`
-  - Tool executor implementations (`JsonToolExecutor`, `XmlToolExecutor`, `CsvToolExecutor`, `Base64ToolExecutor`, `HtmlToolExecutor`, `MinifierToolExecutor`)
-- `src/ToolNexus.Api`
-  - API controllers (`ToolsController`)
-  - Composition root for API + runtime executor registration
-  - Depends only on `ToolNexus.Application`
-- `src/ToolNexus.Web`
-  - Razor MVC UI, manifest services, static assets
-  - No dependency on `ToolNexus.Infrastructure`
-- `src/ToolNexus.ConsoleRunner`
-  - Console demo of executor usage
-- `tests/ToolNexus.Tools.Json.Tests`
-  - xUnit tests for JSON executor behavior
+```text
+ToolNexus.sln
+├─ src/
+│  ├─ ToolNexus.Domain/
+│  │  ├─ IToolExecutor.cs
+│  │  ├─ ToolRequest.cs
+│  │  └─ ToolResult.cs
+│  ├─ ToolNexus.Application/
+│  │  ├─ DependencyInjection.cs
+│  │  ├─ Models/
+│  │  │  ├─ ToolExecutionRequest.cs
+│  │  │  └─ ToolExecutionResponse.cs
+│  │  └─ Services/
+│  │     ├─ IToolService.cs
+│  │     └─ ToolService.cs
+│  ├─ ToolNexus.Infrastructure/
+│  │  └─ Executors/
+│  │     ├─ Base64ToolExecutor.cs
+│  │     ├─ CsvToolExecutor.cs
+│  │     ├─ HtmlToolExecutor.cs
+│  │     ├─ JsonToolExecutor.cs
+│  │     ├─ MinifierToolExecutor.cs
+│  │     └─ XmlToolExecutor.cs
+│  ├─ ToolNexus.Api/
+│  │  ├─ Controllers/
+│  │  │  └─ ToolsController.cs
+│  │  └─ Program.cs
+│  ├─ ToolNexus.Web/
+│  │  ├─ Controllers/
+│  │  ├─ Models/
+│  │  ├─ Services/
+│  │  ├─ Views/
+│  │  └─ wwwroot/
+│  └─ ToolNexus.ConsoleRunner/
+└─ tests/
+   └─ ToolNexus.Tools.Json.Tests/
+```
+
+## Layer Responsibilities
+
+- **ToolNexus.Domain**
+  - Core abstractions and contracts.
+  - Contains `IToolExecutor` and `ToolResult`.
+- **ToolNexus.Application**
+  - Use-case orchestration and DTOs.
+  - `ToolService` coordinates tool execution.
+- **ToolNexus.Infrastructure**
+  - Technical implementation details.
+  - All executor implementations live here.
+- **ToolNexus.Api**
+  - HTTP API endpoints (controllers).
+  - Depends on `ToolNexus.Application` only.
+- **ToolNexus.Web**
+  - Razor MVC UI and static client assets.
+  - Does not reference `ToolNexus.Infrastructure`.
 
 ## Dependency Rules
 
-- `Domain` has no dependencies on other solution layers.
+- `Domain` has no dependency on other solution layers.
 - `Application` depends on `Domain`.
 - `Infrastructure` depends on `Domain`.
-- `Api` depends on `Application` only.
-- `Web` does not depend on `Infrastructure`.
+- `Api` depends only on `Application` (in project references).
+- `Web` does not reference `Infrastructure`.
 
 ## DI Setup
 
-### Application registration
+### Application DI (`ToolNexus.Application/DependencyInjection.cs`)
 
-`ToolNexus.Application` exposes:
+- `AddApplication()`
+  - Registers `IToolService` as scoped to `ToolService`.
+- `AddToolExecutorsFromAssembly(Assembly assembly)`
+  - Scans a provided assembly for concrete `IToolExecutor` implementations.
+  - Registers each executor as scoped `IToolExecutor`.
 
-- `services.AddApplication()`
-  - Registers `IToolService -> ToolService`
+### API Composition Root (`ToolNexus.Api/Program.cs`)
 
-### API registration
-
-`ToolNexus.Api/Program.cs`:
-
-- calls `AddApplication()`
-- loads `ToolNexus.Infrastructure` assembly at runtime
-- scans for `IToolExecutor` implementations
-- registers all executors as scoped services
-
-This keeps API compile-time dependency focused on Application while still composing Infrastructure at runtime.
+- Calls `builder.Services.AddApplication()`.
+- Loads `ToolNexus.Infrastructure` assembly at runtime.
+- Calls `builder.Services.AddToolExecutorsFromAssembly(infrastructureAssembly)`.
+- Keeps API compile-time dependency constrained to `Application` while still wiring infrastructure executors in DI.
 
 ## Routes
 
