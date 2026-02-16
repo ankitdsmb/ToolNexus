@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using ToolNexus.Api.Infrastructure;
+using ToolNexus.Api.Application;
 using ToolNexus.Tools.Common;
 
 namespace ToolNexus.Api.Controllers;
 
 [ApiController]
 [Route("api/tools")]
-public sealed class ToolsController(IToolExecutorFactory factory) : ControllerBase
+public sealed class ToolsController(IToolExecutionService toolExecutionService) : ControllerBase
 {
     [HttpPost("{slug}/{action}")]
     public async Task<ActionResult<ToolResult>> Execute(
@@ -15,20 +15,13 @@ public sealed class ToolsController(IToolExecutorFactory factory) : ControllerBa
         [FromBody] ToolRequest request,
         CancellationToken cancellationToken)
     {
-        var executor = factory.Resolve(slug);
-        if (executor is null)
+        var outcome = await toolExecutionService.ExecuteAsync(slug, action, request, cancellationToken);
+        if (!outcome.ToolFound)
         {
-            return NotFound(ToolResult.Fail($"Tool '{slug}' not found."));
+            return NotFound(outcome.Result);
         }
 
-        var options = request.Options is null
-            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : new Dictionary<string, string>(request.Options, StringComparer.OrdinalIgnoreCase);
-
-        options["action"] = action;
-        var enrichedRequest = request with { Options = options };
-
-        var result = await executor.ExecuteAsync(enrichedRequest, cancellationToken);
+        var result = outcome.Result;
         return result.Success ? Ok(result) : BadRequest(result);
     }
 }
