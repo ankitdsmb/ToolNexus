@@ -5,6 +5,13 @@ namespace ToolNexus.Infrastructure.Executors;
 public sealed class CsvToolExecutor : ToolExecutorBase
 {
     public override string Slug => "csv-viewer";
+    public override ToolMetadata Metadata { get; } = new(
+        "CSV Viewer",
+        "Preview and inspect CSV content for quick analysis.",
+        "csv",
+        "city,country\nParis,France",
+        ["csv", "preview", "tabular-data"]);
+
     public override IReadOnlyCollection<string> SupportedActions { get; } = ["preview", "convert"];
 
     protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)

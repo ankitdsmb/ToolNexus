@@ -7,6 +7,13 @@ namespace ToolNexus.Infrastructure.Executors;
 public sealed class MinifierToolExecutor : ToolExecutorBase
 {
     public override string Slug => "css-minifier";
+    public override ToolMetadata Metadata { get; } = new(
+        "CSS Minifier",
+        "Minify or format CSS stylesheets.",
+        "minify",
+        "body { color: #fff; }",
+        ["css", "minification", "formatting"]);
+
     public override IReadOnlyCollection<string> SupportedActions { get; } = ["minify", "format"];
 
     protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)
