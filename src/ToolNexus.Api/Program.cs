@@ -1,8 +1,8 @@
-using System.Reflection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
+using ToolNexus.Infrastructure.Executors;
 
 var builder = WebApplication.CreateBuilder(args);
 var maxRequestBodySizeBytes = 5 * 1024 * 1024;
@@ -37,7 +37,7 @@ builder.Services.AddRateLimiter(options =>
 });
 builder.Services.AddApplication(builder.Configuration);
 
-var infrastructureAssembly = Assembly.Load("ToolNexus.Infrastructure");
+var infrastructureAssembly = typeof(ToolExecutorBase).Assembly;
 builder.Services.AddToolExecutorsFromAssembly(infrastructureAssembly);
 
 var app = builder.Build();
