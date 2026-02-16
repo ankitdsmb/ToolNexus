@@ -1,10 +1,9 @@
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using CsvHelper;
-using ToolNexus.Tools.Common;
+using ToolNexus.Domain;
 
-namespace ToolNexus.Tools.Json;
+namespace ToolNexus.Infrastructure.Executors;
 
 public sealed class JsonToolExecutor : IToolExecutor
 {

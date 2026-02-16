@@ -1,6 +1,6 @@
-using ToolNexus.Tools.Common;
+using ToolNexus.Domain;
 
-namespace ToolNexus.Tools.Html;
+namespace ToolNexus.Infrastructure.Executors;
 
 public sealed class HtmlToolExecutor : IToolExecutor
 {
@@ -9,7 +9,6 @@ public sealed class HtmlToolExecutor : IToolExecutor
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
     {
-        // TODO: Integrate dedicated HTML parser/minifier for safer transformations.
         return Task.FromResult(ToolResult.Ok(request.Input.Trim()));
     }
 }

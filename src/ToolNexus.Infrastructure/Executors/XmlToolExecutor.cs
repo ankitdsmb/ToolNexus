@@ -1,7 +1,7 @@
 using System.Xml.Linq;
-using ToolNexus.Tools.Common;
+using ToolNexus.Domain;
 
-namespace ToolNexus.Tools.Xml;
+namespace ToolNexus.Infrastructure.Executors;
 
 public sealed class XmlToolExecutor : IToolExecutor
 {

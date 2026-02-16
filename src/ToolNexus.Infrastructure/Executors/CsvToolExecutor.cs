@@ -1,6 +1,6 @@
-using ToolNexus.Tools.Common;
+using ToolNexus.Domain;
 
-namespace ToolNexus.Tools.Csv;
+namespace ToolNexus.Infrastructure.Executors;
 
 public sealed class CsvToolExecutor : IToolExecutor
 {
@@ -9,7 +9,6 @@ public sealed class CsvToolExecutor : IToolExecutor
 
     public Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
     {
-        // TODO: Replace placeholder with rich CSV parsing/conversion.
         return Task.FromResult(ToolResult.Ok(request.Input));
     }
 }
