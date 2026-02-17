@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -47,8 +48,8 @@ public sealed class ToolService(
             return new ToolExecutionResponse(false, string.Empty, $"Tool '{request.Slug}' not found.", true);
         }
 
-        var normalizedSlug = request.Slug.Trim().ToLowerInvariant();
-        var normalizedAction = request.Action.Trim().ToLowerInvariant();
+        var normalizedSlug = NormalizeToken(request.Slug);
+        var normalizedAction = NormalizeToken(request.Action);
         var cacheKey = BuildCacheKey(normalizedSlug, normalizedAction, request.Input);
 
         ToolResultCacheItem? cached = null;
@@ -66,9 +67,11 @@ public sealed class ToolService(
             return new ToolExecutionResponse(cached.Success, cached.Output, cached.Error);
         }
 
-        var options = request.Options is null
-            ? null
-            : new Dictionary<string, string>(request.Options, StringComparer.OrdinalIgnoreCase);
+        var options = request.Options;
+        if (options is not null && options.Count > 0 && !IsCaseInsensitiveDictionary(options))
+        {
+            options = new Dictionary<string, string>(options, StringComparer.OrdinalIgnoreCase);
+        }
 
         ToolResult result;
         try
@@ -81,36 +84,83 @@ public sealed class ToolService(
             return new ToolExecutionResponse(false, string.Empty, "Tool execution failed unexpectedly.");
         }
 
-        var response = new ToolExecutionResponse(result.Success, result.Output, result.Error);
-
-        if (!response.Success)
+        if (!result.Success)
         {
-            logger.LogWarning("Tool execution failed for tool {Slug} action {Action}. Error: {Error}", normalizedSlug, normalizedAction, response.Error);
+            logger.LogWarning("Tool execution failed for tool {Slug} action {Action}. Error: {Error}", normalizedSlug, normalizedAction, result.Error);
+            return new ToolExecutionResponse(false, result.Output, result.Error);
         }
 
-        if (result.Success)
+        try
         {
-            try
+            await toolResultCache.SetAsync(
+                cacheKey,
+                new ToolResultCacheItem(result.Success, result.Output, result.Error),
+                _cacheDuration,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed writing cache for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
+        }
+
+        return new ToolExecutionResponse(true, result.Output, result.Error);
+    }
+
+    private static bool IsCaseInsensitiveDictionary(IDictionary<string, string> options)
+    {
+        return options is Dictionary<string, string> dictionary &&
+               dictionary.Comparer.Equals(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeToken(string value)
+    {
+        var trimmed = value.Trim();
+
+        if (trimmed.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        for (var i = 0; i < trimmed.Length; i++)
+        {
+            if (char.IsUpper(trimmed[i]))
             {
-                await toolResultCache.SetAsync(
-                    cacheKey,
-                    new ToolResultCacheItem(response.Success, response.Output, response.Error),
-                    _cacheDuration,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning(ex, "Failed writing cache for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
+                return trimmed.ToLowerInvariant();
             }
         }
 
-        return response;
+        return trimmed;
     }
 
     private static string BuildCacheKey(string slug, string action, string input)
     {
-        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        var hash = Convert.ToHexString(hashBytes).ToLowerInvariant();
-        return $"{slug}:{action}:{hash}";
+        var byteCount = Encoding.UTF8.GetByteCount(input);
+        var rentedBytes = ArrayPool<byte>.Shared.Rent(byteCount);
+
+        try
+        {
+            var written = Encoding.UTF8.GetBytes(input, rentedBytes);
+            Span<byte> hashBuffer = stackalloc byte[32];
+            SHA256.HashData(rentedBytes.AsSpan(0, written), hashBuffer);
+
+            var hash = Convert.ToHexString(hashBuffer);
+            var totalLength = slug.Length + action.Length + hash.Length + 2;
+
+            return string.Create(totalLength, (slug, action, hash), static (span, state) =>
+            {
+                var index = 0;
+                state.slug.AsSpan().CopyTo(span[index..]);
+                index += state.slug.Length;
+                span[index++] = ':';
+                state.action.AsSpan().CopyTo(span[index..]);
+                index += state.action.Length;
+                span[index++] = ':';
+                state.hash.AsSpan().CopyTo(span[index..]);
+            });
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rentedBytes, clearArray: false);
+        }
     }
 }

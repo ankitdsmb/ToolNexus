@@ -252,6 +252,7 @@ app.UseResponseCompression();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<ApiCacheHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
