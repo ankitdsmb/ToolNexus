@@ -286,19 +286,41 @@ const clientExecutor = new ClientToolExecutor();
    API Execution
 ================================ */
 
-async function executeViaApi(action, input) {
-  const endpoint = apiBase
-    ? `${apiBase.replace(/\/$/, '')}/api/v1/tools/${encodeURIComponent(slug)}`
-    : `/api/v1/tools/${encodeURIComponent(slug)}`;
+/**
+ * Executes a tool action against the ASP.NET Core API route:
+ * POST /api/v1/tools/{slug}/{action}
+ *
+ * NOTE:
+ * - Both slug and action are required route segments.
+ * - baseUrl is optional so this function can work in local, staging, and production.
+ */
+async function executeToolActionViaApi({
+  baseUrl = '',
+  slug: toolSlug,
+  action,
+  input
+}) {
+  const normalizedSlug = (toolSlug ?? '').trim();
+  const normalizedAction = (action ?? '').trim();
 
-  const response = await fetch(
-    endpoint,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, input })
-    }
-  );
+  if (!normalizedSlug) {
+    throw new Error('Tool configuration error: missing slug.');
+  }
+
+  if (!normalizedAction) {
+    throw new Error('Please select an action before running the tool.');
+  }
+
+  const origin = (baseUrl ?? '').trim().replace(/\/$/, '');
+  const endpoint = origin
+    ? `${origin}/api/v1/tools/${encodeURIComponent(normalizedSlug)}/${encodeURIComponent(normalizedAction)}`
+    : `/api/v1/tools/${encodeURIComponent(normalizedSlug)}/${encodeURIComponent(normalizedAction)}`;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input })
+  });
 
   let result = null;
   try {
@@ -334,6 +356,14 @@ async function executeViaApi(action, input) {
 
   return result?.output || result?.error || 'No output';
 }
+
+// Sample usage (kept as executable documentation):
+// executeToolActionViaApi({
+//   baseUrl: window.ToolNexusConfig?.apiBaseUrl,
+//   slug: 'xml-formatter',
+//   action: 'format',
+//   input: '<root><item>example</item></root>'
+// });
 
 /* ===============================
    Run Execution
@@ -391,10 +421,12 @@ async function run() {
     }
 
     if (!result) {
-      result = await executeViaApi(
-        selectedAction,
-        sanitizedInput
-      );
+      result = await executeToolActionViaApi({
+        baseUrl: apiBase,
+        slug,
+        action: selectedAction,
+        input: sanitizedInput
+      });
       showToast('Execution completed.', 'success');
     }
 
@@ -405,6 +437,13 @@ async function run() {
     const message =
       error?.message ||
       'Unable to run tool due to a network error.';
+
+    // Minimal non-OK/network diagnostics example to aid browser debugging.
+    console.error('Tool execution failed', {
+      slug,
+      action: selectedAction,
+      error
+    });
 
     showError(message);
     outputEditor.setValue(message);
