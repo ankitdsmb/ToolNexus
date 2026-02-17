@@ -52,7 +52,7 @@ public sealed class ToolExecutionResiliencePipelineProvider : IToolExecutionResi
             BreakDuration = TimeSpan.FromSeconds(30)
         };
 
-        var timeoutOptions = new TimeoutStrategyOptions<ToolExecutionResponse>
+        var timeoutOptions = new TimeoutStrategyOptions
         {
             Timeout = timeout
         };
