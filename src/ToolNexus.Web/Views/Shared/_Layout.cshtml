@@ -20,17 +20,35 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
 </head>
 <body>
-  <header class="topbar">
-    <a href="/" class="brand">ToolNexus</a>
-    <nav>
-      <a href="/tools">Tools</a>
-    </nav>
-  </header>
-  <div class="banner">Do not paste secrets.</div>
-  <main class="container">
-    @RenderBody()
-  </main>
-  <footer class="footer">© @DateTime.UtcNow.Year ToolNexus</footer>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a href="/" class="brand" aria-label="ToolNexus home">
+          <span class="brand__dot" aria-hidden="true"></span>
+          <span>ToolNexus</span>
+        </a>
+
+        <div class="topbar__search-wrap">
+          <label class="u-sr-only" for="globalToolSearch">Search tools</label>
+          <input id="globalToolSearch" class="topbar__search" placeholder="Search tools" />
+        </div>
+
+        <nav class="topbar__nav" aria-label="Primary">
+          <a class="topbar__link" href="/tools">Tools</a>
+          <a class="topbar__link" href="/">Home</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="banner">Do not paste secrets.</div>
+
+    <main class="container">
+      @RenderBody()
+    </main>
+
+    <footer class="footer">© @DateTime.UtcNow.Year ToolNexus</footer>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   @await RenderSectionAsync("Scripts", required: false)
