@@ -9,7 +9,9 @@ namespace ToolNexus.Web.Controllers;
 public sealed class ToolsController(
     IToolCatalogService toolCatalogService,
     IToolContentService toolContentService,
-    IConfiguration configuration) : Controller
+    IConfiguration configuration,
+    IWebHostEnvironment environment,
+    ILogger<ToolsController> logger) : Controller
 {
     [HttpGet("")]
     [OutputCache(Duration = 300)]
@@ -47,8 +49,32 @@ public sealed class ToolsController(
             JsonLd = BuildJsonLd(tool, content, canonicalUrl)
         };
 
-        var apiBaseUrl = configuration["ApiBaseUrl"] ?? "http://localhost:5163";
+        var apiBaseUrl = ResolveApiBaseUrl(configuration["ApiBaseUrl"], environment.IsDevelopment(), logger);
         return View("Tool", new ToolPageViewModel { Tool = tool, ApiBaseUrl = apiBaseUrl, Seo = seo, Content = content });
+    }
+
+    private static string ResolveApiBaseUrl(string? configuredApiBaseUrl, bool isDevelopment, ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(configuredApiBaseUrl) ||
+            string.Equals(configuredApiBaseUrl, "auto", StringComparison.OrdinalIgnoreCase))
+        {
+            return isDevelopment ? "http://localhost:5163" : string.Empty;
+        }
+
+        var normalized = configuredApiBaseUrl.Trim().TrimEnd('/');
+
+        if (!Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
+        {
+            return normalized;
+        }
+
+        if (!isDevelopment && string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning("ApiBaseUrl is configured to localhost in a non-development environment. Falling back to same-origin API path.");
+            return string.Empty;
+        }
+
+        return normalized;
     }
 
     private static string BuildJsonLd(Application.Models.ToolDescriptor tool, Application.Models.ToolContent? content, string canonicalUrl)
