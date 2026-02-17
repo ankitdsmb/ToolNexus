@@ -1,13 +1,17 @@
 using System.IO.Compression;
+using System.Reflection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using Serilog.Formatting.Compact;
+using StackExchange.Redis;
+using ToolNexus.Api;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
@@ -17,32 +21,30 @@ using ToolNexus.Infrastructure.HealthChecks;
 var builder = WebApplication.CreateBuilder(args);
 var maxRequestBodySizeBytes = 5 * 1024 * 1024;
 
-/* =========================================================
-   LOGGING (Serilog)
-   ========================================================= */
-
 builder.Host.UseSerilog((context, services, configuration) =>
 {
-    var enableConsoleJson = context.Configuration.GetValue(
-        "Serilog:UseJsonConsole",
-        !context.HostingEnvironment.IsDevelopment());
+    var environmentName = context.HostingEnvironment.EnvironmentName;
+    var appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+    var enableConsoleJson = context.Configuration.GetValue("Serilog:UseJsonConsole", !context.HostingEnvironment.IsDevelopment());
 
     configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
+        .Enrich.WithProperty("Environment", environmentName)
+        .Enrich.WithProperty("ApplicationVersion", appVersion)
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning);
 
     if (enableConsoleJson)
-        configuration.WriteTo.Console(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter());
+    {
+        configuration.WriteTo.Async(sink => sink.Console(new RenderedCompactJsonFormatter()));
+    }
     else
-        configuration.WriteTo.Console();
+    {
+        configuration.WriteTo.Async(sink => sink.Console());
+    }
 });
-
-/* =========================================================
-   KESTREL CONFIGURATION
-   ========================================================= */
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -51,10 +53,6 @@ builder.WebHost.ConfigureKestrel(options =>
         endpoint.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
 });
 
-/* =========================================================
-   RESPONSE COMPRESSION
-   ========================================================= */
-
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -62,32 +60,17 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<GzipCompressionProvider>();
 });
 
-builder.Services.Configure<BrotliCompressionProviderOptions>(o =>
-    o.Level = CompressionLevel.Fastest);
-
-builder.Services.Configure<GzipCompressionProviderOptions>(o =>
-    o.Level = CompressionLevel.Fastest);
-
-/* =========================================================
-   FORM LIMIT
-   ========================================================= */
+builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
 
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = maxRequestBodySizeBytes;
 });
 
-/* =========================================================
-   MVC + PROBLEM DETAILS
-   ========================================================= */
-
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
-
-/* =========================================================
-   SWAGGER
-   ========================================================= */
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -118,8 +101,10 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme {
-                Reference = new OpenApiReference {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
@@ -127,8 +112,10 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         },
         {
-            new OpenApiSecurityScheme {
-                Reference = new OpenApiReference {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
                     Type = ReferenceType.SecurityScheme,
                     Id = "ApiKey"
                 }
@@ -138,12 +125,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-/* =========================================================
-   RATE LIMITING
-   ========================================================= */
-
 var ipPerMinute = builder.Configuration.GetValue("RateLimiting:IpPerMinute", 120);
-var userPerMinute = builder.Configuration.GetValue("RateLimiting:UserPerMinute", 240);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -151,6 +133,11 @@ builder.Services.AddRateLimiter(options =>
 
     options.OnRejected = async (context, token) =>
     {
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("RateLimiting");
+        logger.LogWarning("Rate limit rejection for path {Path} ip {IpAddress}.",
+            context.HttpContext.Request.Path,
+            context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+
         context.HttpContext.Response.ContentType = "application/problem+json";
 
         var problem = new ProblemDetails
@@ -193,36 +180,70 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-/* =========================================================
-   APPLICATION SERVICES
-   ========================================================= */
-
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddToolExecutorsFromLoadedAssemblies();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
-var redisConnection =
+var redisConnectionString =
     builder.Configuration.GetConnectionString("Redis") ??
     builder.Configuration["REDIS_CONNECTION_STRING"];
 
-if (!string.IsNullOrWhiteSpace(redisConnection))
+IConnectionMultiplexer? redisMultiplexer = null;
+
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
 {
+    var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
+    redisOptions.AbortOnConnectFail = false;
+    redisOptions.ConnectRetry = 5;
+    redisOptions.ConnectTimeout = 5000;
+    redisOptions.SyncTimeout = 5000;
+    redisOptions.Ssl = builder.Configuration.GetValue("Redis:Ssl", redisOptions.Ssl);
+
+    var redisPassword = builder.Configuration["Redis:Password"];
+    if (!string.IsNullOrWhiteSpace(redisPassword))
+    {
+        redisOptions.Password = redisPassword;
+    }
+
+    var redisInstanceName =
+        builder.Configuration["Redis:InstanceName"] ??
+        builder.Configuration["REDIS_INSTANCE_NAME"] ??
+        "toolnexus";
+
     builder.Services.AddStackExchangeRedisCache(options =>
     {
-        options.Configuration = redisConnection;
-        options.InstanceName = builder.Configuration["REDIS_INSTANCE_NAME"] ?? "toolnexus";
+        options.ConfigurationOptions = redisOptions;
+        options.InstanceName = redisInstanceName;
     });
+
+    try
+    {
+        redisMultiplexer = await ConnectionMultiplexer.ConnectAsync(redisOptions);
+    }
+    catch
+    {
+        redisMultiplexer = null;
+    }
 }
 
-builder.Services.AddScoped<IToolResultCache, RedisToolResultCache>();
+if (redisMultiplexer is not null)
+{
+    builder.Services.AddSingleton<IConnectionMultiplexer>(redisMultiplexer);
+}
 
-/* =========================================================
-   HEALTH CHECKS
-   ========================================================= */
+builder.Services.AddSingleton<IToolResultCache, RedisToolResultCache>();
+
+builder.Services.AddSingleton<IHealthCheckPublisher, HealthStateLoggingPublisher>();
+builder.Services.Configure<HealthCheckPublisherOptions>(options =>
+{
+    options.Delay = TimeSpan.FromSeconds(2);
+    options.Period = TimeSpan.FromSeconds(30);
+});
 
 builder.Services.AddHealthChecks()
+    .AddCheck("process", () => HealthCheckResult.Healthy("Process running."), tags: ["live"])
     .AddCheck("memory", () =>
     {
         var gcInfo = GC.GetGCMemoryInfo();
@@ -233,23 +254,17 @@ builder.Services.AddHealthChecks()
         var usage = GC.GetTotalMemory(false);
 
         return usage <= threshold
-            ? HealthCheckResult.Healthy()
-            : HealthCheckResult.Unhealthy();
+            ? HealthCheckResult.Healthy("Memory usage within threshold.")
+            : HealthCheckResult.Unhealthy("Memory usage exceeds threshold.");
     }, tags: ["ready"])
-    .AddCheck<DistributedCacheHealthCheck>("distributed-cache", tags: ["ready"]);
-
-/* =========================================================
-   BUILD APP
-   ========================================================= */
+    .AddCheck("application-services", () => HealthCheckResult.Healthy("Application services available."), tags: ["ready"])
+    .AddCheck<DistributedCacheHealthCheck>("redis", tags: ["ready"]);
 
 var app = builder.Build();
 
-/* =========================================================
-   MIDDLEWARE PIPELINE
-   ========================================================= */
-
 app.UseResponseCompression();
 app.UseSerilogRequestLogging();
+app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -266,13 +281,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseRateLimiter();
 
-app.MapHealthChecks("/health");
-app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("ready")
-});
+app.MapHealthChecks("/health", HealthCheckResponseWriter.ForTag("live")).DisableRateLimiting();
+app.MapHealthChecks("/ready", HealthCheckResponseWriter.ForTag("ready")).DisableRateLimiting();
+app.MapGet("/metrics", () => Results.StatusCode(StatusCodes.Status501NotImplemented)).DisableRateLimiting();
 
 app.MapControllers().RequireRateLimiting("ip");
+
+using (var scope = app.Services.CreateScope())
+{
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+    var healthCheckService = scope.ServiceProvider.GetRequiredService<HealthCheckService>();
+    var startupHealth = await healthCheckService.CheckHealthAsync();
+    startupLogger.LogInformation("Startup health status {HealthStatus}", startupHealth.Status);
+}
 
 app.Run();
 

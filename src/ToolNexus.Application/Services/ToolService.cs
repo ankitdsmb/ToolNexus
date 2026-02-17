@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
@@ -50,6 +51,9 @@ public sealed class ToolService(
         var normalizedSlug = request.Slug.Trim().ToLowerInvariant();
         var normalizedAction = request.Action.Trim().ToLowerInvariant();
         var cacheKey = BuildCacheKey(normalizedSlug, normalizedAction, request.Input);
+        var sw = Stopwatch.StartNew();
+
+        logger.LogInformation("Tool execution started for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
 
         ToolResultCacheItem? cached = null;
         try
@@ -63,8 +67,15 @@ public sealed class ToolService(
 
         if (cached is not null)
         {
+            sw.Stop();
+            logger.LogInformation("Tool cache hit for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
+            logger.LogInformation(
+                "Tool execution completed {@ExecutionMetrics}",
+                new ExecutionMetrics(normalizedSlug, normalizedAction, cached.Success, true, sw.ElapsedMilliseconds));
             return new ToolExecutionResponse(cached.Success, cached.Output, cached.Error);
         }
+
+        logger.LogInformation("Tool cache miss for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
 
         var options = request.Options is null
             ? null
@@ -78,6 +89,10 @@ public sealed class ToolService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Unhandled tool execution error for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
+            sw.Stop();
+            logger.LogInformation(
+                "Tool execution completed {@ExecutionMetrics}",
+                new ExecutionMetrics(normalizedSlug, normalizedAction, false, false, sw.ElapsedMilliseconds));
             return new ToolExecutionResponse(false, string.Empty, "Tool execution failed unexpectedly.");
         }
 
@@ -103,6 +118,11 @@ public sealed class ToolService(
                 logger.LogWarning(ex, "Failed writing cache for tool {Slug} action {Action}.", normalizedSlug, normalizedAction);
             }
         }
+
+        sw.Stop();
+        logger.LogInformation(
+            "Tool execution completed {@ExecutionMetrics}",
+            new ExecutionMetrics(normalizedSlug, normalizedAction, response.Success, false, sw.ElapsedMilliseconds));
 
         return response;
     }
