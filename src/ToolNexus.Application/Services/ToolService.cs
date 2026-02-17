@@ -27,12 +27,10 @@ public sealed class ToolService(
                 normalizedSlug,
                 normalizedAction,
                 request.Input,
-                request.Options,
                 cancellationToken);
         }
         catch (Exception ex)
         {
-            // Never log input (security rule)
             logger.LogError(
                 ex,
                 "Unhandled tool execution error for tool {Slug} action {Action}.",
@@ -42,23 +40,24 @@ public sealed class ToolService(
             return new ToolExecutionResponse(
                 false,
                 string.Empty,
-                "Tool execution failed unexpectedly.");
+                "Tool execution failed unexpectedly.",
+                false);
         }
     }
 
     private static ToolExecutionResponse? Validate(ToolExecutionRequest? request)
     {
         if (request is null)
-            return new ToolExecutionResponse(false, string.Empty, "Request is required.");
+            return new ToolExecutionResponse(false, string.Empty, "Request is required.", false);
 
         if (string.IsNullOrWhiteSpace(request.Slug))
-            return new ToolExecutionResponse(false, string.Empty, "Tool slug is required.");
+            return new ToolExecutionResponse(false, string.Empty, "Tool slug is required.", false);
 
         if (string.IsNullOrWhiteSpace(request.Action))
-            return new ToolExecutionResponse(false, string.Empty, "Action is required.");
+            return new ToolExecutionResponse(false, string.Empty, "Action is required.", false);
 
         if (request.Input is null)
-            return new ToolExecutionResponse(false, string.Empty, "Input is required.");
+            return new ToolExecutionResponse(false, string.Empty, "Input is required.", false);
 
         return null;
     }

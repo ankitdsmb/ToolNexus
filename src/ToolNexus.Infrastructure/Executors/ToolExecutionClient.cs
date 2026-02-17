@@ -1,12 +1,14 @@
+using ToolNexus.Application.Abstractions;
 using ToolNexus.Application.Services;
-using ToolNexus.Domain;
 
 namespace ToolNexus.Infrastructure.Executors;
 
-public sealed class ToolExecutionClient(IEnumerable<IToolExecutor> executors) : IToolExecutionClient
+public sealed class ToolExecutionClient(
+    IEnumerable<IToolExecutor> executors)
+    : IToolExecutionClient
 {
-    private readonly Dictionary<string, IToolExecutor> _executorsBySlug = executors
-        .ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, IToolExecutor> _executorsBySlug =
+        executors.ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
 
     public async Task<ToolExecutionClientResult> ExecuteAsync(
         string slug,
@@ -19,6 +21,7 @@ public sealed class ToolExecutionClient(IEnumerable<IToolExecutor> executors) : 
         }
 
         var result = await executor.ExecuteAsync(request, cancellationToken);
+
         return ToolExecutionClientResult.Executed(result);
     }
 }

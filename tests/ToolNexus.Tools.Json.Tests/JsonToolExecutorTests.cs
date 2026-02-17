@@ -1,4 +1,4 @@
-using ToolNexus.Domain;
+using ToolNexus.Application.Abstractions;
 using ToolNexus.Infrastructure.Executors;
 using Xunit;
 

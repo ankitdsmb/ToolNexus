@@ -3,13 +3,13 @@ using ToolNexus.Application.Services;
 
 namespace ToolNexus.Api.Middleware;
 
-public sealed class ApiKeyValidationMiddleware(
-    RequestDelegate next,
-    IApiKeyValidator apiKeyValidator)
+public sealed class ApiKeyValidationMiddleware(RequestDelegate next)
 {
     private const string ApiKeyHeader = "X-API-KEY";
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(
+        HttpContext context,
+        IApiKeyValidator apiKeyValidator)   // ✅ Inject here
     {
         if (!IsApiRequest(context.Request.Path))
         {
@@ -17,7 +17,8 @@ public sealed class ApiKeyValidationMiddleware(
             return;
         }
 
-        if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var apiKeyHeader) || apiKeyHeader.Count == 0)
+        if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var apiKeyHeader)
+            || apiKeyHeader.Count == 0)
         {
             await WriteProblem(context, StatusCodes.Status401Unauthorized, "API key is required.");
             return;
@@ -33,9 +34,7 @@ public sealed class ApiKeyValidationMiddleware(
     }
 
     private static bool IsApiRequest(PathString path)
-    {
-        return path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
-    }
+        => path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
 
     private static Task WriteProblem(HttpContext context, int statusCode, string detail)
     {

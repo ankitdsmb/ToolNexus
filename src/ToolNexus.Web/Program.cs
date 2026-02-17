@@ -1,17 +1,29 @@
-using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
+using System.IO.Compression;
 using ToolNexus.Application;
+using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure;
+using ToolNexus.Infrastructure.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ConfigureEndpointDefaults(endpointOptions =>
-        endpointOptions.Protocols =
-            Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
-});
+/* =========================================================
+   KESTREL CONFIG
+   ========================================================= */
+
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    options.ListenAnyIP(5163); // HTTP
+//    options.ListenAnyIP(7163, listenOptions =>
+//    {
+//        listenOptions.UseHttps(); // HTTPS
+//    });
+//});
+
+/* =========================================================
+   RESPONSE COMPRESSION
+   ========================================================= */
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -26,18 +38,41 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(o =>
 builder.Services.Configure<GzipCompressionProviderOptions>(o =>
     o.Level = CompressionLevel.Fastest);
 
+/* =========================================================
+   OUTPUT CACHE
+   ========================================================= */
+
 builder.Services.AddOutputCache(options =>
 {
     options.AddBasePolicy(policy =>
         policy.Expire(TimeSpan.FromMinutes(5)));
 });
 
+/* =========================================================
+   MVC + APPLICATION
+   ========================================================= */
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(); // REQUIRED
+builder.Services.AddScoped<IToolResultCache, RedisToolResultCache>();
 
-var app = builder.Build();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+var app = builder.Build();  
+
+/* =========================================================
+   ERROR HANDLING
+   ========================================================= */
 
 if (!app.Environment.IsDevelopment())
 {
@@ -46,8 +81,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseResponseCompression();
+app.UseCors();
+
+/* =========================================================
+   STATIC FILES (Precompressed Support)
+   ========================================================= */
 
 if (!app.Environment.IsDevelopment())
 {
@@ -55,8 +94,8 @@ if (!app.Environment.IsDevelopment())
 
     app.Use(async (context, next) =>
     {
-        if (!(HttpMethods.IsGet(context.Request.Method) ||
-              HttpMethods.IsHead(context.Request.Method)))
+        if (!HttpMethods.IsGet(context.Request.Method) &&
+            !HttpMethods.IsHead(context.Request.Method))
         {
             await next();
             return;
@@ -77,32 +116,33 @@ if (!app.Environment.IsDevelopment())
             return;
         }
 
-        var relativePath = requestPath.TrimStart('/');
         var acceptedEncodings = context.Request.Headers.AcceptEncoding.ToString();
 
-        if (!string.IsNullOrEmpty(acceptedEncodings))
+        if (string.IsNullOrWhiteSpace(acceptedEncodings))
         {
-            var prefersBrotli = acceptedEncodings.Contains("br", StringComparison.OrdinalIgnoreCase);
-            var acceptsGzip = acceptedEncodings.Contains("gzip", StringComparison.OrdinalIgnoreCase);
+            await next();
+            return;
+        }
 
-            if (prefersBrotli &&
-                app.Environment.WebRootFileProvider
-                   .GetFileInfo($"{relativePath}.br").Exists)
-            {
-                context.Request.Path = new PathString($"{requestPath}.br");
-                context.Response.Headers.ContentEncoding = "br";
-                context.Response.Headers.Vary = "Accept-Encoding";
-                context.Items["StaticOriginalPath"] = requestPath;
-            }
-            else if (acceptsGzip &&
-                     app.Environment.WebRootFileProvider
-                        .GetFileInfo($"{relativePath}.gz").Exists)
-            {
-                context.Request.Path = new PathString($"{requestPath}.gz");
-                context.Response.Headers.ContentEncoding = "gzip";
-                context.Response.Headers.Vary = "Accept-Encoding";
-                context.Items["StaticOriginalPath"] = requestPath;
-            }
+        var relativePath = requestPath.TrimStart('/');
+        var fileProvider = app.Environment.WebRootFileProvider;
+
+        var prefersBrotli = acceptedEncodings.Contains("br", StringComparison.OrdinalIgnoreCase);
+        var acceptsGzip = acceptedEncodings.Contains("gzip", StringComparison.OrdinalIgnoreCase);
+
+        if (prefersBrotli && fileProvider.GetFileInfo($"{relativePath}.br").Exists)
+        {
+            context.Request.Path = new PathString($"{requestPath}.br");
+            context.Response.Headers.ContentEncoding = "br";
+            context.Response.Headers.Vary = "Accept-Encoding";
+            context.Items["StaticOriginalPath"] = requestPath;
+        }
+        else if (acceptsGzip && fileProvider.GetFileInfo($"{relativePath}.gz").Exists)
+        {
+            context.Request.Path = new PathString($"{requestPath}.gz");
+            context.Response.Headers.ContentEncoding = "gzip";
+            context.Response.Headers.Vary = "Accept-Encoding";
+            context.Items["StaticOriginalPath"] = requestPath;
         }
 
         await next();
@@ -129,8 +169,11 @@ else
     app.UseStaticFiles();
 }
 
-app.UseRouting();
+/* =========================================================
+   ROUTING
+   ========================================================= */
 
+app.UseRouting();
 app.UseOutputCache();
 
 app.MapControllerRoute(
@@ -138,3 +181,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program;

@@ -1,10 +1,10 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ToolNexus.Application.Abstractions;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Pipeline;
-using ToolNexus.Domain;
 
 namespace ToolNexus.Application;
 

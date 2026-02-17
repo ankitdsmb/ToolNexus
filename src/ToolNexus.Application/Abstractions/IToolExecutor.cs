@@ -1,4 +1,4 @@
-namespace ToolNexus.Domain;
+namespace ToolNexus.Application.Abstractions;
 
 public interface IToolExecutor
 {

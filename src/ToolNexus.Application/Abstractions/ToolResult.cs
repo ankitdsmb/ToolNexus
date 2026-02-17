@@ -1,4 +1,4 @@
-namespace ToolNexus.Domain;
+namespace ToolNexus.Application.Abstractions;
 
 public sealed record ToolResult(bool Success, string Output, string? Error = null)
 {

@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ToolNexus.Application\ToolNexus.Application.csproj" />
-    <ProjectReference Include="..\..\src\ToolNexus.Domain\ToolNexus.Domain.csproj" />
     <ProjectReference Include="..\..\src\ToolNexus.Infrastructure\ToolNexus.Infrastructure.csproj" />
   </ItemGroup>
 

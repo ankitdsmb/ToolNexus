@@ -1,4 +1,4 @@
-using ToolNexus.Domain;
+using ToolNexus.Application.Abstractions;
 
 namespace ToolNexus.Application.Services;
 
@@ -10,9 +10,13 @@ public interface IToolExecutionClient
         CancellationToken cancellationToken = default);
 }
 
-public sealed record ToolExecutionClientResult(bool Found, ToolResult? Result)
+public sealed record ToolExecutionClientResult(
+    bool Found,
+    ToolResult? Result)
 {
-    public static ToolExecutionClientResult ToolNotFound() => new(false, null);
+    public static ToolExecutionClientResult ToolNotFound()
+        => new(false, null);
 
-    public static ToolExecutionClientResult Executed(ToolResult result) => new(true, result);
+    public static ToolExecutionClientResult Executed(ToolResult result)
+        => new(true, result);
 }

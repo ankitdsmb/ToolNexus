@@ -12,23 +12,37 @@ public sealed class InputSanitizationPreProcessor(
 {
     private readonly InputSanitizationOptions _options = options.Value;
 
-    public ValueTask<ToolExecutionRequest> ProcessAsync(ToolExecutionRequest request, CancellationToken cancellationToken = default)
+    public ValueTask<ToolExecutionRequest> ProcessAsync(
+        ToolExecutionRequest request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         if (request.Input.Length > _options.MaxInputCharacters)
         {
-            logger.LogWarning("Rejected oversized tool input for slug {Slug}. Length: {Length}.", request.Slug, request.Input.Length);
-            throw new InputSanitizationException("Input exceeds the maximum allowed payload size.");
+            logger.LogWarning(
+                "Rejected oversized tool input for slug {Slug}. Length: {Length}.",
+                request.Slug,
+                request.Input.Length);
+
+            throw new InputSanitizationException(
+                "Input exceeds the maximum allowed payload size.");
         }
 
-        if (!IsValidUnicode(request.Input.AsSpan()))
+        if (!IsValidUnicode(request.Input))
         {
-            logger.LogWarning("Rejected invalid UTF input for slug {Slug}.", request.Slug);
-            throw new InputSanitizationException("Input contains invalid UTF sequences.");
+            logger.LogWarning(
+                "Rejected invalid UTF input for slug {Slug}.",
+                request.Slug);
+
+            throw new InputSanitizationException(
+                "Input contains invalid UTF sequences.");
         }
 
-        var sanitizedInput = SanitizeInput(request.Input, _options.RejectControlCharacters);
+        string sanitizedInput = SanitizeInput(
+            request.Input,
+            _options.RejectControlCharacters);
+
         if (ReferenceEquals(sanitizedInput, request.Input))
         {
             return ValueTask.FromResult(request);
@@ -41,10 +55,15 @@ public sealed class InputSanitizationPreProcessor(
     {
         StringBuilder? builder = null;
 
-        for (var i = 0; i < input.Length; i++)
+        for (int i = 0; i < input.Length; i++)
         {
-            var current = input[i];
-            var shouldStrip = current == '\0' || (stripControlCharacters && char.IsControl(current) && !IsAllowedControlCharacter(current));
+            char current = input[i];
+
+            bool shouldStrip =
+                current == '\0' ||
+                (stripControlCharacters &&
+                 char.IsControl(current) &&
+                 !IsAllowedControlCharacter(current));
 
             if (!shouldStrip)
             {
@@ -57,6 +76,7 @@ public sealed class InputSanitizationPreProcessor(
             }
 
             builder ??= new StringBuilder(input.Length);
+
             if (i > 0 && builder.Length == 0)
             {
                 builder.Append(input, 0, i);
@@ -71,12 +91,14 @@ public sealed class InputSanitizationPreProcessor(
         return current is '\r' or '\n' or '\t';
     }
 
-    private static bool IsValidUnicode(ReadOnlySpan<char> value)
+    // ✅ FIXED METHOD
+    private static bool IsValidUnicode(string value)
     {
-        var index = 0;
+        int index = 0;
+
         while (index < value.Length)
         {
-            if (!Rune.TryGetRuneAt(value, index, out var rune))
+            if (!Rune.TryGetRuneAt(value, index, out Rune rune))
             {
                 return false;
             }

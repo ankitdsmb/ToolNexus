@@ -13,7 +13,6 @@ public sealed class ApiKeyValidator(IOptions<ApiKeyOptions> options) : IApiKeyVa
         .Where(x => !string.IsNullOrWhiteSpace(x))
         .Select(x => Encoding.UTF8.GetBytes(x.Trim()))
         .ToArray();
-
     public bool IsValid(ReadOnlySpan<char> apiKey)
     {
         if (!_options.Enabled)
@@ -26,7 +25,9 @@ public sealed class ApiKeyValidator(IOptions<ApiKeyOptions> options) : IApiKeyVa
             return false;
         }
 
-        var provided = Encoding.UTF8.GetBytes(apiKey);
+        // Convert ReadOnlySpan<char> to byte[]
+        var provided = Encoding.UTF8.GetBytes(apiKey.ToString());
+
         try
         {
             foreach (var key in _keys)

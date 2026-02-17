@@ -1,6 +1,3 @@
-using System.IO.Compression;
-using System.Reflection;
-using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -11,6 +8,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using StackExchange.Redis;
+using System.IO.Compression;
+using System.Reflection;
+using System.Threading.RateLimiting;
 using ToolNexus.Api;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Api.Options;
@@ -20,6 +20,7 @@ using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.Executors;
 using ToolNexus.Infrastructure.HealthChecks;
+using ToolNexus.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 var maxRequestBodySizeBytes = 5 * 1024 * 1024;
@@ -210,8 +211,9 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure();
 builder.Services.AddToolExecutorsFromLoadedAssemblies();
+builder.Services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -258,10 +260,8 @@ if (!string.IsNullOrWhiteSpace(redisConnectionString))
     }
 }
 
-builder.Services.AddScoped<IToolResponseCache, RedisToolResultCache>();
+builder.Services.AddScoped<IToolResultCache, RedisToolResultCache>();
 builder.Services.AddScoped<IToolExecutionClient, ToolExecutionClient>();
-
-builder.Services.AddSingleton<IToolResultCache, RedisToolResultCache>();
 
 builder.Services.AddSingleton<IHealthCheckPublisher, HealthStateLoggingPublisher>();
 builder.Services.Configure<HealthCheckPublisherOptions>(options =>

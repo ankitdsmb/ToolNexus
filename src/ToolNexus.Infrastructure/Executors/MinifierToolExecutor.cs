@@ -1,6 +1,6 @@
 using NUglify;
 using NUglify.Css;
-using ToolNexus.Domain;
+using ToolNexus.Application.Abstractions;
 
 namespace ToolNexus.Infrastructure.Executors;
 
