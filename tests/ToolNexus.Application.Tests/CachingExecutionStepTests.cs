@@ -42,7 +42,7 @@ public sealed class CachingExecutionStepTests
         var cache = new FakeToolResultCache();
         var step = new CachingExecutionStep(
             cache,
-            Options.Create(new ToolResultCacheOptions { AbsoluteExpirationSeconds = 300 }),
+            Microsoft.Extensions.Options.Options.Create(new ToolResultCacheOptions { AbsoluteExpirationSeconds = 300 }),
             NullLogger<CachingExecutionStep>.Instance);
 
         var backendCalls = 0;
