@@ -1,14 +1,9 @@
 using System.Security;
 using System.Text;
 
-namespace ToolNexus.Web.Services;
+namespace ToolNexus.Application.Services;
 
-public interface ISitemapService
-{
-    string BuildSitemap(string baseUrl);
-}
-
-public sealed class SitemapService(IManifestService manifestService) : ISitemapService
+public sealed class SitemapService(IToolCatalogService toolCatalogService) : ISitemapService
 {
     public string BuildSitemap(string baseUrl)
     {
@@ -21,8 +16,8 @@ public sealed class SitemapService(IManifestService manifestService) : ISitemapS
             $"{baseUrl}/contact-us"
         };
 
-        urls.AddRange(manifestService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));
-        urls.AddRange(manifestService.GetAllTools().Select(tool => $"{baseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}"));
+        urls.AddRange(toolCatalogService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));
+        urls.AddRange(toolCatalogService.GetAllTools().Select(tool => $"{baseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}"));
 
         var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
 

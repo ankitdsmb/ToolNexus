@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Tools.Json.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Api.IntegrationTests", "tests/ToolNexus.Api.IntegrationTests/ToolNexus.Api.IntegrationTests.csproj", "{CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Application.Tests", "tests/ToolNexus.Application.Tests/ToolNexus.Application.Tests.csproj", "{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,5 +58,9 @@ Global
 		{CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
