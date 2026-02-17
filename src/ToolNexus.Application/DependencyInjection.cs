@@ -24,10 +24,11 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddToolExecutionPipeline();
+        services.AddHttpContextAccessor();
         services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         services.AddSingleton<IToolCatalogService, ToolCatalogService>();
-        services.AddSingleton<ISitemapService, SitemapService>();
+        services.AddScoped<ISitemapService, SitemapService>();
         services.AddSingleton<IToolManifestGovernance, ToolManifestGovernanceService>();
         services.AddScoped<IToolContentService, ToolContentService>();
         services.AddHostedService<ManifestStartupValidator>();
