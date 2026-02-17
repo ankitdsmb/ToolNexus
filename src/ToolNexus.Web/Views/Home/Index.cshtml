@@ -23,38 +23,44 @@
     });
 }
 
-<section class="hero">
+<section class="hero" aria-labelledby="heroHeading">
+    <div class="hero__glow" aria-hidden="true"></div>
     <div class="hero__container">
-        <h1 class="hero__title">
-            Fast. Clean. Professional Developer Tools.
+        <p class="hero__eyebrow">Built for speed and trust</p>
+        <h1 id="heroHeading" class="hero__title">
+            Professional developer tools, instantly in your browser.
         </h1>
 
         <p class="hero__subtitle">
-            Lightweight browser-based utilities designed for performance and clarity.
+            Format, validate, convert, and optimize data in seconds with a lightweight interface engineered for performance.
         </p>
 
-        <div class="hero__search">
+        <form class="hero__search" role="search" aria-label="Find tools">
+            <label for="toolSearch" class="u-sr-only">Search featured developer tools</label>
             <input id="toolSearch"
                    class="search"
-                   placeholder="Search tools (JSON, XML, Base64...)"
+                   placeholder="Try: JSON formatter, XML validator, Base64 encoder"
                    autocomplete="off"
-                   aria-label="Search developer tools" />
-        </div>
+                   spellcheck="false" />
+        </form>
     </div>
 </section>
 
-<section class="tool-section">
-    <h2 class="section-title">Featured Tools</h2>
+<section class="tool-section" aria-labelledby="featuredToolsHeading">
+    <header class="tool-section__header">
+        <h2 id="featuredToolsHeading" class="section-title">Featured Tools</h2>
+        <p class="section-subtitle">Start with our most-used utilities for everyday engineering workflows.</p>
+    </header>
 
     <div class="grid" id="featuredGrid">
         @foreach (var tool in Model.FeaturedTools)
         {
-            <a class="card" href="/tools/@tool.Slug">
+            <a class="card" href="/tools/@tool.Slug" data-title="@tool.Title" data-description="@tool.SeoDescription">
                 <div class="card__content">
                     <h3>@tool.Title</h3>
                     <p>@tool.SeoDescription</p>
                 </div>
-                <span class="card__arrow">→</span>
+                <span class="card__arrow" aria-hidden="true">→</span>
             </a>
         }
     </div>
@@ -68,13 +74,55 @@
 
         if (!searchBox || cards.length === 0) return;
 
-        searchBox.addEventListener('input', function (e) {
-            const query = e.target.value.toLowerCase().trim();
+        const normalizedCards = cards.map((card) => {
+            const titleNode = card.querySelector('h3');
+            const descriptionNode = card.querySelector('p');
+            const title = card.dataset.title || titleNode?.textContent || '';
+            const description = card.dataset.description || descriptionNode?.textContent || '';
 
-            cards.forEach(function (card) {
-                const matches = card.innerText.toLowerCase().includes(query);
-                card.classList.toggle('is-hidden', query && !matches);
+            return { card, titleNode, descriptionNode, title, description, searchable: `${title} ${description}`.toLowerCase() };
+        });
+
+        const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        const highlightText = (node, originalText, query) => {
+            if (!node) return;
+            if (!query) {
+                node.textContent = originalText;
+                return;
+            }
+
+            const pattern = new RegExp(`(${escapeRegExp(query)})`, 'ig');
+            node.innerHTML = originalText.replace(pattern, '<mark>$1</mark>');
+        };
+
+        const debounce = (fn, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => fn(...args), delay);
+            };
+        };
+
+        const applySearch = (rawQuery) => {
+            const query = rawQuery.toLowerCase().trim();
+
+            requestAnimationFrame(() => {
+                normalizedCards.forEach((entry) => {
+                    const matches = !query || entry.searchable.includes(query);
+                    entry.card.classList.toggle('is-hidden', !matches);
+                    entry.card.setAttribute('aria-hidden', matches ? 'false' : 'true');
+
+                    highlightText(entry.titleNode, entry.title, query);
+                    highlightText(entry.descriptionNode, entry.description, query);
+                });
             });
+        };
+
+        const debouncedSearch = debounce(applySearch, 250);
+
+        searchBox.addEventListener('input', (event) => {
+            debouncedSearch(event.target.value || '');
         });
     })();
 </script>
