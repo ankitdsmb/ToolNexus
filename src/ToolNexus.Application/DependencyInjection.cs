@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
+using ToolNexus.Application.Services.Pipeline;
 using ToolNexus.Domain;
 
 namespace ToolNexus.Application;
@@ -19,6 +20,7 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.KeyPrefix), "ToolResultCache:KeyPrefix is required.")
             .ValidateOnStart();
 
+        services.AddToolExecutionPipeline();
         services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         services.AddSingleton<IToolCatalogService, ToolCatalogService>();

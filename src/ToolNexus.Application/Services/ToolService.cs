@@ -1,13 +1,16 @@
+using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
-using ToolNexus.Domain;
+using ToolNexus.Application.Services.Pipeline;
 
 namespace ToolNexus.Application.Services;
 
 public sealed class ToolService(
-    IToolExecutionClient executionClient,
-    IToolResponseCache responseCache) : IToolService
+    IToolExecutionPipeline executionPipeline,
+    ILogger<ToolService> logger) : IToolService
 {
-    public async Task<ToolExecutionResponse> ExecuteAsync(ToolExecutionRequest request, CancellationToken cancellationToken = default)
+    public async Task<ToolExecutionResponse> ExecuteAsync(
+        ToolExecutionRequest request,
+        CancellationToken cancellationToken = default)
     {
         var validationError = Validate(request);
         if (validationError is not null)
@@ -18,58 +21,44 @@ public sealed class ToolService(
         var normalizedSlug = request!.Slug.Trim().ToLowerInvariant();
         var normalizedAction = request.Action.Trim().ToLowerInvariant();
 
-        var cachedResponse = await responseCache.GetAsync(normalizedSlug, normalizedAction, request.Input, cancellationToken);
-        if (cachedResponse is not null)
+        try
         {
-            return cachedResponse;
+            return await executionPipeline.ExecuteAsync(
+                normalizedSlug,
+                normalizedAction,
+                request.Input,
+                request.Options,
+                cancellationToken);
         }
-
-        var options = request.Options is null
-            ? null
-            : new Dictionary<string, string>(request.Options, StringComparer.OrdinalIgnoreCase);
-
-        var clientResult = await executionClient.ExecuteAsync(
-            normalizedSlug,
-            new ToolRequest(normalizedAction, request.Input, options),
-            cancellationToken);
-
-        if (!clientResult.Found)
+        catch (Exception ex)
         {
-            return new ToolExecutionResponse(false, string.Empty, $"Tool '{request.Slug}' not found.", true);
+            // No sensitive input logged
+            logger.LogError(
+                ex,
+                "Unhandled tool execution error for tool {Slug} action {Action}.",
+                normalizedSlug,
+                normalizedAction);
+
+            return new ToolExecutionResponse(
+                false,
+                string.Empty,
+                "Tool execution failed unexpectedly.");
         }
-
-        var result = clientResult.Result!;
-        var response = new ToolExecutionResponse(result.Success, result.Output, result.Error);
-
-        if (response.Success)
-        {
-            await responseCache.SetAsync(normalizedSlug, normalizedAction, request.Input, response, cancellationToken);
-        }
-
-        return response;
     }
 
     private static ToolExecutionResponse? Validate(ToolExecutionRequest? request)
     {
         if (request is null)
-        {
             return new ToolExecutionResponse(false, string.Empty, "Request is required.");
-        }
 
         if (string.IsNullOrWhiteSpace(request.Slug))
-        {
             return new ToolExecutionResponse(false, string.Empty, "Tool slug is required.");
-        }
 
         if (string.IsNullOrWhiteSpace(request.Action))
-        {
             return new ToolExecutionResponse(false, string.Empty, "Action is required.");
-        }
 
         if (request.Input is null)
-        {
             return new ToolExecutionResponse(false, string.Empty, "Input is required.");
-        }
 
         return null;
     }
