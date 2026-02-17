@@ -1,6 +1,8 @@
+using System.IO.Compression;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
@@ -8,7 +10,6 @@ using Serilog;
 using Serilog.Events;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
-using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.HealthChecks;
@@ -16,9 +17,15 @@ using ToolNexus.Infrastructure.HealthChecks;
 var builder = WebApplication.CreateBuilder(args);
 var maxRequestBodySizeBytes = 5 * 1024 * 1024;
 
+/* =========================================================
+   LOGGING (Serilog)
+   ========================================================= */
+
 builder.Host.UseSerilog((context, services, configuration) =>
 {
-    var enableConsoleJson = context.Configuration.GetValue("Serilog:UseJsonConsole", !context.HostingEnvironment.IsDevelopment());
+    var enableConsoleJson = context.Configuration.GetValue(
+        "Serilog:UseJsonConsole",
+        !context.HostingEnvironment.IsDevelopment());
 
     configuration
         .ReadFrom.Configuration(context.Configuration)
@@ -28,35 +35,71 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning);
 
     if (enableConsoleJson)
-    {
         configuration.WriteTo.Console(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter());
-    }
     else
-    {
         configuration.WriteTo.Console();
-    }
 });
+
+/* =========================================================
+   KESTREL CONFIGURATION
+   ========================================================= */
 
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = maxRequestBodySizeBytes;
+    options.ConfigureEndpointDefaults(endpoint =>
+        endpoint.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
 });
+
+/* =========================================================
+   RESPONSE COMPRESSION
+   ========================================================= */
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(o =>
+    o.Level = CompressionLevel.Fastest);
+
+builder.Services.Configure<GzipCompressionProviderOptions>(o =>
+    o.Level = CompressionLevel.Fastest);
+
+/* =========================================================
+   FORM LIMIT
+   ========================================================= */
 
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = maxRequestBodySizeBytes;
 });
 
+/* =========================================================
+   MVC + PROBLEM DETAILS
+   ========================================================= */
+
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
+
+/* =========================================================
+   SWAGGER
+   ========================================================= */
+
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "ToolNexus API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "ToolNexus API",
+        Version = "v1"
+    });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Description = "JWT Authorization header using Bearer scheme.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -66,7 +109,7 @@ builder.Services.AddSwaggerGen(options =>
 
     options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
     {
-        Description = "API key header. Example: \"X-API-KEY: {key}\"",
+        Description = "API key header.",
         Name = "X-API-KEY",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey
@@ -75,10 +118,8 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
@@ -86,10 +127,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         },
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
                     Type = ReferenceType.SecurityScheme,
                     Id = "ApiKey"
                 }
@@ -99,18 +138,24 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+/* =========================================================
+   RATE LIMITING
+   ========================================================= */
+
 var ipPerMinute = builder.Configuration.GetValue("RateLimiting:IpPerMinute", 120);
 var userPerMinute = builder.Configuration.GetValue("RateLimiting:UserPerMinute", 240);
 
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.ContentType = "application/problem+json";
+
         var problem = new ProblemDetails
         {
-            Status = StatusCodes.Status429TooManyRequests,
+            Status = 429,
             Title = "Too many requests.",
             Detail = "Rate limit exceeded.",
             Type = "https://httpstatuses.com/429",
@@ -131,28 +176,12 @@ builder.Services.AddRateLimiter(options =>
                 AutoReplenishment = true
             }));
 
-    options.AddPolicy("user", context =>
-        RateLimitPartition.GetSlidingWindowLimiter(
-            context.User.Identity?.IsAuthenticated == true
-                ? context.User.Identity.Name ?? "authenticated"
-                : "anonymous",
-            _ => new SlidingWindowRateLimiterOptions
-            {
-                PermitLimit = userPerMinute,
-                Window = TimeSpan.FromMinutes(1),
-                SegmentsPerWindow = 4,
-                QueueLimit = 0,
-                AutoReplenishment = true
-            }));
-
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
-        var userKey = context.User.Identity?.IsAuthenticated == true
-            ? $"user:{context.User.Identity?.Name ?? "authenticated"}"
-            : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+        var key = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
         return RateLimitPartition.GetTokenBucketLimiter(
-            userKey,
+            key,
             _ => new TokenBucketRateLimiterOptions
             {
                 TokenLimit = 200,
@@ -164,12 +193,20 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+/* =========================================================
+   APPLICATION SERVICES
+   ========================================================= */
+
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddToolExecutorsFromLoadedAssemblies();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
-var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? builder.Configuration["REDIS_CONNECTION_STRING"];
+
+var redisConnection =
+    builder.Configuration.GetConnectionString("Redis") ??
+    builder.Configuration["REDIS_CONNECTION_STRING"];
+
 if (!string.IsNullOrWhiteSpace(redisConnection))
 {
     builder.Services.AddStackExchangeRedisCache(options =>
@@ -180,40 +217,56 @@ if (!string.IsNullOrWhiteSpace(redisConnection))
 }
 
 builder.Services.AddScoped<IToolResultCache, RedisToolResultCache>();
+
+/* =========================================================
+   HEALTH CHECKS
+   ========================================================= */
+
 builder.Services.AddHealthChecks()
     .AddCheck("memory", () =>
     {
         var gcInfo = GC.GetGCMemoryInfo();
-        var threshold = gcInfo.TotalAvailableMemoryBytes > 0 ? gcInfo.TotalAvailableMemoryBytes * 0.90 : long.MaxValue;
-        var usage = GC.GetTotalMemory(forceFullCollection: false);
+        var threshold = gcInfo.TotalAvailableMemoryBytes > 0
+            ? gcInfo.TotalAvailableMemoryBytes * 0.90
+            : long.MaxValue;
+
+        var usage = GC.GetTotalMemory(false);
 
         return usage <= threshold
-            ? HealthCheckResult.Healthy($"Memory usage within threshold. Current={usage}")
-            : HealthCheckResult.Unhealthy($"Memory usage is above threshold. Current={usage} Threshold={threshold}");
+            ? HealthCheckResult.Healthy()
+            : HealthCheckResult.Unhealthy();
     }, tags: ["ready"])
     .AddCheck<DistributedCacheHealthCheck>("distributed-cache", tags: ["ready"]);
 
+/* =========================================================
+   BUILD APP
+   ========================================================= */
+
 var app = builder.Build();
 
+/* =========================================================
+   MIDDLEWARE PIPELINE
+   ========================================================= */
+
+app.UseResponseCompression();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-app.UseSwagger();
-app.UseSwaggerUI(options =>
+if (app.Environment.IsDevelopment())
 {
-    options.RoutePrefix = "swagger";
-    options.SwaggerEndpoint("v1/swagger.json", "ToolNexus API v1");
-    options.DisplayRequestDuration();
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(o =>
+    {
+        o.RoutePrefix = "swagger";
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "ToolNexus API v1");
+        o.DisplayRequestDuration();
+    });
+}
 
 app.UseRateLimiter();
 
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    Predicate = _ => true
-});
-
+app.MapHealthChecks("/health");
 app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")
