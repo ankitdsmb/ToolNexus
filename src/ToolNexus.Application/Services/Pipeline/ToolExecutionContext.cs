@@ -20,6 +20,7 @@ public sealed class ToolExecutionContext
     public ToolManifest? Manifest { get; set; }
     public IToolExecutionPolicy? Policy { get; set; }
     public bool CacheHit { get; set; }
+    public string CacheStatus { get; set; } = "not_cacheable";
     public ToolExecutionResponse? Response { get; set; }
     public IDictionary<string, object?> Items { get; } = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 }
