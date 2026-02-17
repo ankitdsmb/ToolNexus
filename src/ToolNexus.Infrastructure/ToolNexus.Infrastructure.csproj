@@ -10,5 +10,6 @@
     <ProjectReference Include="../ToolNexus.Domain/ToolNexus.Domain.csproj" />
     <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="NUglify" Version="1.21.17" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="8.0.0" />
   </ItemGroup>
 </Project>
