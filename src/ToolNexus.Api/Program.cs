@@ -2,6 +2,8 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using ToolNexus.Api.Configuration;
 using ToolNexus.Api.Middleware;
+using ToolNexus.Application;
+using ToolNexus.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,11 +26,15 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services
-    .AddToolExecution(builder.Configuration)
+    // Application stays use-case focused; Infrastructure provides concrete implementations.
+    .AddApplication(builder.Configuration)
+    .AddInfrastructure(builder.Configuration)
     .AddCaching(builder.Configuration)
     .AddSecurity(builder.Configuration)
     .AddObservability()
     .AddRateLimiting(builder.Configuration);
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
