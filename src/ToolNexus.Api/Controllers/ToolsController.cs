@@ -7,8 +7,28 @@ namespace ToolNexus.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/tools")]
+[Route("api/tools")]
 public sealed class ToolsController(IToolService toolService) : ControllerBase
 {
+    [HttpGet("{slug}/{action}")]
+    public async Task<ActionResult<ToolExecutionResponse>> ExecuteGet(
+        [FromRoute, Required, MinLength(1)] string slug,
+        [FromRoute, Required, MinLength(1)] string action,
+        [FromQuery, Required] string input,
+        CancellationToken cancellationToken)
+    {
+        var result = await toolService.ExecuteAsync(
+            new ToolExecutionRequest(slug, action, input),
+            cancellationToken);
+
+        if (result.NotFound)
+        {
+            return NotFound(result);
+        }
+
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
     [HttpPost("{slug}")]
     public async Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute, Required, MinLength(1)] string slug,
