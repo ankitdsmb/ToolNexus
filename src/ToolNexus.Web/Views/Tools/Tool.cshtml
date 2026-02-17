@@ -36,6 +36,6 @@
 </article>
 
 @section Scripts {
-  <script type="module" src="~/js/tool-page.js"></script>
-  <script type="module" src="~/js/tools/@(Model.Tool.Slug).js"></script>
+  <script type="module" src="~/js/tool-page.min.js" asp-append-version="true"></script>
+  <script type="module" src="~/js/tools/@(Model.Tool.Slug).js" asp-append-version="true"></script>
 }

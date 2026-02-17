@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using ToolNexus.Web.Models;
 using ToolNexus.Web.Services;
 
@@ -8,6 +9,7 @@ namespace ToolNexus.Web.Controllers;
 public sealed class ToolsController(IManifestService manifestService, IConfiguration configuration) : Controller
 {
     [HttpGet("")]
+    [OutputCache(Duration = 300)]
     public IActionResult Index()
     {
         var tools = manifestService.GetAllTools();
@@ -16,6 +18,7 @@ public sealed class ToolsController(IManifestService manifestService, IConfigura
     }
 
     [HttpGet("{segment}")]
+    [OutputCache(Duration = 300, VaryByRouteValueNames = ["segment"])]
     public IActionResult Segment(string segment)
     {
         if (manifestService.CategoryExists(segment))
