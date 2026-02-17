@@ -6,10 +6,8 @@ using OpenTelemetry.Resources;
 using StackExchange.Redis;
 using System.Threading.RateLimiting;
 using ToolNexus.Api.Options;
-using ToolNexus.Application;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Pipeline;
-using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.HealthChecks;
 using ToolNexus.Infrastructure.Security;
 
@@ -17,13 +15,6 @@ namespace ToolNexus.Api.Configuration;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddToolExecution(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddApplication(configuration).AddInfrastructure(configuration);
-        services.AddHttpContextAccessor();
-        return services;
-    }
-
     public static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMemoryCache(options => options.SizeLimit = configuration.GetValue<long?>("Caching:Memory:SizeLimit") ?? 2048);
