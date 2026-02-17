@@ -8,7 +8,7 @@ public interface ISitemapService
     string BuildSitemap(string baseUrl);
 }
 
-public sealed class SitemapService(IManifestService manifestService) : ISitemapService
+public sealed class SitemapService(IManifestService manifestService, IClock clock) : ISitemapService
 {
     public string BuildSitemap(string baseUrl)
     {
@@ -24,7 +24,7 @@ public sealed class SitemapService(IManifestService manifestService) : ISitemapS
         urls.AddRange(manifestService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));
         urls.AddRange(manifestService.GetAllTools().Select(tool => $"{baseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}"));
 
-        var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var now = clock.UtcNow.ToString("yyyy-MM-dd");
 
         var xml = new StringBuilder();
         xml.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");

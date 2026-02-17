@@ -26,6 +26,7 @@ builder.Services.AddOutputCache(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<IManifestService, ManifestService>();
+builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<ISitemapService, SitemapService>();
 
 var app = builder.Build();
@@ -54,3 +55,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program;

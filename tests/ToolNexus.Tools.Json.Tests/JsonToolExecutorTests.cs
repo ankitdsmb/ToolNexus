@@ -9,6 +9,7 @@ public sealed class JsonToolExecutorTests
     private readonly JsonToolExecutor _executor = new();
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Format_ReturnsIndentedJson()
     {
         var result = await _executor.ExecuteAsync(new ToolRequest("format", "{\"a\":1}"));
@@ -18,6 +19,7 @@ public sealed class JsonToolExecutorTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Validate_ReturnsValidMessage()
     {
         var result = await _executor.ExecuteAsync(new ToolRequest("validate", "{\"x\":true}"));
@@ -27,6 +29,7 @@ public sealed class JsonToolExecutorTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task ToCsv_ReturnsCsvContent()
     {
         var input = "[{\"name\":\"Ada\",\"role\":\"Engineer\"}]";

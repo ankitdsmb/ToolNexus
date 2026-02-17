@@ -144,6 +144,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var ipPerMinute = builder.Configuration.GetValue("RateLimiting:IpPerMinute", 120);
 var userPerMinute = builder.Configuration.GetValue("RateLimiting:UserPerMinute", 240);
+var ipWindowSeconds = Math.Max(1, builder.Configuration.GetValue("RateLimiting:IpWindowSeconds", 60));
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -171,7 +172,7 @@ builder.Services.AddRateLimiter(options =>
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = ipPerMinute,
-                Window = TimeSpan.FromMinutes(1),
+                Window = TimeSpan.FromSeconds(ipWindowSeconds),
                 QueueLimit = 0,
                 AutoReplenishment = true
             }));
