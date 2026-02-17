@@ -1,22 +1,28 @@
+function sanitizeJsonInput(input) {
+  if (typeof input !== 'string') {
+    return '';
+  }
+
+  return input.trim();
+}
+
 export async function runTool(action, input) {
+  const sanitized = sanitizeJsonInput(input);
+  const payload = JSON.parse(sanitized);
+
   if (action === 'validate') {
-    JSON.parse(input);
     return 'Valid JSON';
   }
 
   if (action === 'minify') {
-    return JSON.stringify(JSON.parse(input));
+    return JSON.stringify(payload);
   }
 
-  if (action === 'to-csv') {
-    const payload = JSON.parse(input);
-    const rows = Array.isArray(payload) ? payload : [payload];
-    const headers = [...new Set(rows.flatMap(r => Object.keys(r)))];
-    const body = rows.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(','));
-    return [headers.join(','), ...body].join('\n');
+  if (action === 'format') {
+    return JSON.stringify(payload, null, 2);
   }
 
-  return JSON.stringify(JSON.parse(input), null, 2);
+  throw new Error(`Action '${action}' is not supported for client-side execution.`);
 }
 
 window.ToolNexusModules = window.ToolNexusModules || {};
