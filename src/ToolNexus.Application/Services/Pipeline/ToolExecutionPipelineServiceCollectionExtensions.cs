@@ -10,6 +10,7 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddScoped<IToolExecutionPipeline, ToolExecutionPipeline>();
         services.AddSingleton<IToolConcurrencyLimiter, InMemoryToolConcurrencyLimiter>();
         services.AddSingleton<ToolExecutionMetrics>();
+        services.AddSingleton<IToolExecutionResiliencePipelineProvider, ToolExecutionResiliencePipelineProvider>();
 
         services.AddScoped<IApiToolExecutionStrategy, ApiToolExecutionStrategy>();
         services.AddScoped<IClientToolExecutionStrategy, NoOpClientExecutionStrategy>();

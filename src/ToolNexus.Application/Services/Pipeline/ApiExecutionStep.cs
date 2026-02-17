@@ -12,7 +12,7 @@ public sealed class ApiExecutionStep(IApiToolExecutionStrategy strategy) : ITool
     {
         if (!context.Items.ContainsKey(ResponseContextKey))
         {
-            context.Items[ResponseContextKey] = await strategy.ExecuteAsync(context.ToolId, context.Action, context.Input, cancellationToken);
+            context.Items[ResponseContextKey] = await strategy.ExecuteAsync(context.ToolId, context.Action, context.Input, context.Policy, cancellationToken);
         }
 
         return await next(context, cancellationToken);
