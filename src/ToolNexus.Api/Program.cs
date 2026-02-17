@@ -188,14 +188,16 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseRateLimiter();
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "ToolNexus API v1");
+    options.RoutePrefix = "swagger";
+    options.SwaggerEndpoint("v1/swagger.json", "ToolNexus API v1");
     options.DisplayRequestDuration();
 });
+
+app.UseRateLimiter();
 
 app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {

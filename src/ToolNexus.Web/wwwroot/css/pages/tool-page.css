@@ -1,0 +1,125 @@
+.tool-page {
+  display: grid;
+  gap: var(--md-space-5);
+}
+
+.tool-page__heading h1 {
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.tool-page__heading p {
+  margin-top: var(--md-space-2);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.tool-panel {
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-radius-lg);
+  background: var(--md-sys-color-surface-container);
+  padding: var(--md-space-4);
+  display: grid;
+  gap: var(--md-space-3);
+}
+
+.tool-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--md-space-3);
+  align-items: center;
+}
+
+.tool-controls select,
+.tool-btn {
+  border-radius: var(--md-radius-md);
+  border: 1px solid var(--md-sys-color-outline);
+  padding: 0.6rem 0.9rem;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.tool-btn {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tool-btn--primary {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border-color: transparent;
+}
+
+.tool-btn--primary[aria-busy="true"] {
+  opacity: 0.8;
+}
+
+.tool-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.tool-run-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-space-2);
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid color-mix(in srgb, var(--md-sys-color-primary) 22%, transparent);
+  border-top-color: var(--md-sys-color-primary);
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+.spinner[hidden] {
+  display: none;
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--md-space-4);
+}
+
+.editor-field {
+  display: grid;
+  gap: var(--md-space-2);
+}
+
+.editor-label {
+  font-size: 0.9rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.editor-field .CodeMirror {
+  height: clamp(16rem, 45vh, 28rem);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-radius-md);
+}
+
+.sample-panel {
+  border: 1px dashed var(--md-sys-color-outline);
+  border-radius: var(--md-radius-md);
+  background: var(--md-sys-color-surface);
+  padding: var(--md-space-3);
+}
+
+.sample-panel pre {
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+@media (min-width: 920px) {
+  .editor-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}

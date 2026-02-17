@@ -15,13 +15,18 @@
     });
 }
 
-<h1>All Tools</h1>
+<section class="u-stack">
+  <h1>All Tools</h1>
+  <p class="u-muted">Choose a utility by category or jump directly into a tool.</p>
+</section>
+
 <div class="chips">
   @foreach (var category in Model.Categories)
   {
     <a class="chip" href="/tools/@category">@category</a>
   }
 </div>
+
 <div class="grid">
   @foreach (var tool in Model.Tools)
   {
