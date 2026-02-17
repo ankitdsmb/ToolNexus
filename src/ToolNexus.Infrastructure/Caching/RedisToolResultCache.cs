@@ -63,8 +63,8 @@ public sealed class RedisToolResultCache(
                 return null;
             }
 
-            memoryCache.Set(normalizedKey, cached,
-                TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
+            var memoryEntryOptions = BuildMemoryEntryOptions(cached, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
+            memoryCache.Set(normalizedKey, cached, memoryEntryOptions);
 
             RegisterSuccess();
             return cached;
@@ -87,7 +87,8 @@ public sealed class RedisToolResultCache(
 
         var normalizedKey = BuildKey(key);
 
-        memoryCache.Set(normalizedKey, item, ttl);
+        var memoryEntryOptions = BuildMemoryEntryOptions(item, ttl);
+        memoryCache.Set(normalizedKey, item, memoryEntryOptions);
 
         if (IsCircuitOpen())
         {
@@ -174,5 +175,17 @@ public sealed class RedisToolResultCache(
             : _options.KeyPrefix.Trim();
 
         return $"{prefix}:{hash}";
+    }
+
+    private static MemoryCacheEntryOptions BuildMemoryEntryOptions(ToolResultCacheItem item, TimeSpan ttl)
+    {
+        // Size is tracked in bytes so MemoryCache SizeLimit is consistently enforced.
+        var payload = JsonSerializer.Serialize(item);
+        var size = Math.Max(1, Encoding.UTF8.GetByteCount(payload));
+        return new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = ttl,
+            Size = size
+        };
     }
 }

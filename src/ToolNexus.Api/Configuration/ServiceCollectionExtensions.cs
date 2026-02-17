@@ -17,7 +17,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMemoryCache(options => options.SizeLimit = configuration.GetValue<long?>("Caching:Memory:SizeLimit") ?? 2048);
+        var memorySizeLimit = configuration.GetValue<long?>("Caching:Memory:SizeLimit") ?? 2048;
+        if (memorySizeLimit <= 0)
+        {
+            throw new InvalidOperationException("Caching:Memory:SizeLimit must be a positive value.");
+        }
+
+        services.AddMemoryCache(options => options.SizeLimit = memorySizeLimit);
         services.AddDistributedMemoryCache();
 
         var redisConnectionString = configuration.GetConnectionString("Redis") ?? configuration["REDIS_CONNECTION_STRING"];
