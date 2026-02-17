@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -23,7 +24,9 @@ public static class ServiceCollectionExtensions
             throw new InvalidOperationException("Caching:Memory:SizeLimit must be a positive value.");
         }
 
+        // Enforce bounded in-process cache growth. Each entry must set MemoryCacheEntryOptions.Size.
         services.AddMemoryCache(options => options.SizeLimit = memorySizeLimit);
+        services.AddOptions<MemoryCacheOptions>().Configure(options => options.SizeLimit ??= memorySizeLimit);
         services.AddDistributedMemoryCache();
 
         var redisConnectionString = configuration.GetConnectionString("Redis") ?? configuration["REDIS_CONNECTION_STRING"];

@@ -38,6 +38,22 @@ public sealed class CachingExecutionStepTests
     }
 
     [Fact]
+    public void CacheKeyBuilder_BuildFromNormalized_WithEquivalentData_IsDeterministic()
+    {
+        var builder = new CacheKeyBuilder();
+        var normalizedOptions = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["indent"] = "2",
+            ["sort"] = "true"
+        };
+
+        var keyA = builder.BuildFromNormalized("json", "format", "{\"name\":\"toolnexus\"}", normalizedOptions);
+        var keyB = builder.BuildFromNormalized("json", "format", "{\"name\":\"toolnexus\"}", normalizedOptions);
+
+        Assert.Equal(keyA, keyB);
+    }
+
+    [Fact]
     public async Task InvokeAsync_OnConcurrentMisses_UsesSingleFlightAndCallsBackendOnce()
     {
         var cache = new FakeToolResultCache();
@@ -50,7 +66,13 @@ public sealed class CachingExecutionStepTests
         Task<ToolExecutionResponse> Backend(ToolExecutionContext _, CancellationToken cancellationToken)
         {
             Interlocked.Increment(ref backendCalls);
-            return Task.FromResult(new ToolExecutionResponse(true, "payload"));
+            return SimulateBackendAsync(cancellationToken);
+        }
+
+        static async Task<ToolExecutionResponse> SimulateBackendAsync(CancellationToken cancellationToken)
+        {
+            await Task.Delay(50, cancellationToken);
+            return new ToolExecutionResponse(true, "payload");
         }
 
         var contexts = Enumerable.Range(0, 20)
