@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
@@ -27,7 +28,9 @@ public sealed class CachingExecutionStep(
             return await next(context, cancellationToken);
         }
 
-        var cacheKey = CacheKeyBuilder.Build(context.ToolId, context.Action, context.Input, context.Options);
+        var cacheOptions = context.Options as IReadOnlyDictionary<string, string>
+            ?? new ReadOnlyDictionary<string, string>(context.Options);
+        var cacheKey = CacheKeyBuilder.Build(context.ToolId, context.Action, context.Input, cacheOptions);
 
         var cached = await TryGetCachedAsync(cacheKey, context, cancellationToken);
         if (cached is not null)
