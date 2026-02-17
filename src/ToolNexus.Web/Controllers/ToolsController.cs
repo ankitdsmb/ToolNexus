@@ -1,19 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using ToolNexus.Web.Models;
-using ToolNexus.Web.Services;
+using ToolNexus.Application.Services;
 
 namespace ToolNexus.Web.Controllers;
 
 [Route("tools")]
-public sealed class ToolsController(IManifestService manifestService, IConfiguration configuration) : Controller
+public sealed class ToolsController(IToolCatalogService toolCatalogService, IConfiguration configuration) : Controller
 {
     [HttpGet("")]
     [OutputCache(Duration = 300)]
     public IActionResult Index()
     {
-        var tools = manifestService.GetAllTools();
-        var categories = manifestService.GetAllCategories();
+        var tools = toolCatalogService.GetAllTools();
+        var categories = toolCatalogService.GetAllCategories();
         return View(new ToolIndexViewModel { Tools = tools, Categories = categories });
     }
 
@@ -21,13 +21,13 @@ public sealed class ToolsController(IManifestService manifestService, IConfigura
     [OutputCache(Duration = 300, VaryByRouteValueNames = ["segment"])]
     public IActionResult Segment(string segment)
     {
-        if (manifestService.CategoryExists(segment))
+        if (toolCatalogService.CategoryExists(segment))
         {
-            var tools = manifestService.GetByCategory(segment);
+            var tools = toolCatalogService.GetByCategory(segment);
             return View("Category", new ToolCategoryViewModel { Category = segment, Tools = tools });
         }
 
-        var tool = manifestService.GetBySlug(segment);
+        var tool = toolCatalogService.GetBySlug(segment);
         if (tool is null)
         {
             return NotFound();
