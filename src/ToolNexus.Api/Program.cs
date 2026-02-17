@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using ToolNexus.Api.Configuration;
+using ToolNexus.Api.Diagnostics;
 using ToolNexus.Api.Filters;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
@@ -9,17 +10,15 @@ using ToolNexus.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenLocalhost(5163);
-    options.ListenLocalhost(7163, listenOptions => listenOptions.UseHttps());
-});
-
 builder.Host.UseSerilog((context, cfg) => cfg.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers(options =>
 {
     options.Filters.AddService<RedactingLoggingExceptionFilter>();
+});
+builder.Services.ConfigureApiBehaviorOptions(options =>
+{
+    options.SuppressModelStateInvalidFilter = false;
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
@@ -54,25 +53,16 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services
-    // Application stays use-case focused; Infrastructure provides concrete implementations.
     .AddApplication(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
-    // Registers distributed + memory cache with MemoryCacheOptions.SizeLimit from configuration.
     .AddCaching(builder.Configuration)
     .AddSecurity(builder.Configuration)
     .AddObservability(builder.Configuration)
-    .AddRateLimiting(builder.Configuration);
+    .AddRateLimiting(builder.Configuration)
+    .AddApiCors(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("ToolNexusWeb", policy =>
-    {
-        policy.WithOrigins("https://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+builder.Services.AddHostedService<EndpointDiagnosticsHostedService>();
 
 var app = builder.Build();
 
@@ -82,7 +72,17 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<SanitizeErrorMiddleware>();
-app.UseCors("ToolNexusWeb");
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api/tools", out var remaining))
+    {
+        context.Request.Path = $"/api/v1/tools{remaining}";
+    }
+
+    await next();
+});
+app.UseRouting();
+app.UseCors(ApiCorsOptions.PolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -100,7 +100,6 @@ app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.
     Predicate = check => check.Tags.Contains("ready")
 });
 app.MapPrometheusScrapingEndpoint("/metrics");
-
 app.MapControllers().RequireRateLimiting("ip");
 
 app.Run();

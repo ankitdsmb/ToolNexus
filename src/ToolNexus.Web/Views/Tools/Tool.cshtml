@@ -121,7 +121,8 @@
 @section Scripts {
   <script>
     window.ToolNexusConfig = {
-      apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl))
+      apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
+      toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix))
     };
   </script>
   <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
