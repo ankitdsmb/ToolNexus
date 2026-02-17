@@ -7,7 +7,7 @@
     ViewData["Keywords"] = Model.Seo.Keywords;
 }
 
-<article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
+<article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
   <header class="tool-page__heading">
     <div>
       <h1>@Model.Tool.Title</h1>
@@ -119,6 +119,11 @@
 </article>
 
 @section Scripts {
+  <script>
+    window.ToolNexusConfig = {
+      apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl))
+    };
+  </script>
   <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
   <script type="module" src="~/js/tools/@(Model.Tool.Slug).js" asp-append-version="true"></script>
 }

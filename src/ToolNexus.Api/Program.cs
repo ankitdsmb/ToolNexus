@@ -58,6 +58,15 @@ builder.Services
     .AddRateLimiting(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("WebAppPolicy", policy =>
+    {
+        policy.WithOrigins("https://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -67,6 +76,7 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<SanitizeErrorMiddleware>();
+app.UseCors("WebAppPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();

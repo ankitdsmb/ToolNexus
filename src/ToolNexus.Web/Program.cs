@@ -3,21 +3,9 @@ using Microsoft.AspNetCore.StaticFiles;
 using System.IO.Compression;
 using ToolNexus.Application;
 using ToolNexus.Infrastructure;
+using ToolNexus.Web.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-
-/* =========================================================
-   KESTREL CONFIG
-   ========================================================= */
-
-//builder.WebHost.ConfigureKestrel(options =>
-//{
-//    options.ListenAnyIP(5163); // HTTP
-//    options.ListenAnyIP(7163, listenOptions =>
-//    {
-//        listenOptions.UseHttps(); // HTTPS
-//    });
-//});
 
 /* =========================================================
    RESPONSE COMPRESSION
@@ -51,6 +39,7 @@ builder.Services.AddOutputCache(options =>
    ========================================================= */
 
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
@@ -59,7 +48,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://localhost:5173")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
