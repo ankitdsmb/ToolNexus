@@ -25,6 +25,8 @@ public sealed class CachingExecutionStep(
     {
         if (context.Manifest?.IsCacheable != true)
         {
+            context.CacheHit = false;
+            context.CacheStatus = "not_cacheable";
             return await next(context, cancellationToken);
         }
 
@@ -94,10 +96,14 @@ public sealed class CachingExecutionStep(
             var cached = await toolResultCache.GetAsync(cacheKey, cancellationToken);
             if (cached is null)
             {
+                context.CacheHit = false;
+                context.CacheStatus = "miss";
                 return null;
             }
 
             context.Items[CacheHitContextKey] = true;
+            context.CacheHit = true;
+            context.CacheStatus = "hit";
             return new ToolExecutionResponse(cached.Success, cached.Output, cached.Error);
         }
         catch (Exception ex)

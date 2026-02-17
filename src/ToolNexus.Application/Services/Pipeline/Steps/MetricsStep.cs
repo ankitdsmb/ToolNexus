@@ -9,11 +9,7 @@ public sealed class MetricsStep(ToolExecutionMetrics metrics) : IToolExecutionSt
 
     public async Task<ToolExecutionResponse> InvokeAsync(ToolExecutionContext context, ToolExecutionDelegate next, CancellationToken cancellationToken)
     {
-        var tags = new KeyValuePair<string, object?>[]
-        {
-            new("tool.slug", context.ToolId),
-            new("tool.action", context.Action)
-        };
+        var tags = CreateTags(context);
 
         var start = Stopwatch.GetTimestamp();
         metrics.Requests.Add(1, tags);
@@ -26,11 +22,25 @@ public sealed class MetricsStep(ToolExecutionMetrics metrics) : IToolExecutionSt
             metrics.Errors.Add(1, tags);
         }
 
-        if (context.CacheHit)
+        if (context.CacheStatus == "hit")
         {
             metrics.CacheHits.Add(1, tags);
         }
+        else if (context.CacheStatus == "miss")
+        {
+            metrics.CacheMisses.Add(1, tags);
+        }
 
         return response;
+    }
+
+    private static KeyValuePair<string, object?>[] CreateTags(ToolExecutionContext context)
+    {
+        return
+        [
+            new("tool_slug", context.ToolId),
+            new("action", context.Action),
+            new("cache_status", context.CacheStatus)
+        ];
     }
 }

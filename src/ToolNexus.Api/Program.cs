@@ -54,7 +54,7 @@ builder.Services
     // Registers distributed + memory cache with MemoryCacheOptions.SizeLimit from configuration.
     .AddCaching(builder.Configuration)
     .AddSecurity(builder.Configuration)
-    .AddObservability()
+    .AddObservability(builder.Configuration)
     .AddRateLimiting(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();

@@ -29,7 +29,6 @@ public static class ServiceCollectionExtensions
             throw new InvalidOperationException("Caching:Memory:SizeLimit must be a positive value.");
         }
 
-        // Enforce bounded in-process cache growth. Each entry must set MemoryCacheEntryOptions.Size.
         services.AddMemoryCache(options => options.SizeLimit = memorySizeLimit);
         services.AddOptions<MemoryCacheOptions>().Configure(options => options.SizeLimit ??= memorySizeLimit);
         services.AddDistributedMemoryCache();
@@ -88,15 +87,24 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddObservability(this IServiceCollection services)
+    public static IServiceCollection AddObservability(this IServiceCollection services, IConfiguration configuration)
     {
+        var serviceName = configuration.GetValue<string>("OpenTelemetry:ServiceName") ?? "ToolNexus.Api";
+
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService("ToolNexus.Api"))
+            .ConfigureResource(r => r.AddService(serviceName))
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation();
                 metrics.AddHttpClientInstrumentation();
                 metrics.AddMeter(ToolExecutionMetrics.MeterName);
+                metrics.AddView("tool_latency_ms", new ExplicitBucketHistogramConfiguration
+                {
+                    Boundaries =
+                    [
+                        5, 10, 25, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000, 5000
+                    ]
+                });
                 metrics.AddPrometheusExporter();
             });
 

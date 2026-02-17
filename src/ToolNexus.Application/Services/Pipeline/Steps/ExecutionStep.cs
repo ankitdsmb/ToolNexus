@@ -10,7 +10,7 @@ public sealed class ExecutionStep(IApiToolExecutionStrategy strategy) : IToolExe
     {
         if (context.Response is null)
         {
-            context.Response = await strategy.ExecuteAsync(context.ToolId, context.Action, context.Input, cancellationToken);
+            context.Response = await strategy.ExecuteAsync(context.ToolId, context.Action, context.Input, context.Policy, cancellationToken);
         }
 
         return await next(context, cancellationToken);
