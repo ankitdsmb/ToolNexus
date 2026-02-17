@@ -6,7 +6,7 @@
     ViewData["JsonLd"] = Model.Seo.JsonLd;
 }
 
-<article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl">
+<article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
   <header class="tool-page__heading">
     <h1>@Model.Tool.Title</h1>
     <p>@Model.Tool.SeoDescription</p>

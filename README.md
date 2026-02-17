@@ -137,3 +137,24 @@ Terminal 3 (tests):
 ```bash
 dotnet test tests/ToolNexus.Tools.Json.Tests
 ```
+
+## Client-Side Execution Classification
+
+ToolNexus keeps server-side execution as the default path and enables optional client-side execution only for explicitly classified safe actions.
+
+- A tool declares safe actions through `clientSafeActions` in `tools.manifest.json`.
+- The tool page reads that metadata and only attempts local execution for those actions.
+- Any non-safe action (or local execution failure) falls back to the existing API execution path.
+
+Current classification:
+
+| Tool slug | Client-safe actions | Server fallback |
+| --- | --- | --- |
+| `json-formatter` | `format`, `minify`, `validate` | `to-csv` and any unsupported action |
+| `base64-encode` | `encode` | any unsupported action |
+| `base64-decode` | `decode` | any unsupported action |
+
+Security controls for client execution:
+- No `eval()` usage.
+- Input sanitization is applied before local processing (null-byte stripping, Base64 format checks, JSON parse validation).
+- Unsafe or malformed input raises a controlled error and the UI can fall back to API execution when applicable.
