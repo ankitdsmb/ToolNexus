@@ -40,11 +40,80 @@ public sealed class ManifestService : IManifestService
     {
         var path = configuration["ManifestPath"] ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "../../tools.manifest.json"));
         var json = File.ReadAllText(path);
-        var manifest = JsonSerializer.Deserialize<ToolManifest>(json, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-        return manifest?.Tools ?? [];
+        var tools = TryLoadV1(json, options);
+        if (tools.Count == 0)
+        {
+            tools = TryLoadLegacy(json, options);
+        }
+
+        Validate(tools);
+        return tools;
+    }
+
+    private static List<ToolDefinition> TryLoadV1(string json, JsonSerializerOptions options)
+    {
+        var manifest = JsonSerializer.Deserialize<ToolManifestDocument>(json, options);
+        if (manifest?.Tools is null || manifest.Tools.Count == 0)
+        {
+            return [];
+        }
+
+        return manifest.Tools.Select(MapV1).ToList();
+    }
+
+    private static List<ToolDefinition> TryLoadLegacy(string json, JsonSerializerOptions options)
+    {
+        var manifest = JsonSerializer.Deserialize<LegacyToolManifestDocument>(json, options)
+            ?? throw new InvalidOperationException("Tool manifest payload is invalid.");
+
+        return manifest.Tools.Select(MapLegacy).ToList();
+    }
+
+    private static ToolDefinition MapV1(ToolManifestItem tool) => new()
+    {
+        Slug = tool.Slug,
+        Title = tool.Name,
+        Category = tool.Category,
+        Actions = tool.Actions.Select(x => x.Name).ToList(),
+        SeoTitle = string.IsNullOrWhiteSpace(tool.SeoTitle) ? tool.Name : tool.SeoTitle,
+        SeoDescription = string.IsNullOrWhiteSpace(tool.SeoDescription) ? tool.Description : tool.SeoDescription,
+        ExampleInput = tool.ExampleInput,
+        SupportsClientExecution = tool.Capabilities.SupportsClientExecution,
+        ClientSafeActions = tool.Capabilities.SupportsClientExecution
+            ? tool.Actions.Select(x => x.Name).ToList()
+            : []
+    };
+
+    private static ToolDefinition MapLegacy(LegacyToolDefinition tool) => new()
+    {
+        Slug = tool.Slug,
+        Title = tool.Title,
+        Category = tool.Category,
+        Actions = tool.Actions,
+        SeoTitle = tool.SeoTitle,
+        SeoDescription = tool.SeoDescription,
+        ExampleInput = tool.ExampleInput,
+        SupportsClientExecution = tool.ClientSafeActions.Count > 0,
+        ClientSafeActions = tool.ClientSafeActions
+    };
+
+    private static void Validate(IReadOnlyCollection<ToolDefinition> tools)
+    {
+        var slugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var tool in tools)
+        {
+            if (!slugs.Add(tool.Slug))
+            {
+                throw new InvalidOperationException($"Duplicate tool slug '{tool.Slug}' in manifest.");
+            }
+
+            if (tool.Actions.Count == 0)
+            {
+                throw new InvalidOperationException($"Tool '{tool.Slug}' has no actions.");
+            }
+        }
     }
 }

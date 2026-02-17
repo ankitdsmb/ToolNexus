@@ -8,8 +8,11 @@ namespace ToolNexus.Api.Controllers;
 [ApiController]
 [Route("api/v1/tools")]
 [Route("api/tools")]
-public sealed class ToolsController(IToolService toolService, ILogger<ToolsController> logger) : ControllerBase
+public sealed class ToolsController(IToolService toolService, IToolManifestCatalog manifestCatalog) : ControllerBase
 {
+    [HttpGet("manifest")]
+    public ActionResult<IReadOnlyCollection<ToolManifestV1>> GetManifest() => Ok(manifestCatalog.GetAll());
+
     [HttpGet("{slug}/{action}")]
     public async Task<ActionResult<ToolExecutionResponse>> ExecuteGet(
         [FromRoute, Required, MinLength(1)] string slug,
@@ -17,22 +20,8 @@ public sealed class ToolsController(IToolService toolService, ILogger<ToolsContr
         [FromQuery, Required] string input,
         CancellationToken cancellationToken)
     {
-        var result = await toolService.ExecuteAsync(
-            new ToolExecutionRequest(slug, action, input),
-            cancellationToken);
-
-        if (result.NotFound)
-        {
-            logger.LogInformation("Tool not found for slug {Slug} and action {Action}.", slug, action);
-            return NotFound(result);
-        }
-
-        if (!result.Success)
-        {
-            logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, action, result.Error);
-        }
-
-        return result.Success ? Ok(result) : BadRequest(result);
+        var result = await toolService.ExecuteAsync(new ToolExecutionRequest(slug, action, input), cancellationToken);
+        return ToHttpResponse(result);
     }
 
     [HttpPost("{slug}")]
@@ -41,27 +30,26 @@ public sealed class ToolsController(IToolService toolService, ILogger<ToolsContr
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
     {
-        if (request is null)
-        {
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid request.", detail: "Request body is required.");
-        }
-
         var result = await toolService.ExecuteAsync(
-            new ToolExecutionRequest(slug, request.Action, request.Input, request.Options),
+            new ToolExecutionRequest(slug, request?.Action ?? string.Empty, request?.Input ?? string.Empty, request?.Options),
             cancellationToken);
 
-        if (result.NotFound)
+        return ToHttpResponse(result);
+    }
+
+    private ActionResult<ToolExecutionResponse> ToHttpResponse(ToolExecutionResponse response)
+    {
+        if (response.Success)
         {
-            logger.LogInformation("Tool not found for slug {Slug} and action {Action}.", slug, request.Action);
-            return NotFound(result);
+            return Ok(response);
         }
 
-        if (!result.Success)
+        return response.Error?.Code switch
         {
-            logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, request.Action, result.Error);
-        }
-
-        return result.Success ? Ok(result) : BadRequest(result);
+            "tool_not_found" => NotFound(response),
+            "unexpected_error" => StatusCode(StatusCodes.Status500InternalServerError, response),
+            _ => BadRequest(response)
+        };
     }
 
     public sealed record ExecuteToolRequest(

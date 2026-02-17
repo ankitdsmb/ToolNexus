@@ -19,7 +19,12 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.KeyPrefix), "ToolResultCache:KeyPrefix is required.")
             .ValidateOnStart();
 
+        services.AddScoped<IToolExecutionResponseFactory, ToolExecutionResponseFactory>();
+        services.AddScoped<IToolExecutionPipeline, ToolExecutionPipeline>();
         services.AddScoped<IToolService, ToolService>();
+        services.AddScoped<IToolAnalytics, LoggerToolAnalytics>();
+        services.AddScoped<IToolManifestCatalog, ToolManifestCatalog>();
+        services.AddHostedService<ToolManifestStartupValidationService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         return services;
     }

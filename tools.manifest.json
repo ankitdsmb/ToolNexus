@@ -1,299 +1,587 @@
 {
+  "schemaVersion": "1.0",
   "tools": [
     {
       "slug": "json-formatter",
-      "title": "JSON Formatter",
+      "name": "JSON Formatter",
+      "description": "Format, minify, validate, and convert JSON to CSV quickly in your browser.",
       "category": "json",
       "actions": [
-        "format",
-        "minify",
-        "validate",
-        "to-csv"
+        {
+          "name": "format",
+          "description": "Executes 'format'",
+          "isDefault": true
+        },
+        {
+          "name": "minify",
+          "description": "Executes 'minify'",
+          "isDefault": false
+        },
+        {
+          "name": "validate",
+          "description": "Executes 'validate'",
+          "isDefault": false
+        },
+        {
+          "name": "to-csv",
+          "description": "Executes 'to-csv'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": true,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "JSON Formatter Online | ToolNexus",
       "seoDescription": "Format, minify, validate, and convert JSON to CSV quickly in your browser.",
-      "exampleInput": "{\"name\":\"Ada\",\"skills\":[\"C#\",\"TypeScript\"]}",
-      "clientSafeActions": [
-        "format",
-        "minify",
-        "validate"
-      ]
+      "exampleInput": "{\"name\":\"Ada\",\"skills\":[\"C#\",\"TypeScript\"]}"
     },
     {
       "slug": "json-validator",
-      "title": "JSON Validator",
+      "name": "JSON Validator",
+      "description": "Validate JSON and pinpoint structural errors instantly.",
       "category": "json",
       "actions": [
-        "validate"
+        {
+          "name": "validate",
+          "description": "Executes 'validate'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "JSON Validator Online | ToolNexus",
       "seoDescription": "Validate JSON and pinpoint structural errors instantly.",
       "exampleInput": "{\"valid\": true}"
     },
     {
       "slug": "json-to-xml",
-      "title": "JSON to XML",
+      "name": "JSON to XML",
+      "description": "Transform JSON payloads into XML format.",
       "category": "json",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "JSON to XML Converter | ToolNexus",
       "seoDescription": "Transform JSON payloads into XML format.",
       "exampleInput": "{\"order\":{\"id\":101}}"
     },
     {
       "slug": "xml-to-json",
-      "title": "XML to JSON",
+      "name": "XML to JSON",
+      "description": "Convert XML documents to JSON with one click.",
       "category": "xml",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "XML to JSON Converter | ToolNexus",
       "seoDescription": "Convert XML documents to JSON with one click.",
       "exampleInput": "<order><id>101</id></order>"
     },
     {
       "slug": "xml-formatter",
-      "title": "XML Formatter",
+      "name": "XML Formatter",
+      "description": "Pretty-print and validate XML snippets quickly.",
       "category": "xml",
       "actions": [
-        "format",
-        "minify",
-        "validate"
+        {
+          "name": "format",
+          "description": "Executes 'format'",
+          "isDefault": true
+        },
+        {
+          "name": "minify",
+          "description": "Executes 'minify'",
+          "isDefault": false
+        },
+        {
+          "name": "validate",
+          "description": "Executes 'validate'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "XML Formatter Online | ToolNexus",
       "seoDescription": "Pretty-print and validate XML snippets quickly.",
       "exampleInput": "<root><item>1</item></root>"
     },
     {
       "slug": "csv-to-json",
-      "title": "CSV to JSON",
+      "name": "CSV to JSON",
+      "description": "Turn CSV rows into structured JSON output.",
       "category": "csv",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "CSV to JSON Converter | ToolNexus",
       "seoDescription": "Turn CSV rows into structured JSON output.",
       "exampleInput": "name,role\nAda,Engineer"
     },
     {
       "slug": "json-to-csv",
-      "title": "JSON to CSV",
+      "name": "JSON to CSV",
+      "description": "Export JSON arrays as CSV data.",
       "category": "csv",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "JSON to CSV Converter | ToolNexus",
       "seoDescription": "Export JSON arrays as CSV data.",
       "exampleInput": "[{\"name\":\"Ada\",\"role\":\"Engineer\"}]"
     },
     {
       "slug": "csv-viewer",
-      "title": "CSV Viewer",
+      "name": "CSV Viewer",
+      "description": "Preview CSV files in a developer-friendly table.",
       "category": "csv",
       "actions": [
-        "preview"
+        {
+          "name": "preview",
+          "description": "Executes 'preview'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "CSV Viewer Online | ToolNexus",
       "seoDescription": "Preview CSV files in a developer-friendly table.",
       "exampleInput": "city,country\nParis,France"
     },
     {
       "slug": "base64-encode",
-      "title": "Base64 Encode",
+      "name": "Base64 Encode",
+      "description": "Encode plain text to Base64 safely.",
       "category": "encoding",
       "actions": [
-        "encode"
+        {
+          "name": "encode",
+          "description": "Executes 'encode'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": true,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "Base64 Encoder | ToolNexus",
       "seoDescription": "Encode plain text to Base64 safely.",
-      "exampleInput": "hello-toolnexus",
-      "clientSafeActions": [
-        "encode"
-      ]
+      "exampleInput": "hello-toolnexus"
     },
     {
       "slug": "base64-decode",
-      "title": "Base64 Decode",
+      "name": "Base64 Decode",
+      "description": "Decode Base64 strings to plain text.",
       "category": "encoding",
       "actions": [
-        "decode"
+        {
+          "name": "decode",
+          "description": "Executes 'decode'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": true,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "Base64 Decoder | ToolNexus",
       "seoDescription": "Decode Base64 strings to plain text.",
-      "exampleInput": "aGVsbG8tdG9vbG5leHVz",
-      "clientSafeActions": [
-        "decode"
-      ]
+      "exampleInput": "aGVsbG8tdG9vbG5leHVz"
     },
     {
       "slug": "url-encode",
-      "title": "URL Encode",
+      "name": "URL Encode",
+      "description": "Percent-encode unsafe URL characters.",
       "category": "encoding",
       "actions": [
-        "encode"
+        {
+          "name": "encode",
+          "description": "Executes 'encode'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "URL Encoder | ToolNexus",
       "seoDescription": "Percent-encode unsafe URL characters.",
       "exampleInput": "https://example.com?q=hello world"
     },
     {
       "slug": "url-decode",
-      "title": "URL Decode",
+      "name": "URL Decode",
+      "description": "Decode encoded URL strings.",
       "category": "encoding",
       "actions": [
-        "decode"
+        {
+          "name": "decode",
+          "description": "Executes 'decode'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "URL Decoder | ToolNexus",
       "seoDescription": "Decode encoded URL strings.",
       "exampleInput": "https%3A%2F%2Fexample.com%3Fq%3Dhello%20world"
     },
     {
       "slug": "html-formatter",
-      "title": "HTML Formatter",
+      "name": "HTML Formatter",
+      "description": "Beautify or minify HTML snippets instantly.",
       "category": "html",
       "actions": [
-        "format",
-        "minify"
+        {
+          "name": "format",
+          "description": "Executes 'format'",
+          "isDefault": true
+        },
+        {
+          "name": "minify",
+          "description": "Executes 'minify'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "HTML Formatter | ToolNexus",
       "seoDescription": "Beautify or minify HTML snippets instantly.",
       "exampleInput": "<div><p>Hello</p></div>"
     },
     {
       "slug": "markdown-to-html",
-      "title": "Markdown to HTML",
+      "name": "Markdown to HTML",
+      "description": "Render Markdown as clean HTML.",
       "category": "html",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "Markdown to HTML | ToolNexus",
       "seoDescription": "Render Markdown as clean HTML.",
       "exampleInput": "# ToolNexus"
     },
     {
       "slug": "html-to-markdown",
-      "title": "HTML to Markdown",
+      "name": "HTML to Markdown",
+      "description": "Convert HTML markup to readable Markdown.",
       "category": "html",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "HTML to Markdown | ToolNexus",
       "seoDescription": "Convert HTML markup to readable Markdown.",
       "exampleInput": "<h1>ToolNexus</h1>"
     },
     {
       "slug": "css-minifier",
-      "title": "CSS Minifier",
+      "name": "CSS Minifier",
+      "description": "Minify CSS for production builds.",
       "category": "minify",
       "actions": [
-        "minify",
-        "format"
+        {
+          "name": "minify",
+          "description": "Executes 'minify'",
+          "isDefault": true
+        },
+        {
+          "name": "format",
+          "description": "Executes 'format'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "CSS Minifier Online | ToolNexus",
       "seoDescription": "Minify CSS for production builds.",
       "exampleInput": "body { color: #fff; }"
     },
     {
       "slug": "js-minifier",
-      "title": "JavaScript Minifier",
+      "name": "JavaScript Minifier",
+      "description": "Compress JavaScript while preserving behavior.",
       "category": "minify",
       "actions": [
-        "minify",
-        "format"
+        {
+          "name": "minify",
+          "description": "Executes 'minify'",
+          "isDefault": true
+        },
+        {
+          "name": "format",
+          "description": "Executes 'format'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "JS Minifier Online | ToolNexus",
       "seoDescription": "Compress JavaScript while preserving behavior.",
       "exampleInput": "function add(a, b) { return a + b; }"
     },
     {
       "slug": "sql-formatter",
-      "title": "SQL Formatter",
+      "name": "SQL Formatter",
+      "description": "Format SQL queries for readability.",
       "category": "sql",
       "actions": [
-        "format",
-        "minify"
+        {
+          "name": "format",
+          "description": "Executes 'format'",
+          "isDefault": true
+        },
+        {
+          "name": "minify",
+          "description": "Executes 'minify'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "SQL Formatter | ToolNexus",
       "seoDescription": "Format SQL queries for readability.",
       "exampleInput": "select id,name from users where active=1"
     },
     {
       "slug": "regex-tester",
-      "title": "Regex Tester",
+      "name": "Regex Tester",
+      "description": "Test regular expressions with instant matches.",
       "category": "text",
       "actions": [
-        "test"
+        {
+          "name": "test",
+          "description": "Executes 'test'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "Regex Tester | ToolNexus",
       "seoDescription": "Test regular expressions with instant matches.",
       "exampleInput": "^\\w+@\\w+\\.com$"
     },
     {
       "slug": "text-diff",
-      "title": "Text Diff",
+      "name": "Text Diff",
+      "description": "Compare two text blocks and find differences.",
       "category": "text",
       "actions": [
-        "compare"
+        {
+          "name": "compare",
+          "description": "Executes 'compare'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "Text Diff Checker | ToolNexus",
       "seoDescription": "Compare two text blocks and find differences.",
       "exampleInput": "left: hello\nright: hallo"
     },
     {
       "slug": "uuid-generator",
-      "title": "UUID Generator",
+      "name": "UUID Generator",
+      "description": "Generate random UUIDs for development.",
       "category": "utility",
       "actions": [
-        "generate"
+        {
+          "name": "generate",
+          "description": "Executes 'generate'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "UUID Generator | ToolNexus",
       "seoDescription": "Generate random UUIDs for development.",
       "exampleInput": "count=5"
     },
     {
       "slug": "case-converter",
-      "title": "Case Converter",
+      "name": "Case Converter",
+      "description": "Convert text between upper, lower, and title case.",
       "category": "text",
       "actions": [
-        "upper",
-        "lower",
-        "title"
+        {
+          "name": "upper",
+          "description": "Executes 'upper'",
+          "isDefault": true
+        },
+        {
+          "name": "lower",
+          "description": "Executes 'lower'",
+          "isDefault": false
+        },
+        {
+          "name": "title",
+          "description": "Executes 'title'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "Case Converter | ToolNexus",
       "seoDescription": "Convert text between upper, lower, and title case.",
       "exampleInput": "tool nexus"
     },
     {
       "slug": "html-entities",
-      "title": "HTML Entities Encode/Decode",
+      "name": "HTML Entities Encode/Decode",
+      "description": "Encode and decode HTML entities.",
       "category": "encoding",
       "actions": [
-        "encode",
-        "decode"
+        {
+          "name": "encode",
+          "description": "Executes 'encode'",
+          "isDefault": true
+        },
+        {
+          "name": "decode",
+          "description": "Executes 'decode'",
+          "isDefault": false
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "HTML Entities Tool | ToolNexus",
       "seoDescription": "Encode and decode HTML entities.",
       "exampleInput": "<span>hello</span>"
     },
     {
       "slug": "yaml-to-json",
-      "title": "YAML to JSON",
+      "name": "YAML to JSON",
+      "description": "Convert YAML documents to JSON format.",
       "category": "yaml",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "YAML to JSON Converter | ToolNexus",
       "seoDescription": "Convert YAML documents to JSON format.",
       "exampleInput": "name: Ada\nrole: Engineer"
     },
     {
       "slug": "json-to-yaml",
-      "title": "JSON to YAML",
+      "name": "JSON to YAML",
+      "description": "Convert JSON payloads into YAML.",
       "category": "yaml",
       "actions": [
-        "convert"
+        {
+          "name": "convert",
+          "description": "Executes 'convert'",
+          "isDefault": true
+        }
       ],
+      "capabilities": {
+        "supportsClientExecution": false,
+        "supportsStreaming": false,
+        "isCacheable": true
+      },
       "seoTitle": "JSON to YAML Converter | ToolNexus",
       "seoDescription": "Convert JSON payloads into YAML.",
       "exampleInput": "{\"name\":\"Ada\",\"role\":\"Engineer\"}"

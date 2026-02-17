@@ -11,6 +11,8 @@ if (!page) {
 const slug = page.dataset.slug ?? '';
 const apiBase = page.dataset.apiBase ?? '';
 
+const supportsClientExecution = (page.dataset.supportsClientExecution ?? 'false') === 'true';
+
 const clientSafeActions = new Set(
   (page.dataset.clientSafeActions ?? '')
     .split(',')
@@ -120,7 +122,8 @@ function showToast(message, type = 'info') {
 class ClientToolExecutor {
   canExecute(toolSlug, action) {
     const module = window.ToolNexusModules?.[toolSlug];
-    return Boolean(module?.runTool) &&
+    return supportsClientExecution &&
+      Boolean(module?.runTool) &&
       clientSafeActions.has(action.toLowerCase());
   }
 
@@ -162,20 +165,20 @@ async function executeViaApi(action, input) {
     let message = 'Tool execution failed.';
 
     if (response.status === 400) {
-      message = result?.error || result?.detail || 'Invalid request.';
+      message = result?.error?.message || result?.error?.detail || 'Invalid request.';
     } else if (response.status === 404) {
-      message = result?.error || 'Tool not found.';
+      message = result?.error?.message || 'Tool not found.';
     } else if (response.status === 500) {
-      message = result?.error || result?.detail || 'Server error.';
+      message = result?.error?.message || result?.error?.detail || 'Server error.';
     } else {
-      message = result?.error || result?.detail ||
+      message = result?.error?.message || result?.error?.detail ||
         `Request failed with status ${response.status}.`;
     }
 
     throw new Error(message);
   }
 
-  return result?.output || result?.error || 'No output';
+  return result?.output || result?.error?.message || 'No output';
 }
 
 /* --------------------------------------------------
