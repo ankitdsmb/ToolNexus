@@ -1,16 +1,18 @@
 using System.IO.Compression;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using ToolNexus.Api.Middleware;
+using ToolNexus.Api.Options;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
+using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.HealthChecks;
 
@@ -86,6 +88,28 @@ builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 
 /* =========================================================
+   HTTPS + HSTS
+   ========================================================= */
+
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+    options.HttpsPort = builder.Configuration.GetValue<int?>("Security:HttpsRedirection:HttpsPort");
+});
+
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+    options.Preload = true;
+});
+
+builder.Services
+    .AddOptions<SecurityHeadersOptions>()
+    .Bind(builder.Configuration.GetSection(SecurityHeadersOptions.SectionName))
+    .ValidateOnStart();
+
+/* =========================================================
    SWAGGER
    ========================================================= */
 
@@ -143,7 +167,6 @@ builder.Services.AddSwaggerGen(options =>
    ========================================================= */
 
 var ipPerMinute = builder.Configuration.GetValue("RateLimiting:IpPerMinute", 120);
-var userPerMinute = builder.Configuration.GetValue("RateLimiting:UserPerMinute", 240);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -198,6 +221,7 @@ builder.Services.AddRateLimiter(options =>
    ========================================================= */
 
 builder.Services.AddApplication(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddToolExecutorsFromLoadedAssemblies();
 
 builder.Services.AddMemoryCache();
@@ -248,9 +272,19 @@ var app = builder.Build();
    MIDDLEWARE PIPELINE
    ========================================================= */
 
+app.UseHttpsRedirection();
+
+if (app.Environment.IsProduction())
+{
+    app.UseHsts();
+}
+
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseResponseCompression();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<ApiKeyValidationMiddleware>();
+app.UseRateLimiter();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -263,8 +297,6 @@ if (app.Environment.IsDevelopment())
         o.DisplayRequestDuration();
     });
 }
-
-app.UseRateLimiter();
 
 app.MapHealthChecks("/health");
 app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

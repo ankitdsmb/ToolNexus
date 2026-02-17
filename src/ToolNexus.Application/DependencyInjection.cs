@@ -19,7 +19,15 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.KeyPrefix), "ToolResultCache:KeyPrefix is required.")
             .ValidateOnStart();
 
-        services.AddScoped<IToolService, ToolService>();
+        services
+            .AddOptions<InputSanitizationOptions>()
+            .Bind(configuration.GetSection(InputSanitizationOptions.SectionName))
+            .Validate(x => x.MaxInputCharacters > 0, "Security:InputSanitization:MaxInputCharacters must be greater than zero.")
+            .ValidateOnStart();
+
+        services.AddScoped<ToolService>();
+        services.AddScoped<IToolExecutionPreProcessor, InputSanitizationPreProcessor>();
+        services.AddScoped<IToolService, ToolExecutionPipeline>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         return services;
     }
