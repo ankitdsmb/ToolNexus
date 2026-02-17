@@ -7,6 +7,8 @@ using ToolNexus.Application.Services.Policies;
 using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Data;
+using ToolNexus.Infrastructure.Options;
+using ToolNexus.Infrastructure.Security;
 
 namespace ToolNexus.Infrastructure;
 
@@ -26,6 +28,11 @@ public static class DependencyInjection
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentService, ToolContentService>();
         services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
+        services
+            .AddOptions<ApiKeyOptions>()
+            .Bind(configuration.GetSection(ApiKeyOptions.SectionName))
+            .ValidateOnStart();
+        services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
         services.AddMemoryCache();
         services.AddDistributedMemoryCache();
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
