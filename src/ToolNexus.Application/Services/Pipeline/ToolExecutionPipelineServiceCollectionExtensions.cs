@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using ToolNexus.Application.Services.Pipeline.Steps;
 
 namespace ToolNexus.Application.Services.Pipeline;
 
@@ -7,21 +8,23 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
     public static IServiceCollection AddToolExecutionPipeline(this IServiceCollection services)
     {
         services.AddScoped<IToolExecutionPipeline, ToolExecutionPipeline>();
+        services.AddSingleton<IToolConcurrencyLimiter, InMemoryToolConcurrencyLimiter>();
+        services.AddSingleton<ToolExecutionMetrics>();
 
         services.AddScoped<IApiToolExecutionStrategy, ApiToolExecutionStrategy>();
         services.AddScoped<IClientToolExecutionStrategy, NoOpClientExecutionStrategy>();
 
-        // Default middleware order: validation → caching → client executor → API executor → post-processing.
-        services.AddToolExecutionStep<ValidationExecutionStep>();
-        services.AddToolExecutionStep<CachingExecutionStep>();
-        services.AddToolExecutionStep<ClientExecutionStep>();
-        services.AddToolExecutionStep<ApiExecutionStep>();
-        services.AddToolExecutionStep<PostProcessingExecutionStep>();
+        services.AddToolExecutionStep<ValidationStep>();
+        services.AddToolExecutionStep<PolicyEnforcementStep>();
+        services.AddToolExecutionStep<RateLimitStep>();
+        services.AddToolExecutionStep<CacheLookupStep>();
+        services.AddToolExecutionStep<ExecutionStep>();
+        services.AddToolExecutionStep<CacheWriteStep>();
+        services.AddToolExecutionStep<MetricsStep>();
 
         return services;
     }
 
-    // Example extension point for custom middleware registration.
     public static IServiceCollection AddToolExecutionStep<TStep>(this IServiceCollection services)
         where TStep : class, IToolExecutionStep
     {
