@@ -287,8 +287,12 @@ const clientExecutor = new ClientToolExecutor();
 ================================ */
 
 async function executeViaApi(action, input) {
+  const endpoint = apiBase
+    ? `${apiBase.replace(/\/$/, '')}/api/v1/tools/${encodeURIComponent(slug)}`
+    : `/api/v1/tools/${encodeURIComponent(slug)}`;
+
   const response = await fetch(
-    `${apiBase}/api/v1/tools/${encodeURIComponent(slug)}`,
+    endpoint,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -338,7 +342,7 @@ async function executeViaApi(action, input) {
 async function run() {
   const selectedAction = actionSelect?.value ?? '';
 
-  if (!slug || !apiBase) {
+  if (!slug) {
     showError('Tool configuration error.');
     return;
   }

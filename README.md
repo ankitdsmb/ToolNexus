@@ -133,6 +133,8 @@ Terminal 2 (Web):
 dotnet run --project src/ToolNexus.Web
 ```
 
+> By default, the web app resolves `/api/v1/tools/*` from the same origin in non-development hosting (IIS/Kestrel reverse-proxy friendly). For split local runs, keep Development mode and/or set `ApiBaseUrl` (for example `http://localhost:5163`).
+
 Terminal 3 (tests):
 ```bash
 dotnet test tests/ToolNexus.Tools.Json.Tests
