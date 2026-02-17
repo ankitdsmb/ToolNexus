@@ -4,20 +4,40 @@ if (!page) {
   throw new Error('Tool page not found');
 }
 
+/* --------------------------------------------------
+   Configuration
+-------------------------------------------------- */
+
 const slug = page.dataset.slug ?? '';
 const apiBase = page.dataset.apiBase ?? '';
+
 const clientSafeActions = new Set(
   (page.dataset.clientSafeActions ?? '')
     .split(',')
-    .map(action => action.trim().toLowerCase())
+    .map(a => a.trim().toLowerCase())
     .filter(Boolean)
 );
+
+/* --------------------------------------------------
+   DOM References
+-------------------------------------------------- */
 
 const inputTextArea = document.getElementById('inputEditor');
 const outputTextArea = document.getElementById('outputEditor');
 const actionSelect = document.getElementById('actionSelect');
-const runButton = document.getElementById('runBtn');
-const spinner = document.getElementById('runSpinner');
+
+const runBtn = document.getElementById('runBtn');
+const copyBtn = document.getElementById('copyBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const runSpinner = document.getElementById('runSpinner');
+
+const errorMessage = document.getElementById('errorMessage');
+const resultStatus = document.getElementById('resultStatus');
+const toastRegion = document.getElementById('toastRegion');
+
+/* --------------------------------------------------
+   CodeMirror Setup
+-------------------------------------------------- */
 
 const inputEditor = CodeMirror.fromTextArea(inputTextArea, {
   lineNumbers: true,
@@ -31,52 +51,95 @@ const outputEditor = CodeMirror.fromTextArea(outputTextArea, {
   readOnly: true
 });
 
-class IClientToolExecutor {
-  canExecute(_toolSlug, _action) {
-    throw new Error('Not implemented');
+/* --------------------------------------------------
+   State
+-------------------------------------------------- */
+
+let isRunning = false;
+
+/* --------------------------------------------------
+   Utilities
+-------------------------------------------------- */
+
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return '';
+  return input.replace(/\u0000/g, '');
+}
+
+function hasInput() {
+  return inputEditor.getValue().trim().length > 0;
+}
+
+function setRunningState(running) {
+  isRunning = running;
+
+  if (runBtn) {
+    runBtn.disabled = running;
+    runBtn.setAttribute('aria-busy', running ? 'true' : 'false');
   }
 
-  async execute(_toolSlug, _action, _input) {
-    throw new Error('Not implemented');
+  if (runSpinner) {
+    runSpinner.hidden = !running;
+  }
+
+  if (resultStatus) {
+    resultStatus.className = `result-indicator result-indicator--${running ? 'running' : 'idle'}`;
+    resultStatus.textContent = running ? 'Running tool...' : 'Ready';
   }
 }
 
-class ToolModuleClientExecutor extends IClientToolExecutor {
+function showError(message) {
+  if (!errorMessage) return;
+  errorMessage.hidden = false;
+  errorMessage.textContent = message;
+}
+
+function clearError() {
+  if (!errorMessage) return;
+  errorMessage.hidden = true;
+  errorMessage.textContent = '';
+}
+
+function showToast(message, type = 'info') {
+  if (!toastRegion) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  toast.role = 'status';
+  toast.textContent = message;
+
+  toastRegion.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* --------------------------------------------------
+   Client Executor (Hybrid Architecture)
+-------------------------------------------------- */
+
+class ClientToolExecutor {
   canExecute(toolSlug, action) {
     const module = window.ToolNexusModules?.[toolSlug];
-    return Boolean(module?.runTool) && clientSafeActions.has(action.toLowerCase());
+    return Boolean(module?.runTool) &&
+      clientSafeActions.has(action.toLowerCase());
   }
 
   async execute(toolSlug, action, input) {
     const module = window.ToolNexusModules?.[toolSlug];
+
     if (!module?.runTool) {
-      throw new Error('Client tool module is unavailable.');
+      throw new Error('Client module unavailable.');
     }
 
     return module.runTool(action, input);
   }
 }
 
-const clientExecutor = new ToolModuleClientExecutor();
+const clientExecutor = new ClientToolExecutor();
 
-function sanitizeInput(input) {
-  if (typeof input !== 'string') {
-    return '';
-  }
-
-  return input.replace(/\u0000/g, '');
-}
-
-function setRunningState(isRunning) {
-  if (runButton) {
-    runButton.disabled = isRunning;
-    runButton.setAttribute('aria-busy', isRunning ? 'true' : 'false');
-  }
-
-  if (spinner) {
-    spinner.hidden = !isRunning;
-  }
-}
+/* --------------------------------------------------
+   API Execution
+-------------------------------------------------- */
 
 async function executeViaApi(action, input) {
   const response = await fetch(
@@ -99,21 +162,13 @@ async function executeViaApi(action, input) {
     let message = 'Tool execution failed.';
 
     if (response.status === 400) {
-      message =
-        result?.error ||
-        result?.detail ||
-        'Invalid request. Please verify the selected action and input.';
+      message = result?.error || result?.detail || 'Invalid request.';
     } else if (response.status === 404) {
       message = result?.error || 'Tool not found.';
     } else if (response.status === 500) {
-      message =
-        result?.error ||
-        result?.detail ||
-        'Server error while running the tool.';
+      message = result?.error || result?.detail || 'Server error.';
     } else {
-      message =
-        result?.error ||
-        result?.detail ||
+      message = result?.error || result?.detail ||
         `Request failed with status ${response.status}.`;
     }
 
@@ -123,61 +178,114 @@ async function executeViaApi(action, input) {
   return result?.output || result?.error || 'No output';
 }
 
+/* --------------------------------------------------
+   Run Logic
+-------------------------------------------------- */
+
 async function run() {
   const selectedAction = actionSelect?.value ?? '';
 
   if (!slug || !apiBase) {
-    outputEditor.setValue('Tool configuration error.');
+    showError('Tool configuration error.');
     return;
   }
+
+  if (!hasInput()) {
+    showError('Please provide input before running.');
+    showToast('Input required.', 'warning');
+    return;
+  }
+
+  clearError();
 
   const sanitizedInput = sanitizeInput(inputEditor.getValue());
 
   try {
     setRunningState(true);
 
+    // Try client-side execution first
     if (clientExecutor.canExecute(slug, selectedAction)) {
       try {
-        const localOutput = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
-        outputEditor.setValue(localOutput ?? 'No output');
-        return;
-      } catch (localError) {
-        console.warn('Client execution failed; falling back to API.', {
+        const localOutput = await clientExecutor.execute(
           slug,
-          action: selectedAction,
-          error: localError
-        });
+          selectedAction,
+          sanitizedInput
+        );
+
+        outputEditor.setValue(localOutput ?? 'No output');
+        showToast('Executed locally.', 'success');
+        return;
+      } catch (clientError) {
+        console.warn('Client execution failed, falling back to API.', clientError);
       }
     }
 
+    // Fallback to API
     const apiOutput = await executeViaApi(selectedAction, sanitizedInput);
     outputEditor.setValue(apiOutput);
-  } catch (error) {
-    console.error('Tool execution request crashed', {
-      slug,
-      action: selectedAction,
-      error
-    });
+    showToast('Execution completed.', 'success');
 
+  } catch (error) {
+    console.error('Execution error:', error);
     outputEditor.setValue(
       error?.message ||
-      'Unable to run tool due to a network or client error.'
+      'Unable to run tool due to a network error.'
     );
+    showToast('Execution failed.', 'error');
   } finally {
     setRunningState(false);
   }
 }
 
-document.getElementById('runBtn')?.addEventListener('click', run);
-document.getElementById('copyBtn')?.addEventListener('click', () =>
-  navigator.clipboard.writeText(outputEditor.getValue())
-);
-document.getElementById('downloadBtn')?.addEventListener('click', () => {
-  const blob = new Blob([outputEditor.getValue()], { type: 'text/plain' });
+/* --------------------------------------------------
+   Event Listeners
+-------------------------------------------------- */
+
+runBtn?.addEventListener('click', run);
+
+copyBtn?.addEventListener('click', async () => {
+  const output = outputEditor.getValue();
+
+  if (!output.trim()) {
+    showToast('Nothing to copy.', 'warning');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(output);
+    showToast('Copied to clipboard.', 'success');
+  } catch {
+    showToast('Copy failed.', 'error');
+  }
+});
+
+downloadBtn?.addEventListener('click', () => {
+  const output = outputEditor.getValue();
+
+  if (!output.trim()) {
+    showToast('Nothing to download.', 'warning');
+    return;
+  }
+
+  const blob = new Blob([output], { type: 'text/plain' });
   const anchor = document.createElement('a');
   anchor.href = URL.createObjectURL(blob);
   anchor.download = `${slug}-output.txt`;
   anchor.click();
+  URL.revokeObjectURL(anchor.href);
+
+  showToast('Download started.', 'info');
 });
+
+inputEditor.addKeyMap({
+  'Ctrl-Enter': run,
+  'Cmd-Enter': run
+});
+
+/* --------------------------------------------------
+   Initial State
+-------------------------------------------------- */
+
+setRunningState(false);
 
 window.ToolNexusRun = run;
