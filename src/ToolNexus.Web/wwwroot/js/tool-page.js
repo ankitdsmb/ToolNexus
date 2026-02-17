@@ -160,6 +160,14 @@ class ClientToolExecutor {
   canExecute(toolSlug, action, input) {
     const normalizedAction = action.toLowerCase();
 
+    if (
+      toolSlug === 'json-validator' &&
+      normalizedAction === 'validate' &&
+      isEligibleForClientExecution(input)
+    ) {
+      return true;
+    }
+
     if (!clientSafeActions.has(normalizedAction)) {
       return false;
     }
@@ -203,6 +211,10 @@ class ClientToolExecutor {
       return this.executeJsonFormatter(action, input);
     }
 
+    if (toolSlug === 'json-validator') {
+      return this.executeJsonValidator(action, input);
+    }
+
     if (toolSlug === 'base64-tool') {
       return this.executeBase64(action, input);
     }
@@ -231,6 +243,21 @@ class ClientToolExecutor {
     }
 
     throw new Error('Unsupported JSON action.');
+  }
+
+  executeJsonValidator(action, input) {
+    if (action !== 'validate') {
+      throw new Error('Unsupported JSON validator action.');
+    }
+
+    try {
+      JSON.parse(input);
+      return 'Valid JSON';
+    } catch {
+      throw new Error(
+        'Invalid JSON input. Please fix JSON syntax and try again.'
+      );
+    }
   }
 
   executeBase64(action, input) {
