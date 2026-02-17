@@ -4,6 +4,7 @@
     ViewData["Description"] = Model.Seo.Description;
     ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
     ViewData["JsonLd"] = Model.Seo.JsonLd;
+    ViewData["Keywords"] = Model.Seo.Keywords;
 }
 
 <article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
@@ -72,6 +73,49 @@
   </section>
 
   <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
+
+@if (Model.Content is not null)
+{
+  <section class="tool-panel">
+    <h2>How It Works</h2>
+    <p>@Model.Content.LongArticle</p>
+
+    @if (Model.Content.Features.Any())
+    {
+      <h3>Features</h3>
+      <ul>
+      @foreach (var feature in Model.Content.Features)
+      {
+        <li>@feature</li>
+      }
+      </ul>
+    }
+
+    @if (Model.Content.Faqs.Any())
+    {
+      <h3>FAQ</h3>
+      @foreach (var faq in Model.Content.Faqs)
+      {
+        <details>
+          <summary>@faq.Question</summary>
+          <p>@faq.Answer</p>
+        </details>
+      }
+    }
+
+    @if (Model.Content.RelatedTools.Any())
+    {
+      <h3>Related Tools</h3>
+      <ul>
+      @foreach (var related in Model.Content.RelatedTools)
+      {
+        <li><a href="/tools/@related.RelatedSlug">@related.RelatedSlug</a></li>
+      }
+      </ul>
+    }
+  </section>
+}
+
 </article>
 
 @section Scripts {

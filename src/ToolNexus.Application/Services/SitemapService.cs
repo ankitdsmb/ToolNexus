@@ -3,9 +3,9 @@ using System.Text;
 
 namespace ToolNexus.Application.Services;
 
-public sealed class SitemapService(IToolCatalogService toolCatalogService) : ISitemapService
+public sealed class SitemapService(IToolCatalogService toolCatalogService, IToolContentService toolContentService) : ISitemapService
 {
-    public string BuildSitemap(string baseUrl)
+    public async Task<string> BuildSitemapAsync(string baseUrl, CancellationToken cancellationToken = default)
     {
         var urls = new List<string>
         {
@@ -17,7 +17,9 @@ public sealed class SitemapService(IToolCatalogService toolCatalogService) : ISi
         };
 
         urls.AddRange(toolCatalogService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));
-        urls.AddRange(toolCatalogService.GetAllTools().Select(tool => $"{baseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}"));
+
+        var slugs = await toolContentService.GetAllSlugsAsync(cancellationToken);
+        urls.AddRange(slugs.Select(slug => $"{baseUrl}/tools/{Uri.EscapeDataString(slug)}"));
 
         var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
 

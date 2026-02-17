@@ -36,10 +36,10 @@ public sealed class HomeController(IToolCatalogService toolCatalogService, ISite
 
     [HttpGet("/sitemap.xml")]
     [OutputCache(Duration = 3600)]
-    public ContentResult Sitemap()
+    public async Task<ContentResult> Sitemap(CancellationToken cancellationToken)
     {
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var xml = sitemapService.BuildSitemap(baseUrl);
+        var xml = await sitemapService.BuildSitemapAsync(baseUrl, cancellationToken);
         return Content(xml, "application/xml", Encoding.UTF8);
     }
 }

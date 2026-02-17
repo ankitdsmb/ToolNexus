@@ -6,9 +6,9 @@ public sealed class ToolExecutionPipeline(IEnumerable<IToolExecutionStep> steps)
 {
     private readonly IReadOnlyList<IToolExecutionStep> _steps = steps.OrderBy(step => step.Order).ToArray();
 
-    public Task<ToolExecutionResponse> ExecuteAsync(string toolId, string action, string input, CancellationToken cancellationToken = default)
+    public Task<ToolExecutionResponse> ExecuteAsync(string toolId, string action, string input, IDictionary<string, string>? options = null, CancellationToken cancellationToken = default)
     {
-        var context = new ToolExecutionContext(toolId, action, input);
+        var context = new ToolExecutionContext(toolId, action, input, options);
         return ExecuteStepAsync(0, context, cancellationToken);
     }
 

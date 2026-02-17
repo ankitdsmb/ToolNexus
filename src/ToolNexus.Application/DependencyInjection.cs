@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolCatalogService, ToolCatalogService>();
         services.AddSingleton<ISitemapService, SitemapService>();
         services.AddSingleton<IToolManifestGovernance, ToolManifestGovernanceService>();
+        services.AddScoped<IToolContentService, ToolContentService>();
         services.AddHostedService<ManifestStartupValidator>();
         return services;
     }
