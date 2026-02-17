@@ -4,10 +4,6 @@ if (!page) {
   throw new Error('Tool page not found');
 }
 
-/* --------------------------------------------------
-   Configuration
--------------------------------------------------- */
-
 const slug = page.dataset.slug ?? '';
 const apiBase = page.dataset.apiBase ?? '';
 
@@ -18,26 +14,20 @@ const clientSafeActions = new Set(
     .filter(Boolean)
 );
 
-/* --------------------------------------------------
-   DOM References
--------------------------------------------------- */
-
 const inputTextArea = document.getElementById('inputEditor');
 const outputTextArea = document.getElementById('outputEditor');
 const actionSelect = document.getElementById('actionSelect');
 
 const runBtn = document.getElementById('runBtn');
+const runBtnLabel = runBtn?.querySelector('.tool-btn__label');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
-const runSpinner = document.getElementById('runSpinner');
 
 const errorMessage = document.getElementById('errorMessage');
 const resultStatus = document.getElementById('resultStatus');
+const outputField = document.getElementById('outputField');
+const outputEmptyState = document.getElementById('outputEmptyState');
 const toastRegion = document.getElementById('toastRegion');
-
-/* --------------------------------------------------
-   CodeMirror Setup
--------------------------------------------------- */
 
 const inputEditor = CodeMirror.fromTextArea(inputTextArea, {
   lineNumbers: true,
@@ -48,18 +38,11 @@ const inputEditor = CodeMirror.fromTextArea(inputTextArea, {
 const outputEditor = CodeMirror.fromTextArea(outputTextArea, {
   lineNumbers: true,
   mode: 'application/json',
-  readOnly: true
+  readOnly: true,
+  theme: 'default'
 });
 
-/* --------------------------------------------------
-   State
--------------------------------------------------- */
-
 let isRunning = false;
-
-/* --------------------------------------------------
-   Utilities
--------------------------------------------------- */
 
 function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
@@ -70,6 +53,34 @@ function hasInput() {
   return inputEditor.getValue().trim().length > 0;
 }
 
+function applyEditorTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const background = isDark ? '#0f172a' : '#eef3fa';
+  const foreground = isDark ? '#edf2ff' : '#1f2937';
+
+  [inputEditor, outputEditor].forEach((editor) => {
+    const wrapper = editor.getWrapperElement();
+    wrapper.style.backgroundColor = background;
+    wrapper.style.color = foreground;
+    editor.refresh();
+  });
+}
+
+function setOutputState(hasOutput) {
+  if (!outputField || !outputEmptyState) return;
+
+  outputField.hidden = !hasOutput;
+  outputEmptyState.classList.toggle('is-hidden', hasOutput);
+  outputEmptyState.hidden = hasOutput;
+}
+
+function setResultStatus(state, text) {
+  if (!resultStatus) return;
+
+  resultStatus.className = `result-indicator result-indicator--${state}`;
+  resultStatus.textContent = text;
+}
+
 function setRunningState(running) {
   isRunning = running;
 
@@ -78,14 +89,16 @@ function setRunningState(running) {
     runBtn.setAttribute('aria-busy', running ? 'true' : 'false');
   }
 
-  if (runSpinner) {
-    runSpinner.hidden = !running;
+  if (runBtnLabel) {
+    const loadingLabel = runBtnLabel.dataset.loadingLabel || 'Running…';
+    const defaultLabel = runBtnLabel.dataset.defaultLabel || 'Run';
+    runBtnLabel.textContent = running ? loadingLabel : defaultLabel;
   }
 
-  if (resultStatus) {
-    resultStatus.className = `result-indicator result-indicator--${running ? 'running' : 'idle'}`;
-    resultStatus.textContent = running ? 'Running tool...' : 'Ready';
-  }
+  if (copyBtn) copyBtn.disabled = running;
+  if (downloadBtn) downloadBtn.disabled = running;
+
+  setResultStatus(running ? 'running' : 'idle', running ? 'Running tool...' : 'Ready');
 }
 
 function showError(message) {
@@ -113,15 +126,10 @@ function showToast(message, type = 'info') {
   setTimeout(() => toast.remove(), 3000);
 }
 
-/* --------------------------------------------------
-   Client Executor (Hybrid Architecture)
--------------------------------------------------- */
-
 class ClientToolExecutor {
   canExecute(toolSlug, action) {
     const module = window.ToolNexusModules?.[toolSlug];
-    return Boolean(module?.runTool) &&
-      clientSafeActions.has(action.toLowerCase());
+    return Boolean(module?.runTool) && clientSafeActions.has(action.toLowerCase());
   }
 
   async execute(toolSlug, action, input) {
@@ -137,19 +145,12 @@ class ClientToolExecutor {
 
 const clientExecutor = new ClientToolExecutor();
 
-/* --------------------------------------------------
-   API Execution
--------------------------------------------------- */
-
 async function executeViaApi(action, input) {
-  const response = await fetch(
-    `${apiBase}/api/v1/tools/${encodeURIComponent(slug)}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, input })
-    }
-  );
+  const response = await fetch(`${apiBase}/api/v1/tools/${encodeURIComponent(slug)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, input })
+  });
 
   let result = null;
   try {
@@ -168,8 +169,7 @@ async function executeViaApi(action, input) {
     } else if (response.status === 500) {
       message = result?.error || result?.detail || 'Server error.';
     } else {
-      message = result?.error || result?.detail ||
-        `Request failed with status ${response.status}.`;
+      message = result?.error || result?.detail || `Request failed with status ${response.status}.`;
     }
 
     throw new Error(message);
@@ -177,10 +177,6 @@ async function executeViaApi(action, input) {
 
   return result?.output || result?.error || 'No output';
 }
-
-/* --------------------------------------------------
-   Run Logic
--------------------------------------------------- */
 
 async function run() {
   const selectedAction = actionSelect?.value ?? '';
@@ -203,43 +199,36 @@ async function run() {
   try {
     setRunningState(true);
 
-    // Try client-side execution first
+    let result = '';
+
     if (clientExecutor.canExecute(slug, selectedAction)) {
       try {
-        const localOutput = await clientExecutor.execute(
-          slug,
-          selectedAction,
-          sanitizedInput
-        );
-
-        outputEditor.setValue(localOutput ?? 'No output');
+        result = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
         showToast('Executed locally.', 'success');
-        return;
       } catch (clientError) {
         console.warn('Client execution failed, falling back to API.', clientError);
       }
     }
 
-    // Fallback to API
-    const apiOutput = await executeViaApi(selectedAction, sanitizedInput);
-    outputEditor.setValue(apiOutput);
-    showToast('Execution completed.', 'success');
+    if (!result) {
+      result = await executeViaApi(selectedAction, sanitizedInput);
+      showToast('Execution completed.', 'success');
+    }
 
+    outputEditor.setValue(result);
+    setOutputState(true);
+    setResultStatus('success', 'Output updated');
   } catch (error) {
-    console.error('Execution error:', error);
-    outputEditor.setValue(
-      error?.message ||
-      'Unable to run tool due to a network error.'
-    );
+    const message = error?.message || 'Unable to run tool due to a network error.';
+    showError(message);
+    outputEditor.setValue(message);
+    setOutputState(true);
+    setResultStatus('failure', 'Execution failed');
     showToast('Execution failed.', 'error');
   } finally {
     setRunningState(false);
   }
 }
-
-/* --------------------------------------------------
-   Event Listeners
--------------------------------------------------- */
 
 runBtn?.addEventListener('click', run);
 
@@ -282,10 +271,10 @@ inputEditor.addKeyMap({
   'Cmd-Enter': run
 });
 
-/* --------------------------------------------------
-   Initial State
--------------------------------------------------- */
+window.addEventListener('toolnexus:themechange', applyEditorTheme);
 
+setOutputState(false);
 setRunningState(false);
+applyEditorTheme();
 
 window.ToolNexusRun = run;
