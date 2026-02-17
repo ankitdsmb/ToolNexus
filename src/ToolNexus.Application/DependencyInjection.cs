@@ -23,6 +23,8 @@ public static class DependencyInjection
         services.AddToolExecutionPipeline();
         services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
+        services.AddSingleton<IToolCatalogService, ToolCatalogService>();
+        services.AddSingleton<ISitemapService, SitemapService>();
         return services;
     }
 
