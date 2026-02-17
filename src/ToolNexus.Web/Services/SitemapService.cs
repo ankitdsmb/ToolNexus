@@ -24,6 +24,8 @@ public sealed class SitemapService(IManifestService manifestService) : ISitemapS
         urls.AddRange(manifestService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));
         urls.AddRange(manifestService.GetAllTools().Select(tool => $"{baseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}"));
 
+        var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
+
         var xml = new StringBuilder();
         xml.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         xml.AppendLine("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
@@ -32,6 +34,8 @@ public sealed class SitemapService(IManifestService manifestService) : ISitemapS
         {
             xml.AppendLine("  <url>");
             xml.AppendLine($"    <loc>{SecurityElement.Escape(url)}</loc>");
+            xml.AppendLine($"    <lastmod>{now}</lastmod>");
+            xml.AppendLine("    <changefreq>weekly</changefreq>");
             xml.AppendLine("  </url>");
         }
 

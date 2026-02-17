@@ -9,7 +9,28 @@
         @type = "WebPage",
         name = "ToolNexus Disclaimer",
         description = "Legal disclaimer for ToolNexus.",
-        url = $"{Context.Request.Scheme}://{Context.Request.Host}/disclaimer"
+        url = $"{Context.Request.Scheme}://{Context.Request.Host}/disclaimer",
+        breadcrumb = new
+        {
+            @type = "BreadcrumbList",
+            itemListElement = new object[]
+            {
+                new
+                {
+                    @type = "ListItem",
+                    position = 1,
+                    name = "Home",
+                    item = $"{Context.Request.Scheme}://{Context.Request.Host}/"
+                },
+                new
+                {
+                    @type = "ListItem",
+                    position = 2,
+                    name = "Disclaimer",
+                    item = $"{Context.Request.Scheme}://{Context.Request.Host}/disclaimer"
+                }
+            }
+        }
     });
 }
 
