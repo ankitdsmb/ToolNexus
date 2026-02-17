@@ -12,8 +12,8 @@
     <p>@Model.Tool.SeoDescription</p>
   </header>
 
-  <section class="tool-panel">
-    <h2>Input</h2>
+  <section class="tool-panel" aria-labelledby="toolInputHeading">
+    <h2 id="toolInputHeading">Input</h2>
 
     <div class="sample-panel">
       <h3>Sample Data</h3>
@@ -30,21 +30,32 @@
       </select>
 
       <div class="tool-run-wrap">
-        <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">Run</button>
-        <span id="runSpinner" class="spinner" hidden></span>
+        <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false" aria-disabled="false">Run</button>
+        <span id="runSpinner" class="spinner" hidden aria-hidden="true"></span>
       </div>
+      <p class="shortcut-hint" id="shortcutHint">Shortcut: Ctrl + Enter</p>
     </div>
+
+    <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
 
     <div class="editor-field">
       <label for="inputEditor" class="editor-label">Tool input</label>
-      <textarea id="inputEditor">@Model.Tool.ExampleInput</textarea>
+      <textarea id="inputEditor" aria-describedby="shortcutHint">@Model.Tool.ExampleInput</textarea>
     </div>
   </section>
 
-  <section class="tool-panel">
-    <h2>Output</h2>
+  <section class="tool-panel" aria-labelledby="toolOutputHeading">
+    <h2 id="toolOutputHeading">Output</h2>
 
-    <div class="editor-field">
+    <div class="output-header">
+      <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">Waiting for execution</p>
+    </div>
+
+    <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
+      Run the tool to view output results here.
+    </div>
+
+    <div class="editor-field" id="outputField" hidden>
       <label for="outputEditor" class="editor-label">Tool output</label>
       <textarea id="outputEditor" readonly></textarea>
     </div>
@@ -54,6 +65,8 @@
       <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
     </div>
   </section>
+
+  <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
 </article>
 
 @section Scripts {
