@@ -11,37 +11,46 @@ public sealed class EfToolContentRepository(ToolNexusContentDbContext dbContext)
     {
         var normalizedSlug = slug.Trim().ToLowerInvariant();
 
-        return await dbContext.ToolContents
+        var entity = await dbContext.ToolContents
             .AsNoTracking()
+            .Include(x => x.Features)
+            .Include(x => x.Faqs)
+            .Include(x => x.RelatedTools)
             .Where(x => x.Slug == normalizedSlug)
-            .Select(x => new ToolContent
-            {
-                Id = x.Id,
-                Slug = x.Slug,
-                Title = x.Title,
-                ShortDescription = x.ShortDescription,
-                LongArticle = x.LongArticle,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription,
-                Keywords = x.Keywords,
-                Features = x.Features.OrderBy(f => f.SortOrder).Select(f => f.Value).ToArray(),
-                Faqs = x.Faqs.OrderBy(f => f.SortOrder).Select(f => new ToolFaq
-                {
-                    Id = f.Id,
-                    Slug = x.Slug,
-                    Question = f.Question,
-                    Answer = f.Answer,
-                    SortOrder = f.SortOrder
-                }).ToArray(),
-                RelatedTools = x.RelatedTools.OrderBy(r => r.SortOrder).Select(r => new ToolRelated
-                {
-                    Id = r.Id,
-                    Slug = x.Slug,
-                    RelatedSlug = r.RelatedSlug,
-                    SortOrder = r.SortOrder
-                }).ToArray()
-            })
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (entity is null)
+        {
+            return null;
+        }
+
+        return new ToolContent
+        {
+            Id = entity.Id,
+            Slug = entity.Slug,
+            Title = entity.Title,
+            ShortDescription = entity.ShortDescription,
+            LongArticle = entity.LongArticle,
+            MetaTitle = entity.MetaTitle,
+            MetaDescription = entity.MetaDescription,
+            Keywords = entity.Keywords,
+            Features = entity.Features.OrderBy(f => f.SortOrder).Select(f => f.Value).ToArray(),
+            Faqs = entity.Faqs.OrderBy(f => f.SortOrder).Select(f => new ToolFaq
+            {
+                Id = f.Id,
+                Slug = entity.Slug,
+                Question = f.Question,
+                Answer = f.Answer,
+                SortOrder = f.SortOrder
+            }).ToArray(),
+            RelatedTools = entity.RelatedTools.OrderBy(r => r.SortOrder).Select(r => new ToolRelated
+            {
+                Id = r.Id,
+                Slug = entity.Slug,
+                RelatedSlug = r.RelatedSlug,
+                SortOrder = r.SortOrder
+            }).ToArray()
+        };
     }
 
     public async Task<IReadOnlyCollection<string>> GetAllSlugsAsync(CancellationToken cancellationToken = default)
