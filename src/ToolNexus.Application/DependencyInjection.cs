@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
+using ToolNexus.Application.Services.Pipeline;
 using ToolNexus.Domain;
 
 namespace ToolNexus.Application;
@@ -19,16 +20,11 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.KeyPrefix), "ToolResultCache:KeyPrefix is required.")
             .ValidateOnStart();
 
-        services
-            .AddOptions<InputSanitizationOptions>()
-            .Bind(configuration.GetSection(InputSanitizationOptions.SectionName))
-            .Validate(x => x.MaxInputCharacters > 0, "Security:InputSanitization:MaxInputCharacters must be greater than zero.")
-            .ValidateOnStart();
-
-        services.AddScoped<ToolService>();
-        services.AddScoped<IToolExecutionPreProcessor, InputSanitizationPreProcessor>();
-        services.AddScoped<IToolService, ToolExecutionPipeline>();
+        services.AddToolExecutionPipeline();
+        services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
+        services.AddSingleton<IToolCatalogService, ToolCatalogService>();
+        services.AddSingleton<ISitemapService, SitemapService>();
         return services;
     }
 

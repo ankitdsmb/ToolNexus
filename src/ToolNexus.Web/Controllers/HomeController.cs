@@ -2,17 +2,17 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using ToolNexus.Web.Models;
-using ToolNexus.Web.Services;
+using ToolNexus.Application.Services;
 
 namespace ToolNexus.Web.Controllers;
 
-public sealed class HomeController(IManifestService manifestService, ISitemapService sitemapService) : Controller
+public sealed class HomeController(IToolCatalogService toolCatalogService, ISitemapService sitemapService) : Controller
 {
     [HttpGet("/")]
     [OutputCache(Duration = 300)]
     public IActionResult Index()
     {
-        var featured = manifestService.GetAllTools().Take(6).ToList();
+        var featured = toolCatalogService.GetAllTools().Take(6).ToList();
         return View(new HomeViewModel { FeaturedTools = featured });
     }
 

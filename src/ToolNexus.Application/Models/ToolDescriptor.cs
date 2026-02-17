@@ -1,11 +1,6 @@
-namespace ToolNexus.Web.Models;
+namespace ToolNexus.Application.Models;
 
-public sealed class ToolManifest
-{
-    public List<ToolDefinition> Tools { get; init; } = [];
-}
-
-public sealed class ToolDefinition
+public sealed class ToolDescriptor
 {
     public required string Slug { get; init; }
     public required string Title { get; init; }

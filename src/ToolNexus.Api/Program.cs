@@ -14,6 +14,7 @@ using ToolNexus.Application;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.Caching;
+using ToolNexus.Infrastructure.Executors;
 using ToolNexus.Infrastructure.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -240,7 +241,8 @@ if (!string.IsNullOrWhiteSpace(redisConnection))
     });
 }
 
-builder.Services.AddScoped<IToolResultCache, RedisToolResultCache>();
+builder.Services.AddScoped<IToolResponseCache, RedisToolResultCache>();
+builder.Services.AddScoped<IToolExecutionClient, ToolExecutionClient>();
 
 /* =========================================================
    HEALTH CHECKS
@@ -286,6 +288,7 @@ app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<ApiKeyValidationMiddleware>();
 app.UseRateLimiter();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<ApiCacheHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

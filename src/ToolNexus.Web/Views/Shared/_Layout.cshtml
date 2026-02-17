@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 @{
     var title = ViewData["Title"]?.ToString() ?? "ToolNexus";
@@ -16,19 +16,26 @@
 
     <title>@title</title>
 
-    <!-- Primary SEO -->
+    <script>
+        (function () {
+            var key = 'toolnexus-theme';
+            var stored = localStorage.getItem(key);
+            var preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            var theme = stored === 'light' || stored === 'dark' ? stored : preferred;
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
     <meta name="description" content="@description" />
     <meta name="keywords" content="@keywords" />
     <meta name="robots" content="@robots" />
     <link rel="canonical" href="@canonicalUrl" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="@title" />
     <meta property="og:description" content="@description" />
     <meta property="og:url" content="@canonicalUrl" />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="@title" />
     <meta name="twitter:description" content="@description" />
@@ -40,8 +47,7 @@
         </script>
     }
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
           crossorigin="anonymous" />
@@ -49,11 +55,8 @@
 
 <body>
 <div class="app-shell">
-
-    <!-- HEADER -->
     <header class="topbar">
         <div class="topbar__inner">
-
             <a href="/" class="brand" aria-label="ToolNexus Home">
                 <span class="brand__dot" aria-hidden="true"></span>
                 <span>ToolNexus</span>
@@ -75,20 +78,25 @@
                 <a class="topbar__link" href="/contact-us">Contact Us</a>
             </nav>
 
+            <button id="themeToggle"
+                    class="theme-toggle"
+                    type="button"
+                    aria-label="Activate dark theme"
+                    aria-pressed="false">
+                <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+                <span class="theme-toggle__text">Theme</span>
+            </button>
         </div>
     </header>
 
-    <!-- SECURITY BANNER -->
     <div class="banner">
         Do not paste secrets or sensitive credentials.
     </div>
 
-    <!-- MAIN CONTENT -->
     <main class="container">
         @RenderBody()
     </main>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer__inner">
             <span>© @DateTime.UtcNow.Year ToolNexus. All rights reserved.</span>
@@ -105,9 +113,45 @@
 
 </div>
 
-<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script>
+    (function () {
+        var key = 'toolnexus-theme';
+        var root = document.documentElement;
+        var toggle = document.getElementById('themeToggle');
+        if (!toggle) return;
+
+        function getTheme() {
+            return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        }
+
+        function syncToggle(theme) {
+            var dark = theme === 'dark';
+            toggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+            toggle.setAttribute('aria-label', dark ? 'Activate light theme' : 'Activate dark theme');
+        }
+
+        syncToggle(getTheme());
+
+        toggle.addEventListener('click', function () {
+            var next = getTheme() === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            localStorage.setItem(key, next);
+            syncToggle(next);
+            window.dispatchEvent(new CustomEvent('toolnexus:themechange', { detail: { theme: next } }));
+        });
+
+        var media = window.matchMedia('(prefers-color-scheme: dark)');
+        media.addEventListener('change', function (event) {
+            if (localStorage.getItem(key)) return;
+            var next = event.matches ? 'dark' : 'light';
+            root.setAttribute('data-theme', next);
+            syncToggle(next);
+            window.dispatchEvent(new CustomEvent('toolnexus:themechange', { detail: { theme: next } }));
+        });
+    })();
+</script>
 
 @await RenderSectionAsync("Scripts", required: false)
 
