@@ -2,5 +2,5 @@ namespace ToolNexus.Application.Services;
 
 public interface ISitemapService
 {
-    string BuildSitemap(string baseUrl);
+    Task<string> BuildSitemapAsync(string baseUrl, CancellationToken cancellationToken = default);
 }

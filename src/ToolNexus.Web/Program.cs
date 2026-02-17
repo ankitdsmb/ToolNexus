@@ -2,9 +2,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using System.IO.Compression;
 using ToolNexus.Application;
-using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure;
-using ToolNexus.Infrastructure.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,8 +53,7 @@ builder.Services.AddOutputCache(options =>
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddInfrastructure(); // REQUIRED
-builder.Services.AddScoped<IToolResultCache, RedisToolResultCache>();
+builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
 
 builder.Services.AddCors(options =>
 {

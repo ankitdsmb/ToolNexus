@@ -4,5 +4,10 @@ namespace ToolNexus.Application.Services.Pipeline;
 
 public interface IToolExecutionPipeline
 {
-    Task<ToolExecutionResponse> ExecuteAsync(string toolId, string action, string input, CancellationToken cancellationToken = default);
+    Task<ToolExecutionResponse> ExecuteAsync(
+        string toolId,
+        string action,
+        string input,
+        IDictionary<string, string>? options = null,
+        CancellationToken cancellationToken = default);
 }

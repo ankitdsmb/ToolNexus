@@ -1,48 +1,49 @@
-using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using ToolNexus.Application.Abstractions;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Policies;
+using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.Content;
+using ToolNexus.Infrastructure.Data;
+using ToolNexus.Infrastructure.Executors;
 
 namespace ToolNexus.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var provider = configuration["Database:Provider"] ?? "Sqlite";
+        var connectionString = configuration["Database:ConnectionString"] ?? "Data Source=toolnexus.db";
+
+        if (provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddDbContext<ToolNexusContentDbContext>(options => options.UseSqlite(connectionString));
+        }
+
         services.AddSingleton<IToolManifestRepository, JsonFileToolManifestRepository>();
+        services.AddScoped<IToolContentRepository, EfToolContentRepository>();
+        services.AddScoped<IToolContentService, ToolContentService>();
         services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
-        services.AddToolExecutorsFromLoadedAssemblies();
+        services.AddMemoryCache();
+        services.AddDistributedMemoryCache();
+        services.AddScoped<IToolResultCache, RedisToolResultCache>();
+        services.AddHostedService<ToolContentSeedHostedService>();
+        services.AddToolExecutors();
         return services;
     }
 
-    public static IServiceCollection AddToolExecutorsFromLoadedAssemblies(this IServiceCollection services)
+    public static IServiceCollection AddToolExecutors(this IServiceCollection services)
     {
-        var executorTypes = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .Where(assembly => !assembly.IsDynamic)
-            .SelectMany(GetLoadableTypes)
-            .Where(type => type is { IsAbstract: false, IsInterface: false } && typeof(IToolExecutor).IsAssignableFrom(type))
-            .Distinct();
-
-        foreach (var executorType in executorTypes)
-        {
-            services.AddScoped(typeof(IToolExecutor), executorType);
-        }
+        services.AddScoped<IToolExecutor, Base64ToolExecutor>();
+        services.AddScoped<IToolExecutor, CsvToolExecutor>();
+        services.AddScoped<IToolExecutor, HtmlToolExecutor>();
+        services.AddScoped<IToolExecutor, JsonToolExecutor>();
+        services.AddScoped<IToolExecutor, MinifierToolExecutor>();
+        services.AddScoped<IToolExecutor, XmlToolExecutor>();
 
         return services;
-    }
-
-    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
-    {
-        try
-        {
-            return assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            return ex.Types.Where(type => type is not null)!;
-        }
     }
 }

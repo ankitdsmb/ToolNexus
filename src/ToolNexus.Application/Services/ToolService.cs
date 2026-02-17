@@ -27,6 +27,7 @@ public sealed class ToolService(
                 normalizedSlug,
                 normalizedAction,
                 request.Input,
+                request.Options,
                 cancellationToken);
         }
         catch (Exception ex)

@@ -10,7 +10,6 @@ using ToolNexus.Application;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Pipeline;
 using ToolNexus.Infrastructure;
-using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.HealthChecks;
 using ToolNexus.Infrastructure.Security;
 
@@ -20,7 +19,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddToolExecution(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddApplication(configuration).AddInfrastructure();
+        services.AddApplication(configuration).AddInfrastructure(configuration);
         services.AddHttpContextAccessor();
         return services;
     }
@@ -29,7 +28,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddMemoryCache(options => options.SizeLimit = configuration.GetValue<long?>("Caching:Memory:SizeLimit") ?? 2048);
         services.AddDistributedMemoryCache();
-        services.AddScoped<IToolResultCache, RedisToolResultCache>();
 
         var redisConnectionString = configuration.GetConnectionString("Redis") ?? configuration["REDIS_CONNECTION_STRING"];
         if (!string.IsNullOrWhiteSpace(redisConnectionString))
