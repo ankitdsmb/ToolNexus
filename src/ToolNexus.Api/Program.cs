@@ -13,9 +13,12 @@ using Serilog.Formatting.Compact;
 using StackExchange.Redis;
 using ToolNexus.Api;
 using ToolNexus.Api.Middleware;
+using ToolNexus.Api.Options;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
+using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.Caching;
+using ToolNexus.Infrastructure.Executors;
 using ToolNexus.Infrastructure.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +74,32 @@ builder.Services.Configure<FormOptions>(options =>
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
+
+/* =========================================================
+   HTTPS + HSTS
+   ========================================================= */
+
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+    options.HttpsPort = builder.Configuration.GetValue<int?>("Security:HttpsRedirection:HttpsPort");
+});
+
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+    options.Preload = true;
+});
+
+builder.Services
+    .AddOptions<SecurityHeadersOptions>()
+    .Bind(builder.Configuration.GetSection(SecurityHeadersOptions.SectionName))
+    .ValidateOnStart();
+
+/* =========================================================
+   SWAGGER
+   ========================================================= */
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -181,6 +210,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddApplication(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddToolExecutorsFromLoadedAssemblies();
 
 builder.Services.AddMemoryCache();
@@ -228,10 +258,8 @@ if (!string.IsNullOrWhiteSpace(redisConnectionString))
     }
 }
 
-if (redisMultiplexer is not null)
-{
-    builder.Services.AddSingleton<IConnectionMultiplexer>(redisMultiplexer);
-}
+builder.Services.AddScoped<IToolResponseCache, RedisToolResultCache>();
+builder.Services.AddScoped<IToolExecutionClient, ToolExecutionClient>();
 
 builder.Services.AddSingleton<IToolResultCache, RedisToolResultCache>();
 
@@ -262,11 +290,26 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+/* =========================================================
+   MIDDLEWARE PIPELINE
+   ========================================================= */
+
+app.UseHttpsRedirection();
+
+if (app.Environment.IsProduction())
+{
+    app.UseHsts();
+}
+
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseResponseCompression();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<ApiKeyValidationMiddleware>();
+app.UseRateLimiter();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<ApiCacheHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -279,11 +322,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseRateLimiter();
-
-app.MapHealthChecks("/health", HealthCheckResponseWriter.ForTag("live")).DisableRateLimiting();
-app.MapHealthChecks("/ready", HealthCheckResponseWriter.ForTag("ready")).DisableRateLimiting();
-app.MapGet("/metrics", () => Results.StatusCode(StatusCodes.Status501NotImplemented)).DisableRateLimiting();
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 
 app.MapControllers().RequireRateLimiting("ip");
 

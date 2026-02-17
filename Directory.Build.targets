@@ -1,0 +1,41 @@
+<Project>
+  <Target Name="ValidateCleanArchitectureReferences" BeforeTargets="ResolveReferences" Condition="$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('ToolNexus.')) and '$(IsTestProject)' != 'true'">
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Domain' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Application'))"
+      Text="Clean Architecture violation: ToolNexus.Domain must not reference ToolNexus.Application." />
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Domain' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Infrastructure'))"
+      Text="Clean Architecture violation: ToolNexus.Domain must not reference ToolNexus.Infrastructure." />
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Domain' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Web'))"
+      Text="Clean Architecture violation: ToolNexus.Domain must not reference ToolNexus.Web." />
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Domain' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Api'))"
+      Text="Clean Architecture violation: ToolNexus.Domain must not reference ToolNexus.Api." />
+
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Application' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Infrastructure'))"
+      Text="Clean Architecture violation: ToolNexus.Application must not reference ToolNexus.Infrastructure." />
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Application' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Web'))"
+      Text="Clean Architecture violation: ToolNexus.Application must not reference ToolNexus.Web." />
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Application' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Api'))"
+      Text="Clean Architecture violation: ToolNexus.Application must not reference ToolNexus.Api." />
+
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Infrastructure' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Domain'))"
+      Text="Clean Architecture violation: ToolNexus.Infrastructure must reference ToolNexus.Application abstractions, not ToolNexus.Domain directly." />
+
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Web' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Domain'))"
+      Text="Clean Architecture violation: ToolNexus.Web must not reference ToolNexus.Domain directly." />
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Web' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Infrastructure'))"
+      Text="Clean Architecture violation: ToolNexus.Web must not reference ToolNexus.Infrastructure directly." />
+
+    <Error
+      Condition="'$(MSBuildProjectName)' == 'ToolNexus.Api' and @(ProjectReference->AnyHaveMetadataValue('Filename', 'ToolNexus.Domain'))"
+      Text="Clean Architecture violation: ToolNexus.Api must not reference ToolNexus.Domain directly." />
+  </Target>
+</Project>

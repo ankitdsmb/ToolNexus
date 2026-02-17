@@ -1,8 +1,11 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
 
@@ -12,7 +15,7 @@ public sealed class RedisToolResultCache(
     IDistributedCache distributedCache,
     IMemoryCache memoryCache,
     IOptions<ToolResultCacheOptions> cacheOptions,
-    ILogger<RedisToolResultCache> logger) : IToolResultCache
+    ILogger<RedisToolResultCache> logger) : IToolResponseCache
 {
     private const int FailureThreshold = 3;
     private static readonly TimeSpan CircuitOpenDuration = TimeSpan.FromSeconds(30);
@@ -23,15 +26,19 @@ public sealed class RedisToolResultCache(
     private int _consecutiveFailures;
     private DateTimeOffset? _circuitOpenUntil;
 
-    public async Task<ToolResultCacheItem?> GetAsync(string key, CancellationToken cancellationToken = default)
+    public async Task<ToolExecutionResponse?> GetAsync(
+        string slug,
+        string action,
+        string input,
+        CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(key))
+        if (string.IsNullOrWhiteSpace(slug) || string.IsNullOrWhiteSpace(action) || input is null)
         {
             return null;
         }
 
-        var normalizedKey = BuildKey(key);
-        if (memoryCache.TryGetValue<ToolResultCacheItem>(normalizedKey, out var localValue))
+        var normalizedKey = BuildKey(slug, action, input);
+        if (memoryCache.TryGetValue<ToolExecutionResponse>(normalizedKey, out var localValue))
         {
             return localValue;
         }
@@ -51,7 +58,7 @@ public sealed class RedisToolResultCache(
                 return null;
             }
 
-            var cachedValue = JsonSerializer.Deserialize<ToolResultCacheItem>(payload);
+            var cachedValue = JsonSerializer.Deserialize<ToolExecutionResponse>(payload);
             if (cachedValue is null)
             {
                 RegisterSuccess();
@@ -69,15 +76,22 @@ public sealed class RedisToolResultCache(
         }
     }
 
-    public async Task SetAsync(string key, ToolResultCacheItem value, TimeSpan ttl, CancellationToken cancellationToken = default)
+    public async Task SetAsync(
+        string slug,
+        string action,
+        string input,
+        ToolExecutionResponse response,
+        CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(key) || value is null)
+        if (string.IsNullOrWhiteSpace(slug) || string.IsNullOrWhiteSpace(action) || input is null)
         {
             return;
         }
 
-        var normalizedKey = BuildKey(key);
-        memoryCache.Set(normalizedKey, value, ttl);
+        var normalizedKey = BuildKey(slug, action, input);
+        var ttl = TimeSpan.FromSeconds(Math.Max(1, _options.AbsoluteExpirationSeconds));
+
+        memoryCache.Set(normalizedKey, response, ttl);
 
         if (IsCircuitOpen())
         {
@@ -87,7 +101,7 @@ public sealed class RedisToolResultCache(
 
         try
         {
-            var payload = JsonSerializer.Serialize(value);
+            var payload = JsonSerializer.Serialize(response);
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = ttl
@@ -155,9 +169,11 @@ public sealed class RedisToolResultCache(
         }
     }
 
-    private string BuildKey(string key)
+    private string BuildKey(string slug, string action, string input)
     {
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Convert.ToHexString(hashBytes).ToLowerInvariant();
         var prefix = string.IsNullOrWhiteSpace(_options.KeyPrefix) ? "toolnexus" : _options.KeyPrefix.Trim();
-        return $"{prefix}:{key}";
+        return $"{prefix}:{slug}:{action}:{hash}";
     }
 }
