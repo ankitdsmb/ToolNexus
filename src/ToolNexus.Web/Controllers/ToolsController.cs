@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Models;
+using ToolNexus.Web.Options;
 
 namespace ToolNexus.Web.Controllers;
 
@@ -9,9 +11,7 @@ namespace ToolNexus.Web.Controllers;
 public sealed class ToolsController(
     IToolCatalogService toolCatalogService,
     IToolContentService toolContentService,
-    IConfiguration configuration,
-    IWebHostEnvironment environment,
-    ILogger<ToolsController> logger) : Controller
+    IOptions<ApiSettings> apiSettings) : Controller
 {
     [HttpGet("")]
     [OutputCache(Duration = 300)]
@@ -49,32 +49,25 @@ public sealed class ToolsController(
             JsonLd = BuildJsonLd(tool, content, canonicalUrl)
         };
 
-        var apiBaseUrl = ResolveApiBaseUrl(configuration["ApiBaseUrl"], environment.IsDevelopment(), logger);
+        var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
         return View("Tool", new ToolPageViewModel { Tool = tool, ApiBaseUrl = apiBaseUrl, Seo = seo, Content = content });
     }
 
-    private static string ResolveApiBaseUrl(string? configuredApiBaseUrl, bool isDevelopment, ILogger logger)
+    private static string ResolveApiBaseUrl(string? configuredApiBaseUrl)
     {
-        if (string.IsNullOrWhiteSpace(configuredApiBaseUrl) ||
-            string.Equals(configuredApiBaseUrl, "auto", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(configuredApiBaseUrl))
         {
-            return isDevelopment ? "http://localhost:5163" : string.Empty;
+            return string.Empty;
         }
 
         var normalized = configuredApiBaseUrl.Trim().TrimEnd('/');
 
         if (!Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
         {
-            return normalized;
-        }
-
-        if (!isDevelopment && string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogWarning("ApiBaseUrl is configured to localhost in a non-development environment. Falling back to same-origin API path.");
             return string.Empty;
         }
 
-        return normalized;
+        return uri.GetLeftPart(UriPartial.Authority).TrimEnd('/');
     }
 
     private static string BuildJsonLd(Application.Models.ToolDescriptor tool, Application.Models.ToolContent? content, string canonicalUrl)

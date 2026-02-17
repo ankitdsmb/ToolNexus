@@ -5,7 +5,7 @@ if (!page) {
 }
 
 const slug = page.dataset.slug ?? '';
-const apiBase = page.dataset.apiBase ?? '';
+const apiBase = window.ToolNexusConfig?.apiBaseUrl ?? '';
 const maxClientInputBytes = 1024 * 1024;
 
 const clientSafeActions = new Set(
