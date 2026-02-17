@@ -1,5 +1,4 @@
 using System.Reflection;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolNexus.Application.Options;
@@ -16,32 +15,23 @@ public static class DependencyInjection
             .AddOptions<ToolResultCacheOptions>()
             .Bind(configuration.GetSection(ToolResultCacheOptions.SectionName))
             .Validate(x => x.MaxEntries > 0, "ToolResultCache:MaxEntries must be greater than zero.")
+            .Validate(x => x.AbsoluteExpirationSeconds > 0, "ToolResultCache:AbsoluteExpirationSeconds must be greater than zero.")
+            .Validate(x => !string.IsNullOrWhiteSpace(x.KeyPrefix), "ToolResultCache:KeyPrefix is required.")
             .ValidateOnStart();
-
-        var configuredMaxEntries = configuration
-            .GetSection(ToolResultCacheOptions.SectionName)
-            .GetValue<int?>(nameof(ToolResultCacheOptions.MaxEntries));
-
-        services.AddMemoryCache(options =>
-        {
-            if (configuredMaxEntries is > 0)
-            {
-                options.SizeLimit = configuredMaxEntries;
-            }
-        });
 
         services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         return services;
     }
 
-    public static IServiceCollection AddToolExecutorsFromAssembly(
-        this IServiceCollection services,
-        Assembly assembly)
+    public static IServiceCollection AddToolExecutorsFromLoadedAssemblies(this IServiceCollection services)
     {
-        var executorTypes = assembly
-            .GetTypes()
-            .Where(type => type is { IsAbstract: false, IsInterface: false } && typeof(IToolExecutor).IsAssignableFrom(type));
+        var executorTypes = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .Where(assembly => !assembly.IsDynamic)
+            .SelectMany(GetLoadableTypes)
+            .Where(type => type is { IsAbstract: false, IsInterface: false } && typeof(IToolExecutor).IsAssignableFrom(type))
+            .Distinct();
 
         foreach (var executorType in executorTypes)
         {
@@ -49,5 +39,17 @@ public static class DependencyInjection
         }
 
         return services;
+    }
+
+    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Where(type => type is not null)!;
+        }
     }
 }

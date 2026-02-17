@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
@@ -10,15 +9,13 @@ namespace ToolNexus.Application.Services;
 
 public sealed class ToolService(
     IEnumerable<IToolExecutor> executors,
-    IMemoryCache memoryCache,
+    IToolResultCache toolResultCache,
     IOptions<ToolResultCacheOptions> cacheOptions) : IToolService
 {
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
-
     private readonly Dictionary<string, IToolExecutor> _executorsBySlug = executors
         .ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
 
-    private readonly int _maxEntries = Math.Max(1, cacheOptions.Value.MaxEntries);
+    private readonly TimeSpan _cacheDuration = TimeSpan.FromSeconds(Math.Max(1, cacheOptions.Value.AbsoluteExpirationSeconds));
 
     public async Task<ToolExecutionResponse> ExecuteAsync(ToolExecutionRequest request, CancellationToken cancellationToken = default)
     {
@@ -30,9 +27,11 @@ public sealed class ToolService(
         var normalizedSlug = request.Slug.Trim().ToLowerInvariant();
         var normalizedAction = request.Action.Trim().ToLowerInvariant();
         var cacheKey = BuildCacheKey(normalizedSlug, normalizedAction, request.Input);
-        if (memoryCache.TryGetValue<ToolExecutionResponse>(cacheKey, out var cachedResponse))
+
+        var cached = await toolResultCache.GetAsync(cacheKey, cancellationToken);
+        if (cached is not null)
         {
-            return cachedResponse!;
+            return new ToolExecutionResponse(cached.Success, cached.Output, cached.Error);
         }
 
         var options = request.Options is null
@@ -44,24 +43,14 @@ public sealed class ToolService(
 
         if (result.Success)
         {
-            memoryCache.Set(cacheKey, response, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = CacheDuration,
-                Size = 1
-            });
-
-            TrimCacheIfNeeded(memoryCache);
+            await toolResultCache.SetAsync(
+                cacheKey,
+                new ToolResultCacheItem(response.Success, response.Output, response.Error),
+                _cacheDuration,
+                cancellationToken);
         }
 
         return response;
-    }
-
-    private void TrimCacheIfNeeded(IMemoryCache memoryCache)
-    {
-        if (memoryCache is MemoryCache concreteCache && concreteCache.Count > _maxEntries)
-        {
-            concreteCache.Compact(0.10);
-        }
     }
 
     private static string BuildCacheKey(string slug, string action, string input)

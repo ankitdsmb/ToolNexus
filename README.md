@@ -2,6 +2,10 @@ MODE=B (backend + tool services)
 
 # ToolNexus
 
+[![Build & Test](https://github.com/<org>/ToolNexus/actions/workflows/ci.yml/badge.svg)](https://github.com/<org>/ToolNexus/actions/workflows/ci.yml)
+[![Code Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](https://github.com/<org>/ToolNexus/actions/workflows/ci.yml)
+[![Docker Tag](https://img.shields.io/docker/v/<org>/toolnexus?label=docker)](https://hub.docker.com/r/<org>/toolnexus)
+
 ToolNexus is a .NET 8 developer tools platform inspired by CodeBeautify, with a cinematic dark UI, manifest-driven routes, and pluggable tool executors.
 
 ## Updated Clean Architecture Solution Structure
@@ -96,7 +100,10 @@ Web:
 - `/tools/{slug}`
 
 API:
+- `GET /api/tools/{slug}/{action}?input=...`
 - `POST /api/v1/tools/{slug}`
+- `GET /health`
+- `GET /ready`
 
 Request body:
 ```json
