@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+
+      - name: Restore
+        run: dotnet restore ToolNexus.sln
+
+      - name: Build (Release)
+        run: dotnet build ToolNexus.sln -c Release --no-restore /p:ContinuousIntegrationBuild=true /p:Deterministic=true
+
+      - name: Test
+        run: dotnet test ToolNexus.sln -c Release --no-build --verbosity normal
+
+      - name: Collect coverage and enforce threshold
+        run: |
+          dotnet test tests/ToolNexus.Tools.Json.Tests/ToolNexus.Tools.Json.Tests.csproj \
+            -c Release \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=./TestResults/coverage/ \
+            /p:Include="[ToolNexus.Application]*,[ToolNexus.Domain]*" \
+            /p:Threshold=90 \
+            /p:ThresholdType=line \
+            /p:ThresholdStat=total
+
+      - name: Publish coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/ToolNexus.Tools.Json.Tests/TestResults/coverage/coverage.cobertura.xml
+
+      - name: Build production Docker image
+        run: docker build -f dockerfile -t toolnexus-api:ci .

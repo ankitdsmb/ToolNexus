@@ -17,7 +17,14 @@ public sealed class RedisToolResultCache(
     IOptions<ToolResultCacheOptions> cacheOptions,
     ILogger<RedisToolResultCache> logger) : IToolResponseCache
 {
+    private const int FailureThreshold = 3;
+    private static readonly TimeSpan CircuitOpenDuration = TimeSpan.FromSeconds(30);
+
     private readonly ToolResultCacheOptions _options = cacheOptions.Value ?? new ToolResultCacheOptions();
+    private readonly object _stateLock = new();
+
+    private int _consecutiveFailures;
+    private DateTimeOffset? _circuitOpenUntil;
 
     public async Task<ToolExecutionResponse?> GetAsync(
         string slug,
@@ -36,26 +43,35 @@ public sealed class RedisToolResultCache(
             return localValue;
         }
 
+        if (IsCircuitOpen())
+        {
+            logger.LogDebug("Redis circuit breaker is open. Skipping distributed cache read for key {CacheKey}.", normalizedKey);
+            return null;
+        }
+
         try
         {
             var payload = await distributedCache.GetStringAsync(normalizedKey, cancellationToken);
             if (string.IsNullOrWhiteSpace(payload))
             {
+                RegisterSuccess();
                 return null;
             }
 
             var cachedValue = JsonSerializer.Deserialize<ToolExecutionResponse>(payload);
             if (cachedValue is null)
             {
+                RegisterSuccess();
                 return null;
             }
 
             memoryCache.Set(normalizedKey, cachedValue, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
+            RegisterSuccess();
             return cachedValue;
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Redis cache unavailable for key {CacheKey}. Falling back to local memory cache.", normalizedKey);
+            RegisterFailure(ex, normalizedKey, "read");
             return null;
         }
     }
@@ -77,6 +93,12 @@ public sealed class RedisToolResultCache(
 
         memoryCache.Set(normalizedKey, response, ttl);
 
+        if (IsCircuitOpen())
+        {
+            logger.LogDebug("Redis circuit breaker is open. Skipping distributed cache write for key {CacheKey}.", normalizedKey);
+            return;
+        }
+
         try
         {
             var payload = JsonSerializer.Serialize(response);
@@ -86,10 +108,64 @@ public sealed class RedisToolResultCache(
             };
 
             await distributedCache.SetStringAsync(normalizedKey, payload, options, cancellationToken);
+            RegisterSuccess();
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed writing to Redis cache for key {CacheKey}. Request will continue using memory cache.", normalizedKey);
+            RegisterFailure(ex, normalizedKey, "write");
+        }
+    }
+
+    private bool IsCircuitOpen()
+    {
+        lock (_stateLock)
+        {
+            if (_circuitOpenUntil is null)
+            {
+                return false;
+            }
+
+            if (_circuitOpenUntil > DateTimeOffset.UtcNow)
+            {
+                return true;
+            }
+
+            _circuitOpenUntil = null;
+            _consecutiveFailures = 0;
+            return false;
+        }
+    }
+
+    private void RegisterSuccess()
+    {
+        lock (_stateLock)
+        {
+            _consecutiveFailures = 0;
+            _circuitOpenUntil = null;
+        }
+    }
+
+    private void RegisterFailure(Exception ex, string normalizedKey, string operation)
+    {
+        var openCircuit = false;
+
+        lock (_stateLock)
+        {
+            _consecutiveFailures++;
+            if (_consecutiveFailures >= FailureThreshold)
+            {
+                _circuitOpenUntil = DateTimeOffset.UtcNow.Add(CircuitOpenDuration);
+                openCircuit = true;
+            }
+        }
+
+        if (openCircuit)
+        {
+            logger.LogWarning(ex, "Redis cache {Operation} failed for key {CacheKey}. Circuit opened for {DurationSeconds} seconds.", operation, normalizedKey, CircuitOpenDuration.TotalSeconds);
+        }
+        else
+        {
+            logger.LogWarning(ex, "Redis cache {Operation} failed for key {CacheKey}. Falling back to local memory cache.", operation, normalizedKey);
         }
     }
 
