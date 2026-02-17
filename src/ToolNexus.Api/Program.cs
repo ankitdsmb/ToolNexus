@@ -9,6 +9,12 @@ using ToolNexus.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenLocalhost(5163);
+    options.ListenLocalhost(7163, listenOptions => listenOptions.UseHttps());
+});
+
 builder.Host.UseSerilog((context, cfg) => cfg.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers(options =>
@@ -60,7 +66,7 @@ builder.Services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("WebAppPolicy", policy =>
+    options.AddPolicy("ToolNexusWeb", policy =>
     {
         policy.WithOrigins("https://localhost:5173")
               .AllowAnyHeader()
@@ -76,7 +82,7 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<SanitizeErrorMiddleware>();
-app.UseCors("WebAppPolicy");
+app.UseCors("ToolNexusWeb");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
