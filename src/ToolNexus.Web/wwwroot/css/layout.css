@@ -1,0 +1,102 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--md-sys-color-surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--md-sys-color-outline);
+}
+
+.topbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--md-space-3) var(--md-space-4);
+  display: grid;
+  gap: var(--md-space-3);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-space-2);
+  text-decoration: none;
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+
+.brand__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--md-sys-color-primary);
+}
+
+.topbar__search,
+.search {
+  width: 100%;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-radius-pill);
+  padding: 0.65rem 0.95rem;
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+.topbar__nav {
+  display: flex;
+  gap: var(--md-space-2);
+  flex-wrap: wrap;
+}
+
+.topbar__link {
+  text-decoration: none;
+  border-radius: var(--md-radius-pill);
+  padding: 0.45rem 0.75rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.topbar__link:hover,
+.topbar__link:focus-visible {
+  color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-surface-container);
+}
+
+.banner {
+  text-align: center;
+  padding: var(--md-space-2) var(--md-space-4);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-size: 0.9rem;
+}
+
+.container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--md-space-5) var(--md-space-4) var(--md-space-8);
+}
+
+.footer {
+  text-align: center;
+  border-top: 1px solid var(--md-sys-color-outline);
+  padding: var(--md-space-4);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+@media (min-width: 860px) {
+  .topbar__inner {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--md-space-4);
+  }
+
+  .topbar__search-wrap {
+    max-width: 36rem;
+    width: 100%;
+  }
+}
