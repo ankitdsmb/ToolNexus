@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ToolNexus.Application.Services;
 
 namespace ToolNexus.Api.Middleware;
 
@@ -9,6 +10,21 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
         try
         {
             await next(context);
+        }
+        catch (InputSanitizationException ex)
+        {
+            var problem = new ProblemDetails
+            {
+                Title = "Invalid input.",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest,
+                Type = "https://httpstatuses.com/400",
+                Instance = context.Request.Path
+            };
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(problem);
         }
         catch (Exception ex)
         {
