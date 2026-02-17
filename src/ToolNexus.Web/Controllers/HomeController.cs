@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using ToolNexus.Web.Models;
@@ -6,7 +5,7 @@ using ToolNexus.Web.Services;
 
 namespace ToolNexus.Web.Controllers;
 
-public sealed class HomeController(IManifestService manifestService, ISitemapService sitemapService) : Controller
+public sealed class HomeController(IManifestService manifestService) : Controller
 {
     [HttpGet("/")]
     [OutputCache(Duration = 300)]
@@ -32,14 +31,5 @@ public sealed class HomeController(IManifestService manifestService, ISitemapSer
     public IActionResult ContactUs()
     {
         return View();
-    }
-
-    [HttpGet("/sitemap.xml")]
-    [OutputCache(Duration = 3600)]
-    public ContentResult Sitemap()
-    {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var xml = sitemapService.BuildSitemap(baseUrl);
-        return Content(xml, "application/xml", Encoding.UTF8);
     }
 }

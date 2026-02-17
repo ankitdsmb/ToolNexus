@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ToolNexus.Application.Models;
 using ToolNexus.Web.Models;
 
 namespace ToolNexus.Web.Services;

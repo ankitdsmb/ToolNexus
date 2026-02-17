@@ -1,3 +1,4 @@
+using ToolNexus.Application;
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using ToolNexus.Web.Services;
@@ -25,6 +26,8 @@ builder.Services.AddOutputCache(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddSingleton<IManifestService, ManifestService>();
 builder.Services.AddSingleton<ISitemapService, SitemapService>();
 

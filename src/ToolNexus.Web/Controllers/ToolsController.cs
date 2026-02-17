@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using ToolNexus.Application.Services;
 using ToolNexus.Web.Models;
 using ToolNexus.Web.Services;
 
 namespace ToolNexus.Web.Controllers;
 
 [Route("tools")]
-public sealed class ToolsController(IManifestService manifestService, IConfiguration configuration) : Controller
+public sealed class ToolsController(
+    IManifestService manifestService,
+    IConfiguration configuration,
+    ISeoMetadataService seoMetadataService) : Controller
 {
     [HttpGet("")]
     [OutputCache(Duration = 300)]
@@ -33,31 +37,29 @@ public sealed class ToolsController(IManifestService manifestService, IConfigura
             return NotFound();
         }
 
-        var canonicalUrl = $"{Request.Scheme}://{Request.Host}/tools/{Uri.EscapeDataString(tool.Slug)}";
-        var seo = new ToolSeoMetadata
-        {
-            Title = tool.SeoTitle,
-            Description = tool.SeoDescription,
-            CanonicalUrl = canonicalUrl,
-            JsonLd = System.Text.Json.JsonSerializer.Serialize(new
-            {
-                @context = "https://schema.org",
-                @type = "SoftwareApplication",
-                name = tool.Title,
-                description = tool.SeoDescription,
-                applicationCategory = $"{tool.Category} Developer Tool",
-                operatingSystem = "Any",
-                url = canonicalUrl,
-                offers = new
-                {
-                    @type = "Offer",
-                    price = "0",
-                    priceCurrency = "USD"
-                }
-            })
-        };
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var seo = seoMetadataService.BuildToolPageMetadata(tool, baseUrl);
+
+        var relatedTools = manifestService
+            .GetByCategory(tool.Category)
+            .Where(x => !x.Slug.Equals(tool.Slug, StringComparison.OrdinalIgnoreCase))
+            .Take(5)
+            .ToList();
+
+        var popularTools = manifestService
+            .GetAllTools()
+            .Where(x => !x.Slug.Equals(tool.Slug, StringComparison.OrdinalIgnoreCase))
+            .Take(5)
+            .ToList();
 
         var apiBaseUrl = configuration["ApiBaseUrl"] ?? "http://localhost:5163";
-        return View("Tool", new ToolPageViewModel { Tool = tool, ApiBaseUrl = apiBaseUrl, Seo = seo });
+        return View("Tool", new ToolPageViewModel
+        {
+            Tool = tool,
+            ApiBaseUrl = apiBaseUrl,
+            Seo = seo,
+            RelatedTools = relatedTools,
+            PopularTools = popularTools
+        });
     }
 }

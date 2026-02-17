@@ -21,6 +21,7 @@ public static class DependencyInjection
 
         services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
+        services.AddSingleton<ISeoMetadataService, SeoMetadataService>();
         return services;
     }
 

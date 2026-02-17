@@ -3,8 +3,19 @@
     ViewData["Title"] = Model.Seo.Title;
     ViewData["Description"] = Model.Seo.Description;
     ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["OpenGraphType"] = Model.Seo.OpenGraphType;
+    ViewData["TwitterCard"] = Model.Seo.TwitterCard;
     ViewData["JsonLd"] = Model.Seo.JsonLd;
+
+    var breadcrumbs = new List<(string Label, string Url)>
+    {
+        ("Home", "/"),
+        ("Tools", "/tools"),
+        (Model.Tool.Title, string.Empty)
+    };
 }
+
+<partial name="_Breadcrumbs" model="breadcrumbs" />
 
 <article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
   <header class="tool-page__heading">
@@ -65,6 +76,32 @@
       <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
     </div>
   </section>
+
+  @if (Model.RelatedTools.Count > 0)
+  {
+      <section class="tool-panel" aria-labelledby="relatedToolsHeading">
+          <h2 id="relatedToolsHeading">Related @Model.Tool.Category tools</h2>
+          <ul>
+              @foreach (var relatedTool in Model.RelatedTools)
+              {
+                  <li><a href="/tools/@relatedTool.Slug" aria-label="Open @relatedTool.Title tool">@relatedTool.Title</a></li>
+              }
+          </ul>
+      </section>
+  }
+
+  @if (Model.PopularTools.Count > 0)
+  {
+      <section class="tool-panel" aria-labelledby="popularToolsHeading">
+          <h2 id="popularToolsHeading">Popular tools</h2>
+          <ul>
+              @foreach (var popularTool in Model.PopularTools)
+              {
+                  <li><a href="/tools/@popularTool.Slug" aria-label="Open @popularTool.Title tool">@popularTool.Title</a></li>
+              }
+          </ul>
+      </section>
+  }
 
   <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
 </article>

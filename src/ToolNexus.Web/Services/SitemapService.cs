@@ -1,45 +1,49 @@
-using System.Security;
-using System.Text;
+using System.Runtime.CompilerServices;
+using ToolNexus.Application.Models;
 
 namespace ToolNexus.Web.Services;
 
 public interface ISitemapService
 {
-    string BuildSitemap(string baseUrl);
+    IAsyncEnumerable<SitemapUrlEntry> GetEntriesAsync(string baseUrl, CancellationToken cancellationToken = default);
 }
+
+public sealed record SitemapUrlEntry(string Loc, string LastModified, string ChangeFrequency, decimal Priority);
 
 public sealed class SitemapService(IManifestService manifestService) : ISitemapService
 {
-    public string BuildSitemap(string baseUrl)
+    public async IAsyncEnumerable<SitemapUrlEntry> GetEntriesAsync(string baseUrl, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var urls = new List<string>
+        var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var safeBaseUrl = baseUrl.TrimEnd('/');
+
+        var staticEntries = new[]
         {
-            $"{baseUrl}/",
-            $"{baseUrl}/tools",
-            $"{baseUrl}/about",
-            $"{baseUrl}/disclaimer",
-            $"{baseUrl}/contact-us"
+            new SitemapUrlEntry($"{safeBaseUrl}/", now, "daily", 1.0m),
+            new SitemapUrlEntry($"{safeBaseUrl}/tools", now, "daily", 0.9m),
+            new SitemapUrlEntry($"{safeBaseUrl}/about", now, "monthly", 0.4m),
+            new SitemapUrlEntry($"{safeBaseUrl}/contact-us", now, "monthly", 0.4m),
+            new SitemapUrlEntry($"{safeBaseUrl}/disclaimer", now, "yearly", 0.3m)
         };
 
-        urls.AddRange(manifestService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));
-        urls.AddRange(manifestService.GetAllTools().Select(tool => $"{baseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}"));
-
-        var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
-
-        var xml = new StringBuilder();
-        xml.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        xml.AppendLine("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
-
-        foreach (var url in urls.Distinct(StringComparer.OrdinalIgnoreCase))
+        foreach (var entry in staticEntries)
         {
-            xml.AppendLine("  <url>");
-            xml.AppendLine($"    <loc>{SecurityElement.Escape(url)}</loc>");
-            xml.AppendLine($"    <lastmod>{now}</lastmod>");
-            xml.AppendLine("    <changefreq>weekly</changefreq>");
-            xml.AppendLine("  </url>");
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return entry;
         }
 
-        xml.AppendLine("</urlset>");
-        return xml.ToString();
+        foreach (var category in manifestService.GetAllCategories())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new SitemapUrlEntry($"{safeBaseUrl}/tools/{Uri.EscapeDataString(category)}", now, "weekly", 0.7m);
+            await Task.Yield();
+        }
+
+        foreach (var tool in manifestService.GetAllTools())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new SitemapUrlEntry($"{safeBaseUrl}/tools/{Uri.EscapeDataString(tool.Slug)}", now, "weekly", 0.8m);
+            await Task.Yield();
+        }
     }
 }

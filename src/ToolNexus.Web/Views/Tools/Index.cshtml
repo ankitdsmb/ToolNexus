@@ -23,14 +23,14 @@
 <div class="chips">
   @foreach (var category in Model.Categories)
   {
-    <a class="chip" href="/tools/@category">@category</a>
+    <a class="chip" href="/tools/@category" aria-label="Browse @category tools">@category developer tools</a>
   }
 </div>
 
 <div class="grid">
   @foreach (var tool in Model.Tools)
   {
-    <a class="card" href="/tools/@tool.Slug">
+    <a class="card" href="/tools/@tool.Slug" aria-label="Open @tool.Title tool">
       <h3>@tool.Title</h3>
       <p>@tool.Category</p>
     </a>
