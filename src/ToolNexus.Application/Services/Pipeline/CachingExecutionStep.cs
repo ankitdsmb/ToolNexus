@@ -38,7 +38,9 @@ public sealed class CachingExecutionStep(
             return cached;
         }
 
-        var inflightTask = Inflight.GetOrAdd(cacheKey, _ => PopulateCacheAsync(cacheKey, context, next, cancellationToken));
+        // Use CancellationToken.None for the shared population task so a single cancelled caller
+        // does not cancel cache population for all other concurrent callers on the same key.
+        var inflightTask = Inflight.GetOrAdd(cacheKey, _ => PopulateCacheAsync(cacheKey, context, next, CancellationToken.None));
         try
         {
             return await inflightTask.WaitAsync(cancellationToken);

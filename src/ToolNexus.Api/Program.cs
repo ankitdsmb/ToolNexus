@@ -29,6 +29,7 @@ builder.Services
     // Application stays use-case focused; Infrastructure provides concrete implementations.
     .AddApplication(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
+    // Registers distributed + memory cache with MemoryCacheOptions.SizeLimit from configuration.
     .AddCaching(builder.Configuration)
     .AddSecurity(builder.Configuration)
     .AddObservability()
