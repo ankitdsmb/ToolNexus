@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 
@@ -32,6 +34,7 @@ public sealed class ToolsController(
     [HttpGet("categories")]
     public ActionResult<IReadOnlyCollection<string>> Categories() => Ok(catalogService.GetAllCategories());
 
+    [Authorize(Policy = ToolActionRequirement.PolicyName)]
     [HttpGet("{slug}/{action}")]
     public async Task<ActionResult<ToolExecutionResponse>> ExecuteGet(
         [FromRoute, Required, MinLength(1)] string slug,
@@ -62,9 +65,11 @@ public sealed class ToolsController(
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    [HttpPost("{slug}")]
+    [Authorize(Policy = ToolActionRequirement.PolicyName)]
+    [HttpPost("{slug}/{action}")]
     public async Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute, Required, MinLength(1)] string slug,
+        [FromRoute, Required, MinLength(1)] string action,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
     {
@@ -74,18 +79,18 @@ public sealed class ToolsController(
         }
 
         var result = await toolService.ExecuteAsync(
-            new ToolExecutionRequest(slug, request.Action, request.Input, request.Options),
+            new ToolExecutionRequest(slug, action, request.Input, request.Options),
             cancellationToken);
 
         if (result.NotFound)
         {
-            logger.LogInformation("Tool not found for slug {Slug} and action {Action}.", slug, request.Action);
+            logger.LogInformation("Tool not found for slug {Slug} and action {Action}.", slug, action);
             return NotFound(result);
         }
 
         if (!result.Success)
         {
-            logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, request.Action, result.Error);
+            logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, action, result.Error);
         }
 
         if (manifestGovernance.FindBySlug(slug)?.IsDeprecated == true)
@@ -97,7 +102,6 @@ public sealed class ToolsController(
     }
 
     public sealed record ExecuteToolRequest(
-        [property: Required(AllowEmptyStrings = false), MinLength(1)] string Action,
         [property: Required] string Input,
         IDictionary<string, string>? Options = null);
 }

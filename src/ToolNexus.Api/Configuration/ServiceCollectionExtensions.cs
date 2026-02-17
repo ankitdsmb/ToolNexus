@@ -1,11 +1,16 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using StackExchange.Redis;
 using System.Threading.RateLimiting;
+using ToolNexus.Api.Authentication;
+using ToolNexus.Api.Filters;
 using ToolNexus.Api.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Pipeline;
@@ -44,6 +49,41 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
         services.AddSingleton<ILogRedactionPolicy, LogRedactionPolicy>();
+        services.AddScoped<RedactingLoggingExceptionFilter>();
+
+        var jwtOptions = configuration.GetSection(JwtSecurityOptions.SectionName).Get<JwtSecurityOptions>()
+            ?? new JwtSecurityOptions();
+
+        var signingKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = signingKey,
+                    ClockSkew = TimeSpan.FromSeconds(30)
+                };
+            });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(ToolActionRequirement.PolicyName, policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.AddRequirements(new ToolActionRequirement());
+            });
+        });
+
+        services.AddSingleton<IAuthorizationHandler, ToolActionAuthorizationHandler>();
+        services.AddOptions<JwtSecurityOptions>().Bind(configuration.GetSection(JwtSecurityOptions.SectionName)).ValidateOnStart();
         services.AddOptions<SecurityHeadersOptions>().Bind(configuration.GetSection(SecurityHeadersOptions.SectionName)).ValidateOnStart();
         return services;
     }
