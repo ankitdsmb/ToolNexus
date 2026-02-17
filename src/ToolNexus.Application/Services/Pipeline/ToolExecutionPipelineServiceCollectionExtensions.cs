@@ -17,9 +17,8 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddToolExecutionStep<ValidationStep>();
         services.AddToolExecutionStep<PolicyEnforcementStep>();
         services.AddToolExecutionStep<RateLimitStep>();
-        services.AddToolExecutionStep<CacheLookupStep>();
+        services.AddToolExecutionStep<CachingExecutionStep>();
         services.AddToolExecutionStep<ExecutionStep>();
-        services.AddToolExecutionStep<CacheWriteStep>();
         services.AddToolExecutionStep<MetricsStep>();
 
         return services;
