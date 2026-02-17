@@ -4,18 +4,19 @@
 @{
     var title = ViewData["Title"]?.ToString() ?? "ToolNexus";
     var description = ViewData["Description"]?.ToString() ?? "ToolNexus online developer tools.";
-    var canonicalUrl = ViewData["CanonicalUrl"]?.ToString() 
+    var canonicalUrl = ViewData["CanonicalUrl"]?.ToString()
         ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
     var keywords = ViewData["Keywords"]?.ToString() ?? "developer tools, online utilities, ToolNexus";
     var robots = ViewData["Robots"]?.ToString() ?? "index,follow";
     var jsonLd = ViewData["JsonLd"]?.ToString();
 }
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>@title</title>
 
-    <!-- SEO -->
+    <!-- Primary SEO -->
     <meta name="description" content="@description" />
     <meta name="keywords" content="@keywords" />
     <meta name="robots" content="@robots" />
@@ -40,10 +41,9 @@
     }
 
     <!-- Styles -->
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
-          integrity=""
           crossorigin="anonymous" />
 </head>
 

@@ -12,6 +12,11 @@ public abstract class ToolExecutorBase : IToolExecutor
 
     public async Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)
     {
+        if (request is null)
+        {
+            return ToolResult.Fail("Request is required.");
+        }
+
         var action = request.Action?.Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(action))
         {
@@ -25,13 +30,29 @@ public abstract class ToolExecutorBase : IToolExecutor
 
         try
         {
-            return await ExecuteCoreAsync(action, request, cancellationToken);
+            var result = await ExecuteCoreAsync(action, request, cancellationToken);
+            return NormalizeResult(result);
         }
         catch (Exception ex)
         {
-            return ToolResult.Fail(ex.Message);
+            return ToolResult.Fail(string.IsNullOrWhiteSpace(ex.Message) ? "Execution failed." : ex.Message);
         }
     }
 
     protected abstract Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken);
+
+    private static ToolResult NormalizeResult(ToolResult result)
+    {
+        if (result is null)
+        {
+            return ToolResult.Fail("Tool executor returned no result.");
+        }
+
+        if (result.Success)
+        {
+            return ToolResult.Ok(result.Output ?? string.Empty);
+        }
+
+        return ToolResult.Fail(result.Error ?? "Tool execution failed.");
+    }
 }
