@@ -14,4 +14,5 @@ public sealed class ToolDefinition
     public required string SeoTitle { get; init; }
     public required string SeoDescription { get; init; }
     public required string ExampleInput { get; init; }
+    public List<string> ClientSafeActions { get; init; } = [];
 }
