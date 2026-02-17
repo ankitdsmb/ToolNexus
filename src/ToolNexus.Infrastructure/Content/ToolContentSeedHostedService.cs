@@ -15,7 +15,14 @@ public sealed class ToolContentSeedHostedService(
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        if ((await dbContext.Database.GetMigrationsAsync(cancellationToken)).Any())
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
+        else
+        {
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        }
 
         if (await dbContext.ToolContents.AnyAsync(cancellationToken))
         {
