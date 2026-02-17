@@ -32,7 +32,7 @@ public sealed class ToolService(
         }
         catch (Exception ex)
         {
-            // No sensitive input logged
+            // Never log input (security rule)
             logger.LogError(
                 ex,
                 "Unhandled tool execution error for tool {Slug} action {Action}.",

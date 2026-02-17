@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.StaticFiles;
 using ToolNexus.Application;
 using ToolNexus.Infrastructure;
 
@@ -7,7 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ConfigureEndpointDefaults(endpointOptions => endpointOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
+    options.ConfigureEndpointDefaults(endpointOptions =>
+        endpointOptions.Protocols =
+            Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
 });
 
 builder.Services.AddResponseCompression(options =>
@@ -17,15 +20,20 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<GzipCompressionProvider>();
 });
 
-builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
-builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+builder.Services.Configure<BrotliCompressionProviderOptions>(o =>
+    o.Level = CompressionLevel.Fastest);
+
+builder.Services.Configure<GzipCompressionProviderOptions>(o =>
+    o.Level = CompressionLevel.Fastest);
 
 builder.Services.AddOutputCache(options =>
 {
-    options.AddBasePolicy(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(5)));
+    options.AddBasePolicy(policy =>
+        policy.Expire(TimeSpan.FromMinutes(5)));
 });
 
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure();
 
@@ -38,16 +46,91 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseResponseCompression();
-app.UseStaticFiles(new StaticFileOptions
+
+if (!app.Environment.IsDevelopment())
 {
-    OnPrepareResponse = context =>
+    var contentTypeProvider = new FileExtensionContentTypeProvider();
+
+    app.Use(async (context, next) =>
     {
-        var headers = context.Context.Response.Headers;
-        headers.CacheControl = "public,max-age=31536000,immutable";
-    }
-});
+        if (!(HttpMethods.IsGet(context.Request.Method) ||
+              HttpMethods.IsHead(context.Request.Method)))
+        {
+            await next();
+            return;
+        }
+
+        if (!context.Request.Path.HasValue)
+        {
+            await next();
+            return;
+        }
+
+        var requestPath = context.Request.Path.Value!;
+
+        if (requestPath.EndsWith(".br", StringComparison.OrdinalIgnoreCase) ||
+            requestPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+        {
+            await next();
+            return;
+        }
+
+        var relativePath = requestPath.TrimStart('/');
+        var acceptedEncodings = context.Request.Headers.AcceptEncoding.ToString();
+
+        if (!string.IsNullOrEmpty(acceptedEncodings))
+        {
+            var prefersBrotli = acceptedEncodings.Contains("br", StringComparison.OrdinalIgnoreCase);
+            var acceptsGzip = acceptedEncodings.Contains("gzip", StringComparison.OrdinalIgnoreCase);
+
+            if (prefersBrotli &&
+                app.Environment.WebRootFileProvider
+                   .GetFileInfo($"{relativePath}.br").Exists)
+            {
+                context.Request.Path = new PathString($"{requestPath}.br");
+                context.Response.Headers.ContentEncoding = "br";
+                context.Response.Headers.Vary = "Accept-Encoding";
+                context.Items["StaticOriginalPath"] = requestPath;
+            }
+            else if (acceptsGzip &&
+                     app.Environment.WebRootFileProvider
+                        .GetFileInfo($"{relativePath}.gz").Exists)
+            {
+                context.Request.Path = new PathString($"{requestPath}.gz");
+                context.Response.Headers.ContentEncoding = "gzip";
+                context.Response.Headers.Vary = "Accept-Encoding";
+                context.Items["StaticOriginalPath"] = requestPath;
+            }
+        }
+
+        await next();
+    });
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        OnPrepareResponse = context =>
+        {
+            var headers = context.Context.Response.Headers;
+            headers.CacheControl = "public,max-age=31536000,immutable";
+
+            if (context.Context.Items.TryGetValue("StaticOriginalPath", out var originalPathObj) &&
+                originalPathObj is string originalPath &&
+                contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
+            {
+                context.Context.Response.ContentType = originalContentType;
+            }
+        }
+    });
+}
+else
+{
+    app.UseStaticFiles();
+}
+
 app.UseRouting();
+
 app.UseOutputCache();
 
 app.MapControllerRoute(
