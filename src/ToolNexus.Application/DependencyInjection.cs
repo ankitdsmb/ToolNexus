@@ -21,6 +21,8 @@ public static class DependencyInjection
 
         services.AddScoped<IToolService, ToolService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
+        services.AddSingleton<IToolCatalogService, ToolCatalogService>();
+        services.AddSingleton<ISitemapService, SitemapService>();
         return services;
     }
 
