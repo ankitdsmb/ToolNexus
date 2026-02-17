@@ -13,6 +13,7 @@ public static class ToolExecutorRegistration
         services.AddScoped<IToolExecutor, CsvToolExecutor>();
         services.AddScoped<IToolExecutor, HtmlToolExecutor>();
         services.AddScoped<IToolExecutor, JsonToolExecutor>();
+        services.AddScoped<IToolExecutor, JsonValidatorToolExecutor>();
         services.AddScoped<IToolExecutor, MinifierToolExecutor>();
         services.AddScoped<IToolExecutor, XmlToolExecutor>();
 
