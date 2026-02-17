@@ -12,7 +12,8 @@ public sealed class ToolActionAuthorizationHandler : AuthorizationHandler<ToolAc
         }
 
         var slug = httpContext.Request.RouteValues["slug"]?.ToString();
-        var action = httpContext.Request.RouteValues["action"]?.ToString();
+        var action = httpContext.Request.RouteValues["toolAction"]?.ToString()
+            ?? httpContext.Request.RouteValues["action"]?.ToString();
 
         if (string.IsNullOrWhiteSpace(slug) || string.IsNullOrWhiteSpace(action))
         {

@@ -50,7 +50,15 @@ public sealed class ToolsController(
         };
 
         var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
-        return View("Tool", new ToolPageViewModel { Tool = tool, ApiBaseUrl = apiBaseUrl, Seo = seo, Content = content });
+        var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
+        return View("Tool", new ToolPageViewModel
+        {
+            Tool = tool,
+            ApiBaseUrl = apiBaseUrl,
+            ToolExecutionPathPrefix = apiPathPrefix,
+            Seo = seo,
+            Content = content
+        });
     }
 
     private static string ResolveApiBaseUrl(string? configuredApiBaseUrl)
@@ -68,6 +76,23 @@ public sealed class ToolsController(
         }
 
         return uri.GetLeftPart(UriPartial.Authority).TrimEnd('/');
+    }
+
+
+    private static string ResolveToolExecutionPathPrefix(string? configuredPathPrefix)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPathPrefix))
+        {
+            return "/api/v1/tools";
+        }
+
+        var normalized = configuredPathPrefix.Trim();
+        if (!normalized.StartsWith('/'))
+        {
+            normalized = $"/{normalized}";
+        }
+
+        return normalized.TrimEnd('/');
     }
 
     private static string BuildJsonLd(Application.Models.ToolDescriptor tool, Application.Models.ToolContent? content, string canonicalUrl)

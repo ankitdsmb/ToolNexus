@@ -156,4 +156,26 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        var options = configuration.GetSection(ApiCorsOptions.SectionName).Get<ApiCorsOptions>() ?? new ApiCorsOptions();
+        if (options.AllowedOrigins.Length == 0)
+        {
+            throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one origin.");
+        }
+
+        services.AddCors(cors =>
+        {
+            cors.AddPolicy(ApiCorsOptions.PolicyName, policy =>
+            {
+                policy.WithOrigins(options.AllowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+
+        return services;
+    }
+
 }

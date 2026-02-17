@@ -1,0 +1,45 @@
+using ToolNexus.Application.Abstractions;
+
+namespace ToolNexus.Application.Services;
+
+public sealed class ManifestExecutorAlignmentValidator(
+    IToolManifestGovernance governance,
+    IEnumerable<IToolExecutor> executors,
+    ILogger<ManifestExecutorAlignmentValidator> logger) : IHostedService
+{
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        var manifestBySlug = governance.GetAll().ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
+        var executorBySlug = executors.ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
+
+        var missingExecutors = manifestBySlug.Keys.Except(executorBySlug.Keys, StringComparer.OrdinalIgnoreCase).ToArray();
+        if (missingExecutors.Length > 0)
+        {
+            throw new InvalidOperationException($"Manifest slugs missing executors: {string.Join(", ", missingExecutors)}");
+        }
+
+        var unmanifestedExecutors = executorBySlug.Keys.Except(manifestBySlug.Keys, StringComparer.OrdinalIgnoreCase).ToArray();
+        if (unmanifestedExecutors.Length > 0)
+        {
+            throw new InvalidOperationException($"Executor slugs missing manifest entries: {string.Join(", ", unmanifestedExecutors)}");
+        }
+
+        foreach (var (slug, manifest) in manifestBySlug)
+        {
+            var executor = executorBySlug[slug];
+            var missingActions = manifest.SupportedActions
+                .Except(executor.SupportedActions, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            if (missingActions.Length > 0)
+            {
+                throw new InvalidOperationException($"Manifest actions not supported by executor '{slug}': {string.Join(", ", missingActions)}");
+            }
+        }
+
+        logger.LogInformation("Manifest and executor registration alignment validation passed for {ToolCount} tools.", manifestBySlug.Count);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+}

@@ -6,6 +6,7 @@ if (!page) {
 
 const slug = page.dataset.slug ?? '';
 const apiBase = window.ToolNexusConfig?.apiBaseUrl ?? '';
+const toolExecutionPathPrefix = normalizePathPrefix(window.ToolNexusConfig?.toolExecutionPathPrefix ?? '/api/v1/tools');
 const maxClientInputBytes = 1024 * 1024;
 
 const clientSafeActions = new Set(
@@ -158,14 +159,11 @@ function showToast(message, type = 'info') {
 
 class ClientToolExecutor {
   canExecute(toolSlug, action, input) {
-    const normalizedAction = action.toLowerCase();
+    const normalizedSlug = (toolSlug ?? '').trim();
+    const normalizedAction = (action ?? '').trim().toLowerCase();
 
-    if (
-      toolSlug === 'json-validator' &&
-      normalizedAction === 'validate' &&
-      isEligibleForClientExecution(input)
-    ) {
-      return true;
+    if (!normalizedSlug || !normalizedAction) {
+      return false;
     }
 
     if (!clientSafeActions.has(normalizedAction)) {
@@ -176,134 +174,19 @@ class ClientToolExecutor {
       return false;
     }
 
-    const module = window.ToolNexusModules?.[toolSlug];
-    if (module?.runTool) {
-      return true;
-    }
-
-    if (
-      toolSlug === 'json-formatter' &&
-      (normalizedAction === 'format' ||
-        normalizedAction === 'minify')
-    ) {
-      return true;
-    }
-
-    if (
-      toolSlug === 'base64-tool' &&
-      (normalizedAction === 'encode' ||
-        normalizedAction === 'decode')
-    ) {
-      return true;
-    }
-
-    return false;
+    const module = window.ToolNexusModules?.[normalizedSlug];
+    return typeof module?.runTool === 'function';
   }
 
   async execute(toolSlug, action, input) {
-    const module = window.ToolNexusModules?.[toolSlug];
+    const normalizedSlug = (toolSlug ?? '').trim();
+    const module = window.ToolNexusModules?.[normalizedSlug];
 
-    if (module?.runTool) {
-      return module.runTool(action, input);
+    if (typeof module?.runTool !== 'function') {
+      throw new Error('Client execution is not supported for this tool/action.');
     }
 
-    if (toolSlug === 'json-formatter') {
-      return this.executeJsonFormatter(action, input);
-    }
-
-    if (toolSlug === 'json-validator') {
-      return this.executeJsonValidator(action, input);
-    }
-
-    if (toolSlug === 'base64-tool') {
-      return this.executeBase64(action, input);
-    }
-
-    throw new Error(
-      'Client execution is not supported for this tool/action.'
-    );
-  }
-
-  executeJsonFormatter(action, input) {
-    let parsed;
-    try {
-      parsed = JSON.parse(input);
-    } catch {
-      throw new Error(
-        'Invalid JSON input. Please fix JSON syntax and try again.'
-      );
-    }
-
-    if (action === 'format') {
-      return JSON.stringify(parsed, null, 2);
-    }
-
-    if (action === 'minify') {
-      return JSON.stringify(parsed);
-    }
-
-    throw new Error('Unsupported JSON action.');
-  }
-
-  executeJsonValidator(action, input) {
-    if (action !== 'validate') {
-      throw new Error('Unsupported JSON validator action.');
-    }
-
-    try {
-      JSON.parse(input);
-      return 'Valid JSON';
-    } catch {
-      throw new Error(
-        'Invalid JSON input. Please fix JSON syntax and try again.'
-      );
-    }
-  }
-
-  executeBase64(action, input) {
-    if (action === 'encode') {
-      return this.base64EncodeUtf8(input);
-    }
-
-    if (action === 'decode') {
-      return this.base64DecodeUtf8(input);
-    }
-
-    throw new Error('Unsupported Base64 action.');
-  }
-
-  base64EncodeUtf8(input) {
-    try {
-      const bytes = new TextEncoder().encode(input);
-      let binary = '';
-
-      for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-
-      return btoa(binary);
-    } catch {
-      throw new Error(
-        'Unable to Base64 encode input in the browser.'
-      );
-    }
-  }
-
-  base64DecodeUtf8(input) {
-    try {
-      const binary = atob(input);
-      const bytes = new Uint8Array(binary.length);
-
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-
-      return new TextDecoder().decode(bytes);
-    } catch {
-      throw new Error(
-        'Invalid Base64 input. Please verify the encoded data.'
-      );
-    }
+    return module.runTool(action, input);
   }
 }
 
@@ -312,6 +195,15 @@ const clientExecutor = new ClientToolExecutor();
 /* ===============================
    API Execution
 ================================ */
+
+function normalizePathPrefix(pathPrefix) {
+  const normalized = (pathPrefix ?? '').toString().trim();
+  if (!normalized) {
+    return '/api/v1/tools';
+  }
+
+  return `/${normalized.replace(/^\/+/, '').replace(/\/+$/, '')}`;
+}
 
 /**
  * Executes a tool action against the ASP.NET Core API route:
@@ -339,9 +231,10 @@ async function executeToolActionViaApi({
   }
 
   const origin = (baseUrl ?? '').trim().replace(/\/$/, '');
+  const endpointPath = `${toolExecutionPathPrefix}/${encodeURIComponent(normalizedSlug)}/${encodeURIComponent(normalizedAction)}`;
   const endpoint = origin
-    ? `${origin}/api/v1/tools/${encodeURIComponent(normalizedSlug)}/${encodeURIComponent(normalizedAction)}`
-    : `/api/v1/tools/${encodeURIComponent(normalizedSlug)}/${encodeURIComponent(normalizedAction)}`;
+    ? `${origin}${endpointPath}`
+    : endpointPath;
 
   const response = await fetch(endpoint, {
     method: 'POST',

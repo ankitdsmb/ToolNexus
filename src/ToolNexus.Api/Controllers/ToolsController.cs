@@ -9,14 +9,18 @@ namespace ToolNexus.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/tools")]
-[Route("api/tools")]
 public sealed class ToolsController(
     IToolService toolService,
     IToolCatalogService catalogService,
     IToolManifestGovernance manifestGovernance,
     ILogger<ToolsController> logger) : ControllerBase
 {
+    [HttpGet("ping")]
+    [AllowAnonymous]
+    public IActionResult Ping() => Ok(new { status = "ok" });
+
     [HttpGet("manifest")]
+    [AllowAnonymous]
     public ActionResult<IReadOnlyCollection<ToolManifest>> Manifest([FromQuery] string? search = null)
     {
         var manifests = manifestGovernance.GetAll();
@@ -32,54 +36,37 @@ public sealed class ToolsController(
     }
 
     [HttpGet("categories")]
+    [AllowAnonymous]
     public ActionResult<IReadOnlyCollection<string>> Categories() => Ok(catalogService.GetAllCategories());
 
     [Authorize(Policy = ToolActionRequirement.PolicyName)]
-    [HttpGet("{slug}/{action}")]
-    public async Task<ActionResult<ToolExecutionResponse>> ExecuteGet(
+    [HttpGet("{slug}/{toolAction}")]
+    public Task<ActionResult<ToolExecutionResponse>> ExecuteGet(
         [FromRoute, Required, MinLength(1)] string slug,
-        [FromRoute, Required, MinLength(1)] string action,
+        [FromRoute(Name = "toolAction"), Required, MinLength(1)] string action,
         [FromQuery, Required] string input,
         CancellationToken cancellationToken)
-    {
-        var result = await toolService.ExecuteAsync(
-            new ToolExecutionRequest(slug, action, input),
-            cancellationToken);
-
-        if (result.NotFound)
-        {
-            logger.LogInformation("Tool not found for slug {Slug} and action {Action}.", slug, action);
-            return NotFound(result);
-        }
-
-        if (!result.Success)
-        {
-            logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, action, result.Error);
-        }
-
-        if (manifestGovernance.FindBySlug(slug)?.IsDeprecated == true)
-        {
-            Response.Headers.Append("X-Tool-Deprecated", "true");
-        }
-
-        return result.Success ? Ok(result) : BadRequest(result);
-    }
+        => ExecuteInternalAsync(slug, action, input, null, cancellationToken);
 
     [Authorize(Policy = ToolActionRequirement.PolicyName)]
-    [HttpPost("{slug}/{action}")]
-    public async Task<ActionResult<ToolExecutionResponse>> Execute(
+    [Consumes("application/json")]
+    [HttpPost("{slug}/{toolAction}")]
+    public Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute, Required, MinLength(1)] string slug,
-        [FromRoute, Required, MinLength(1)] string action,
+        [FromRoute(Name = "toolAction"), Required, MinLength(1)] string action,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
-    {
-        if (request is null)
-        {
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid request.", detail: "Request body is required.");
-        }
+        => ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
 
+    private async Task<ActionResult<ToolExecutionResponse>> ExecuteInternalAsync(
+        string slug,
+        string action,
+        string input,
+        IDictionary<string, string>? options,
+        CancellationToken cancellationToken)
+    {
         var result = await toolService.ExecuteAsync(
-            new ToolExecutionRequest(slug, action, request.Input, request.Options),
+            new ToolExecutionRequest(slug, action, input, options),
             cancellationToken);
 
         if (result.NotFound)
@@ -91,6 +78,7 @@ public sealed class ToolsController(
         if (!result.Success)
         {
             logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, action, result.Error);
+            return BadRequest(result);
         }
 
         if (manifestGovernance.FindBySlug(slug)?.IsDeprecated == true)
@@ -98,7 +86,7 @@ public sealed class ToolsController(
             Response.Headers.Append("X-Tool-Deprecated", "true");
         }
 
-        return result.Success ? Ok(result) : BadRequest(result);
+        return Ok(result);
     }
 
     public sealed record ExecuteToolRequest(
