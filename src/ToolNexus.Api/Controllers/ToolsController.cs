@@ -44,14 +44,26 @@ public sealed class ToolsController(IToolService toolService, IToolManifestCatal
             return Ok(response);
         }
 
-        return response.Error?.Code switch
+        // Defensive null handling
+        if (response.Error is null)
         {
-            "tool_not_found" => NotFound(response),
-            "unexpected_error" => StatusCode(StatusCodes.Status500InternalServerError, response),
-            _ => BadRequest(response)
-        };
-    }
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+        }
 
+        var code = response.Error.Code?.ToLowerInvariant();
+
+        if (code == "tool_not_found")
+            return NotFound(response);
+
+        if (code == "unsupported_action")
+            return BadRequest(response);
+
+        if (code == "unexpected_error")
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+
+        // Fallback
+        return BadRequest(response);
+    }
     public sealed record ExecuteToolRequest(
         [property: Required(AllowEmptyStrings = false), MinLength(1)] string Action,
         [property: Required] string Input,

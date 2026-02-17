@@ -1,13 +1,13 @@
-using System.IO.Compression;
-using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using System.IO.Compression;
+using System.Threading.RateLimiting;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
@@ -48,7 +48,8 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = maxRequestBodySizeBytes;
     options.ConfigureEndpointDefaults(endpoint =>
-        endpoint.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
+        endpoint.Protocols =
+            Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
 });
 
 /* =========================================================
@@ -143,7 +144,6 @@ builder.Services.AddSwaggerGen(options =>
    ========================================================= */
 
 var ipPerMinute = builder.Configuration.GetValue("RateLimiting:IpPerMinute", 120);
-var userPerMinute = builder.Configuration.GetValue("RateLimiting:UserPerMinute", 240);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -175,22 +175,6 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
                 AutoReplenishment = true
             }));
-
-    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-    {
-        var key = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-        return RateLimitPartition.GetTokenBucketLimiter(
-            key,
-            _ => new TokenBucketRateLimiterOptions
-            {
-                TokenLimit = 200,
-                TokensPerPeriod = 100,
-                ReplenishmentPeriod = TimeSpan.FromSeconds(30),
-                QueueLimit = 0,
-                AutoReplenishment = true
-            });
-    });
 });
 
 /* =========================================================
@@ -198,6 +182,10 @@ builder.Services.AddRateLimiter(options =>
    ========================================================= */
 
 builder.Services.AddApplication(builder.Configuration);
+
+// 🔥 Force-load Infrastructure assembly so reflection scan works
+_ = typeof(RedisToolResultCache).Assembly;
+
 builder.Services.AddToolExecutorsFromLoadedAssemblies();
 
 builder.Services.AddMemoryCache();
@@ -212,7 +200,8 @@ if (!string.IsNullOrWhiteSpace(redisConnection))
     builder.Services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = redisConnection;
-        options.InstanceName = builder.Configuration["REDIS_INSTANCE_NAME"] ?? "toolnexus";
+        options.InstanceName =
+            builder.Configuration["REDIS_INSTANCE_NAME"] ?? "toolnexus";
     });
 }
 
