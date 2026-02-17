@@ -86,6 +86,28 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
         Assert.Null(payload.Error);
     }
 
+
+    [Fact]
+    public async Task Post_ToolEndpoint_ReturnsSuccess_ForJsonValidator()
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken("json-validator:validate"));
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/tools/json-validator/validate",
+            new
+            {
+                input = "{\"valid\":true}"
+            });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var payload = await response.Content.ReadFromJsonAsync<ToolExecutionResponse>();
+        Assert.NotNull(payload);
+        Assert.True(payload!.Success);
+        Assert.Equal("Valid JSON", payload.Output);
+        Assert.Null(payload.Error);
+    }
+
     [Fact]
     public async Task Get_ToolEndpoint_ReturnsUnauthorized_WhenTokenMissing()
     {
