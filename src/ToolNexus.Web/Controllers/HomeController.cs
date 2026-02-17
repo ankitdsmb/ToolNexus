@@ -14,6 +14,24 @@ public sealed class HomeController(IManifestService manifestService, ISitemapSer
         return View(new HomeViewModel { FeaturedTools = featured });
     }
 
+    [HttpGet("/about")]
+    public IActionResult About()
+    {
+        return View();
+    }
+
+    [HttpGet("/disclaimer")]
+    public IActionResult Disclaimer()
+    {
+        return View();
+    }
+
+    [HttpGet("/contact-us")]
+    public IActionResult ContactUs()
+    {
+        return View();
+    }
+
     [HttpGet("/sitemap.xml")]
     public ContentResult Sitemap()
     {

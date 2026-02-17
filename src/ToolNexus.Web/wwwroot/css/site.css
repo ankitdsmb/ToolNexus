@@ -23,3 +23,27 @@ textarea { width: 100%; min-height: 280px; background: #0f1630; color: var(--tex
 .actions { display: flex; gap: .5rem; }
 button, select, .search { background: #1e2750; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .85rem; }
 .sample-panel { background: #101736; border: 1px dashed var(--border); border-radius: 10px; padding: .8rem; }
+
+a { color: var(--accent); }
+.topbar nav, .footer-nav { display: flex; gap: .9rem; align-items: center; flex-wrap: wrap; }
+.topbar nav a, .footer-nav a { color: var(--text); text-decoration: none; }
+.topbar nav a:hover, .footer-nav a:hover { text-decoration: underline; }
+
+.content-page { max-width: 860px; }
+.content-page p { color: var(--muted); line-height: 1.6; }
+.content-page ul { color: var(--muted); }
+
+.legal-page { background: rgba(20, 26, 51, 0.5); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+.legal-intro { font-size: 1.05rem; margin-bottom: 1rem; }
+.legal-block { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; }
+.legal-block h2 { margin: 0 0 .45rem; font-size: 1.05rem; }
+
+.contact-form { display: grid; gap: .5rem; max-width: 640px; }
+.contact-form input, .contact-form textarea { background: #0f1630; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: .6rem; }
+.form-status { min-height: 1.25rem; color: #9be5b2; }
+.form-status.error { color: #ffb3b3; }
+
+@media (max-width: 720px) {
+  .topbar, .footer { flex-direction: column; gap: .75rem; align-items: flex-start; }
+  .editor-row { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Contact Us | ToolNexus";
+    ViewData["Description"] = "Contact ToolNexus with feedback, feature ideas, or support questions using our simple contact form.";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/contact-us";
+    ViewData["Keywords"] = "contact ToolNexus, ToolNexus support, feedback";
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "ContactPage",
+        name = "Contact ToolNexus",
+        description = "Contact page for ToolNexus.",
+        url = $"{Context.Request.Scheme}://{Context.Request.Host}/contact-us"
+    });
+}
+
+<section class="content-page">
+    <h1>Contact Us</h1>
+    <p>Share feedback, report issues, or suggest tools. This form is frontend-only and does not submit to a backend.</p>
+
+    <form id="contactForm" class="contact-form" novalidate>
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required maxlength="80" autocomplete="name" />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
+
+        <label for="subject">Subject</label>
+        <input id="subject" name="subject" type="text" required maxlength="120" />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" required maxlength="2000" rows="6"></textarea>
+
+        <button type="submit">Send Message</button>
+        <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>
+    </form>
+</section>
+
+@section Scripts {
+<script>
+  const form = document.getElementById('contactForm');
+  const status = document.getElementById('contactStatus');
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (!form.checkValidity()) {
+      status.textContent = 'Please complete all required fields with valid details.';
+      status.classList.add('error');
+      return;
+    }
+
+    status.textContent = 'Thanks for your message. This demo form does not send data to a server.';
+    status.classList.remove('error');
+    form.reset();
+  });
+</script>
+}

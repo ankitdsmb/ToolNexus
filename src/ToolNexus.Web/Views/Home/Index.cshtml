@@ -1,7 +1,24 @@
 @model HomeViewModel
 @{
-    ViewData["Title"] = "Home";
-    ViewData["Description"] = "Cinematic dark themed online developer tools.";
+    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    ViewData["Title"] = "ToolNexus | Free Online Developer Tools";
+    ViewData["Description"] = "Use ToolNexus for fast, browser-based developer tools including formatters, converters, and validators.";
+    ViewData["CanonicalUrl"] = $"{baseUrl}/";
+    ViewData["Keywords"] = "developer tools, online formatter, converters, validators";
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "WebSite",
+        name = "ToolNexus",
+        url = $"{baseUrl}/",
+        description = "Free online developer tools.",
+        potentialAction = new
+        {
+            @type = "SearchAction",
+            target = $"{baseUrl}/tools?search={{search_term_string}}",
+            query_input = "required name=search_term_string"
+        }
+    });
 }
 
 <section>

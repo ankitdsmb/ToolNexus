@@ -15,7 +15,10 @@ public sealed class SitemapService(IManifestService manifestService) : ISitemapS
         var urls = new List<string>
         {
             $"{baseUrl}/",
-            $"{baseUrl}/tools"
+            $"{baseUrl}/tools",
+            $"{baseUrl}/about",
+            $"{baseUrl}/disclaimer",
+            $"{baseUrl}/contact-us"
         };
 
         urls.AddRange(manifestService.GetAllCategories().Select(category => $"{baseUrl}/tools/{Uri.EscapeDataString(category)}"));

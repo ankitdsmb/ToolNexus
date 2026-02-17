@@ -5,12 +5,23 @@
     var title = ViewData["Title"]?.ToString() ?? "ToolNexus";
     var description = ViewData["Description"]?.ToString() ?? "ToolNexus online developer tools.";
     var canonicalUrl = ViewData["CanonicalUrl"]?.ToString() ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
+    var keywords = ViewData["Keywords"]?.ToString() ?? "developer tools, online utilities, ToolNexus";
+    var robots = ViewData["Robots"]?.ToString() ?? "index,follow";
     var jsonLd = ViewData["JsonLd"]?.ToString();
   }
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>@title</title>
   <meta name="description" content="@description" />
+  <meta name="keywords" content="@keywords" />
+  <meta name="robots" content="@robots" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="@title" />
+  <meta property="og:description" content="@description" />
+  <meta property="og:url" content="@canonicalUrl" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="@title" />
+  <meta name="twitter:description" content="@description" />
   <link rel="canonical" href="@canonicalUrl" />
   @if (!string.IsNullOrWhiteSpace(jsonLd))
   {
@@ -24,13 +35,25 @@
     <a href="/" class="brand">ToolNexus</a>
     <nav>
       <a href="/tools">Tools</a>
+      <a href="/about">About</a>
+      <a href="/disclaimer">Disclaimer</a>
+      <a href="/contact-us">Contact Us</a>
     </nav>
   </header>
   <div class="banner">Do not paste secrets.</div>
   <main class="container">
     @RenderBody()
   </main>
-  <footer class="footer">© @DateTime.UtcNow.Year ToolNexus</footer>
+  <footer class="footer">
+    <span>© @DateTime.UtcNow.Year ToolNexus</span>
+    <nav class="footer-nav" aria-label="Footer Navigation">
+      <a href="/">Home</a>
+      <a href="/tools">Tools</a>
+      <a href="/about">About</a>
+      <a href="/disclaimer">Disclaimer</a>
+      <a href="/contact-us">Contact Us</a>
+    </nav>
+  </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   @await RenderSectionAsync("Scripts", required: false)

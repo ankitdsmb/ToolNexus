@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Disclaimer | ToolNexus";
+    ViewData["Description"] = "Read the ToolNexus legal disclaimer, including usage limitations, accuracy notes, and user responsibilities.";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/disclaimer";
+    ViewData["Keywords"] = "ToolNexus disclaimer, legal notice, terms of use";
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "WebPage",
+        name = "ToolNexus Disclaimer",
+        description = "Legal disclaimer for ToolNexus.",
+        url = $"{Context.Request.Scheme}://{Context.Request.Host}/disclaimer"
+    });
+}
+
+<section class="content-page legal-page">
+    <h1>Disclaimer</h1>
+    <p class="legal-intro">Please read this disclaimer carefully before using ToolNexus.</p>
+
+    <section class="legal-block">
+        <h2>General information</h2>
+        <p>
+            ToolNexus provides online utilities for informational and productivity purposes only.
+            Content, outputs, and examples are provided on an "as is" basis without warranties of any kind.
+        </p>
+    </section>
+
+    <section class="legal-block">
+        <h2>No professional advice</h2>
+        <p>
+            Tool outputs and related content do not constitute legal, financial, tax, or professional advice.
+            You are solely responsible for validating results before using them in production, compliance, or business-critical workflows.
+        </p>
+    </section>
+
+    <section class="legal-block">
+        <h2>Accuracy and availability</h2>
+        <p>
+            While we aim for accuracy and uptime, ToolNexus does not guarantee that tools will always be error-free,
+            complete, secure, or continuously available.
+        </p>
+    </section>
+
+    <section class="legal-block">
+        <h2>Limitation of liability</h2>
+        <p>
+            To the fullest extent permitted by applicable law, ToolNexus and its contributors are not liable for any direct,
+            indirect, incidental, consequential, or special damages resulting from use of the site or tool outputs.
+        </p>
+    </section>
+
+    <section class="legal-block">
+        <h2>User responsibility</h2>
+        <p>
+            Do not submit confidential, private, or regulated data unless you understand and accept associated risks.
+            You are responsible for complying with all laws and organizational policies applicable to your usage.
+        </p>
+    </section>
+</section>
