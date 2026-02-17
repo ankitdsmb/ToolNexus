@@ -1,7 +1,18 @@
 @model ToolIndexViewModel
 @{
-    ViewData["Title"] = "Tools";
-    ViewData["Description"] = "Browse all ToolNexus developer utilities.";
+    var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/tools";
+    ViewData["Title"] = "All Developer Tools | ToolNexus";
+    ViewData["Description"] = "Browse all ToolNexus developer utilities by category, including converters, validators, and formatters.";
+    ViewData["CanonicalUrl"] = canonicalUrl;
+    ViewData["Keywords"] = "developer tools list, online utilities, tool categories";
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "CollectionPage",
+        name = "All ToolNexus Tools",
+        url = canonicalUrl,
+        description = "Browse all tools available on ToolNexus."
+    });
 }
 
 <section class="u-stack">

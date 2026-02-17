@@ -1,56 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  @{
+@{
     var title = ViewData["Title"]?.ToString() ?? "ToolNexus";
     var description = ViewData["Description"]?.ToString() ?? "ToolNexus online developer tools.";
-    var canonicalUrl = ViewData["CanonicalUrl"]?.ToString() ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
+    var canonicalUrl = ViewData["CanonicalUrl"]?.ToString()
+        ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}{Context.Request.QueryString}";
+    var keywords = ViewData["Keywords"]?.ToString() ?? "developer tools, online utilities, ToolNexus";
+    var robots = ViewData["Robots"]?.ToString() ?? "index,follow";
     var jsonLd = ViewData["JsonLd"]?.ToString();
-  }
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>@title</title>
-  <meta name="description" content="@description" />
-  <link rel="canonical" href="@canonicalUrl" />
-  @if (!string.IsNullOrWhiteSpace(jsonLd))
-  {
-    <script type="application/ld+json">@Html.Raw(jsonLd)</script>
-  }
-  <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+}
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@title</title>
+
+    <!-- Primary SEO -->
+    <meta name="description" content="@description" />
+    <meta name="keywords" content="@keywords" />
+    <meta name="robots" content="@robots" />
+    <link rel="canonical" href="@canonicalUrl" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@title" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:url" content="@canonicalUrl" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="@title" />
+    <meta name="twitter:description" content="@description" />
+
+    @if (!string.IsNullOrWhiteSpace(jsonLd))
+    {
+        <script type="application/ld+json">
+            @Html.Raw(jsonLd)
+        </script>
+    }
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
+          crossorigin="anonymous" />
 </head>
+
 <body>
-  <div class="app-shell">
+<div class="app-shell">
+
+    <!-- HEADER -->
     <header class="topbar">
-      <div class="topbar__inner">
-        <a href="/" class="brand" aria-label="ToolNexus home">
-          <span class="brand__dot" aria-hidden="true"></span>
-          <span>ToolNexus</span>
-        </a>
+        <div class="topbar__inner">
 
-        <div class="topbar__search-wrap">
-          <label class="u-sr-only" for="globalToolSearch">Search tools</label>
-          <input id="globalToolSearch" class="topbar__search" placeholder="Search tools" />
+            <a href="/" class="brand" aria-label="ToolNexus Home">
+                <span class="brand__dot" aria-hidden="true"></span>
+                <span>ToolNexus</span>
+            </a>
+
+            <div class="topbar__search-wrap">
+                <label class="u-sr-only" for="globalToolSearch">Search tools</label>
+                <input id="globalToolSearch"
+                       class="topbar__search"
+                       placeholder="Search tools..."
+                       autocomplete="off" />
+            </div>
+
+            <nav class="topbar__nav" aria-label="Primary Navigation">
+                <a class="topbar__link" href="/">Home</a>
+                <a class="topbar__link" href="/tools">Tools</a>
+                <a class="topbar__link" href="/about">About</a>
+                <a class="topbar__link" href="/disclaimer">Disclaimer</a>
+                <a class="topbar__link" href="/contact-us">Contact Us</a>
+            </nav>
+
         </div>
-
-        <nav class="topbar__nav" aria-label="Primary">
-          <a class="topbar__link" href="/tools">Tools</a>
-          <a class="topbar__link" href="/">Home</a>
-        </nav>
-      </div>
     </header>
 
-    <div class="banner">Do not paste secrets.</div>
+    <!-- SECURITY BANNER -->
+    <div class="banner">
+        Do not paste secrets or sensitive credentials.
+    </div>
 
+    <!-- MAIN CONTENT -->
     <main class="container">
-      @RenderBody()
+        @RenderBody()
     </main>
 
-    <footer class="footer">© @DateTime.UtcNow.Year ToolNexus</footer>
-  </div>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer__inner">
+            <span>© @DateTime.UtcNow.Year ToolNexus. All rights reserved.</span>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-  @await RenderSectionAsync("Scripts", required: false)
+            <nav class="footer-nav" aria-label="Footer Navigation">
+                <a href="/">Home</a>
+                <a href="/tools">Tools</a>
+                <a href="/about">About</a>
+                <a href="/disclaimer">Disclaimer</a>
+                <a href="/contact-us">Contact Us</a>
+            </nav>
+        </div>
+    </footer>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
+@await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "About ToolNexus | Free Online Developer Tools";
+    ViewData["Description"] = "Learn about ToolNexus, our mission to provide fast, privacy-friendly, free online developer tools for daily workflows.";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/about";
+    ViewData["Keywords"] = "about ToolNexus, developer tools, free utilities, online coding tools";
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "AboutPage",
+        name = "About ToolNexus",
+        description = "Learn about ToolNexus and our mission.",
+        url = $"{Context.Request.Scheme}://{Context.Request.Host}/about",
+        isPartOf = new
+        {
+            @type = "WebSite",
+            name = "ToolNexus",
+            url = $"{Context.Request.Scheme}://{Context.Request.Host}/"
+        }
+    });
+}
+
+<section class="content-page">
+    <h1>About ToolNexus</h1>
+    <p>
+        ToolNexus is built for developers who need practical utilities without unnecessary friction.
+        We focus on speed, clean UI, and reliable tool behavior so you can stay in flow.
+    </p>
+
+    <h2>What we provide</h2>
+    <ul>
+        <li>Free browser-based developer tools across common categories.</li>
+        <li>Task-focused experiences for data conversion, formatting, and validation.</li>
+        <li>Consistent interfaces that are easy to learn and fast to use.</li>
+    </ul>
+
+    <h2>Our product principles</h2>
+    <ul>
+        <li>Keep tools straightforward and predictable.</li>
+        <li>Prioritize performance and accessibility.</li>
+        <li>Improve discoverability with clear information architecture.</li>
+    </ul>
+</section>

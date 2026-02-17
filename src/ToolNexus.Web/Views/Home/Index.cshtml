@@ -1,32 +1,81 @@
 @model HomeViewModel
 @{
-    ViewData["Title"] = "Home";
-    ViewData["Description"] = "Fast, minimal online developer tools.";
+    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+
+    ViewData["Title"] = "ToolNexus | Fast & Free Online Developer Tools";
+    ViewData["Description"] = "ToolNexus provides high-performance browser-based developer tools including formatters, converters, validators and encoders. No login. No clutter.";
+    ViewData["CanonicalUrl"] = $"{baseUrl}/";
+    ViewData["Keywords"] = "online developer tools, json formatter, xml validator, base64 encoder, css minifier, free coding tools";
+
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "WebSite",
+        name = "ToolNexus",
+        url = $"{baseUrl}/",
+        description = "Fast and minimal online developer tools.",
+        potentialAction = new
+        {
+            @type = "SearchAction",
+            target = $"{baseUrl}/tools?search={{search_term_string}}",
+            query_input = "required name=search_term_string"
+        }
+    });
 }
 
 <section class="hero">
-  <h1 class="hero__title">Developer tools that stay out of your way</h1>
-  <p class="u-muted">Focused utilities with a clean, responsive workspace.</p>
-  <input id="toolSearch" class="search" placeholder="Search tools..." />
+    <div class="hero__container">
+        <h1 class="hero__title">
+            Fast. Clean. Professional Developer Tools.
+        </h1>
+
+        <p class="hero__subtitle">
+            Lightweight browser-based utilities designed for performance and clarity.
+        </p>
+
+        <div class="hero__search">
+            <input id="toolSearch"
+                   class="search"
+                   placeholder="Search tools (JSON, XML, Base64...)"
+                   autocomplete="off"
+                   aria-label="Search developer tools" />
+        </div>
+    </div>
 </section>
 
-<div class="grid" id="featuredGrid">
-  @foreach (var tool in Model.FeaturedTools)
-  {
-    <a class="card" href="/tools/@tool.Slug">
-      <h3>@tool.Title</h3>
-      <p>@tool.SeoDescription</p>
-    </a>
-  }
-</div>
+<section class="tool-section">
+    <h2 class="section-title">Featured Tools</h2>
+
+    <div class="grid" id="featuredGrid">
+        @foreach (var tool in Model.FeaturedTools)
+        {
+            <a class="card" href="/tools/@tool.Slug">
+                <div class="card__content">
+                    <h3>@tool.Title</h3>
+                    <p>@tool.SeoDescription</p>
+                </div>
+                <span class="card__arrow">→</span>
+            </a>
+        }
+    </div>
+</section>
 
 @section Scripts {
 <script>
-  const searchBox = document.getElementById('toolSearch');
-  const cards = Array.from(document.querySelectorAll('#featuredGrid .card'));
-  searchBox?.addEventListener('input', e => {
-    const q = e.target.value.toLowerCase().trim();
-    cards.forEach(c => c.classList.toggle('is-hidden', q && !c.innerText.toLowerCase().includes(q)));
-  });
+    (function () {
+        const searchBox = document.getElementById('toolSearch');
+        const cards = Array.from(document.querySelectorAll('#featuredGrid .card'));
+
+        if (!searchBox || cards.length === 0) return;
+
+        searchBox.addEventListener('input', function (e) {
+            const query = e.target.value.toLowerCase().trim();
+
+            cards.forEach(function (card) {
+                const matches = card.innerText.toLowerCase().includes(query);
+                card.classList.toggle('is-hidden', query && !matches);
+            });
+        });
+    })();
 </script>
 }

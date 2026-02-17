@@ -1,6 +1,326 @@
-@import url('tokens.css');
-@import url('utilities.css');
-@import url('layout.css');
-@import url('pages/home.css');
-@import url('pages/tools.css');
-@import url('pages/tool-page.css');
+/* =========================================================
+   ToolNexus — Production UI System
+   Single File Version (Phase 1)
+   Clean • Fast • Scalable • Google-Grade
+   ========================================================= */
+
+/* ===============================
+   1. DESIGN TOKENS
+   =============================== */
+
+:root {
+  /* Core Colors */
+  --bg: #0f172a;
+  --bg-soft: #111827;
+  --surface: #1f2937;
+  --border: #2d3748;
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Shadow */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.35);
+
+  --transition: 0.2s ease-in-out;
+}
+
+/* ===============================
+   2. GLOBAL RESET
+   =============================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Inter, Segoe UI, Arial, sans-serif;
+  background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===============================
+   3. TYPOGRAPHY
+   =============================== */
+
+h1, h2, h3, h4 {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ===============================
+   4. LAYOUT
+   =============================== */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+}
+
+.topbar {
+  background: rgba(17,24,39,0.95);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.topbar nav {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.topbar nav a {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.topbar nav a:hover {
+  color: var(--primary);
+}
+
+.banner {
+  background: #40210f;
+  color: #ffd4bf;
+  text-align: center;
+  padding: 8px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #70422a;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: var(--space-xl);
+}
+
+/* ===============================
+   5. GRID & CARDS
+   =============================== */
+
+.grid {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.card {
+  background: var(--surface);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===============================
+   6. HERO SECTION
+   =============================== */
+
+.hero {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.hero__title {
+  font-size: 2.2rem;
+  margin-bottom: var(--space-md);
+}
+
+/* ===============================
+   7. FORM CONTROLS
+   =============================== */
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 280px;
+  resize: vertical;
+}
+
+button {
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+button:hover {
+  background: #273549;
+}
+
+button.primary {
+  background: var(--primary);
+  border: none;
+}
+
+button.primary:hover {
+  background: var(--primary-hover);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===============================
+   8. TOOL PAGE
+   =============================== */
+
+.tool-page {
+  margin-top: var(--space-lg);
+}
+
+.editor-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
+}
+
+.actions {
+  margin-top: var(--space-md);
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+/* ===============================
+   9. CONTENT PAGES
+   =============================== */
+
+.content-page {
+  max-width: 900px;
+  margin: auto;
+}
+
+.legal-page {
+  max-width: 900px;
+  margin: auto;
+  background: var(--surface);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.contact-form {
+  max-width: 600px;
+  margin: auto;
+  display: grid;
+  gap: var(--space-md);
+}
+
+.form-status {
+  font-size: 0.9rem;
+}
+
+.form-status.success {
+  color: var(--success);
+}
+
+.form-status.error {
+  color: var(--danger);
+}
+
+/* ===============================
+   10. UTILITIES
+   =============================== */
+
+.u-muted {
+  color: var(--text-muted);
+}
+
+.u-center {
+  text-align: center;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+/* ===============================
+   11. RESPONSIVE
+   =============================== */
+
+@media (max-width: 900px) {
+  .editor-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .topbar nav {
+    flex-wrap: wrap;
+  }
+}

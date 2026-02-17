@@ -1,7 +1,18 @@
 @model ToolCategoryViewModel
 @{
-    ViewData["Title"] = $"{Model.Category} tools";
+    var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/tools/{Uri.EscapeDataString(Model.Category)}";
+    ViewData["Title"] = $"{Model.Category} Developer Tools | ToolNexus";
     ViewData["Description"] = $"Explore {Model.Category} developer tools on ToolNexus.";
+    ViewData["CanonicalUrl"] = canonicalUrl;
+    ViewData["Keywords"] = $"{Model.Category} tools, online {Model.Category} utilities";
+    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @type = "CollectionPage",
+        name = $"{Model.Category} tools",
+        url = canonicalUrl,
+        description = $"Explore {Model.Category} developer tools on ToolNexus."
+    });
 }
 
 <section class="u-stack">
