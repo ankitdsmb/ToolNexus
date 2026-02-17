@@ -7,32 +7,53 @@
 }
 
 <article class="tool-page" data-slug="@Model.Tool.Slug" data-api-base="@Model.ApiBaseUrl">
-  <h1>@Model.Tool.Title</h1>
-  <p>@Model.Tool.SeoDescription</p>
+  <header class="tool-page__heading">
+    <h1>@Model.Tool.Title</h1>
+    <p>@Model.Tool.SeoDescription</p>
+  </header>
 
-  <div class="sample-panel">
-    <h4>Sample Data</h4>
-    <pre id="sampleInput">@Model.Tool.ExampleInput</pre>
-  </div>
+  <section class="tool-panel">
+    <h2>Input</h2>
 
-  <label for="actionSelect">Action</label>
-  <select id="actionSelect">
-    @foreach (var action in Model.Tool.Actions)
-    {
-      <option value="@action">@action</option>
-    }
-  </select>
+    <div class="sample-panel">
+      <h3>Sample Data</h3>
+      <pre id="sampleInput">@Model.Tool.ExampleInput</pre>
+    </div>
 
-  <div class="editor-row">
-    <textarea id="inputEditor">@Model.Tool.ExampleInput</textarea>
-    <textarea id="outputEditor" readonly></textarea>
-  </div>
+    <div class="tool-controls">
+      <label for="actionSelect">Action</label>
+      <select id="actionSelect">
+        @foreach (var action in Model.Tool.Actions)
+        {
+          <option value="@action">@action</option>
+        }
+      </select>
 
-  <div class="actions">
-    <button id="runBtn">Run</button>
-    <button id="copyBtn">Copy Output</button>
-    <button id="downloadBtn">Download Output</button>
-  </div>
+      <div class="tool-run-wrap">
+        <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">Run</button>
+        <span id="runSpinner" class="spinner" hidden></span>
+      </div>
+    </div>
+
+    <div class="editor-field">
+      <label for="inputEditor" class="editor-label">Tool input</label>
+      <textarea id="inputEditor">@Model.Tool.ExampleInput</textarea>
+    </div>
+  </section>
+
+  <section class="tool-panel">
+    <h2>Output</h2>
+
+    <div class="editor-field">
+      <label for="outputEditor" class="editor-label">Tool output</label>
+      <textarea id="outputEditor" readonly></textarea>
+    </div>
+
+    <div class="tool-controls">
+      <button id="copyBtn" class="tool-btn" type="button">Copy Output</button>
+      <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
+    </div>
+  </section>
 </article>
 
 @section Scripts {

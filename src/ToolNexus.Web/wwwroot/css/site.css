@@ -1,25 +1,6 @@
-:root {
-  --bg: #0b1020;
-  --panel: #141a33;
-  --text: #e6ecff;
-  --muted: #9ea8cf;
-  --border: #2a335d;
-  --accent: #6ea8fe;
-}
-
-body { margin: 0; background: radial-gradient(circle at top, #151d3d, #090d1b 60%); color: var(--text); font-family: Inter, Segoe UI, Arial, sans-serif; }
-.topbar, .footer { display: flex; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: rgba(11,16,32,.85); }
-.footer { border-top: 1px solid var(--border); border-bottom: none; margin-top: 3rem; }
-.brand { color: var(--text); text-decoration: none; font-weight: 700; }
-.container { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
-.banner { padding: .65rem 1rem; text-align: center; background: #40210f; color: #ffd4bf; border-bottom: 1px solid #70422a; }
-.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: var(--text); text-decoration: none; }
-.card p { color: var(--muted); }
-.chips { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.chip { background: #1e2750; color: var(--accent); border: 1px solid var(--border); padding: .35rem .7rem; border-radius: 999px; text-decoration: none; }
-.editor-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 1rem 0; }
-textarea { width: 100%; min-height: 280px; background: #0f1630; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: .75rem; }
-.actions { display: flex; gap: .5rem; }
-button, select, .search { background: #1e2750; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .85rem; }
-.sample-panel { background: #101736; border: 1px dashed var(--border); border-radius: 10px; padding: .8rem; }
+@import url('tokens.css');
+@import url('utilities.css');
+@import url('layout.css');
+@import url('pages/home.css');
+@import url('pages/tools.css');
+@import url('pages/tool-page.css');

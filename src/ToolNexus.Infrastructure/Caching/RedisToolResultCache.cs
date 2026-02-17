@@ -14,10 +14,15 @@ public sealed class RedisToolResultCache(
     IOptions<ToolResultCacheOptions> cacheOptions,
     ILogger<RedisToolResultCache> logger) : IToolResultCache
 {
-    private readonly ToolResultCacheOptions _options = cacheOptions.Value;
+    private readonly ToolResultCacheOptions _options = cacheOptions.Value ?? new ToolResultCacheOptions();
 
     public async Task<ToolResultCacheItem?> GetAsync(string key, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return null;
+        }
+
         var normalizedKey = BuildKey(key);
         if (memoryCache.TryGetValue<ToolResultCacheItem>(normalizedKey, out var localValue))
         {
@@ -50,6 +55,11 @@ public sealed class RedisToolResultCache(
 
     public async Task SetAsync(string key, ToolResultCacheItem value, TimeSpan ttl, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(key) || value is null)
+        {
+            return;
+        }
+
         var normalizedKey = BuildKey(key);
         memoryCache.Set(normalizedKey, value, ttl);
 
@@ -69,5 +79,9 @@ public sealed class RedisToolResultCache(
         }
     }
 
-    private string BuildKey(string key) => $"{_options.KeyPrefix}:{key}";
+    private string BuildKey(string key)
+    {
+        var prefix = string.IsNullOrWhiteSpace(_options.KeyPrefix) ? "toolnexus" : _options.KeyPrefix.Trim();
+        return $"{prefix}:{key}";
+    }
 }

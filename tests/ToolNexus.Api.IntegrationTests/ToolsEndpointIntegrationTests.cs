@@ -54,5 +54,25 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
         Assert.Contains("not supported", payload.Error, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task Post_ToolEndpoint_ReturnsSuccess_ForValidSlugAndAction()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/tools/json-formatter",
+            new
+            {
+                action = "format",
+                input = "{\"name\":\"Ada\"}"
+            });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var payload = await response.Content.ReadFromJsonAsync<ToolExecutionResponse>();
+        Assert.NotNull(payload);
+        Assert.True(payload!.Success);
+        Assert.Contains("\n", payload.Output);
+        Assert.Null(payload.Error);
+    }
+
     private sealed record ToolExecutionResponse(bool Success, string Output, string Error, bool NotFound = false);
 }
