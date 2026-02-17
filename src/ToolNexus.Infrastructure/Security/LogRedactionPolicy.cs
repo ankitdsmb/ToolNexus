@@ -6,7 +6,7 @@ namespace ToolNexus.Infrastructure.Security;
 public sealed class LogRedactionPolicy(IConfiguration configuration) : ILogRedactionPolicy
 {
     private readonly HashSet<string> _fields = configuration.GetSection("Security:Logging:RedactedFields").Get<string[]>()?.ToHashSet(StringComparer.OrdinalIgnoreCase)
-        ?? new HashSet<string>(["apikey", "authorization", "password"], StringComparer.OrdinalIgnoreCase);
+        ?? new HashSet<string>(["apikey", "authorization", "password", "token", "secret"], StringComparer.OrdinalIgnoreCase);
 
     public int MaxBodyLoggingSize => configuration.GetValue("Security:Logging:MaxBodyLoggingSize", 2048);
 
