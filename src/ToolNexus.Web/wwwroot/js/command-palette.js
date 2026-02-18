@@ -67,8 +67,18 @@ function readStorageArray(key) {
 }
 
 function closePalette() {
-  if (!isPaletteOpen()) return;
-  modalManager.closeModal(paletteId);
+  if (isPaletteOpen()) {
+    modalManager.closeModal(paletteId);
+  } else if (palette && (!palette.hidden || palette.classList.contains('is-open'))) {
+    // Fallback safety: recover from any desynchronized modal state.
+    palette.hidden = true;
+    palette.classList.remove('is-open', 'is-closing');
+    palette.dataset.state = 'closed';
+    document.body.classList.remove('is-modal-open');
+  } else {
+    return;
+  }
+
   if (previouslyFocused?.focus) previouslyFocused.focus();
 }
 
