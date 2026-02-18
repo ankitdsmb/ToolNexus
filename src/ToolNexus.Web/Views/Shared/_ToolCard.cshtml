@@ -1,0 +1,113 @@
+@model ToolNexus.Application.Models.ToolDescriptor
+@{
+    var index = ViewData["CardIndex"] as int? ?? 0;
+    var icon = ResolveIcon(Model.Category, Model.Slug);
+    var tags = ResolveTags(Model.Actions, Model.Category);
+    var usageScore = ResolveUsageScore(Model.Slug);
+    var isNew = index < 2;
+    var isPopular = usageScore >= 82 || index % 4 == 0;
+    var performanceLabel = Model.IsCpuIntensive ? "Compute-heavy" : "Edge-fast";
+    var performanceClass = Model.IsCpuIntensive ? "is-intensive" : "is-fast";
+}
+
+<a class="tool-card @(isNew ? "is-new" : string.Empty) @(isPopular ? "is-popular" : string.Empty)"
+   href="/tools/@Model.Slug"
+   data-tool-slug="@Model.Slug"
+   style="--stagger-index:@index"
+   aria-label="Open @Model.Title">
+  <div class="tool-card__surface" aria-hidden="true"></div>
+
+  <header class="tool-card__header">
+    <span class="tool-card__icon" aria-hidden="true">@icon</span>
+
+    <div class="tool-card__title-wrap">
+      <h3 class="tool-card__title">@Model.Title</h3>
+      <p class="tool-card__description">@Model.SeoDescription</p>
+    </div>
+  </header>
+
+  <div class="tool-card__badges" aria-label="Tool state badges">
+    @if (isNew)
+    {
+      <span class="tool-card__badge tool-card__badge--new">New</span>
+    }
+    @if (isPopular)
+    {
+      <span class="tool-card__badge tool-card__badge--popular">Popular</span>
+    }
+    <span class="tool-card__badge tool-card__badge--recent" data-recent-badge hidden>Recently used</span>
+  </div>
+
+  <div class="tool-card__tags" aria-label="Supported data tags">
+    @foreach (var tag in tags)
+    {
+      <span class="tool-card__tag">@tag</span>
+    }
+  </div>
+
+  <footer class="tool-card__meta">
+    <div class="tool-card__usage" aria-label="Usage statistic">
+      <span class="tool-card__meta-label">Usage</span>
+      <strong>@usageScore%</strong>
+    </div>
+
+    <div class="tool-card__performance @performanceClass" aria-label="Performance profile">
+      @performanceLabel
+    </div>
+
+    <span class="tool-card__arrow" aria-hidden="true">→</span>
+  </footer>
+</a>
+
+@functions {
+    private static string ResolveIcon(string category, string slug)
+    {
+        var key = $"{category} {slug}".ToLowerInvariant();
+
+        if (key.Contains("json"))
+        {
+            return "{}";
+        }
+
+        if (key.Contains("xml") || key.Contains("html"))
+        {
+            return "</>";
+        }
+
+        if (key.Contains("csv") || key.Contains("table"))
+        {
+            return "▦";
+        }
+
+        if (key.Contains("base64") || key.Contains("encode") || key.Contains("decode"))
+        {
+            return "⟲";
+        }
+
+        return "⚡";
+    }
+
+    private static IReadOnlyCollection<string> ResolveTags(IReadOnlyCollection<string> actions, string category)
+    {
+        var tags = new List<string>();
+        var hints = string.Join(' ', actions).ToLowerInvariant() + " " + category.ToLowerInvariant();
+
+        if (hints.Contains("json")) tags.Add("JSON");
+        if (hints.Contains("xml") || hints.Contains("html")) tags.Add("XML");
+        if (hints.Contains("csv")) tags.Add("CSV");
+        if (hints.Contains("yaml")) tags.Add("YAML");
+
+        if (tags.Count == 0)
+        {
+            tags.Add("Dev Tool");
+        }
+
+        return tags.Take(3).ToArray();
+    }
+
+    private static int ResolveUsageScore(string slug)
+    {
+        var hash = Math.Abs(slug.GetHashCode());
+        return 58 + (hash % 38);
+    }
+}

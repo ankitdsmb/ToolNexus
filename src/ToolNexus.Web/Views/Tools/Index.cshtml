@@ -13,6 +13,8 @@
         url = canonicalUrl,
         description = "Browse all tools available on ToolNexus."
     });
+
+    var index = 0;
 }
 
 <section class="u-stack">
@@ -20,19 +22,20 @@
   <p class="u-muted">Choose a utility by category or jump directly into a tool.</p>
 </section>
 
-<div class="chips">
+<div class="chips" aria-label="Tool categories">
   @foreach (var category in Model.Categories)
   {
     <a class="chip" href="/tools/@category">@category</a>
   }
 </div>
 
-<div class="grid">
+<div class="tool-grid" id="toolGrid" aria-live="polite">
   @foreach (var tool in Model.Tools)
   {
-    <a class="card" href="/tools/@tool.Slug">
-      <h3>@tool.Title</h3>
-      <p>@tool.Category</p>
-    </a>
+    @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
   }
 </div>
+
+@section Scripts {
+  <script src="~/js/tools-grid.js" asp-append-version="true"></script>
+}
