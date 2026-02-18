@@ -1,8 +1,10 @@
 import { modalManager } from "./modal-manager.js";
+document.addEventListener('DOMContentLoaded', () => {
 const page = document.querySelector('.tool-page');
 
 if (!page) {
-  throw new Error('Tool page not found');
+  console.debug('tool-page.js: not on tool page, skipping initialization.');
+  return;
 }
 
 const slug = page.dataset.slug ?? '';
@@ -884,3 +886,4 @@ function renderCollections() {
     uxCollections.appendChild(li);
   });
 }
+});
