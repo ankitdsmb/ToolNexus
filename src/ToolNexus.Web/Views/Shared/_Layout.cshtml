@@ -1,8 +1,6 @@
 @using System.Text.Json
-@using ToolNexus.Application.Services
 @using ToolNexus.Web.Models.Layout
 @using ToolNexus.Web.Services
-@inject IToolCatalogService ToolCatalogService
 @inject IAppVersionService AppVersion
 @{
     var title = ViewData["Title"]?.ToString() ?? "ToolNexus";
@@ -64,14 +62,6 @@
         }
     });
 
-    var commandPaletteTools = ToolCatalogService.GetAllTools()
-        .Select(tool => new
-        {
-            slug = tool.Slug,
-            title = tool.Title,
-            category = tool.Category,
-            description = tool.SeoDescription
-        });
 }
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -91,8 +81,6 @@
     <link rel="modulepreload" href="~/js/ui-state-manager.js" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/dynamic-widget-engine.js" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/command-palette.js" asp-append-version="true" />
-    <link rel="modulepreload" href="~/js/help-overlay.js" asp-append-version="true" />
-    <link rel="modulepreload" href="~/js/onboarding-hint.js" asp-append-version="true" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ToolNexus" />
@@ -121,8 +109,8 @@
 <div class="app-shell">
     <partial name="_Header" model="headerModel" />
 
-    <div class="banner" role="note">
-        Do not paste secrets or sensitive credentials.
+    <div class="alert-strip" role="note">
+        <span>Never paste secrets or sensitive credentials.</span>
     </div>
 
     <main class="container" role="main">
@@ -132,7 +120,6 @@
     <partial name="_Footer" model="footerModel" />
 </div>
 
-<script id="toolCatalogData" type="application/json">@Html.Raw(JsonSerializer.Serialize(commandPaletteTools))</script>
 
 <div id="commandPalette"
      data-modal-root
@@ -159,43 +146,16 @@
     </section>
 </div>
 
-<aside id="shortcutHint" class="shortcut-hint" role="status" aria-live="polite" hidden>
-    <section class="shortcut-hint__panel" aria-labelledby="shortcutHintTitle">
-        <header class="shortcut-hint-modal__header">
-            <h2 id="shortcutHintTitle">Keyboard shortcut unlocked</h2>
-            <button type="button" class="tn-modal__close" data-shortcut-hint-close aria-label="Close shortcut hint">✕</button>
-        </header>
-        <p><strong>Tip:</strong> Press <kbd>⌘K</kbd> to open tools instantly, then type to jump.</p>
-        <button class="shortcut-hint-modal__cta" type="button" data-shortcut-hint-close>Got it</button>
-    </section>
-</aside>
 
-<div id="shortcutHelpOverlay" class="shortcut-help tn-modal" data-modal-root data-modal-id="shortcutHelp" hidden>
-    <button class="tn-modal__backdrop shortcut-help__overlay" type="button" data-modal-backdrop aria-label="Close shortcut help"></button>
-    <section class="tn-modal__dialog shortcut-help__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="shortcutHelpTitle" tabindex="-1">
-        <header class="shortcut-help__header">
-            <h2 id="shortcutHelpTitle">Keyboard shortcuts</h2>
-            <button type="button" class="tn-modal__close" data-shortcut-help-close aria-label="Close shortcut help">✕</button>
-        </header>
-        <ul>
-            <li><kbd>⌘K</kbd><span>Open command palette</span></li>
-            <li><kbd>⌘⇧D</kbd><span>Toggle theme</span></li>
-            <li><kbd>⌘⇧R</kbd><span>Open most recent tool</span></li>
-            <li><kbd>⌘/</kbd><span>Open shortcut help</span></li>
-        </ul>
-    </section>
-</div>
 
 <script type="module" src="~/js/modal-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/ui-state-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/theme-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
-<script type="module" src="~/js/help-overlay.js" asp-append-version="true"></script>
 <script type="module" src="~/js/tools-grid.js" asp-append-version="true"></script>
 <script type="module" src="~/js/dynamic-widget-engine.js" asp-append-version="true"></script>
 <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
 <script type="module" src="~/js/version-manager.js" asp-append-version="true"></script>
-<script type="module" src="~/js/onboarding-hint.js" asp-append-version="true"></script>
 <script type="module" src="~/js/motion-system.js" asp-append-version="true"></script>
 
 @await RenderSectionAsync("Scripts", required: false)

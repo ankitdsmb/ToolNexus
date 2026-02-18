@@ -13,7 +13,8 @@ const MAX_RENDER = 22;
 const RECENT_JSON_KEY = 'toolnexus.recentJson';
 const PINNED_KEY = 'toolnexus.pinnedTools';
 
-const catalog = readCatalog();
+let catalog = [];
+let catalogPromise = null;
 let activeIndex = -1;
 let renderedItems = [];
 let previouslyFocused = null;
@@ -21,10 +22,27 @@ const eventController = new AbortController();
 
 document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
 
+async function ensureCatalogLoaded() {
+  if (catalog.length) return catalog;
+  if (!catalogPromise) {
+    catalogPromise = fetch('/tools/catalog', { headers: { Accept: 'application/json' } })
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        catalog = Array.isArray(items) ? items : [];
+        return catalog;
+      })
+      .catch(() => [])
+      .finally(() => {
+        catalogPromise = null;
+      });
+  }
+
+  return catalogPromise;
+}
+
 function bootstrap() {
   if (!palette || !input || !list) return;
 
-  // Keep the command palette closed by default on every page load.
   palette.hidden = true;
   palette.dataset.state = 'closed';
 
@@ -45,17 +63,6 @@ function isPaletteOpen() {
   return modalManager.getTopModalId() === paletteId;
 }
 
-function readCatalog() {
-  const source = document.getElementById('toolCatalogData');
-  if (!source?.textContent) return [];
-  try {
-    const parsed = JSON.parse(source.textContent);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
 function readStorageArray(key) {
   try {
     const value = localStorage.getItem(key);
@@ -70,7 +77,6 @@ function closePalette() {
   if (isPaletteOpen()) {
     modalManager.closeModal(paletteId);
   } else if (palette && (!palette.hidden || palette.classList.contains('is-open'))) {
-    // Fallback safety: recover from any desynchronized modal state.
     palette.hidden = true;
     palette.classList.remove('is-open', 'is-closing');
     palette.dataset.state = 'closed';
@@ -82,10 +88,12 @@ function closePalette() {
   if (previouslyFocused?.focus) previouslyFocused.focus();
 }
 
-function openPalette(seed = '') {
+async function openPalette(seed = '') {
   previouslyFocused = document.activeElement;
   modalManager.openModal(paletteId, { suspendOthers: true });
   input.value = seed;
+  list.innerHTML = '<li class="command-palette__empty">Loading commands...</li>';
+  await ensureCatalogLoaded();
   renderItems(seed);
   requestAnimationFrame(() => input.focus());
 }
@@ -214,7 +222,6 @@ function handleGlobalShortcuts(event) {
     event.preventDefault();
     const recent = (uiStateManager.state.recents || [])[0];
     if (recent) window.location.assign(`/tools/${recent}`);
-    return;
   }
 }
 
@@ -234,10 +241,14 @@ function bindUiEvents() {
   window.addEventListener('keydown', handleGlobalShortcuts, { signal: eventController.signal });
   window.addEventListener('keydown', handlePaletteControls, { signal: eventController.signal });
 
-  input?.addEventListener('input', () => renderItems(input.value), { signal: eventController.signal });
+  input?.addEventListener('input', async () => {
+    await ensureCatalogLoaded();
+    renderItems(input.value);
+  }, { signal: eventController.signal });
+
   palette?.querySelectorAll('[data-command-close]').forEach((b) => b.addEventListener('click', closePalette, { signal: eventController.signal }));
 
-  paletteTrigger?.addEventListener('click', () => openPalette(''), { signal: eventController.signal });
+  paletteTrigger?.addEventListener('click', () => openPalette(globalSearch?.value || ''), { signal: eventController.signal });
 
   if (globalSearch) {
     globalSearch.addEventListener('click', (event) => {

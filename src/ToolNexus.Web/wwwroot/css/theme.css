@@ -1,29 +1,29 @@
 :root {
   color-scheme: dark;
 
-  --surface-base: #070d18;
-  --surface-elevated: #141d30;
-  --surface-muted: #0f1a2e;
+  --surface-base: #0b1020;
+  --surface-elevated: #121b2e;
+  --surface-muted: #101a2b;
   --surface-overlay: rgba(6, 11, 21, 0.72);
 
-  --text-primary: #e6edf9;
-  --text-secondary: #9fb1cb;
+  --text-primary: #e6ecff;
+  --text-secondary: #a8b3cf;
   --text-tertiary: #7f91af;
 
-  --interactive-primary: #7a8dff;
-  --interactive-primary-hover: #96a6ff;
-  --interactive-primary-soft: rgba(107, 140, 255, 0.2);
+  --interactive-primary: #5b8cff;
+  --interactive-primary-hover: #7da5ff;
+  --interactive-primary-soft: rgba(91, 140, 255, 0.2);
 
   --status-success-bg: rgba(31, 157, 106, 0.18);
   --status-success-text: #7de4b8;
-  --status-warning-bg: rgba(212, 128, 30, 0.2);
-  --status-warning-text: #ffd7a4;
+  --status-warning-bg: rgba(0, 224, 198, 0.16);
+  --status-warning-text: #92f5e8;
   --status-error-bg: rgba(221, 63, 83, 0.2);
   --status-error-text: #ffb1bc;
   --status-info-bg: rgba(27, 132, 255, 0.2);
   --status-info-text: #9bc7ff;
 
-  --focus-ring: 0 0 0 3px rgba(122, 141, 255, 0.58);
+  --focus-ring: 0 0 0 3px rgba(91, 140, 255, 0.56);
 
   /* Legacy aliases */
   --bg: var(--surface-base);

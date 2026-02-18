@@ -9,10 +9,13 @@
 
         <div class="topbar__search-wrap">
             <label class="u-sr-only" for="globalToolSearch">Search tools</label>
-            <input id="globalToolSearch"
-                   class="topbar__search"
-                   placeholder="Search tools..."
-                   autocomplete="off" />
+            <div class="topbar__search-shell">
+                <input id="globalToolSearch"
+                       class="topbar__search"
+                       placeholder="Find a tool instantly…"
+                       autocomplete="off" />
+                <button class="topbar__search-shortcut" type="button" aria-label="Open command palette" data-open-palette>⌘K</button>
+            </div>
         </div>
 
         <nav class="topbar__nav" aria-label="Primary Navigation">
@@ -25,9 +28,6 @@
                 </a>
             }
         </nav>
-
-        <button id="paletteTrigger" class="tool-btn" type="button" aria-label="Open command palette" data-open-palette>⌘K</button>
-        <span class="topbar__perf" data-performance-badge>Stable · --ms</span>
 
         <button id="themeToggle"
                 class="theme-toggle"
