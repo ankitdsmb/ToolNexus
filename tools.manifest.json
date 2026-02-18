@@ -26,6 +26,9 @@
       "actions": [
         "validate"
       ],
+      "clientSafeActions": [
+        "validate"
+      ],
       "seoTitle": "JSON Validator Online | ToolNexus",
       "seoDescription": "Validate JSON and pinpoint structural errors instantly.",
       "exampleInput": "{\"valid\": true}"
