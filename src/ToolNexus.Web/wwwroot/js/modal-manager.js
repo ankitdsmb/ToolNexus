@@ -192,7 +192,10 @@ class ModalManager {
 }
 
 export const modalManager = new ModalManager();
-modalManager.init();
+
+document.addEventListener('DOMContentLoaded', () => {
+  modalManager.init();
+});
 
 window.addEventListener('beforeunload', () => modalManager.destroy());
 
