@@ -8,6 +8,7 @@
     var isPopular = usageScore >= 82 || index % 4 == 0;
     var performanceLabel = Model.IsCpuIntensive ? "Compute-heavy" : "Edge-fast";
     var performanceClass = Model.IsCpuIntensive ? "is-intensive" : "is-fast";
+    var trendLabel = usageScore >= 90 ? "P99" : usageScore >= 80 ? "P95" : "P90";
 }
 
 <a class="tool-card @(isNew ? "is-new" : string.Empty) @(isPopular ? "is-popular" : string.Empty)"
@@ -52,10 +53,11 @@
     </div>
 
     <div class="tool-card__performance @performanceClass" aria-label="Performance profile">
-      @performanceLabel
+      <span>@performanceLabel</span>
+      <strong>@trendLabel</strong>
     </div>
 
-    <span class="tool-card__arrow" aria-hidden="true">→</span>
+    <span class="tool-card__arrow" aria-hidden="true">↗</span>
   </footer>
 </a>
 

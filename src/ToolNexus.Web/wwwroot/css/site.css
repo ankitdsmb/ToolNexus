@@ -401,21 +401,22 @@ a:focus-visible {
 
 .tool-grid {
   --card-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --card-duration: 420ms;
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(0.9rem, 1.6vw, 1.2rem);
+  gap: clamp(0.9rem, 1.6vw, 1.25rem);
 }
 
 .tool-card {
   position: relative;
   display: grid;
-  gap: 0.95rem;
-  padding: 1rem;
+  gap: 1rem;
+  padding: 1.05rem;
   border-radius: calc(var(--radius-md) + 0.2rem);
   border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
   background:
-    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 44%),
-    linear-gradient(165deg, color-mix(in srgb, var(--bg-elevated) 95%, transparent), color-mix(in srgb, var(--bg) 78%, transparent));
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--primary) 24%, transparent), transparent 45%),
+    linear-gradient(164deg, color-mix(in srgb, var(--bg-elevated) 95%, transparent), color-mix(in srgb, var(--bg) 78%, transparent));
   color: var(--text);
   box-shadow: 0 8px 24px color-mix(in srgb, #000 24%, transparent), inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
   overflow: hidden;
@@ -423,8 +424,13 @@ a:focus-visible {
   transform: translateY(12px) scale(0.985);
   opacity: 0;
   animation: toolCardEntrance 680ms var(--card-ease) forwards;
-  animation-delay: calc(var(--stagger-index, 0) * 65ms);
-  transition: transform 300ms var(--card-ease), box-shadow 320ms var(--card-ease), border-color 260ms var(--card-ease), background-size 280ms var(--card-ease);
+  animation-play-state: paused;
+  animation-delay: calc(var(--stagger-index, 0) * 60ms);
+  transition: transform var(--card-duration) var(--card-ease), box-shadow var(--card-duration) var(--card-ease), border-color 260ms var(--card-ease), background-size var(--card-duration) var(--card-ease);
+}
+
+.tool-grid.is-ready .tool-card {
+  animation-play-state: running;
 }
 
 .tool-card__surface {
@@ -488,13 +494,16 @@ a:focus-visible {
 
 .tool-card__title {
   margin: 0;
-  font-size: 1.05rem;
-  letter-spacing: -0.025em;
+  font-size: clamp(1rem, 1.2vw, 1.08rem);
+  font-weight: 635;
+  line-height: 1.25;
+  letter-spacing: -0.022em;
 }
 
 .tool-card__description {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
   color: color-mix(in srgb, var(--text-muted) 90%, #f6fbff 10%);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -513,8 +522,8 @@ a:focus-visible {
 .tool-card__tag {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
-  font-size: 0.72rem;
-  font-weight: 620;
+  font-size: 0.71rem;
+  font-weight: 640;
   letter-spacing: 0.015em;
   padding: 0.2rem 0.58rem;
   background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
@@ -544,7 +553,7 @@ a:focus-visible {
 
 .tool-card__meta {
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 0.6rem;
 }
@@ -570,11 +579,22 @@ a:focus-visible {
 }
 
 .tool-card__performance {
+  display: inline-flex;
+  gap: .35rem;
+  align-items: center;
   font-size: 0.72rem;
   font-weight: 620;
   border-radius: 999px;
-  padding: 0.2rem 0.55rem;
+  padding: 0.2rem 0.25rem 0.2rem 0.55rem;
   border: 1px solid;
+}
+
+.tool-card__performance strong {
+  font-size: 0.66rem;
+  border-radius: 999px;
+  padding: .15rem .35rem;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  background: color-mix(in srgb, currentColor 18%, transparent);
 }
 
 .tool-card__performance.is-fast {
@@ -593,12 +613,12 @@ a:focus-visible {
   justify-self: end;
   font-size: 1.15rem;
   color: color-mix(in srgb, var(--text-muted) 85%, #ffffff 15%);
-  transition: transform 260ms var(--card-ease), color 260ms var(--card-ease);
+  transition: transform 300ms var(--card-ease), color 260ms var(--card-ease);
 }
 
 .tool-card:hover .tool-card__arrow,
 .tool-card:focus-visible .tool-card__arrow {
-  transform: translateX(7px);
+  transform: translate3d(7px, -2px, 0);
   color: color-mix(in srgb, var(--text) 85%, #fff 15%);
 }
 
