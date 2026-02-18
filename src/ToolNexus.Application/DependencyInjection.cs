@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
+using ToolNexus.Application.Services.Insights;
 using ToolNexus.Application.Services.Pipeline;
 
 namespace ToolNexus.Application;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddToolExecutionPipeline();
         services.AddHttpContextAccessor();
         services.AddScoped<IToolService, ToolService>();
+        services.AddSingleton<IToolInsightService, ToolInsightService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         services.AddSingleton<IToolCatalogService, ToolCatalogService>();
         services.AddScoped<ISitemapService, SitemapService>();

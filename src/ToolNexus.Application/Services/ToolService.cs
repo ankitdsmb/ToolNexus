@@ -1,11 +1,13 @@
 using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
+using ToolNexus.Application.Services.Insights;
 using ToolNexus.Application.Services.Pipeline;
 
 namespace ToolNexus.Application.Services;
 
 public sealed class ToolService(
     IToolExecutionPipeline executionPipeline,
+    IToolInsightService insightService,
     ILogger<ToolService> logger) : IToolService
 {
     public async Task<ToolExecutionResponse> ExecuteAsync(
@@ -23,12 +25,22 @@ public sealed class ToolService(
 
         try
         {
-            return await executionPipeline.ExecuteAsync(
+            var response = await executionPipeline.ExecuteAsync(
                 normalizedSlug,
                 normalizedAction,
                 request.Input,
                 request.Options,
                 cancellationToken);
+
+            var insight = TryGetInsight(
+                normalizedSlug,
+                normalizedAction,
+                request.Input,
+                response.Error,
+                request.Options,
+                logger);
+
+            return response with { Insight = insight };
         }
         catch (Exception ex)
         {
@@ -43,6 +55,30 @@ public sealed class ToolService(
                 string.Empty,
                 "Tool execution failed unexpectedly.",
                 false);
+        }
+    }
+
+    private ToolInsightResult? TryGetInsight(
+        string slug,
+        string action,
+        string input,
+        string? error,
+        IDictionary<string, string>? options,
+        ILogger<ToolService> logger)
+    {
+        try
+        {
+            return insightService.GetInsight(slug, action, input, error, options);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Insight generation failed for tool {Slug} action {Action}.",
+                slug,
+                action);
+
+            return null;
         }
     }
 
