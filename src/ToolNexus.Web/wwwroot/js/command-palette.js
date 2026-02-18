@@ -1,3 +1,5 @@
+import { uiStateManager } from './ui-state-manager.js';
+
 const SELECTORS = {
   modal: '#commandPaletteModal',
   input: '#commandPaletteInput',
@@ -6,10 +8,13 @@ const SELECTORS = {
   action: '.command-palette__action'
 };
 
+const MAX_ITEMS = 14;
+
 const state = {
   initialized: false,
   open: false,
   tools: [],
+  commands: [],
   filtered: [],
   activeIndex: 0,
   elements: null,
@@ -38,9 +43,7 @@ function createCommandPalette() {
 }
 
 function queryElements() {
-  if (state.elements) {
-    return state.elements;
-  }
+  if (state.elements) return state.elements;
 
   const modal = document.querySelector(SELECTORS.modal) || createCommandPalette();
   state.elements = {
@@ -52,71 +55,136 @@ function queryElements() {
   return state.elements;
 }
 
-async function loadTools() {
-  if (state.tools.length) {
-    return;
-  }
+function escapeHtml(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
 
-  try {
-    const response = await fetch('/tools/catalog', { headers: { Accept: 'application/json' } });
-    const payload = response.ok ? await response.json() : [];
+function formatUsage(count) {
+  return `Used ${count}x`;
+}
 
-    state.tools = Array.isArray(payload)
-      ? payload.map((tool) => ({
-          slug: tool.slug,
-          title: tool.title,
-          description: tool.seoDescription || tool.title,
-          href: `/tools/${tool.slug}`
-        }))
-      : [];
-  } catch {
-    state.tools = [];
-  }
+function createCommandFromTool(tool) {
+  const usage = uiStateManager.getUsage(tool.slug);
+  const isRecent = (uiStateManager.state.recents || []).includes(tool.slug);
 
-  state.filtered = [...state.tools];
+  return {
+    id: `tool:${tool.slug}`,
+    slug: tool.slug,
+    title: tool.title,
+    description: tool.description,
+    icon: '🧰',
+    category: isRecent ? 'Recents' : 'Tool',
+    shortcut: '↩ Open',
+    usage,
+    href: tool.href,
+    searchText: `${tool.title} ${tool.slug} ${tool.description} ${isRecent ? 'recent' : 'tool'}`.toLowerCase(),
+    onSelect: () => {
+      uiStateManager.recordToolUsage(tool.slug);
+      window.location.assign(tool.href);
+    }
+  };
+}
+
+function createDisplayCommand() {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const title = isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme';
+
+  return {
+    id: 'display:theme-toggle',
+    slug: 'theme-toggle',
+    title,
+    description: 'Toggle ToolNexus display theme preferences.',
+    icon: '🖥️',
+    category: 'Display',
+    shortcut: '⌘D',
+    usage: 0,
+    href: '',
+    searchText: `${title} theme display dark light`.toLowerCase(),
+    onSelect: () => {
+      const nextTheme = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('toolnexus-theme', nextTheme);
+      uiStateManager.syncTheme(nextTheme);
+      closeCommandPalette();
+    }
+  };
+}
+
+function buildCommandCollection() {
+  const toolCommands = state.tools.map(createCommandFromTool);
+  state.commands = [createDisplayCommand(), ...toolCommands];
+}
+
+function renderCommandRow(command, index) {
+  const isActive = index === state.activeIndex;
+
+  return `
+    <li class="command-palette__item ${isActive ? 'is-active' : ''}" role="option" aria-selected="${isActive}">
+      <button type="button" class="command-palette__action" data-index="${index}">
+        <span class="command-palette__left">
+          <span class="command-palette__icon" aria-hidden="true">${escapeHtml(command.icon)}</span>
+          <span class="command-palette__content">
+            <span class="command-palette__item-title">${escapeHtml(command.title)}</span>
+            <span class="command-palette__item-desc">${escapeHtml(command.description)}</span>
+          </span>
+        </span>
+        <span class="command-palette__meta">
+          <span class="command-palette__badge command-palette__badge--category">${escapeHtml(command.category)}</span>
+          <span class="command-palette__badge">${escapeHtml(command.shortcut)}</span>
+          <span class="command-palette__badge">${escapeHtml(formatUsage(command.usage))}</span>
+          <span class="command-palette__arrow" aria-hidden="true">➜</span>
+        </span>
+      </button>
+    </li>`;
 }
 
 function renderList() {
   const { list } = queryElements();
-  if (!list) {
-    return;
-  }
+  if (!list) return;
 
-  const visible = state.filtered.slice(0, 12);
+  const visible = state.filtered.slice(0, MAX_ITEMS);
   if (!visible.length) {
     list.innerHTML = '<li class="command-palette__empty">No matching tools found.</li>';
     return;
   }
 
-  list.innerHTML = visible
-    .map(
-      (tool, index) => `
-      <li class="command-palette__item ${index === state.activeIndex ? 'is-active' : ''}" role="option" aria-selected="${index === state.activeIndex}">
-        <button type="button" class="command-palette__action" data-index="${index}">
-          <span class="command-palette__item-title">${tool.title}</span>
-          <span class="command-palette__item-desc">${tool.description}</span>
-        </button>
-      </li>`
-    )
-    .join('');
+  list.innerHTML = visible.map(renderCommandRow).join('');
 }
 
-function filterTools(query) {
+function filterCommands(query) {
   const normalized = query.trim().toLowerCase();
-
   state.filtered = normalized
-    ? state.tools.filter((tool) => (`${tool.title} ${tool.slug} ${tool.description}`).toLowerCase().includes(normalized))
-    : [...state.tools];
+    ? state.commands.filter((command) => command.searchText.includes(normalized))
+    : [...state.commands];
 
   state.activeIndex = 0;
   renderList();
 }
 
-function focusInput() {
-  const { input } = queryElements();
-  if (!input) {
+function setActiveIndex(nextIndex) {
+  if (!state.filtered.length) {
+    state.activeIndex = 0;
+    renderList();
     return;
   }
+
+  const upperBound = Math.min(state.filtered.length, MAX_ITEMS) - 1;
+  state.activeIndex = Math.min(Math.max(nextIndex, 0), upperBound);
+  renderList();
+
+  const { list } = queryElements();
+  const activeNode = list?.querySelector('.command-palette__item.is-active');
+  activeNode?.scrollIntoView({ block: 'nearest' });
+}
+
+function focusInput() {
+  const { input } = queryElements();
+  if (!input) return;
 
   requestAnimationFrame(() => {
     input.focus();
@@ -126,9 +194,7 @@ function focusInput() {
 
 function closeCommandPalette() {
   const { modal } = queryElements();
-  if (!modal || !state.open) {
-    return;
-  }
+  if (!modal || !state.open) return;
 
   state.open = false;
   modal.hidden = true;
@@ -138,12 +204,10 @@ function closeCommandPalette() {
 }
 
 function activateIndex(index = state.activeIndex) {
-  const item = state.filtered[index];
-  if (!item) {
-    return;
-  }
+  const command = state.filtered[index];
+  if (!command) return;
 
-  window.location.assign(item.href);
+  command.onSelect?.();
 }
 
 function onModalClick(event) {
@@ -162,9 +226,7 @@ function onModalClick(event) {
 }
 
 function onModalKeydown(event) {
-  if (!state.open) {
-    return;
-  }
+  if (!state.open) return;
 
   if (event.key === 'Escape') {
     event.preventDefault();
@@ -174,15 +236,13 @@ function onModalKeydown(event) {
 
   if (event.key === 'ArrowDown') {
     event.preventDefault();
-    state.activeIndex = Math.min(state.activeIndex + 1, Math.max(state.filtered.length - 1, 0));
-    renderList();
+    setActiveIndex(state.activeIndex + 1);
     return;
   }
 
   if (event.key === 'ArrowUp') {
     event.preventDefault();
-    state.activeIndex = Math.max(state.activeIndex - 1, 0);
-    renderList();
+    setActiveIndex(state.activeIndex - 1);
     return;
   }
 
@@ -197,16 +257,40 @@ function bindEvents() {
 
   modal.addEventListener('click', onModalClick);
   modal.addEventListener('keydown', onModalKeydown);
+  input?.addEventListener('input', (event) => filterCommands(event.target.value || ''));
 
-  input?.addEventListener('input', (event) => {
-    filterTools(event.target.value || '');
+  window.addEventListener('toolnexus:statechange', () => {
+    if (!state.open) return;
+    buildCommandCollection();
+    filterCommands(input?.value || '');
   });
 }
 
-async function ensureInitialized() {
-  if (state.initialized) {
-    return;
+async function loadTools() {
+  if (state.tools.length) return;
+
+  try {
+    const response = await fetch('/tools/catalog', { headers: { Accept: 'application/json' } });
+    const payload = response.ok ? await response.json() : [];
+
+    state.tools = Array.isArray(payload)
+      ? payload.map((tool) => ({
+          slug: tool.slug,
+          title: tool.title,
+          description: tool.seoDescription || tool.title,
+          href: `/tools/${tool.slug}`
+        }))
+      : [];
+  } catch {
+    state.tools = [];
   }
+
+  buildCommandCollection();
+  state.filtered = [...state.commands];
+}
+
+async function ensureInitialized() {
+  if (state.initialized) return;
 
   queryElements();
   bindEvents();
@@ -218,9 +302,9 @@ async function openCommandPalette(seed = '') {
   await ensureInitialized();
 
   const { modal, input } = queryElements();
-  if (!modal || !input) {
-    return false;
-  }
+  if (!modal || !input) return false;
+
+  buildCommandCollection();
 
   state.lastFocused = document.activeElement;
   state.open = true;
@@ -229,7 +313,7 @@ async function openCommandPalette(seed = '') {
   document.body.classList.add('is-modal-open');
 
   input.value = seed;
-  filterTools(seed);
+  filterCommands(seed);
   focusInput();
   return true;
 }
