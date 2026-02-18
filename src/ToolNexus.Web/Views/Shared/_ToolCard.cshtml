@@ -20,12 +20,15 @@
 
     var performanceLabel = Model.IsCpuIntensive ? "Compute-heavy" : "Edge-fast";
     var trendLabel = usageScore >= 90 ? "P99" : usageScore >= 80 ? "P95" : "P90";
+    var searchable = $"{Model.Title} {Model.SeoDescription} {Model.Category} {string.Join(" ", tags)} {string.Join(" ", Model.Actions)}";
 }
 
 <a class="tool-card"
    data-reveal
    href="/tools/@Model.Slug"
    data-tool-slug="@Model.Slug"
+   data-category="@Model.Category"
+   data-searchable="@searchable"
    style="--stagger-index:@index"
    aria-label="Open @Model.Title">
   <header class="tool-card__header">
@@ -50,15 +53,16 @@
   }
 
   <div class="tool-card__tags" aria-label="Supported data tags">
-    @foreach (var tag in tags.Take(2))
+    @foreach (var tag in tags.Take(3))
     {
       <span class="tool-card__tag">@tag</span>
     }
   </div>
 
-  <footer class="tool-card__meta">
-    <span class="tool-card__meta-item">Usage <strong data-tool-usage>@usageScore%</strong></span>
-    <span class="tool-card__meta-item">@performanceLabel <strong>@trendLabel</strong></span>
+  <footer class="tool-card__meta" aria-label="Tool metadata">
+    <span class="tool-card__meta-item"><span>Usage</span> <strong data-tool-usage>@usageScore</strong></span>
+    <span class="tool-card__meta-item"><span>Runtime</span> <strong>@performanceLabel</strong></span>
+    <span class="tool-card__meta-item"><span>Trend</span> <strong>@trendLabel</strong></span>
   </footer>
 </a>
 
@@ -86,7 +90,7 @@
         if (hints.Contains("yaml")) tags.Add("YAML");
         if (tags.Count == 0) tags.Add("Utility");
 
-        return tags.Take(2).ToArray();
+        return tags.Take(3).ToArray();
     }
 
     private static int ResolveUsageScore(string slug)

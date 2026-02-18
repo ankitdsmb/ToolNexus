@@ -1,3 +1,4 @@
+@using System.Globalization
 @model ToolIndexViewModel
 @{
     var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/tools";
@@ -14,24 +15,61 @@
         description = "Browse all tools available on ToolNexus."
     });
 
-    var index = 0;
+    var groupedTools = Model.Tools
+        .GroupBy(tool => string.IsNullOrWhiteSpace(tool.Category) ? "Utility" : tool.Category)
+        .OrderBy(group => group.Key)
+        .ToList();
+
+    var cardIndex = 0;
 }
 
-<section class="u-stack" data-reveal>
-  <h1>All Tools</h1>
-  <p class="u-muted">Choose a utility by category or jump directly into a tool.</p>
+<section class="tools-index" data-reveal>
+    <header class="u-stack">
+        <h1>All Tools</h1>
+        <p class="u-muted">Choose a utility by category or jump directly into a tool.</p>
+    </header>
+
+    <section class="tools-index__toolbar" aria-label="Tool filters">
+        <div class="tools-index__toolbar-top">
+            <label class="u-sr-only" for="toolsSearchInput">Search tools</label>
+            <input id="toolsSearchInput"
+                   class="search"
+                   type="search"
+                   placeholder="Search by tool name, tag, or category"
+                   autocomplete="off"
+                   spellcheck="false" />
+
+            <div class="view-toggle" role="group" aria-label="Grid density">
+                <button type="button" class="view-toggle__btn is-active" data-density="comfortable">Comfortable</button>
+                <button type="button" class="view-toggle__btn" data-density="compact">Compact</button>
+            </div>
+        </div>
+
+        <div class="tools-index__categories" aria-label="Filter by category">
+            <button type="button" class="chip is-active" data-category-filter="all">All</button>
+            @foreach (var group in groupedTools)
+            {
+                <button type="button" class="chip" data-category-filter="@group.Key">@CultureInfo.CurrentCulture.TextInfo.ToTitleCase(group.Key)</button>
+            }
+        </div>
+    </section>
+
+    @foreach (var group in groupedTools)
+    {
+        var title = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(group.Key);
+
+        <section class="tool-group" data-tool-group data-category="@group.Key">
+            <header class="tool-group__header">
+                <h2 class="tool-group__title">@title</h2>
+                <span class="tool-group__count" data-group-count>@group.Count() tools</span>
+            </header>
+
+            <div class="tool-grid is-loading" id="toolGrid-@group.Key.Replace(" ", "-").ToLowerInvariant()" aria-live="polite">
+                @foreach (var tool in group)
+                {
+                    @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = cardIndex++ })
+                }
+            </div>
+        </section>
+    }
 </section>
-
-<div class="chips" data-reveal style="--reveal-index:1" aria-label="Tool categories">
-  @foreach (var category in Model.Categories)
-  {
-    <a class="chip" href="/tools/@category">@category</a>
-  }
-</div>
-
-<div class="tool-grid is-loading" data-reveal style="--reveal-index:2" id="toolGrid" aria-live="polite">
-  @foreach (var tool in Model.Tools)
-  {
-    @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
-  }
-</div>
