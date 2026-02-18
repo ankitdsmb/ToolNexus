@@ -172,4 +172,9 @@
     };
   </script>
   <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
+
+  @if (Model.Tool.Slug == "js-minifier")
+  {
+    <script type="module" src="~/js/tools/js-minifier.js" asp-append-version="true"></script>
+  }
 }
