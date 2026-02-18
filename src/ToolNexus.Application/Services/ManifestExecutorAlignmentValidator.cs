@@ -6,11 +6,14 @@ namespace ToolNexus.Application.Services;
 
 public sealed class ManifestExecutorAlignmentValidator(
     IToolManifestGovernance governance,
-    IEnumerable<IToolExecutor> executors,
+    IServiceScopeFactory scopeFactory,
     ILogger<ManifestExecutorAlignmentValidator> logger) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        using var scope = scopeFactory.CreateScope();
+        var executors = scope.ServiceProvider.GetRequiredService<IEnumerable<IToolExecutor>>();
+
         var manifestBySlug = governance.GetAll().ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
         var executorBySlug = executors.ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
 
