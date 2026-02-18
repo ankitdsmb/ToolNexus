@@ -10,6 +10,7 @@ using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
 using ToolNexus.Infrastructure.Insights;
 using ToolNexus.Infrastructure.Security;
+using ToolNexus.Application.Services.Insights;
 
 namespace ToolNexus.Infrastructure;
 
