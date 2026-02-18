@@ -34,7 +34,7 @@
     <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
     <button id="shareBtn" class="tool-btn" type="button">Share Link</button>
     <button id="shortcutBtn" class="tool-btn" type="button" aria-haspopup="dialog">Shortcuts</button>
-    <p class="shortcut-hint" id="shortcutHint">Shortcut: Ctrl + Enter</p>
+    <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl + Enter</p>
   </div>
 
   <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
@@ -52,7 +52,7 @@
 
       <div class="editor-field">
         <label for="inputEditor" class="editor-label">Tool input</label>
-        <textarea id="inputEditor" aria-describedby="shortcutHint">@Model.Tool.ExampleInput</textarea>
+        <textarea id="inputEditor" aria-describedby="editorShortcutHint">@Model.Tool.ExampleInput</textarea>
         <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
       </div>
     </section>
