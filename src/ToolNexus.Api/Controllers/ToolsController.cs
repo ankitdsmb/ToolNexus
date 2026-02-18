@@ -56,7 +56,15 @@ public sealed class ToolsController(
         [FromRoute(Name = "toolAction"), Required, MinLength(1)] string action,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
-        => ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
+    {
+        // Safety check to prevent NullReferenceException if binding fails
+        if (request is null)
+        {
+            return Task.FromResult<ActionResult<ToolExecutionResponse>>(BadRequest(new ToolExecutionResponse(false, string.Empty, "Request body is required.")));
+        }
+
+        return ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
+    }
 
     private async Task<ActionResult<ToolExecutionResponse>> ExecuteInternalAsync(
         string slug,
@@ -90,6 +98,6 @@ public sealed class ToolsController(
     }
 
     public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
+        [Required] string Input,
         IDictionary<string, string>? Options = null);
 }

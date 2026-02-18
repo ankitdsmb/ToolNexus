@@ -21,7 +21,9 @@ public sealed class SanitizeErrorMiddlewareTests
         await middleware.InvokeAsync(context);
 
         context.Response.Body.Seek(0, SeekOrigin.Begin);
-        var response = await JsonSerializer.DeserializeAsync<SanitizeErrorMiddleware.ApiErrorResponse>(context.Response.Body);
+        var response = await JsonSerializer.DeserializeAsync<SanitizeErrorMiddleware.ApiErrorResponse>(
+            context.Response.Body,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         Assert.NotNull(response);
         Assert.Equal("internal_error", response!.Code);
