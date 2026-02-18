@@ -12,11 +12,15 @@ namespace ToolNexus.Api.IntegrationTests;
 
 public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
+    private const string TestSigningKey = "test-signing-key-that-is-at-least-32-bytes-long-1234567890";
     private readonly HttpClient _client;
 
     public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _client = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("Security:Jwt:SigningKey", TestSigningKey);
+        }).CreateClient();
     }
 
     [Fact]
@@ -121,7 +125,7 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     private static string CreateToken(params string[] permissions)
     {
         var handler = new JwtSecurityTokenHandler();
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("toolnexus-development-signing-key-change-in-production"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSigningKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = permissions.Select(permission => new Claim("tool_permission", permission)).ToList();

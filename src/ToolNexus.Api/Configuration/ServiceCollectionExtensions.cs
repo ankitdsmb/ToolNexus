@@ -56,6 +56,25 @@ public static class ServiceCollectionExtensions
         var jwtOptions = configuration.GetSection(JwtSecurityOptions.SectionName).Get<JwtSecurityOptions>()
             ?? new JwtSecurityOptions();
 
+        if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
+        {
+            var envKey = Environment.GetEnvironmentVariable("JWT_SIGNING_KEY");
+            if (!string.IsNullOrWhiteSpace(envKey))
+            {
+                jwtOptions.SigningKey = envKey;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
+        {
+             throw new InvalidOperationException("JWT Signing Key is missing. Please set 'Security:Jwt:SigningKey' in configuration or 'JWT_SIGNING_KEY' environment variable.");
+        }
+
+        if (System.Text.Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
+        {
+             throw new InvalidOperationException("JWT Signing Key is too short. It must be at least 32 bytes (256 bits) long for HMAC-SHA256.");
+        }
+
         var signingKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
 
 
@@ -158,7 +177,21 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IAuthorizationHandler, ToolActionAuthorizationHandler>();
-        services.AddOptions<JwtSecurityOptions>().Bind(configuration.GetSection(JwtSecurityOptions.SectionName)).ValidateOnStart();
+        services.AddOptions<JwtSecurityOptions>()
+            .Bind(configuration.GetSection(JwtSecurityOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                if (string.IsNullOrWhiteSpace(options.SigningKey))
+                {
+                    var envKey = Environment.GetEnvironmentVariable("JWT_SIGNING_KEY");
+                    if (!string.IsNullOrWhiteSpace(envKey))
+                    {
+                        options.SigningKey = envKey;
+                    }
+                }
+            })
+            .Validate(options => !string.IsNullOrWhiteSpace(options.SigningKey) && System.Text.Encoding.UTF8.GetByteCount(options.SigningKey) >= 32, "SigningKey must be at least 32 bytes.")
+            .ValidateOnStart();
         services.AddOptions<SecurityHeadersOptions>().Bind(configuration.GetSection(SecurityHeadersOptions.SectionName)).ValidateOnStart();
         return services;
     }
