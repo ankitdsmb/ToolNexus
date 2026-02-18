@@ -89,7 +89,10 @@ public sealed class ToolsController(
         return Ok(result);
     }
 
-    public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
-        IDictionary<string, string>? Options = null);
+    public sealed class ExecuteToolRequest
+    {
+        [Required]
+        public string Input { get; set; } = string.Empty;
+        public IDictionary<string, string>? Options { get; set; }
+    }
 }
