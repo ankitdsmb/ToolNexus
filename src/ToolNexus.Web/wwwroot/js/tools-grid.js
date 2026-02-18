@@ -19,10 +19,6 @@ if (!grid) {
         const isRecent = Boolean(slug && recents.has(slug));
         card.classList.toggle('is-recent', isRecent);
 
-        const badge = card.querySelector('[data-recent-badge]');
-        if (badge) {
-          badge.hidden = !isRecent;
-        }
 
         const usageNode = card.querySelector('[data-tool-usage]');
         if (usageNode && slug) {
