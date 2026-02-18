@@ -1,0 +1,41 @@
+@model ToolNexus.Web.Models.Layout.LayoutHeaderViewModel
+
+<header class="topbar" role="banner">
+    <div class="topbar__inner">
+        <a href="/" class="brand" aria-label="ToolNexus Home">
+            <span class="brand__dot" aria-hidden="true"></span>
+            <span>ToolNexus</span>
+        </a>
+
+        <div class="topbar__search-wrap">
+            <label class="u-sr-only" for="globalToolSearch">Search tools</label>
+            <input id="globalToolSearch"
+                   class="topbar__search"
+                   placeholder="Search tools..."
+                   autocomplete="off" />
+        </div>
+
+        <nav class="topbar__nav" aria-label="Primary Navigation">
+            @foreach (var link in Model.Links)
+            {
+                <a class="topbar__link @(link.IsActive ? "active-nav" : string.Empty)"
+                   href="@link.Href"
+                   aria-current="@(link.IsActive ? "page" : null)">
+                    @link.Text
+                </a>
+            }
+        </nav>
+
+        <button id="paletteTrigger" class="tool-btn" type="button" aria-label="Open command palette" data-open-palette>⌘K</button>
+        <span class="topbar__perf" data-performance-badge>Stable · --ms</span>
+
+        <button id="themeToggle"
+                class="theme-toggle"
+                type="button"
+                aria-label="Activate dark theme"
+                aria-pressed="false">
+            <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+            <span class="theme-toggle__text">Theme</span>
+        </button>
+    </div>
+</header>

@@ -7,6 +7,7 @@ using ToolNexus.Application;
 using ToolNexus.Infrastructure;
 using ToolNexus.Web.Options;
 using ToolNexus.Web.Security;
+using ToolNexus.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,7 @@ builder.Services.Configure<InternalAuthOptions>(builder.Configuration.GetSection
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
 builder.Services.AddSingleton<IInternalUserPrincipalFactory, InternalUserPrincipalFactory>();
+builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
 
 var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
 if (!string.IsNullOrWhiteSpace(keyRingPath))

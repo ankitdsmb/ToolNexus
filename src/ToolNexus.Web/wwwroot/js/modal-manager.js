@@ -174,7 +174,6 @@ class ModalManager {
 export const modalManager = new ModalManager();
 modalManager.init();
 
-window.ToolNexusModalManager = modalManager;
 window.addEventListener('beforeunload', () => modalManager.destroy());
 
 export { Z_INDEX };
