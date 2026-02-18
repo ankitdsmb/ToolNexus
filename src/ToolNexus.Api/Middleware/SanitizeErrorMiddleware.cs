@@ -1,4 +1,5 @@
 using ToolNexus.Application.Services;
+using ToolNexus.Application;
 
 namespace ToolNexus.Api.Middleware;
 

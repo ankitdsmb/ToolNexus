@@ -20,6 +20,11 @@ public sealed class ApiCacheHeadersMiddleware(RequestDelegate next)
 
         await next(context);
 
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
+
         if (context.Response.StatusCode >= 400)
         {
             context.Response.Headers.CacheControl = NoStore;
