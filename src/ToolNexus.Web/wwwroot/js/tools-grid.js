@@ -5,6 +5,10 @@
   const cards = Array.from(grid.querySelectorAll('.tool-card'));
   if (!cards.length) return;
 
+  requestAnimationFrame(() => {
+    grid.classList.add('is-ready');
+  });
+
   const storageKey = 'toolnexus.recentTools';
   const maxRecent = 8;
 
@@ -48,6 +52,12 @@
   cards.forEach((card) => {
     card.addEventListener('click', () => {
       writeRecent(card.dataset.toolSlug || '');
+    });
+
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        writeRecent(card.dataset.toolSlug || '');
+      }
     });
   });
 
