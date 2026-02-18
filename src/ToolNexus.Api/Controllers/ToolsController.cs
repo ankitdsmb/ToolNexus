@@ -56,7 +56,14 @@ public sealed class ToolsController(
         [FromRoute(Name = "toolAction"), Required, MinLength(1)] string action,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
-        => ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
+    {
+        if (request is null)
+        {
+            return Task.FromResult<ActionResult<ToolExecutionResponse>>(BadRequest("Request body is required."));
+        }
+
+        return ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
+    }
 
     private async Task<ActionResult<ToolExecutionResponse>> ExecuteInternalAsync(
         string slug,
@@ -90,6 +97,6 @@ public sealed class ToolsController(
     }
 
     public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
+        string Input,
         IDictionary<string, string>? Options = null);
 }

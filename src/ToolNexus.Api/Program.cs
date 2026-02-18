@@ -17,6 +17,9 @@ builder.Host.UseSerilog((context, cfg) => cfg.ReadFrom.Configuration(context.Con
 var mvcBuilder = builder.Services.AddControllers(options =>
 {
     options.Filters.AddService<RedactingLoggingExceptionFilter>();
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
 mvcBuilder.ConfigureApiBehaviorOptions(options =>

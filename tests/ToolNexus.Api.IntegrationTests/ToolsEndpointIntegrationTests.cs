@@ -99,6 +99,12 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
                 input = "{\"valid\":true}"
             });
 
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Fail($"Expected OK but got {response.StatusCode}. Content: {content}");
+        }
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var payload = await response.Content.ReadFromJsonAsync<ToolExecutionResponse>();
