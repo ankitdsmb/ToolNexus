@@ -1,4 +1,6 @@
+using System.Buffers;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using CsvHelper;
 using ToolNexus.Application.Abstractions;
@@ -46,8 +48,30 @@ public sealed class JsonToolExecutor : ToolExecutorBase
 
     private static string Validate(string input)
     {
-        using var _ = JsonDocument.Parse(input);
-        return "Valid JSON";
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            throw new JsonException("Input is empty.");
+        }
+
+        var maxByteCount = Encoding.UTF8.GetMaxByteCount(input.Length);
+        var buffer = ArrayPool<byte>.Shared.Rent(maxByteCount);
+
+        try
+        {
+            var length = Encoding.UTF8.GetBytes(input, 0, input.Length, buffer, 0);
+            var reader = new Utf8JsonReader(buffer.AsSpan(0, length));
+
+            while (reader.Read())
+            {
+                // Consume tokens to validate
+            }
+
+            return "Valid JSON";
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     private static string ToCsv(string input)
