@@ -1,44 +1,6 @@
-:root {
-  color-scheme: light;
-  --bg: #f8fafd;
-  --bg-elevated: #ffffff;
-  --bg-muted: #eef3fa;
-  --text: #1f2937;
-  --text-muted: #5f6e82;
-  --border: #d9e3f0;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-soft: #dbeafe;
-  --danger-soft: #fee2e2;
-  --danger-text: #b91c1c;
-  --warning-bg: #fff7ed;
-  --warning-text: #9a3412;
-  --shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 12px 40px rgba(15, 23, 42, 0.12);
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --transition: 180ms ease;
-}
-
-html[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #0b1220;
-  --bg-elevated: #121b2e;
-  --bg-muted: #0f172a;
-  --text: #edf2ff;
-  --text-muted: #a7b4cf;
-  --border: #24304b;
-  --primary: #7aa6ff;
-  --primary-hover: #92b6ff;
-  --primary-soft: #1b2950;
-  --danger-soft: #3d1a1f;
-  --danger-text: #fca5a5;
-  --warning-bg: #33220e;
-  --warning-text: #fed7aa;
-  --shadow-sm: 0 8px 24px rgba(2, 8, 20, 0.35);
-  --shadow-md: 0 18px 44px rgba(2, 8, 20, 0.5);
-}
+@import url("./design-tokens.css");
+@import url("./theme.css");
+@import url("./base.css");
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
