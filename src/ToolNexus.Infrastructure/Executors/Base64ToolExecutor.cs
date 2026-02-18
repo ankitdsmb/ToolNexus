@@ -17,13 +17,25 @@ public sealed class Base64ToolExecutor : ToolExecutorBase
 
     protected override Task<ToolResult> ExecuteCoreAsync(string action, ToolRequest request, CancellationToken cancellationToken)
     {
-        var output = action switch
+        if (action == "encode")
         {
-            "encode" => Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Input)),
-            "decode" => Encoding.UTF8.GetString(Convert.FromBase64String(request.Input)),
-            _ => throw new InvalidOperationException($"Unsupported action: {action}")
-        };
+            var output = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Input));
+            return Task.FromResult(ToolResult.Ok(output));
+        }
 
-        return Task.FromResult(ToolResult.Ok(output));
+        if (action == "decode")
+        {
+            try
+            {
+                var output = Encoding.UTF8.GetString(Convert.FromBase64String(request.Input));
+                return Task.FromResult(ToolResult.Ok(output));
+            }
+            catch (FormatException)
+            {
+                return Task.FromResult(ToolResult.Fail("Invalid Base64 input"));
+            }
+        }
+
+        throw new InvalidOperationException($"Unsupported action: {action}");
     }
 }
