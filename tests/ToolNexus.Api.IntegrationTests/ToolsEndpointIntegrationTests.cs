@@ -16,7 +16,10 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
 
     public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _client = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("ManifestPath", Path.GetFullPath("tools.manifest.json"));
+        }).CreateClient();
     }
 
     [Fact]

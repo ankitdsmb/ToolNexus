@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Authentication;
@@ -89,7 +90,13 @@ public sealed class ToolsController(
         return Ok(result);
     }
 
-    public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
-        IDictionary<string, string>? Options = null);
+    public sealed class ExecuteToolRequest
+    {
+        [Required]
+        [JsonPropertyName("input")]
+        public required string Input { get; init; }
+
+        [JsonPropertyName("options")]
+        public IDictionary<string, string>? Options { get; init; }
+    }
 }

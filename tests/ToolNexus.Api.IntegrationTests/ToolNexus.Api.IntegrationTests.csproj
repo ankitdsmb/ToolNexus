@@ -18,4 +18,10 @@
   <ItemGroup>
     <ProjectReference Include="../../src/ToolNexus.Api/ToolNexus.Api.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../tools.manifest.json">
+      <Link>tools.manifest.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
