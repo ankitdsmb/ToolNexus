@@ -2,13 +2,6 @@ import { modalManager } from './modal-manager.js';
 import { uiStateManager } from './ui-state-manager.js';
 
 const paletteId = 'commandPalette';
-const palette = document.getElementById(paletteId);
-const input = document.getElementById('commandPaletteInput');
-const list = document.getElementById('commandPaletteList');
-const themeToggle = document.getElementById('themeToggle');
-const globalSearch = document.getElementById('globalToolSearch');
-const paletteTrigger = document.querySelector('[data-open-palette]');
-
 const MAX_RENDER = 22;
 const RECENT_JSON_KEY = 'toolnexus.recentJson';
 const PINNED_KEY = 'toolnexus.pinnedTools';
@@ -18,9 +11,59 @@ let catalogPromise = null;
 let activeIndex = -1;
 let renderedItems = [];
 let previouslyFocused = null;
+let initialized = false;
+let palette;
+let input;
+let list;
+
 const eventController = new AbortController();
 
-document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
+function createCommandPalette() {
+  const wrapper = document.createElement('div');
+  wrapper.id = paletteId;
+  wrapper.dataset.modalRoot = '';
+  wrapper.dataset.modalId = paletteId;
+  wrapper.dataset.state = 'closed';
+  wrapper.hidden = true;
+  wrapper.className = 'command-palette tn-modal';
+
+  wrapper.innerHTML = `
+    <button class="tn-modal__backdrop command-palette__overlay" type="button" data-modal-backdrop aria-label="Close command palette"></button>
+
+    <section class="tn-modal__dialog command-palette__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle" tabindex="-1">
+      <header class="command-palette__header">
+        <p id="commandPaletteTitle" class="command-palette__title">Command Palette</p>
+        <div class="command-palette__header-actions">
+          <span class="command-palette__shortcut">⌘K to open · Esc to close</span>
+          <button class="tn-modal__close" type="button" data-command-close aria-label="Close command palette">✕</button>
+        </div>
+      </header>
+
+      <label class="u-sr-only" for="commandPaletteInput">Search tools and commands</label>
+      <input id="commandPaletteInput" class="command-palette__input" type="text" autocomplete="off" placeholder="Search tools, actions, recents..." />
+
+      <p class="command-palette__assistive" id="commandPaletteHint">Use arrow keys to navigate and Enter to run a command.</p>
+      <ul id="commandPaletteList" class="command-palette__list" role="listbox" aria-describedby="commandPaletteHint"></ul>
+    </section>
+  `;
+
+  document.body.appendChild(wrapper);
+  return wrapper;
+}
+
+function ensurePaletteDom() {
+  if (!palette || !palette.isConnected) {
+    palette = document.getElementById(paletteId) || createCommandPalette();
+    input = palette.querySelector('#commandPaletteInput');
+    list = palette.querySelector('#commandPaletteList');
+  }
+
+  if (!modalManager.tryRegisterById(paletteId)) {
+    modalManager.registerModal(palette);
+  }
+
+  return { palette, input, list };
+}
 
 async function ensureCatalogLoaded() {
   if (catalog.length) return catalog;
@@ -40,25 +83,6 @@ async function ensureCatalogLoaded() {
   return catalogPromise;
 }
 
-function bootstrap() {
-  if (!palette || !input || !list) return;
-
-  palette.hidden = true;
-  palette.dataset.state = 'closed';
-
-  const activeToolPageSlug = document.querySelector('.tool-page')?.dataset.slug;
-  if (activeToolPageSlug) uiStateManager.recordToolUsage(activeToolPageSlug);
-
-  init();
-}
-
-function init() {
-  palette.hidden = true;
-  palette.dataset.state = 'closed';
-  palette.classList.remove('is-open', 'is-closing');
-  bindUiEvents();
-}
-
 function isPaletteOpen() {
   return modalManager.getTopModalId() === paletteId;
 }
@@ -74,28 +98,10 @@ function readStorageArray(key) {
 }
 
 function closePalette() {
-  if (isPaletteOpen()) {
-    modalManager.closeModal(paletteId);
-  } else if (palette && (!palette.hidden || palette.classList.contains('is-open'))) {
-    palette.hidden = true;
-    palette.classList.remove('is-open', 'is-closing');
-    palette.dataset.state = 'closed';
-    document.body.classList.remove('is-modal-open');
-  } else {
-    return;
-  }
+  if (!isPaletteOpen()) return;
 
+  modalManager.closeModal(paletteId);
   if (previouslyFocused?.focus) previouslyFocused.focus();
-}
-
-async function openPalette(seed = '') {
-  previouslyFocused = document.activeElement;
-  modalManager.openModal(paletteId, { suspendOthers: true });
-  input.value = seed;
-  list.innerHTML = '<li class="command-palette__empty">Loading commands...</li>';
-  await ensureCatalogLoaded();
-  renderItems(seed);
-  requestAnimationFrame(() => input.focus());
 }
 
 function normalizedQuery(value) { return (value || '').trim().toLowerCase(); }
@@ -167,7 +173,11 @@ function runItem(item) {
     window.location.assign(`/tools/${item.slug}`);
     return;
   }
-  if (item.kind === 'theme-toggle') { themeToggle?.click(); return; }
+  if (item.kind === 'theme-toggle') {
+    document.getElementById('themeToggle')?.click();
+    closePalette();
+    return;
+  }
   if (item.kind === 'copy-recent-json') {
     const v = localStorage.getItem(RECENT_JSON_KEY);
     if (v) navigator.clipboard.writeText(v).catch(() => {});
@@ -181,13 +191,15 @@ function runItem(item) {
 }
 
 function setActiveIndex(next) {
-  if (!renderedItems.length) return;
+  if (!list || !renderedItems.length) return;
   activeIndex = (next + renderedItems.length) % renderedItems.length;
   const options = list.querySelectorAll('[role="option"]');
   options.forEach((option, idx) => option.classList.toggle('is-active', idx === activeIndex));
 }
 
 function renderItems(query = '') {
+  if (!list) return;
+
   renderedItems = [...getQuickActions(query), ...getFilteredTools(query)].slice(0, MAX_RENDER);
   list.innerHTML = '';
   if (!renderedItems.length) {
@@ -210,21 +222,6 @@ function renderItems(query = '') {
   setActiveIndex(0);
 }
 
-function handleGlobalShortcuts(event) {
-  if (event.defaultPrevented || event.isComposing) return;
-
-  const key = event.key.toLowerCase();
-  const withMeta = event.metaKey || event.ctrlKey;
-
-  if (withMeta && key === 'k') { event.preventDefault(); isPaletteOpen() ? closePalette() : openPalette(); return; }
-  if (withMeta && event.shiftKey && key === 'd') { event.preventDefault(); themeToggle?.click(); return; }
-  if (withMeta && event.shiftKey && key === 'r') {
-    event.preventDefault();
-    const recent = (uiStateManager.state.recents || [])[0];
-    if (recent) window.location.assign(`/tools/${recent}`);
-  }
-}
-
 function handlePaletteControls(event) {
   if (!isPaletteOpen()) return;
   if (event.key === 'Escape') { event.preventDefault(); closePalette(); return; }
@@ -237,8 +234,7 @@ function handlePaletteControls(event) {
   }
 }
 
-function bindUiEvents() {
-  window.addEventListener('keydown', handleGlobalShortcuts, { signal: eventController.signal });
+function bindPaletteEvents() {
   window.addEventListener('keydown', handlePaletteControls, { signal: eventController.signal });
 
   input?.addEventListener('input', async () => {
@@ -246,26 +242,50 @@ function bindUiEvents() {
     renderItems(input.value);
   }, { signal: eventController.signal });
 
-  palette?.querySelectorAll('[data-command-close]').forEach((b) => b.addEventListener('click', closePalette, { signal: eventController.signal }));
+  palette?.querySelectorAll('[data-command-close]').forEach((button) => {
+    button.addEventListener('click', closePalette, { signal: eventController.signal });
+  });
 
-  paletteTrigger?.addEventListener('click', () => openPalette(globalSearch?.value || ''), { signal: eventController.signal });
-
-  if (globalSearch) {
-    globalSearch.addEventListener('click', (event) => {
-      event.preventDefault();
-      openPalette(globalSearch.value || '');
-      globalSearch.blur();
-    }, { signal: eventController.signal });
-    globalSearch.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        openPalette(globalSearch.value || '');
-      }
-    }, { signal: eventController.signal });
-  }
+  const topbar = document.querySelector('.topbar');
+  window.addEventListener('scroll', () => {
+    topbar?.classList.toggle('is-scrolled', window.scrollY > 12);
+  }, { passive: true, signal: eventController.signal });
 }
 
-const topbar = document.querySelector('.topbar');
-window.addEventListener('scroll', () => {
-  topbar?.classList.toggle('is-scrolled', window.scrollY > 12);
-}, { passive: true, signal: eventController.signal });
+function initPaletteIfNeeded() {
+  if (initialized) return;
+
+  const activeToolPageSlug = document.querySelector('.tool-page')?.dataset.slug;
+  if (activeToolPageSlug) uiStateManager.recordToolUsage(activeToolPageSlug);
+
+  ensurePaletteDom();
+  bindPaletteEvents();
+  initialized = true;
+}
+
+export async function openCommandPalette(seed = '') {
+  initPaletteIfNeeded();
+
+  previouslyFocused = document.activeElement;
+  modalManager.openModal(paletteId, { suspendOthers: true });
+
+  input.value = seed;
+  list.innerHTML = '<li class="command-palette__empty">Loading commands...</li>';
+  await ensureCatalogLoaded();
+  renderItems(seed);
+  requestAnimationFrame(() => input.focus());
+}
+
+export function closeCommandPalette() {
+  closePalette();
+}
+
+export function toggleCommandPalette(seed = '') {
+  if (isPaletteOpen()) {
+    closePalette();
+    return;
+  }
+
+  openCommandPalette(seed);
+}
+

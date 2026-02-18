@@ -80,7 +80,6 @@
     <link rel="preload" href="~/css/site.css" as="style" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/ui-state-manager.js" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/dynamic-widget-engine.js" asp-append-version="true" />
-    <link rel="modulepreload" href="~/js/command-palette.js" asp-append-version="true" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ToolNexus" />
@@ -121,37 +120,11 @@
 </div>
 
 
-<div id="commandPalette"
-     data-modal-root
-     data-modal-id="commandPalette"
-     hidden
-     data-state="closed"
-     class="command-palette tn-modal">
-    <button class="tn-modal__backdrop command-palette__overlay" type="button" data-modal-backdrop aria-label="Close command palette"></button>
-
-    <section class="tn-modal__dialog command-palette__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
-        <header class="command-palette__header">
-            <p id="commandPaletteTitle" class="command-palette__title">Command Palette</p>
-            <div class="command-palette__header-actions">
-                <span class="command-palette__shortcut">⌘K to open · Esc to close</span>
-                <button class="tn-modal__close" type="button" data-command-close aria-label="Close command palette">✕</button>
-            </div>
-        </header>
-
-        <label class="u-sr-only" for="commandPaletteInput">Search tools and commands</label>
-        <input id="commandPaletteInput" class="command-palette__input" type="text" autocomplete="off" placeholder="Search tools, actions, recents..." />
-
-        <p class="command-palette__assistive" id="commandPaletteHint">Use arrow keys to navigate and Enter to run a command.</p>
-        <ul id="commandPaletteList" class="command-palette__list" role="listbox" aria-describedby="commandPaletteHint"></ul>
-    </section>
-</div>
-
-
 
 <script type="module" src="~/js/modal-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/ui-state-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/theme-manager.js" asp-append-version="true"></script>
-<script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
+<script type="module" src="~/js/command-palette-launcher.js" asp-append-version="true"></script>
 <script type="module" src="~/js/tools-grid.js" asp-append-version="true"></script>
 <script type="module" src="~/js/dynamic-widget-engine.js" asp-append-version="true"></script>
 <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
