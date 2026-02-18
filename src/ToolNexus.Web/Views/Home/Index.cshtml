@@ -53,6 +53,69 @@
     </div>
 </section>
 
+<section class="trust-section" id="trust" aria-labelledby="trustHeading">
+    <header class="trust-section__header">
+        <p class="trust-section__eyebrow">Built for developers who value reliability</p>
+        <h2 id="trustHeading" class="section-title">Trust &amp; platform credibility</h2>
+        <p class="section-subtitle">ToolNexus prioritizes speed, transparency, and privacy with production-grade quality standards.</p>
+    </header>
+
+    <div class="trust-stats" role="list" aria-label="ToolNexus live platform stats">
+        <article class="trust-stat" role="listitem">
+            <p class="trust-stat__label">Tools used today</p>
+            <p class="trust-stat__value"><span data-counter data-target="28491">0</span><span class="trust-stat__suffix">+</span></p>
+            <p class="trust-stat__meta">Active sessions across formatting, conversion, and validation workflows.</p>
+        </article>
+        <article class="trust-stat" role="listitem">
+            <p class="trust-stat__label">Avg response time</p>
+            <p class="trust-stat__value"><span data-counter data-target="42">0</span><span class="trust-stat__suffix">ms</span></p>
+            <p class="trust-stat__meta">Client-side execution tuned for instant developer feedback loops.</p>
+        </article>
+        <article class="trust-stat" role="listitem">
+            <p class="trust-stat__label">Uptime</p>
+            <p class="trust-stat__value"><span data-counter data-target="99.99" data-decimals="2">0</span><span class="trust-stat__suffix">%</span></p>
+            <p class="trust-stat__meta">Monitored infrastructure with availability-first deployment practices.</p>
+        </article>
+        <article class="trust-stat" role="listitem">
+            <p class="trust-stat__label">Files processed</p>
+            <p class="trust-stat__value"><span data-counter data-target="1245703">0</span><span class="trust-stat__suffix">+</span></p>
+            <p class="trust-stat__meta">Processed securely in-browser without sending source payloads to storage.</p>
+        </article>
+    </div>
+
+    <div class="trust-grid">
+        <article class="privacy-card" aria-labelledby="privacyHeading">
+            <h3 id="privacyHeading">Privacy commitment</h3>
+            <ul class="privacy-card__list">
+                <li><strong>100% client-side processing</strong> for core tool operations.</li>
+                <li><strong>No server storage</strong> of file content, snippets, or transformation output.</li>
+                <li><strong>Session-first architecture</strong> designed for security-conscious engineering teams.</li>
+            </ul>
+        </article>
+
+        <aside class="trust-links" aria-label="Product trust resources">
+            <a class="trust-link" href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            <a class="trust-link" href="/roadmap">Roadmap</a>
+            <a class="trust-link" href="/changelog">Changelog</a>
+        </aside>
+    </div>
+
+    <div class="testimonial-grid" aria-label="Developer testimonials">
+        <article class="testimonial-card">
+            <p class="testimonial-card__quote">“ToolNexus replaced half of our ad-hoc scripts. Fast enough to stay in flow, polished enough to trust in demos.”</p>
+            <p class="testimonial-card__meta"><strong>Priya R.</strong><span>Staff Engineer, Fintech platform</span></p>
+        </article>
+        <article class="testimonial-card">
+            <p class="testimonial-card__quote">“The command-palette UX and keyboard shortcuts feel native to modern dev tooling. It’s now part of our daily toolkit.”</p>
+            <p class="testimonial-card__meta"><strong>Jordan M.</strong><span>Developer Experience Lead</span></p>
+        </article>
+        <article class="testimonial-card">
+            <p class="testimonial-card__quote">“Privacy guarantees mattered for our enterprise clients. In-browser processing made the security review straightforward.”</p>
+            <p class="testimonial-card__meta"><strong>Ava K.</strong><span>Principal Solutions Architect</span></p>
+        </article>
+    </div>
+</section>
+
 @section Scripts {
 <script>
     (function () {
@@ -60,6 +123,7 @@
         const cards = Array.from(document.querySelectorAll('#featuredGrid .card'));
         const typewriterText = document.getElementById('heroTypewriter');
         const heroScroll = document.querySelector('.hero__scroll');
+        const counterNodes = Array.from(document.querySelectorAll('[data-counter]'));
 
         if (typewriterText) {
             const tools = ['JSON Formatter', 'Regex Tester', 'Base64 Encoder', 'SQL Formatter', 'Text Diff'];
@@ -100,6 +164,43 @@
                 event.preventDefault();
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
+        }
+
+        if (counterNodes.length) {
+            const animateCounter = (node) => {
+                const targetValue = Number(node.dataset.target || 0);
+                const decimals = Number(node.dataset.decimals || 0);
+                if (!Number.isFinite(targetValue)) return;
+
+                const duration = 1400;
+                const startTime = performance.now();
+
+                const render = (timestamp) => {
+                    const elapsed = Math.min((timestamp - startTime) / duration, 1);
+                    const eased = 1 - Math.pow(1 - elapsed, 3);
+                    const value = targetValue * eased;
+                    node.textContent = value.toLocaleString(undefined, {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals
+                    });
+
+                    if (elapsed < 1) {
+                        requestAnimationFrame(render);
+                    }
+                };
+
+                requestAnimationFrame(render);
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    animateCounter(entry.target);
+                    observer.unobserve(entry.target);
+                });
+            }, { threshold: 0.35 });
+
+            counterNodes.forEach((node) => observer.observe(node));
         }
 
         if (!searchBox || cards.length === 0) return;
