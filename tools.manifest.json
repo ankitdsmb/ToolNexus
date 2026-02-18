@@ -66,7 +66,12 @@
       ],
       "seoTitle": "XML Formatter Online | ToolNexus",
       "seoDescription": "Pretty-print and validate XML snippets quickly.",
-      "exampleInput": "<root><item>1</item></root>"
+      "exampleInput": "<root><item>1</item></root>",
+      "clientSafeActions": [
+        "format",
+        "minify",
+        "validate"
+      ]
     },
     {
       "slug": "csv-to-json",
