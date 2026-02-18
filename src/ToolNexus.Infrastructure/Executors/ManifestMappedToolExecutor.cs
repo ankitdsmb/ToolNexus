@@ -207,8 +207,12 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
 
     private static string RegexTest(ToolRequest request)
     {
-        var pattern = request.Options?.GetValueOrDefault("pattern") ?? request.Input;
-        var candidate = request.Options?.GetValueOrDefault("input") ?? request.Input;
+        var pattern = request.Options is not null && request.Options.TryGetValue("pattern", out var configuredPattern)
+            ? configuredPattern
+            : request.Input;
+        var candidate = request.Options is not null && request.Options.TryGetValue("input", out var configuredInput)
+            ? configuredInput
+            : request.Input;
         return Regex.IsMatch(candidate, pattern) ? "match" : "no-match";
     }
 
