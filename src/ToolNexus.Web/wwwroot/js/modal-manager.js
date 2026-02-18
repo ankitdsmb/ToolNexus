@@ -22,6 +22,7 @@ class ModalManager {
   init() {
     if (this.initialized) return;
     this.initialized = true;
+    console.log('ModalManager initialized');
     document.querySelectorAll('[data-modal-root][data-modal-id]').forEach((node) => this.registerModal(node));
     window.addEventListener('keydown', this.handleKeydown);
   }

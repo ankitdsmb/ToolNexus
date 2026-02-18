@@ -165,7 +165,7 @@
 </article>
 
 @section Scripts {
-  <script>
+  <script type="module">
     window.ToolNexusConfig = {
       apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
       toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix))

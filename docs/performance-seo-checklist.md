@@ -5,7 +5,7 @@
 - [x] Enabled Brotli and Gzip response compression for Web and API.
 - [x] Enabled safe output caching for public GET pages (`/`, `/tools`, `/tools/{segment}`, `/sitemap.xml`).
 - [x] Enabled HTTP/2 on Kestrel endpoint defaults.
-- [x] Switched core shared static assets to minified variants (`site.min.css`, `tool-page.min.js`).
+- [x] Switched core shared static assets to minified variants (`site.min.css`, `tool-page.js`).
 - [x] Added long-lived cache headers for static assets (`Cache-Control: public,max-age=31536000,immutable`).
 - [x] Optimized middleware order to run compression before response generation and static handling.
 - [x] Added `robots.txt` to allow crawling and advertise sitemap.
