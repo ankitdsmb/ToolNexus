@@ -1,0 +1,76 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+    ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["JsonLd"] = Model.Seo.JsonLd;
+    ViewData["Keywords"] = Model.Seo.Keywords;
+}
+
+@section Head {
+  <link rel="stylesheet" href="~/css/pages/json-formatter.css" asp-append-version="true" />
+}
+
+<article class="json-formatter-page tool-page" data-slug="@Model.Tool.Slug">
+  <header class="json-formatter-hero">
+    <div>
+      <p class="json-formatter-eyebrow">Developer Utility</p>
+      <h1>@Model.Tool.Title</h1>
+      <p>@Model.Tool.SeoDescription</p>
+    </div>
+    <div class="json-formatter-meta" aria-live="polite">
+      <p><span>Execution</span><strong id="perfTime">Ready</strong></p>
+      <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
+      <p><span>Payload</span><strong id="payloadStats">0 B</strong></p>
+    </div>
+  </header>
+
+  <section id="largeFileWarning" class="tool-warning" hidden>
+    Large payload detected (&gt; 1MB). Some operations may take longer.
+  </section>
+
+  <section class="json-toolbar" role="toolbar" aria-label="JSON formatter actions">
+    <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
+    <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
+    <button id="validateBtn" class="tool-btn" type="button">Validate</button>
+    <button id="autofixBtn" class="tool-btn" type="button">Auto-fix</button>
+    <button id="copyBtn" class="tool-btn" type="button">Copy Result</button>
+    <button id="downloadBtn" class="tool-btn" type="button">Download</button>
+
+    <label class="tool-toggle"><input id="treeToggle" type="checkbox" /> JSON Tree</label>
+    <label class="tool-toggle"><input id="diffToggle" type="checkbox" /> Split Diff</label>
+    <label class="tool-toggle"><input id="wrapToggle" type="checkbox" /> Word Wrap</label>
+  </section>
+
+  <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
+
+  <section class="json-workspace">
+    <section class="json-panel">
+      <div class="panel-header"><h2>Input</h2><p>Drop a JSON file or paste content to auto-format.</p></div>
+      <div id="dropZone" class="drop-zone">
+        <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
+      </div>
+    </section>
+
+    <section class="json-panel">
+      <div class="panel-header"><h2>Output</h2><p id="resultStatus">No output yet.</p></div>
+      <div id="outputEditor" class="editor-surface" aria-label="JSON output editor"></div>
+      <div id="diffEditor" class="editor-surface" hidden></div>
+      <div id="treeView" class="tree-view" hidden></div>
+    </section>
+  </section>
+
+  <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
+</article>
+
+@section Scripts {
+  <script>
+    window.ToolNexusConfig = {
+      apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
+      toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
+      jsonExampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput))
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js" crossorigin="anonymous"></script>
+  <script type="module" src="~/js/tools/json-formatter.js" asp-append-version="true"></script>
+}
