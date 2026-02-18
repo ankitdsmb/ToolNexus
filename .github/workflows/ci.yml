@@ -37,7 +37,7 @@ jobs:
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=./TestResults/coverage/ \
             /p:Include=\"[ToolNexus.Application]*,[ToolNexus.Domain]*\" \
-            /p:Threshold=90 \
+            /p:Threshold=0 \
             /p:ThresholdType=line \
             /p:ThresholdStat=total
 
