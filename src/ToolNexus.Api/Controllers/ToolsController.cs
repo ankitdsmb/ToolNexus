@@ -90,6 +90,6 @@ public sealed class ToolsController(
     }
 
     public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
+        [Required] string Input,
         IDictionary<string, string>? Options = null);
 }
