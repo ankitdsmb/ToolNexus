@@ -1,29 +1,39 @@
 :root {
-  --bg-primary: #f3f6fc;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f8faff;
-  --border-default: #c7d3e6;
-  --border-strong: #9caed0;
-  --text-primary: #0d1a30;
-  --text-secondary: #4a5f80;
-  --accent-primary: #3c6bff;
-  --accent-soft: rgba(60, 107, 255, 0.14);
+  --color-bg: #f4f7fc;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f7faff;
+  --color-border: #c6d1e1;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #41516d;
+  --color-accent: #3f67ff;
+  --color-muted: #5e7292;
 
-  --success-bg: #e6fff5;
-  --success-text: #0f7b51;
-  --danger-bg: #ffecef;
-  --danger-text: #b42a3e;
+  --shadow-sm: 0 10px 24px rgba(18, 34, 58, 0.09);
+  --shadow-md: 0 20px 44px rgba(18, 30, 50, 0.16);
 
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
-  --shadow-sm: 0 8px 20px rgba(27, 47, 84, 0.08);
-  --shadow-md: 0 16px 36px rgba(19, 35, 62, 0.16);
-  --shadow-lg: 0 24px 52px rgba(8, 23, 49, 0.24);
 
   --container: min(1200px, calc(100% - 2rem));
-  --focus-ring: 0 0 0 3px rgba(60, 107, 255, 0.35);
+  --focus-ring: 0 0 0 3px rgba(63, 103, 255, 0.36);
 
   --z-header: 40;
   --z-modal: 100;
+
+  /* Legacy aliases for existing component styles */
+  --bg-primary: var(--color-bg);
+  --bg-surface: var(--color-surface);
+  --bg-elevated: var(--color-surface-elevated);
+  --border-default: var(--color-border);
+  --border-strong: color-mix(in srgb, var(--color-border) 78%, var(--color-accent));
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --accent-primary: var(--color-accent);
+  --accent-soft: color-mix(in srgb, var(--color-accent) 18%, transparent);
+
+  --success-bg: #e8fff4;
+  --success-text: #0e7b4e;
+  --danger-bg: #ffecef;
+  --danger-text: #b52d43;
 }

@@ -27,6 +27,24 @@ function isEditableElement(target) {
   return tagName === 'input' || tagName === 'textarea' || tagName === 'select';
 }
 
+function resolveSeedValue(target) {
+  if (!(target instanceof Element)) {
+    return '';
+  }
+
+  const fromDataAttribute = target.getAttribute('data-command-seed');
+  if (fromDataAttribute) {
+    return fromDataAttribute.trim();
+  }
+
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+    return (activeElement.value || '').trim();
+  }
+
+  return '';
+}
+
 document.addEventListener('click', async (event) => {
   const trigger = event.target.closest(TRIGGER_SELECTOR);
   if (!trigger) {
@@ -34,7 +52,7 @@ document.addEventListener('click', async (event) => {
   }
 
   event.preventDefault();
-  await openPalette();
+  await openPalette(resolveSeedValue(trigger));
 });
 
 document.addEventListener('keydown', async (event) => {
@@ -42,14 +60,16 @@ document.addEventListener('keydown', async (event) => {
     return;
   }
 
+  const seed = resolveSeedValue(event.target);
+
   if (isEditableElement(event.target) && !event.shiftKey) {
     event.preventDefault();
-    await openPalette();
+    await openPalette(seed);
     return;
   }
 
   event.preventDefault();
-  await openPalette();
+  await openPalette(seed);
 });
 
 window.openCommandPalette = (seed = '') => openPalette(seed);
