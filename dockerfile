@@ -4,7 +4,6 @@ WORKDIR /src
 COPY ToolNexus.sln ./
 COPY src/ToolNexus.Api/ToolNexus.Api.csproj src/ToolNexus.Api/
 COPY src/ToolNexus.Application/ToolNexus.Application.csproj src/ToolNexus.Application/
-COPY src/ToolNexus.Domain/ToolNexus.Domain.csproj src/ToolNexus.Domain/
 COPY src/ToolNexus.Infrastructure/ToolNexus.Infrastructure.csproj src/ToolNexus.Infrastructure/
 
 RUN dotnet restore src/ToolNexus.Api/ToolNexus.Api.csproj
