@@ -92,12 +92,12 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken("json-validator:validate"));
 
-        var response = await _client.PostAsJsonAsync(
-            "/api/v1/tools/json-validator/validate",
-            new
-            {
-                input = "{\"valid\":true}"
-            });
+        // json-validator uses Default policy which requires API Key (AllowAnonymous = false)
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/tools/json-validator/validate");
+        request.Headers.Add("X-API-KEY", "replace-with-production-api-key");
+        request.Content = JsonContent.Create(new { input = "{\"valid\":true}" });
+
+        var response = await _client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
