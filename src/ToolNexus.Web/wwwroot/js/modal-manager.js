@@ -50,7 +50,7 @@ class ModalManager {
       event.stopPropagation();
     }, { signal });
 
-    const shouldStartOpen = element.dataset.modalOpenOnLoad === 'true';
+    const shouldStartOpen = element.dataset.modalOpenOnLoad === 'true' && id !== 'commandPalette';
     if (!shouldStartOpen) {
       // Normalize modal state on hydration so stale DOM/session state cannot leave overlays stuck open.
       element.hidden = true;
