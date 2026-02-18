@@ -8,7 +8,18 @@ const slug = page.dataset.slug ?? '';
 const apiBase = window.ToolNexusConfig?.apiBaseUrl ?? '';
 const toolExecutionPathPrefix = normalizePathPrefix(window.ToolNexusConfig?.toolExecutionPathPrefix ?? '/api/v1/tools');
 const maxClientInputBytes = 1024 * 1024;
-const recentJsonStorageKey = 'toolnexus.recentJson';
+
+const STORAGE_KEYS = {
+  recentTools: 'toolnexus.recentTools',
+  pinnedTools: 'toolnexus.pinnedTools',
+  recentJson: 'toolnexus.recentJson',
+  collections: 'toolnexus.toolCollections',
+  history: 'toolnexus.toolHistory',
+  session: `toolnexus.session.${slug}`
+};
+
+const MAX_HISTORY = 25;
+const MAX_RECENT = 8;
 
 const clientSafeActions = new Set(
   (page.dataset.clientSafeActions ?? '')
@@ -20,11 +31,22 @@ const clientSafeActions = new Set(
 const inputTextArea = document.getElementById('inputEditor');
 const outputTextArea = document.getElementById('outputEditor');
 const actionSelect = document.getElementById('actionSelect');
+const inputEditorSurface = document.getElementById('inputEditorSurface');
+const outputEditorSurface = document.getElementById('outputEditorSurface');
 
 const runBtn = document.getElementById('runBtn');
 const runBtnLabel = runBtn?.querySelector('.tool-btn__label');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const shareBtn = document.getElementById('shareBtn');
+const shortcutBtn = document.getElementById('shortcutBtn');
+const shortcutDialog = document.getElementById('shortcutDialog');
+
+const collectionNameInput = document.getElementById('collectionNameInput');
+const saveCollectionBtn = document.getElementById('saveCollectionBtn');
+const uxPinnedRecent = document.getElementById('uxPinnedRecent');
+const uxHistory = document.getElementById('uxHistory');
+const uxCollections = document.getElementById('uxCollections');
 
 const errorMessage = document.getElementById('errorMessage');
 const resultStatus = document.getElementById('resultStatus');
@@ -33,24 +55,213 @@ const outputEmptyState = document.getElementById('outputEmptyState');
 const toolOutputHeading = document.getElementById('toolOutputHeading');
 const toastRegion = document.getElementById('toastRegion');
 
-const inputEditor = CodeMirror.fromTextArea(inputTextArea, {
-  lineNumbers: true,
-  mode: 'application/json',
-  theme: 'default'
-});
-
-const outputEditor = CodeMirror.fromTextArea(outputTextArea, {
-  lineNumbers: true,
-  mode: 'application/json',
-  readOnly: true,
-  theme: 'default'
-});
-
 let isRunning = false;
+let inputEditor = null;
+let outputEditor = null;
+let currentEditorType = 'textarea';
 
-/* ===============================
-   Utility Functions
-================================ */
+init().catch((error) => {
+  console.error('Tool page initialization failed', error);
+  showToast('Editor initialization failed. Using basic mode.', 'warning');
+});
+
+async function init() {
+  await initializeEditors();
+  hydrateFromUrl();
+  hydrateSession();
+  writeRecentTool(slug);
+
+  setOutputState(false);
+  setRunningState(false);
+  applyEditorTheme();
+  bindEvents();
+  renderUxLists();
+
+  window.ToolNexusRun = run;
+}
+
+async function initializeEditors() {
+  const monacoReady = await loadMonaco();
+
+  if (monacoReady) {
+    currentEditorType = 'monaco';
+    inputTextArea.hidden = true;
+    outputTextArea.hidden = true;
+
+    inputEditor = monaco.editor.create(inputEditorSurface, {
+      value: inputTextArea.value || '',
+      language: 'json',
+      automaticLayout: true,
+      minimap: { enabled: false },
+      fontSize: 13,
+      scrollBeyondLastLine: false,
+      roundedSelection: false
+    });
+
+    outputEditor = monaco.editor.create(outputEditorSurface, {
+      value: '',
+      language: 'json',
+      readOnly: true,
+      automaticLayout: true,
+      minimap: { enabled: false },
+      fontSize: 13,
+      scrollBeyondLastLine: false,
+      roundedSelection: false
+    });
+
+    return;
+  }
+
+  if (typeof CodeMirror !== 'undefined') {
+    currentEditorType = 'codemirror';
+    inputEditor = CodeMirror.fromTextArea(inputTextArea, {
+      lineNumbers: true,
+      mode: 'application/json',
+      theme: 'default'
+    });
+
+    outputEditor = CodeMirror.fromTextArea(outputTextArea, {
+      lineNumbers: true,
+      mode: 'application/json',
+      readOnly: true,
+      theme: 'default'
+    });
+
+    return;
+  }
+
+  currentEditorType = 'textarea';
+  inputEditor = {
+    getValue: () => inputTextArea.value,
+    setValue: (v) => { inputTextArea.value = v; },
+    focus: () => inputTextArea.focus(),
+    refresh: () => {}
+  };
+  outputEditor = {
+    getValue: () => outputTextArea.value,
+    setValue: (v) => { outputTextArea.value = v; },
+    refresh: () => {}
+  };
+}
+
+function loadMonaco() {
+  return new Promise((resolve) => {
+    if (window.monaco?.editor) {
+      resolve(true);
+      return;
+    }
+
+    if (window.require) {
+      window.require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } });
+      window.require(['vs/editor/editor.main'], () => resolve(true), () => resolve(false));
+      return;
+    }
+
+    const loader = document.createElement('script');
+    loader.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js';
+    loader.onload = () => {
+      if (!window.require) {
+        resolve(false);
+        return;
+      }
+      window.require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } });
+      window.require(['vs/editor/editor.main'], () => resolve(true), () => resolve(false));
+    };
+    loader.onerror = () => resolve(false);
+    document.head.appendChild(loader);
+  });
+}
+
+function getInputValue() {
+  return inputEditor?.getValue?.() ?? '';
+}
+
+function setInputValue(value) {
+  inputEditor?.setValue?.(value ?? '');
+}
+
+function getOutputValue() {
+  return outputEditor?.getValue?.() ?? '';
+}
+
+function setOutputValue(value) {
+  outputEditor?.setValue?.(value ?? '');
+}
+
+function bindEvents() {
+  runBtn?.addEventListener('click', run);
+
+  copyBtn?.addEventListener('click', async () => {
+    const output = getOutputValue();
+
+    if (!output.trim()) {
+      showToast('Nothing to copy.', 'warning');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(output);
+      showToast('Copied to clipboard.', 'success');
+    } catch {
+      showToast('Copy failed.', 'error');
+    }
+  });
+
+  downloadBtn?.addEventListener('click', () => {
+    const output = getOutputValue();
+
+    if (!output.trim()) {
+      showToast('Nothing to download.', 'warning');
+      return;
+    }
+
+    const blob = new Blob([output], { type: 'text/plain' });
+    const anchor = document.createElement('a');
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = `${slug}-output.txt`;
+    anchor.click();
+    URL.revokeObjectURL(anchor.href);
+
+    showToast('Download started.', 'info');
+  });
+
+  shareBtn?.addEventListener('click', createShareLink);
+  shortcutBtn?.addEventListener('click', toggleShortcutDialog);
+  saveCollectionBtn?.addEventListener('click', saveToCollection);
+
+  actionSelect?.addEventListener('change', () => persistSession());
+
+  if (currentEditorType === 'monaco') {
+    inputEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, run);
+    inputEditor.onDidChangeModelContent(() => persistSession());
+  } else if (currentEditorType === 'codemirror') {
+    inputEditor.addKeyMap({ 'Ctrl-Enter': run, 'Cmd-Enter': run });
+    inputEditor.on('change', persistSession);
+  } else {
+    inputTextArea.addEventListener('input', persistSession);
+    inputTextArea.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        run();
+      }
+    });
+  }
+
+  window.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      createShareLink();
+      return;
+    }
+
+    if (event.key === '?' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      toggleShortcutDialog();
+    }
+  });
+
+  window.addEventListener('toolnexus:themechange', applyEditorTheme);
+}
 
 function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
@@ -58,7 +269,7 @@ function sanitizeInput(input) {
 }
 
 function hasInput() {
-  return inputEditor.getValue().trim().length > 0;
+  return getInputValue().trim().length > 0;
 }
 
 function getUtf8SizeInBytes(input) {
@@ -75,29 +286,31 @@ function storeRecentJsonCandidate(output) {
   try {
     const parsed = JSON.parse(output);
     const normalized = JSON.stringify(parsed, null, 2);
-    localStorage.setItem(recentJsonStorageKey, normalized);
+    localStorage.setItem(STORAGE_KEYS.recentJson, normalized);
   } catch (_error) {
     // Not JSON; ignore for command palette quick-copy.
   }
 }
 
-/* ===============================
-   UI / UX Functions
-================================ */
-
 function applyEditorTheme() {
-  const isDark =
-    document.documentElement.getAttribute('data-theme') === 'dark';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  if (currentEditorType === 'monaco' && window.monaco?.editor) {
+    monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs');
+    return;
+  }
 
   const background = isDark ? '#0f172a' : '#eef3fa';
   const foreground = isDark ? '#edf2ff' : '#1f2937';
 
-  [inputEditor, outputEditor].forEach((editor) => {
-    const wrapper = editor.getWrapperElement();
-    wrapper.style.backgroundColor = background;
-    wrapper.style.color = foreground;
-    editor.refresh();
-  });
+  if (currentEditorType === 'codemirror') {
+    [inputEditor, outputEditor].forEach((editor) => {
+      const wrapper = editor.getWrapperElement();
+      wrapper.style.backgroundColor = background;
+      wrapper.style.color = foreground;
+      editor.refresh();
+    });
+  }
 }
 
 function setOutputState(hasOutput) {
@@ -106,6 +319,15 @@ function setOutputState(hasOutput) {
   outputField.hidden = !hasOutput;
   outputEmptyState.classList.toggle('is-hidden', hasOutput);
   outputEmptyState.hidden = hasOutput;
+
+  if (currentEditorType === 'monaco') {
+    setTimeout(() => {
+      inputEditor?.layout?.();
+      outputEditor?.layout?.();
+    }, 0);
+  } else {
+    outputEditor?.refresh?.();
+  }
 }
 
 function setResultStatus(state, text) {
@@ -124,23 +346,15 @@ function setRunningState(running) {
   }
 
   if (runBtnLabel) {
-    const loadingLabel =
-      runBtnLabel.dataset.loadingLabel || 'Running…';
-    const defaultLabel =
-      runBtnLabel.dataset.defaultLabel || 'Run';
-
-    runBtnLabel.textContent = running
-      ? loadingLabel
-      : defaultLabel;
+    const loadingLabel = runBtnLabel.dataset.loadingLabel || 'Running…';
+    const defaultLabel = runBtnLabel.dataset.defaultLabel || 'Run';
+    runBtnLabel.textContent = running ? loadingLabel : defaultLabel;
   }
 
   if (copyBtn) copyBtn.disabled = running;
   if (downloadBtn) downloadBtn.disabled = running;
 
-  setResultStatus(
-    running ? 'running' : 'idle',
-    running ? 'Running tool...' : 'Ready'
-  );
+  setResultStatus(running ? 'running' : 'idle', running ? 'Running tool...' : 'Ready');
 }
 
 function showError(message) {
@@ -161,24 +375,23 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast toast--${type}`;
   toast.role = 'status';
-  toast.textContent = message;
+  toast.innerHTML = `<strong>${type.toUpperCase()}</strong><span>${message}</span>`;
 
   toastRegion.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  setTimeout(() => toast.classList.add('is-visible'), 5);
+  setTimeout(() => {
+    toast.classList.remove('is-visible');
+    setTimeout(() => toast.remove(), 220);
+  }, 3200);
 }
-
 
 let insightPanel = null;
 
 function ensureInsightPanel() {
-  if (insightPanel) {
-    return insightPanel;
-  }
+  if (insightPanel) return insightPanel;
 
   const outputSection = toolOutputHeading?.closest('.tool-panel');
-  if (!outputSection) {
-    return null;
-  }
+  if (!outputSection) return null;
 
   const details = document.createElement('details');
   details.className = 'tool-insight';
@@ -205,9 +418,7 @@ function ensureInsightPanel() {
 
 function renderInsight(insight) {
   const panel = ensureInsightPanel();
-  if (!panel) {
-    return;
-  }
+  if (!panel) return;
 
   if (!insight) {
     panel.hidden = true;
@@ -220,17 +431,9 @@ function renderInsight(insight) {
   const suggestion = panel.querySelector('.tool-insight__suggestion');
   const example = panel.querySelector('.tool-insight__example');
 
-  if (title) {
-    title.textContent = `Title: ${insight.title ?? ''}`;
-  }
-
-  if (explanation) {
-    explanation.textContent = `Explanation: ${insight.explanation ?? ''}`;
-  }
-
-  if (suggestion) {
-    suggestion.textContent = `Suggestion: ${insight.suggestion ?? ''}`;
-  }
+  if (title) title.textContent = `Title: ${insight.title ?? ''}`;
+  if (explanation) explanation.textContent = `Explanation: ${insight.explanation ?? ''}`;
+  if (suggestion) suggestion.textContent = `Suggestion: ${insight.suggestion ?? ''}`;
 
   if (example) {
     if (insight.exampleFix) {
@@ -245,26 +448,14 @@ function renderInsight(insight) {
   panel.hidden = false;
 }
 
-/* ===============================
-   Client Tool Executor
-================================ */
-
 class ClientToolExecutor {
   canExecute(toolSlug, action, input) {
     const normalizedSlug = (toolSlug ?? '').trim();
     const normalizedAction = (action ?? '').trim().toLowerCase();
 
-    if (!normalizedSlug || !normalizedAction) {
-      return false;
-    }
-
-    if (!clientSafeActions.has(normalizedAction)) {
-      return false;
-    }
-
-    if (!isEligibleForClientExecution(input)) {
-      return false;
-    }
+    if (!normalizedSlug || !normalizedAction) return false;
+    if (!clientSafeActions.has(normalizedAction)) return false;
+    if (!isEligibleForClientExecution(input)) return false;
 
     const module = window.ToolNexusModules?.[normalizedSlug];
     return typeof module?.runTool === 'function';
@@ -284,49 +475,23 @@ class ClientToolExecutor {
 
 const clientExecutor = new ClientToolExecutor();
 
-/* ===============================
-   API Execution
-================================ */
-
 function normalizePathPrefix(pathPrefix) {
   const normalized = (pathPrefix ?? '').toString().trim();
-  if (!normalized) {
-    return '/api/v1/tools';
-  }
+  if (!normalized) return '/api/v1/tools';
 
   return `/${normalized.replace(/^\/+/, '').replace(/\/+$/, '')}`;
 }
 
-/**
- * Executes a tool action against the ASP.NET Core API route:
- * POST /api/v1/tools/{slug}/{action}
- *
- * NOTE:
- * - Both slug and action are required route segments.
- * - baseUrl is optional so this function can work in local, staging, and production.
- */
-async function executeToolActionViaApi({
-  baseUrl = '',
-  slug: toolSlug,
-  action,
-  input
-}) {
+async function executeToolActionViaApi({ baseUrl = '', slug: toolSlug, action, input }) {
   const normalizedSlug = (toolSlug ?? '').trim();
   const normalizedAction = (action ?? '').trim();
 
-  if (!normalizedSlug) {
-    throw new Error('Tool configuration error: missing slug.');
-  }
-
-  if (!normalizedAction) {
-    throw new Error('Please select an action before running the tool.');
-  }
+  if (!normalizedSlug) throw new Error('Tool configuration error: missing slug.');
+  if (!normalizedAction) throw new Error('Please select an action before running the tool.');
 
   const origin = (baseUrl ?? '').trim().replace(/\/$/, '');
   const endpointPath = `${toolExecutionPathPrefix}/${encodeURIComponent(normalizedSlug)}/${encodeURIComponent(normalizedAction)}`;
-  const endpoint = origin
-    ? `${origin}${endpointPath}`
-    : endpointPath;
+  const endpoint = origin ? `${origin}${endpointPath}` : endpointPath;
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -346,22 +511,13 @@ async function executeToolActionViaApi({
     let message = 'Tool execution failed.';
 
     if (response.status === 400) {
-      message =
-        result?.error ||
-        result?.detail ||
-        'Invalid request.';
+      message = result?.error || result?.detail || 'Invalid request.';
     } else if (response.status === 404) {
       message = result?.error || 'Tool not found.';
     } else if (response.status === 500) {
-      message =
-        result?.error ||
-        result?.detail ||
-        'Server error.';
+      message = result?.error || result?.detail || 'Server error.';
     } else {
-      message =
-        result?.error ||
-        result?.detail ||
-        `Request failed with status ${response.status}.`;
+      message = result?.error || result?.detail || `Request failed with status ${response.status}.`;
     }
 
     throw new Error(message);
@@ -369,18 +525,6 @@ async function executeToolActionViaApi({
 
   return result || { output: 'No output', success: false, error: 'No output' };
 }
-
-// Sample usage (kept as executable documentation):
-// executeToolActionViaApi({
-//   baseUrl: window.ToolNexusConfig?.apiBaseUrl,
-//   slug: 'xml-formatter',
-//   action: 'format',
-//   input: '<root><item>example</item></root>'
-// });
-
-/* ===============================
-   Run Execution
-================================ */
 
 async function run() {
   const selectedAction = actionSelect?.value ?? '';
@@ -398,9 +542,7 @@ async function run() {
 
   clearError();
 
-  const sanitizedInput = sanitizeInput(
-    inputEditor.getValue()
-  );
+  const sanitizedInput = sanitizeInput(getInputValue());
 
   try {
     setRunningState(true);
@@ -408,29 +550,14 @@ async function run() {
     let result = '';
     let insight = null;
 
-    if (
-      clientExecutor.canExecute(
-        slug,
-        selectedAction,
-        sanitizedInput
-      )
-    ) {
+    if (clientExecutor.canExecute(slug, selectedAction, sanitizedInput)) {
       try {
-        result = await clientExecutor.execute(
-          slug,
-          selectedAction,
-          sanitizedInput
-        );
+        result = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
         showToast('Executed locally.', 'success');
       } catch (clientError) {
-        const safeMessage =
-          clientError?.message ||
-          'Client execution failed. Falling back to server.';
+        const safeMessage = clientError?.message || 'Client execution failed. Falling back to server.';
         showError(safeMessage);
-        showToast(
-          'Client execution failed; using server fallback.',
-          'warning'
-        );
+        showToast('Client execution failed; using server fallback.', 'warning');
       }
     }
 
@@ -447,25 +574,22 @@ async function run() {
     }
 
     renderInsight(insight);
-    outputEditor.setValue(result);
+    setOutputValue(result);
     storeRecentJsonCandidate(result);
     setOutputState(true);
     setResultStatus('success', 'Output updated');
-  } catch (error) {
-    const message =
-      error?.message ||
-      'Unable to run tool due to a network error.';
 
-    // Minimal non-OK/network diagnostics example to aid browser debugging.
-    console.error('Tool execution failed', {
-      slug,
-      action: selectedAction,
-      error
-    });
+    addToolHistory({ slug, action: selectedAction, input: sanitizedInput, output: result });
+    persistSession();
+    renderUxLists();
+  } catch (error) {
+    const message = error?.message || 'Unable to run tool due to a network error.';
+
+    console.error('Tool execution failed', { slug, action: selectedAction, error });
 
     renderInsight(null);
     showError(message);
-    outputEditor.setValue(message);
+    setOutputValue(message);
     setOutputState(true);
     setResultStatus('failure', 'Execution failed');
     showToast('Execution failed.', 'error');
@@ -474,61 +598,217 @@ async function run() {
   }
 }
 
-/* ===============================
-   Event Bindings
-================================ */
-
-runBtn?.addEventListener('click', run);
-
-copyBtn?.addEventListener('click', async () => {
-  const output = outputEditor.getValue();
-
-  if (!output.trim()) {
-    showToast('Nothing to copy.', 'warning');
-    return;
+function readStorageJson(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
   }
+}
+
+function writeStorageJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function writeRecentTool(toolSlug) {
+  if (!toolSlug) return;
+  const current = readStorageJson(STORAGE_KEYS.recentTools, []);
+  const next = [toolSlug, ...current.filter((item) => item !== toolSlug)].slice(0, MAX_RECENT);
+  writeStorageJson(STORAGE_KEYS.recentTools, next);
+}
+
+function addToolHistory(entry) {
+  const current = readStorageJson(STORAGE_KEYS.history, []);
+  const item = {
+    slug: entry.slug,
+    action: entry.action,
+    inputSize: getUtf8SizeInBytes(entry.input),
+    outputSize: getUtf8SizeInBytes(entry.output),
+    preview: (entry.output || '').slice(0, 80),
+    createdAt: new Date().toISOString()
+  };
+
+  const next = [item, ...current].slice(0, MAX_HISTORY);
+  writeStorageJson(STORAGE_KEYS.history, next);
+}
+
+function persistSession() {
+  const payload = {
+    slug,
+    action: actionSelect?.value ?? '',
+    input: getInputValue(),
+    output: getOutputValue(),
+    updatedAt: new Date().toISOString()
+  };
+  writeStorageJson(STORAGE_KEYS.session, payload);
+}
+
+function hydrateSession() {
+  const session = readStorageJson(STORAGE_KEYS.session, null);
+  if (!session || session.slug !== slug) return;
+
+  if (session.action && actionSelect?.querySelector(`option[value="${CSS.escape(session.action)}"]`)) {
+    actionSelect.value = session.action;
+  }
+
+  if (session.input) setInputValue(session.input);
+
+  if (session.output) {
+    setOutputValue(session.output);
+    setOutputState(true);
+    setResultStatus('success', 'Restored from last session');
+  }
+}
+
+function hydrateFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+
+  const urlAction = params.get('action');
+  if (urlAction && actionSelect?.querySelector(`option[value="${CSS.escape(urlAction)}"]`)) {
+    actionSelect.value = urlAction;
+  }
+
+  const encodedInput = params.get('input');
+  if (encodedInput) {
+    try {
+      const decoded = decodeURIComponent(escape(window.atob(encodedInput.replace(/-/g, '+').replace(/_/g, '/'))));
+      if (decoded.trim()) {
+        setInputValue(decoded);
+        showToast('Input prefilled from URL.', 'info');
+      }
+    } catch {
+      // ignore malformed query payloads
+    }
+  }
+}
+
+async function createShareLink() {
+  const input = getInputValue();
+  const selectedAction = actionSelect?.value ?? '';
+  const encoded = btoa(unescape(encodeURIComponent(input))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const nextUrl = new URL(window.location.href);
+  nextUrl.searchParams.set('action', selectedAction);
+  nextUrl.searchParams.set('input', encoded);
 
   try {
-    await navigator.clipboard.writeText(output);
-    showToast('Copied to clipboard.', 'success');
+    await navigator.clipboard.writeText(nextUrl.toString());
+    showToast('Shareable link copied.', 'success');
   } catch {
-    showToast('Copy failed.', 'error');
+    showToast('Unable to copy link.', 'error');
   }
-});
+}
 
-downloadBtn?.addEventListener('click', () => {
-  const output = outputEditor.getValue();
-
-  if (!output.trim()) {
-    showToast('Nothing to download.', 'warning');
+function saveToCollection() {
+  const rawName = collectionNameInput?.value?.trim();
+  if (!rawName) {
+    showToast('Enter a collection name first.', 'warning');
     return;
   }
 
-  const blob = new Blob([output], {
-    type: 'text/plain'
+  const collections = readStorageJson(STORAGE_KEYS.collections, {});
+  const current = Array.isArray(collections[rawName]) ? collections[rawName] : [];
+
+  collections[rawName] = [slug, ...current.filter((item) => item !== slug)].slice(0, MAX_RECENT);
+  writeStorageJson(STORAGE_KEYS.collections, collections);
+  collectionNameInput.value = '';
+
+  renderUxLists();
+  showToast(`Saved to ${rawName}.`, 'success');
+}
+
+function toggleShortcutDialog() {
+  if (!shortcutDialog) return;
+
+  if (shortcutDialog.open) {
+    shortcutDialog.close();
+  } else {
+    shortcutDialog.showModal();
+  }
+}
+
+function renderUxLists() {
+  renderPinnedRecent();
+  renderHistory();
+  renderCollections();
+}
+
+function renderPinnedRecent() {
+  if (!uxPinnedRecent) return;
+
+  const recents = readStorageJson(STORAGE_KEYS.recentTools, []);
+  const pinned = readStorageJson(STORAGE_KEYS.pinnedTools, []);
+  const items = [...new Set([...pinned, ...recents])];
+
+  uxPinnedRecent.innerHTML = '';
+
+  if (!items.length) {
+    uxPinnedRecent.innerHTML = '<li class="ux-list__empty">Pinned and recent tools appear here.</li>';
+    return;
+  }
+
+  items.forEach((toolSlug) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="/tools/${toolSlug}">${toolSlug}</a><span>${pinned.includes(toolSlug) ? 'Pinned' : 'Recent'}</span>`;
+    uxPinnedRecent.appendChild(li);
   });
+}
 
-  const anchor = document.createElement('a');
-  anchor.href = URL.createObjectURL(blob);
-  anchor.download = `${slug}-output.txt`;
-  anchor.click();
-  URL.revokeObjectURL(anchor.href);
+function renderHistory() {
+  if (!uxHistory) return;
 
-  showToast('Download started.', 'info');
-});
+  const history = readStorageJson(STORAGE_KEYS.history, []).filter((item) => item.slug === slug).slice(0, 6);
+  uxHistory.innerHTML = '';
 
-inputEditor.addKeyMap({
-  'Ctrl-Enter': run,
-  'Cmd-Enter': run
-});
+  if (!history.length) {
+    uxHistory.innerHTML = '<li class="ux-list__empty">Run history appears after execution.</li>';
+    return;
+  }
 
-window.addEventListener(
-  'toolnexus:themechange',
-  applyEditorTheme
-);
+  history.forEach((item) => {
+    const li = document.createElement('li');
+    const date = new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    li.innerHTML = `<span>${item.action} · ${date}</span><small>${item.inputSize}B → ${item.outputSize}B</small>`;
+    uxHistory.appendChild(li);
+  });
+}
 
-setOutputState(false);
-setRunningState(false);
-applyEditorTheme();
+function renderCollections() {
+  if (!uxCollections) return;
 
-window.ToolNexusRun = run;
+  const collections = readStorageJson(STORAGE_KEYS.collections, {});
+  const names = Object.keys(collections).sort((a, b) => a.localeCompare(b));
+  uxCollections.innerHTML = '';
+
+  if (!names.length) {
+    uxCollections.innerHTML = '<li class="ux-list__empty">Save tools into named collections.</li>';
+    return;
+  }
+
+  names.forEach((name) => {
+    const li = document.createElement('li');
+    const values = Array.isArray(collections[name]) ? collections[name] : [];
+    const containsCurrent = values.includes(slug);
+
+    li.innerHTML = `<span>${name}</span><small>${values.length} tools</small>`;
+
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'tool-btn';
+    action.textContent = containsCurrent ? 'Remove this tool' : 'Add this tool';
+    action.addEventListener('click', () => {
+      const next = containsCurrent ? values.filter((item) => item !== slug) : [slug, ...values.filter((item) => item !== slug)];
+      collections[name] = next.slice(0, MAX_RECENT);
+      writeStorageJson(STORAGE_KEYS.collections, collections);
+      renderCollections();
+      showToast(containsCurrent ? `Removed from ${name}.` : `Added to ${name}.`, 'info');
+    });
+
+    li.appendChild(action);
+    uxCollections.appendChild(li);
+  });
+}
