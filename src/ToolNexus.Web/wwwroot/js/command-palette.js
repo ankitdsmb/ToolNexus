@@ -19,10 +19,18 @@ let renderedItems = [];
 let previouslyFocused = null;
 const eventController = new AbortController();
 
-const activeToolPageSlug = document.querySelector('.tool-page')?.dataset.slug;
-if (activeToolPageSlug) uiStateManager.recordToolUsage(activeToolPageSlug);
+document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
 
-if (palette && input && list) {
+function bootstrap() {
+  if (!palette || !input || !list) return;
+
+  // Keep the command palette closed by default on every page load.
+  palette.hidden = true;
+  palette.dataset.state = 'closed';
+
+  const activeToolPageSlug = document.querySelector('.tool-page')?.dataset.slug;
+  if (activeToolPageSlug) uiStateManager.recordToolUsage(activeToolPageSlug);
+
   init();
 }
 
