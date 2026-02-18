@@ -13,16 +13,6 @@
       <h1>@Model.Tool.Title</h1>
       <p>@Model.Tool.SeoDescription</p>
     </div>
-
-    <div class="tool-page__action-selector">
-      <label for="actionSelect">Action</label>
-      <select id="actionSelect">
-        @foreach (var action in Model.Tool.Actions)
-        {
-          <option value="@action">@action</option>
-        }
-      </select>
-    </div>
   </header>
 
   <section class="tool-layout" aria-label="Tool workspace">
@@ -43,14 +33,27 @@
       </div>
     </section>
 
-    <section class="tool-layout__actions tool-page__actions" role="toolbar" aria-label="Tool actions">
-      <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
-        <span class="spinner" aria-hidden="true"></span>
-        <span class="tool-btn__label" data-loading-label="Running…" data-default-label="Run">Run</span>
-      </button>
-      <button id="copyBtn" class="tool-btn" type="button">Copy Output</button>
-      <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
-      <button id="shareBtn" class="tool-btn" type="button">Share Link</button>
+    <section class="tool-layout__actions tool-panel tool-toolbar" aria-label="Tool controls">
+      <div class="tool-toolbar__top tool-page__action-selector">
+        <label for="actionSelect">Action</label>
+        <select id="actionSelect">
+          @foreach (var action in Model.Tool.Actions)
+          {
+            <option value="@action">@action</option>
+          }
+        </select>
+      </div>
+
+      <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
+        <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="tool-btn__label" data-loading-label="Running…" data-default-label="Run">Run</span>
+        </button>
+        <button id="copyBtn" class="tool-btn" type="button">Copy</button>
+        <button id="downloadBtn" class="tool-btn" type="button">Download</button>
+        <button id="shareBtn" class="tool-btn" type="button">Share</button>
+      </div>
+
       <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl/Cmd + Enter to run</p>
     </section>
 
@@ -64,7 +67,8 @@
 
       <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
         <strong>No output yet.</strong>
-        <span>Run the tool to render results in this panel.</span>
+        <span>Run the selected action to render output in this panel.</span>
+        <span class="shortcut-hint">Tip: use Ctrl/Cmd + Enter for quick run.</span>
       </div>
 
       <div class="editor-field" id="outputField" hidden>

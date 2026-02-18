@@ -110,13 +110,22 @@
 
 <script type="module" src="~/js/ui-state-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/theme-manager.js" asp-append-version="true"></script>
-<script type="module" src="~/js/modal-manager.js" asp-append-version="true"></script>
-<script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
-<script type="module" src="~/js/tools-grid.js" asp-append-version="true"></script>
-<script type="module" src="~/js/dynamic-widget-engine.js" asp-append-version="true"></script>
-<script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
 <script type="module" src="~/js/version-manager.js" asp-append-version="true"></script>
-<script type="module" src="~/js/motion-system.js" asp-append-version="true"></script>
+<script type="module" src="~/js/command-palette-loader.js" asp-append-version="true"></script>
+<script type="module">
+    if (document.querySelector('[data-tool-group], .tools-index')) {
+        import('/js/tools-grid.js');
+    }
+
+    if (document.querySelector('.tool-page')) {
+        import('/js/tool-page.js');
+    }
+
+    if (document.querySelector('[data-reveal], [data-dynamic-stat]')) {
+        import('/js/motion-system.js');
+        import('/js/dynamic-widget-engine.js');
+    }
+</script>
 
 @await RenderSectionAsync("Scripts", required: false)
 

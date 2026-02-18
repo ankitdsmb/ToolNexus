@@ -1,7 +1,6 @@
 @model ToolNexus.Web.Models.Layout.LayoutFooterViewModel
 
 <footer class="footer">
-    <div class="footer__divider" aria-hidden="true"></div>
     <div class="footer__inner">
         <div class="footer__meta">
             <a href="/" class="footer__brand" aria-label="ToolNexus Home">
@@ -9,23 +8,8 @@
                 <span>ToolNexus</span>
             </a>
             <p class="footer__tagline">Developer-first utility platform for faster shipping.</p>
-            <p class="footer__version" data-version-display="@Model.VersionDisplay" data-build-number="@Model.BuildNumber">@Model.VersionDisplay · Build @Model.BuildNumber</p>
-
-            <div class="footer__security" aria-label="Security notice">
-                <span class="footer__security-icon" aria-hidden="true">🛡</span>
-                <span>Security Notice: Never paste secrets or sensitive credentials.</span>
-            </div>
-
-            <p class="footer__tip">Tip: Press <kbd>Ctrl/Cmd + K</kbd> to open command palette.</p>
-
-            <div class="footer__shortcuts" aria-label="Keyboard shortcuts">
-                <p class="footer__shortcuts-label">Keyboard Shortcuts:</p>
-                <div class="footer__shortcut-list">
-                    <span class="footer__shortcut-pill"><kbd>Ctrl/Cmd + K</kbd><span>Open tools</span></span>
-                    <span class="footer__shortcut-pill"><kbd>Ctrl/Cmd + Enter</kbd><span>Run tool</span></span>
-                    <span class="footer__shortcut-pill"><kbd>Ctrl/Cmd + Shift + S</kbd><span>Share link</span></span>
-                </div>
-            </div>
+            <p class="footer__shortcut-line">Shortcuts: <kbd>Ctrl/Cmd + K</kbd> palette · <kbd>Ctrl/Cmd + Enter</kbd> run.</p>
+            <p class="footer__version" data-version-display="@Model.VersionDisplay" data-build-number="@Model.BuildNumber">@Model.VersionDisplay · @Model.BuildNumber</p>
         </div>
 
         <nav class="footer__links" aria-label="Footer Navigation">
@@ -36,8 +20,8 @@
                 <a href="/contact-us">Contact</a>
             </section>
 
-            <section class="footer__column" aria-label="Tools links">
-                <p class="footer__title">Tools</p>
+            <section class="footer__column" aria-label="Popular tools">
+                <p class="footer__title">Popular</p>
                 <a href="/tools/json-formatter">JSON Formatter</a>
                 <a href="/tools/json-validator">JSON Validator</a>
                 <a href="/tools/regex-tester">Regex Tester</a>
@@ -46,24 +30,19 @@
             <section class="footer__column" aria-label="Resources links">
                 <p class="footer__title">Resources</p>
                 <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
-                <a href="#" aria-disabled="true">Roadmap</a>
-                <a href="#" aria-disabled="true">Changelog</a>
-                <a href="#" aria-disabled="true">API (coming soon)</a>
+                <a href="/disclaimer">Disclaimer</a>
             </section>
 
-            <section class="footer__column" aria-label="Company links">
-                <p class="footer__title">Company</p>
-                <a href="/disclaimer">Disclaimer</a>
+            <section class="footer__column" aria-label="System links">
+                <p class="footer__title">System</p>
                 <a href="#" aria-disabled="true">Privacy</a>
                 <a href="#" aria-disabled="true">Terms</a>
             </section>
         </nav>
 
         <div class="footer__bottom">
-            <div class="footer__bottom-meta">
-                <span>© @DateTime.UtcNow.Year ToolNexus. All rights reserved.</span>
-                <span class="footer__perf" data-performance-badge>Stable · --ms</span>
-            </div>
+            <span>© @DateTime.UtcNow.Year ToolNexus</span>
+            <span class="footer__perf" data-performance-badge>Stable · --ms</span>
         </div>
     </div>
 </footer>

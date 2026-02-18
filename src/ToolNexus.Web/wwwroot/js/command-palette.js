@@ -1,10 +1,7 @@
-import { modalManager } from './modal-manager.js';
-
 const SELECTORS = {
   modal: '#commandPaletteModal',
   input: '#commandPaletteInput',
   list: '#commandPaletteList',
-  trigger: '[data-command-palette-trigger]',
   close: '[data-command-close]',
   action: '.command-palette__action'
 };
@@ -15,7 +12,8 @@ const state = {
   tools: [],
   filtered: [],
   activeIndex: 0,
-  elements: null
+  elements: null,
+  lastFocused: null
 };
 
 function createCommandPalette() {
@@ -52,28 +50,6 @@ function queryElements() {
   };
 
   return state.elements;
-}
-
-function isEditableElement(target) {
-  if (!(target instanceof Element)) {
-    return false;
-  }
-
-  if (target.isContentEditable || target.closest('[contenteditable="true"]')) {
-    return true;
-  }
-
-  const tagName = target.tagName.toLowerCase();
-  return tagName === 'input' || tagName === 'textarea' || tagName === 'select';
-}
-
-function isMac() {
-  return navigator.platform.toLowerCase().includes('mac');
-}
-
-function paletteInputHasFocus(target) {
-  const { input } = queryElements();
-  return Boolean(input && target === input);
 }
 
 async function loadTools() {
@@ -116,7 +92,7 @@ function renderList() {
     .map(
       (tool, index) => `
       <li class="command-palette__item ${index === state.activeIndex ? 'is-active' : ''}" role="option" aria-selected="${index === state.activeIndex}">
-        <button type="button" class="command-palette__action" data-index="${index}" data-href="${tool.href}">
+        <button type="button" class="command-palette__action" data-index="${index}">
           <span class="command-palette__item-title">${tool.title}</span>
           <span class="command-palette__item-desc">${tool.description}</span>
         </button>
@@ -158,6 +134,7 @@ function closeCommandPalette() {
   modal.hidden = true;
   modal.classList.remove('is-open');
   document.body.classList.remove('is-modal-open');
+  state.lastFocused?.focus?.();
 }
 
 function activateIndex(index = state.activeIndex) {
@@ -184,76 +161,7 @@ function onModalClick(event) {
   }
 }
 
-function bindInput() {
-  const { input } = queryElements();
-  if (!input) {
-    return;
-  }
-
-  input.addEventListener('input', (event) => {
-    filterTools(event.target.value || '');
-  });
-}
-
-function bindModalEvents() {
-  const { modal } = queryElements();
-  if (!modal) {
-    return;
-  }
-
-  modal.addEventListener('click', onModalClick);
-}
-
-async function ensureInitialized() {
-  if (state.initialized) {
-    return;
-  }
-
-  queryElements();
-  state.initialized = true;
-  bindInput();
-  bindModalEvents();
-  await loadTools();
-}
-
-async function openCommandPalette(seed = '') {
-  await ensureInitialized();
-
-  const { modal, input } = queryElements();
-  if (!modal || !input) {
-    return;
-  }
-
-  state.open = true;
-  modal.hidden = false;
-  modal.classList.add('is-open');
-  document.body.classList.add('is-modal-open');
-
-  input.value = seed;
-  filterTools(seed);
-  focusInput();
-}
-
-async function onDocumentClick(event) {
-  const trigger = event.target.closest(SELECTORS.trigger);
-  if (!trigger) {
-    return;
-  }
-
-  event.preventDefault();
-  await modalManager.openModal('commandPalette');
-}
-
-async function onDocumentKeydown(event) {
-  const key = event.key.toLowerCase();
-  const usesModifier = event.ctrlKey || event.metaKey;
-
-  if (usesModifier && key === 'k') {
-    event.preventDefault();
-    await modalManager.openModal('commandPalette');
-    return;
-  }
-
+function onModalKeydown(event) {
   if (!state.open) {
     return;
   }
@@ -261,12 +169,6 @@ async function onDocumentKeydown(event) {
   if (event.key === 'Escape') {
     event.preventDefault();
     closeCommandPalette();
-    return;
-  }
-
-  const targetIsEditable = isEditableElement(event.target);
-  const insidePaletteInput = paletteInputHasFocus(event.target);
-  if (targetIsEditable && !insidePaletteInput) {
     return;
   }
 
@@ -290,30 +192,48 @@ async function onDocumentKeydown(event) {
   }
 }
 
-function registerModals() {
-  modalManager.registerModal('commandPalette', {
-    open: openCommandPalette,
-    close: closeCommandPalette
+function bindEvents() {
+  const { modal, input } = queryElements();
+
+  modal.addEventListener('click', onModalClick);
+  modal.addEventListener('keydown', onModalKeydown);
+
+  input?.addEventListener('input', (event) => {
+    filterTools(event.target.value || '');
   });
 }
 
-function initCommandPalette() {
-  registerModals();
-  document.addEventListener('click', onDocumentClick);
-  document.addEventListener('keydown', onDocumentKeydown);
+async function ensureInitialized() {
+  if (state.initialized) {
+    return;
+  }
+
+  queryElements();
+  bindEvents();
+  state.initialized = true;
+  await loadTools();
 }
 
-window.openCommandPalette = (seed = '') => modalManager.openModal('commandPalette', seed);
-window.closeCommandPalette = () => modalManager.closeModal('commandPalette');
-window.ToolNexusPlatform = {
-  ...(window.ToolNexusPlatform || {}),
-  isMac
-};
+async function openCommandPalette(seed = '') {
+  await ensureInitialized();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initCommandPalette, { once: true });
-} else {
-  initCommandPalette();
+  const { modal, input } = queryElements();
+  if (!modal || !input) {
+    return false;
+  }
+
+  state.lastFocused = document.activeElement;
+  state.open = true;
+  modal.hidden = false;
+  modal.classList.add('is-open');
+  document.body.classList.add('is-modal-open');
+
+  input.value = seed;
+  filterTools(seed);
+  focusInput();
+  return true;
 }
 
-export { openCommandPalette, closeCommandPalette, initCommandPalette, createCommandPalette };
+window.closeCommandPalette = closeCommandPalette;
+
+export { openCommandPalette, closeCommandPalette };
