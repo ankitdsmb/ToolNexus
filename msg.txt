@@ -1,4 +1,5 @@
-Fix CI Workflow Property Quote Issue
+Fix CI Workflow Property Quote Issue Again
 
-- Quoted the entire `/p:Include` MSBuild property argument in `.github/workflows/ci.yml` to prevent shell expansion issues.
+- Rewrote `.github/workflows/ci.yml` using correct YAML multi-line syntax (`\`) for the `dotnet test` command.
+- Preserved quotes around the `/p:Include` property to ensure MSBuild receives the argument correctly without shell expansion.
 - Verified that all tests continue to pass locally.
