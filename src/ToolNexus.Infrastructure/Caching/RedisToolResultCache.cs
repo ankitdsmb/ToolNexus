@@ -63,7 +63,8 @@ public sealed class RedisToolResultCache(
                 return null;
             }
 
-            var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, cached, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
+            var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
+            var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, payloadByteCount, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
             memoryCache.Set(normalizedKey, cached, memoryEntryOptions);
 
             RegisterSuccess();
@@ -87,7 +88,11 @@ public sealed class RedisToolResultCache(
 
         var normalizedKey = BuildKey(key);
 
-        var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, item, ttl);
+        // Calculate payload upfront to avoid double serialization
+        var payload = JsonSerializer.Serialize(item);
+        var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
+
+        var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, payloadByteCount, ttl);
         memoryCache.Set(normalizedKey, item, memoryEntryOptions);
 
         if (IsCircuitOpen())
@@ -98,7 +103,6 @@ public sealed class RedisToolResultCache(
 
         try
         {
-            var payload = JsonSerializer.Serialize(item);
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = ttl
@@ -177,12 +181,11 @@ public sealed class RedisToolResultCache(
         return $"{prefix}:{hash}";
     }
 
-    private static MemoryCacheEntryOptions BuildMemoryEntryOptions(string normalizedKey, ToolResultCacheItem item, TimeSpan ttl)
+    private static MemoryCacheEntryOptions BuildMemoryEntryOptions(string normalizedKey, long payloadByteCount, TimeSpan ttl)
     {
         // Track memory usage in bytes so MemoryCache SizeLimit is consistently enforced.
         // Include key + payload bytes as a lightweight approximation of entry size.
-        var payload = JsonSerializer.Serialize(item);
-        var size = Math.Max(1, Encoding.UTF8.GetByteCount(normalizedKey) + Encoding.UTF8.GetByteCount(payload));
+        var size = Math.Max(1, Encoding.UTF8.GetByteCount(normalizedKey) + payloadByteCount);
         return new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = ttl,
