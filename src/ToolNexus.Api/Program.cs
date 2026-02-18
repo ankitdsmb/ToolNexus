@@ -12,14 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, cfg) => cfg.ReadFrom.Configuration(context.Configuration));
 
-builder.Services.AddControllers(options =>
+// Capture IMvcBuilder returned by AddControllers so we can call ConfigureApiBehaviorOptions on it.
+var mvcBuilder = builder.Services.AddControllers(options =>
 {
     options.Filters.AddService<RedactingLoggingExceptionFilter>();
 });
-builder.Services.ConfigureApiBehaviorOptions(options =>
+
+mvcBuilder.ConfigureApiBehaviorOptions(options =>
 {
     options.SuppressModelStateInvalidFilter = false;
 });
+
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 

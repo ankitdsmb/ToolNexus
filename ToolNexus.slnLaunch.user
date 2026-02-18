@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "src\\ToolNexus.Web\\ToolNexus.Web.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\ToolNexus.Api\\ToolNexus.Api.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
