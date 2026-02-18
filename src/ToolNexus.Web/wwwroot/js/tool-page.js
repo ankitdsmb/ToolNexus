@@ -29,6 +29,7 @@ const errorMessage = document.getElementById('errorMessage');
 const resultStatus = document.getElementById('resultStatus');
 const outputField = document.getElementById('outputField');
 const outputEmptyState = document.getElementById('outputEmptyState');
+const toolOutputHeading = document.getElementById('toolOutputHeading');
 const toastRegion = document.getElementById('toastRegion');
 
 const inputEditor = CodeMirror.fromTextArea(inputTextArea, {
@@ -153,6 +154,84 @@ function showToast(message, type = 'info') {
   setTimeout(() => toast.remove(), 3000);
 }
 
+
+let insightPanel = null;
+
+function ensureInsightPanel() {
+  if (insightPanel) {
+    return insightPanel;
+  }
+
+  const outputSection = toolOutputHeading?.closest('.tool-panel');
+  if (!outputSection) {
+    return null;
+  }
+
+  const details = document.createElement('details');
+  details.className = 'tool-insight';
+  details.hidden = true;
+
+  const summary = document.createElement('summary');
+  summary.textContent = '⚡ Smart Insight';
+
+  const body = document.createElement('div');
+  body.className = 'tool-insight__body';
+  body.innerHTML = [
+    '<p class="tool-insight__title"></p>',
+    '<p class="tool-insight__explanation"></p>',
+    '<p class="tool-insight__suggestion"></p>',
+    '<pre class="tool-insight__example" hidden></pre>'
+  ].join('');
+
+  details.appendChild(summary);
+  details.appendChild(body);
+  outputSection.appendChild(details);
+  insightPanel = details;
+  return details;
+}
+
+function renderInsight(insight) {
+  const panel = ensureInsightPanel();
+  if (!panel) {
+    return;
+  }
+
+  if (!insight) {
+    panel.hidden = true;
+    panel.open = false;
+    return;
+  }
+
+  const title = panel.querySelector('.tool-insight__title');
+  const explanation = panel.querySelector('.tool-insight__explanation');
+  const suggestion = panel.querySelector('.tool-insight__suggestion');
+  const example = panel.querySelector('.tool-insight__example');
+
+  if (title) {
+    title.textContent = `Title: ${insight.title ?? ''}`;
+  }
+
+  if (explanation) {
+    explanation.textContent = `Explanation: ${insight.explanation ?? ''}`;
+  }
+
+  if (suggestion) {
+    suggestion.textContent = `Suggestion: ${insight.suggestion ?? ''}`;
+  }
+
+  if (example) {
+    if (insight.exampleFix) {
+      example.hidden = false;
+      example.textContent = `ExampleFix: ${insight.exampleFix}`;
+    } else {
+      example.hidden = true;
+      example.textContent = '';
+    }
+  }
+
+  panel.hidden = false;
+}
+
 /* ===============================
    Client Tool Executor
 ================================ */
@@ -275,7 +354,7 @@ async function executeToolActionViaApi({
     throw new Error(message);
   }
 
-  return result?.output || result?.error || 'No output';
+  return result || { output: 'No output', success: false, error: 'No output' };
 }
 
 // Sample usage (kept as executable documentation):
@@ -314,6 +393,7 @@ async function run() {
     setRunningState(true);
 
     let result = '';
+    let insight = null;
 
     if (
       clientExecutor.canExecute(
@@ -342,15 +422,18 @@ async function run() {
     }
 
     if (!result) {
-      result = await executeToolActionViaApi({
+      const response = await executeToolActionViaApi({
         baseUrl: apiBase,
         slug,
         action: selectedAction,
         input: sanitizedInput
       });
+      result = response?.output || response?.error || 'No output';
+      insight = response?.insight ?? null;
       showToast('Execution completed.', 'success');
     }
 
+    renderInsight(insight);
     outputEditor.setValue(result);
     setOutputState(true);
     setResultStatus('success', 'Output updated');
@@ -366,6 +449,7 @@ async function run() {
       error
     });
 
+    renderInsight(null);
     showError(message);
     outputEditor.setValue(message);
     setOutputState(true);

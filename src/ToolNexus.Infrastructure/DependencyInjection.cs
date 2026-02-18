@@ -8,6 +8,7 @@ using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
+using ToolNexus.Infrastructure.Insights;
 using ToolNexus.Infrastructure.Security;
 
 namespace ToolNexus.Infrastructure;
@@ -37,6 +38,11 @@ public static class DependencyInjection
         services.AddDistributedMemoryCache();
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
         services.AddHostedService<ToolContentSeedHostedService>();
+        services.AddSingleton<IToolInsightProvider, JsonInsightProvider>();
+        services.AddSingleton<IToolInsightProvider, XmlInsightProvider>();
+        services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
+        services.AddSingleton<IToolInsightProvider, RegexInsightProvider>();
+        services.AddSingleton<IToolInsightProvider, TextDiffInsightProvider>();
         // Infrastructure owns concrete executor wiring.
         services.AddToolExecutors();
         return services;
