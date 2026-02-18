@@ -7,9 +7,8 @@
                 <span class="brand__dot" aria-hidden="true"></span>
                 <span>ToolNexus</span>
             </a>
-            <p class="footer__tagline">Developer-first utility platform for faster shipping.</p>
-            <p class="footer__shortcut-line">Shortcuts: <kbd>Ctrl/Cmd + K</kbd> palette · <kbd>Ctrl/Cmd + Enter</kbd> run.</p>
-            <p class="footer__version" data-version-display="@Model.VersionDisplay" data-build-number="@Model.BuildNumber">@Model.VersionDisplay · @Model.BuildNumber</p>
+            <p class="footer__tagline">Production-ready developer tooling for fast, privacy-first workflows.</p>
+            <p class="footer__version" data-version-display="@Model.VersionDisplay" data-build-number="@Model.BuildNumber">Version @Model.VersionDisplay · Build @Model.BuildNumber</p>
         </div>
 
         <nav class="footer__links" aria-label="Footer Navigation">
@@ -29,20 +28,14 @@
 
             <section class="footer__column" aria-label="Resources links">
                 <p class="footer__title">Resources</p>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
                 <a href="/disclaimer">Disclaimer</a>
-            </section>
-
-            <section class="footer__column" aria-label="System links">
-                <p class="footer__title">System</p>
-                <a href="#" aria-disabled="true">Privacy</a>
-                <a href="#" aria-disabled="true">Terms</a>
             </section>
         </nav>
 
         <div class="footer__bottom">
             <span>© @DateTime.UtcNow.Year ToolNexus</span>
-            <span class="footer__perf" data-performance-badge>Stable · --ms</span>
+            <span>Built for developer velocity</span>
         </div>
     </div>
 </footer>

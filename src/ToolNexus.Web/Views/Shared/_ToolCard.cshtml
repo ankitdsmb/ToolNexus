@@ -3,9 +3,7 @@
     var index = ViewData["CardIndex"] as int? ?? 0;
     var icon = ResolveIcon(Model.Category, Model.Slug);
     var tags = ResolveTags(Model.Actions, Model.Category);
-    var usageScore = ResolveUsageScore(Model.Slug);
     var isNew = index < 2;
-    var isPopular = usageScore >= 82 || index % 4 == 0;
     var badges = new List<string>();
 
     if (isNew)
@@ -13,13 +11,13 @@
         badges.Add("New");
     }
 
-    if (isPopular)
+    if (Model.IsDeterministic)
     {
-        badges.Add("Popular");
+        badges.Add("Reliable");
     }
 
-    var performanceLabel = Model.IsCpuIntensive ? "Compute-heavy" : "Edge-fast";
-    var trendLabel = usageScore >= 90 ? "P99" : usageScore >= 80 ? "P95" : "P90";
+    var processingLabel = Model.IsCpuIntensive ? "Compute intensive" : "Low latency";
+    var actionCount = Model.Actions.Count;
     var searchable = $"{Model.Title} {Model.SeoDescription} {Model.Category} {string.Join(" ", tags)} {string.Join(" ", Model.Actions)}";
 }
 
@@ -60,9 +58,10 @@
   </div>
 
   <footer class="tool-card__meta" aria-label="Tool metadata">
-    <span class="tool-card__meta-item"><span>Usage</span> <strong data-tool-usage>@usageScore</strong></span>
-    <span class="tool-card__meta-item"><span>Runtime</span> <strong>@performanceLabel</strong></span>
-    <span class="tool-card__meta-item"><span>Trend</span> <strong>@trendLabel</strong></span>
+    <span class="tool-card__meta-item"><span>Category</span> <strong>@Model.Category</strong></span>
+    <span class="tool-card__meta-item"><span>Actions</span> <strong>@actionCount</strong></span>
+    <span class="tool-card__meta-item"><span>Performance</span> <strong title="Estimated processing profile for this tool">@processingLabel</strong></span>
+    <span class="tool-card__meta-item"><span>Launch</span> <strong>Instant</strong></span>
   </footer>
 </a>
 
@@ -91,11 +90,5 @@
         if (tags.Count == 0) tags.Add("Utility");
 
         return tags.Take(3).ToArray();
-    }
-
-    private static int ResolveUsageScore(string slug)
-    {
-        var hash = Math.Abs(slug.GetHashCode());
-        return 58 + (hash % 38);
     }
 }

@@ -4,20 +4,29 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg-primary: #070f1f;
-  --bg-surface: #0c1730;
-  --bg-elevated: #13213f;
-  --border-default: #2c4169;
-  --border-strong: #3d5a8f;
-  --text-primary: #e8efff;
-  --text-secondary: #9bb1d8;
-  --accent-primary: #7ea4ff;
-  --accent-soft: rgba(126, 164, 255, 0.2);
+  --color-bg: #060d1b;
+  --color-surface: #0e172b;
+  --color-surface-elevated: #141f38;
+  --color-border: #243652;
+  --color-text-primary: #edf2ff;
+  --color-text-secondary: #b7c5df;
+  --color-accent: #83a5ff;
+  --color-muted: #93a4c3;
+
+  --shadow-sm: 0 12px 28px rgba(1, 8, 20, 0.42);
+  --shadow-md: 0 24px 52px rgba(0, 0, 0, 0.5);
+
   --success-bg: rgba(26, 140, 94, 0.2);
   --success-text: #9df3ce;
   --danger-bg: rgba(190, 46, 70, 0.2);
   --danger-text: #ffb4c2;
-  --shadow-sm: 0 8px 20px rgba(0, 4, 12, 0.35);
-  --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 26px 56px rgba(0, 0, 0, 0.55);
+
+  --border-default: var(--color-border);
+  --bg-primary: var(--color-bg);
+  --bg-surface: var(--color-surface);
+  --bg-elevated: var(--color-surface-elevated);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --accent-primary: var(--color-accent);
+  --accent-soft: color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
