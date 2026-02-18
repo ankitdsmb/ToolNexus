@@ -15,7 +15,7 @@
     </div>
   </header>
 
-  <section class="tool-layout" aria-label="Tool workspace">
+  <section class="tool-layout tool-layout--elite" aria-label="Tool workspace">
     <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
       <div class="panel-header">
         <h2 id="toolInputHeading">Input</h2>
@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <section class="tool-layout__actions tool-panel tool-toolbar" aria-label="Tool controls">
+    <section class="tool-layout__actions tool-panel tool-toolbar tool-toolbar--center" aria-label="Tool controls">
       <div class="tool-toolbar__top tool-page__action-selector">
         <label for="actionSelect">Action</label>
         <select id="actionSelect">
@@ -49,9 +49,9 @@
           <span class="spinner" aria-hidden="true"></span>
           <span class="tool-btn__label" data-loading-label="Running…" data-default-label="Run">Run</span>
         </button>
-        <button id="copyBtn" class="tool-btn" type="button">Copy</button>
-        <button id="downloadBtn" class="tool-btn" type="button">Download</button>
-        <button id="shareBtn" class="tool-btn" type="button">Share</button>
+        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy</button>
+        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
+        <button id="shareBtn" class="tool-btn tool-btn--ghost" type="button">Share</button>
       </div>
 
       <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl/Cmd + Enter to run</p>
@@ -66,6 +66,7 @@
       <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
 
       <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
+        <span class="tool-empty-state__icon" aria-hidden="true">✦</span>
         <strong>No output yet.</strong>
         <span>Run the selected action to render output in this panel.</span>
         <span class="shortcut-hint">Tip: use Ctrl/Cmd + Enter for quick run.</span>

@@ -8,7 +8,7 @@ const SELECTORS = {
   action: '.command-palette__action'
 };
 
-const MAX_ITEMS = 14;
+const MAX_ITEMS = 18;
 
 const state = {
   initialized: false,
@@ -30,12 +30,17 @@ function createCommandPalette() {
     <button class="command-palette__backdrop" type="button" data-command-close aria-label="Close command palette"></button>
     <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
       <header class="command-palette__header">
-        <h2 id="commandPaletteTitle" class="command-palette__title">Command palette</h2>
+        <div class="command-palette__title-wrap">
+          <h2 id="commandPaletteTitle" class="command-palette__title">Command palette</h2>
+          <p class="command-palette__hint">⌘K to open · Esc to close</p>
+        </div>
         <button class="command-palette__close" type="button" data-command-close aria-label="Close command palette">✕</button>
       </header>
       <label class="u-sr-only" for="commandPaletteInput">Search tools</label>
       <input id="commandPaletteInput" class="command-palette__input" type="text" placeholder="Search tools and actions..." autocomplete="off" />
-      <ul id="commandPaletteList" class="command-palette__list" role="listbox"></ul>
+      <div class="command-palette__list-wrap">
+        <ul id="commandPaletteList" class="command-palette__list" role="listbox"></ul>
+      </div>
     </section>`;
 
   document.body.append(wrapper);
@@ -100,7 +105,7 @@ function createDisplayCommand() {
     title,
     description: 'Toggle ToolNexus display theme preferences.',
     icon: '🖥️',
-    category: 'Display',
+    category: 'Actions',
     shortcut: '⌘D',
     usage: 0,
     href: '',
@@ -118,6 +123,29 @@ function createDisplayCommand() {
 function buildCommandCollection() {
   const toolCommands = state.tools.map(createCommandFromTool);
   state.commands = [createDisplayCommand(), ...toolCommands];
+}
+
+
+function sectionOrderLabel(category) {
+  const normalized = category.toLowerCase();
+  if (normalized === 'recents') return 'Recent';
+  if (normalized === 'tool') return 'Tools';
+  return 'Actions';
+}
+
+function groupCommands(commands) {
+  const grouped = new Map([
+    ['Recent', []],
+    ['Tools', []],
+    ['Actions', []]
+  ]);
+
+  commands.forEach((command) => {
+    const section = sectionOrderLabel(command.category);
+    grouped.get(section)?.push(command);
+  });
+
+  return [...grouped.entries()].filter(([, items]) => items.length > 0);
 }
 
 function renderCommandRow(command, index) {
@@ -153,7 +181,23 @@ function renderList() {
     return;
   }
 
-  list.innerHTML = visible.map(renderCommandRow).join('');
+  let globalIndex = 0;
+  const sections = groupCommands(visible);
+  const markup = sections.map(([section, commands]) => {
+    const rows = commands.map((command) => {
+      const html = renderCommandRow(command, globalIndex);
+      globalIndex += 1;
+      return html;
+    }).join('');
+
+    return `
+      <li class="command-palette__section">
+        <p class="command-palette__section-title">${escapeHtml(section)}</p>
+        <ul class="command-palette__section-items">${rows}</ul>
+      </li>`;
+  }).join('');
+
+  list.innerHTML = markup;
 }
 
 function filterCommands(query) {
