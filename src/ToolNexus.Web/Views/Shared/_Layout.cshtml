@@ -43,6 +43,7 @@
     var version = assembly.GetName().Version;
     var versionDisplay = version is null ? "v0.0.0" : $"v{version.Major}.{version.Minor}.{Math.Max(version.Build, 0)}";
     var buildNumber = Environment.GetEnvironmentVariable("TOOLNEXUS_BUILD_NUMBER") ?? "local";
+    var currentPath = Context.Request.Path.Value?.ToLowerInvariant() ?? "/";
 }
 
     <meta charset="utf-8" />
@@ -68,6 +69,8 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
     <link rel="preload" href="~/css/site.css" as="style" asp-append-version="true" />
+    <link rel="modulepreload" href="~/js/ui-state-manager.js" asp-append-version="true" />
+    <link rel="modulepreload" href="~/js/dynamic-widget-engine.js" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/command-palette.js" asp-append-version="true" />
 
     <meta property="og:type" content="website" />
@@ -116,12 +119,15 @@
             </div>
 
             <nav class="topbar__nav" aria-label="Primary Navigation">
-                <a class="topbar__link" href="/">Home</a>
-                <a class="topbar__link" href="/tools">Tools</a>
-                <a class="topbar__link" href="/about">About</a>
-                <a class="topbar__link" href="/disclaimer">Disclaimer</a>
-                <a class="topbar__link" href="/contact-us">Contact Us</a>
+                <a class="topbar__link" href="/" aria-current="@(currentPath == "/" ? "page" : null)">Home</a>
+                <a class="topbar__link" href="/tools" aria-current="@(currentPath.StartsWith("/tools") ? "page" : null)">Tools</a>
+                <a class="topbar__link" href="/about" aria-current="@(currentPath.StartsWith("/about") ? "page" : null)">About</a>
+                <a class="topbar__link" href="/disclaimer" aria-current="@(currentPath.StartsWith("/disclaimer") ? "page" : null)">Disclaimer</a>
+                <a class="topbar__link" href="/contact-us" aria-current="@(currentPath.StartsWith("/contact-us") ? "page" : null)">Contact Us</a>
             </nav>
+
+            <button id="paletteTrigger" class="tool-btn" type="button" aria-label="Open command palette" data-open-palette>⌘K</button>
+            <span class="topbar__perf" data-performance-badge>Stable · --ms</span>
 
             <button id="themeToggle"
                     class="theme-toggle"
@@ -223,13 +229,16 @@
 
 <script id="toolCatalogData" type="application/json">@Html.Raw(JsonSerializer.Serialize(commandPaletteTools))</script>
 
-<div id="commandPalette" class="command-palette" hidden>
-    <button class="command-palette__overlay" type="button" data-command-close tabindex="-1" aria-label="Close command palette"></button>
+<div id="commandPalette" class="command-palette tn-modal" data-modal-root data-modal-id="commandPalette" hidden>
+    <button class="tn-modal__backdrop command-palette__overlay" type="button" data-modal-backdrop aria-label="Close command palette"></button>
 
-    <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+    <section class="tn-modal__dialog command-palette__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
         <header class="command-palette__header">
             <p id="commandPaletteTitle" class="command-palette__title">Command Palette</p>
-            <p class="command-palette__shortcut">⌘K to open · Esc to close</p>
+            <div class="command-palette__header-actions">
+                <span class="command-palette__shortcut">⌘K to open · Esc to close</span>
+                <button class="tn-modal__close" type="button" data-command-close aria-label="Close command palette">✕</button>
+            </div>
         </header>
 
         <label class="u-sr-only" for="commandPaletteInput">Search tools and commands</label>
@@ -240,17 +249,24 @@
     </section>
 </div>
 
-<div id="shortcutCoachmark" class="shortcut-coachmark" hidden>
-    <p><strong>Tip:</strong> Press <kbd>⌘K</kbd> to open tools instantly.</p>
-    <button type="button" data-shortcut-coachmark-close aria-label="Dismiss shortcut tip">Got it</button>
+<div id="shortcutHintModal" class="tn-modal shortcut-hint-modal" data-modal-root data-modal-id="shortcutHint" data-modal-remove-on-close="true" hidden>
+    <button class="tn-modal__backdrop" type="button" data-modal-backdrop aria-label="Close shortcut hint"></button>
+    <section class="tn-modal__dialog shortcut-hint-modal__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="shortcutHintTitle">
+        <header class="shortcut-hint-modal__header">
+            <h2 id="shortcutHintTitle">Keyboard shortcut unlocked</h2>
+            <button type="button" class="tn-modal__close" data-shortcut-hint-close aria-label="Close shortcut hint">✕</button>
+        </header>
+        <p><strong>Tip:</strong> Press <kbd>⌘K</kbd> to open tools instantly, then type to jump.</p>
+        <button class="shortcut-hint-modal__cta" type="button" data-shortcut-hint-close>Got it</button>
+    </section>
 </div>
 
-<div id="shortcutHelpOverlay" class="shortcut-help" hidden>
-    <button class="shortcut-help__overlay" type="button" data-shortcut-help-close tabindex="-1" aria-label="Close shortcut help"></button>
-    <section class="shortcut-help__dialog" role="dialog" aria-modal="true" aria-labelledby="shortcutHelpTitle" tabindex="-1">
+<div id="shortcutHelpOverlay" class="shortcut-help tn-modal" data-modal-root data-modal-id="shortcutHelp" hidden>
+    <button class="tn-modal__backdrop shortcut-help__overlay" type="button" data-modal-backdrop aria-label="Close shortcut help"></button>
+    <section class="tn-modal__dialog shortcut-help__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="shortcutHelpTitle" tabindex="-1">
         <header class="shortcut-help__header">
             <h2 id="shortcutHelpTitle">Keyboard shortcuts</h2>
-            <button type="button" data-shortcut-help-close aria-label="Close shortcut help">✕</button>
+            <button type="button" class="tn-modal__close" data-shortcut-help-close aria-label="Close shortcut help">✕</button>
         </header>
         <ul>
             <li><kbd>⌘K</kbd><span>Open command palette</span></li>
@@ -319,6 +335,8 @@
     })();
 </script>
 
+<script type="module" src="~/js/ui-state-manager.js" asp-append-version="true"></script>
+<script type="module" src="~/js/dynamic-widget-engine.js" asp-append-version="true"></script>
 <script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
 <script type="module" src="~/js/motion-system.js" asp-append-version="true"></script>
 

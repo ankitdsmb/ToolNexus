@@ -104,11 +104,12 @@
 
   <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
 
-  <dialog id="shortcutDialog" class="shortcut-dialog" aria-labelledby="shortcutTitle">
-    <form method="dialog" class="shortcut-dialog__content">
+  <div id="shortcutDialog" class="tn-modal shortcut-dialog" data-modal-root data-modal-id="toolShortcuts" hidden>
+    <button class="tn-modal__backdrop" type="button" data-modal-backdrop aria-label="Close keyboard shortcuts"></button>
+    <section class="tn-modal__dialog shortcut-dialog__content" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="shortcutTitle">
       <header class="shortcut-dialog__header">
         <h2 id="shortcutTitle">Keyboard shortcuts</h2>
-        <button class="tool-btn" value="cancel">Close</button>
+        <button class="tn-modal__close" type="button" data-tool-shortcuts-close aria-label="Close keyboard shortcuts">✕</button>
       </header>
       <ul class="shortcut-list">
         <li><kbd>Ctrl/Cmd + Enter</kbd><span>Run current tool</span></li>
@@ -116,8 +117,8 @@
         <li><kbd>Ctrl/Cmd + Shift + S</kbd><span>Create shareable link</span></li>
         <li><kbd>?</kbd><span>Toggle this shortcut sheet</span></li>
       </ul>
-    </form>
-  </dialog>
+    </section>
+  </div>
 
 @if (Model.Content is not null)
 {
