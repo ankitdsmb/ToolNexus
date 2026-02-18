@@ -63,7 +63,8 @@ public sealed class RedisToolResultCache(
                 return null;
             }
 
-            var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, cached, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
+            var size = CalculateSize(normalizedKey, payload);
+            var memoryEntryOptions = CreateMemoryEntryOptions(size, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
             memoryCache.Set(normalizedKey, cached, memoryEntryOptions);
 
             RegisterSuccess();
@@ -87,7 +88,9 @@ public sealed class RedisToolResultCache(
 
         var normalizedKey = BuildKey(key);
 
-        var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, item, ttl);
+        var payload = JsonSerializer.Serialize(item);
+        var size = CalculateSize(normalizedKey, payload);
+        var memoryEntryOptions = CreateMemoryEntryOptions(size, ttl);
         memoryCache.Set(normalizedKey, item, memoryEntryOptions);
 
         if (IsCircuitOpen())
@@ -98,7 +101,6 @@ public sealed class RedisToolResultCache(
 
         try
         {
-            var payload = JsonSerializer.Serialize(item);
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = ttl
@@ -177,16 +179,18 @@ public sealed class RedisToolResultCache(
         return $"{prefix}:{hash}";
     }
 
-    private static MemoryCacheEntryOptions BuildMemoryEntryOptions(string normalizedKey, ToolResultCacheItem item, TimeSpan ttl)
+    private static long CalculateSize(string key, string payload)
     {
-        // Track memory usage in bytes so MemoryCache SizeLimit is consistently enforced.
-        // Include key + payload bytes as a lightweight approximation of entry size.
-        var payload = JsonSerializer.Serialize(item);
-        var size = Math.Max(1, Encoding.UTF8.GetByteCount(normalizedKey) + Encoding.UTF8.GetByteCount(payload));
+        return Math.Max(1, Encoding.UTF8.GetByteCount(key) + Encoding.UTF8.GetByteCount(payload));
+    }
+
+    private static MemoryCacheEntryOptions CreateMemoryEntryOptions(long size, TimeSpan ttl)
+    {
         return new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = ttl,
             Size = size
         };
     }
+
 }
