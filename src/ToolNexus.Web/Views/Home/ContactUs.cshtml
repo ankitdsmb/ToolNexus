@@ -55,7 +55,7 @@
 
   const validators = {
     name: (value) => value.trim().length >= 2 ? '' : 'Enter at least 2 characters.',
-    email: (value) => /.+@.+\..+/.test(value) ? '' : 'Enter a valid email address.',
+    email: (value) => /.+@@.+\..+/.test(value) ? '' : 'Enter a valid email address.',
     subject: (value) => value.trim().length >= 3 ? '' : 'Subject should be at least 3 characters.',
     message: (value) => value.trim().length >= 10 ? '' : 'Message should be at least 10 characters.'
   };
