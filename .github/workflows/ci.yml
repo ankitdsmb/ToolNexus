@@ -31,13 +31,13 @@ jobs:
 
       - name: Collect coverage and enforce threshold
         run: |
-          dotnet test tests/ToolNexus.Tools.Json.Tests/ToolNexus.Tools.Json.Tests.csproj \
+          dotnet test ToolNexus.sln \
             -c Release \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=./TestResults/coverage/ \
-            "/p:Include=[ToolNexus.Application]*%2c[ToolNexus.Domain]*" \
+            "/p:Include=[ToolNexus.Application]*" \
             /p:Threshold=90 \
             /p:ThresholdType=line \
             /p:ThresholdStat=total
@@ -46,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: tests/ToolNexus.Tools.Json.Tests/TestResults/coverage/coverage.cobertura.xml
+          path: TestResults/coverage/coverage.cobertura.xml
 
       - name: Build production Docker image
         run: docker build -f dockerfile -t toolnexus-api:ci .
