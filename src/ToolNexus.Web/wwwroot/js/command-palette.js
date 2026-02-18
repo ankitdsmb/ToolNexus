@@ -35,6 +35,7 @@ function bootstrap() {
 }
 
 function init() {
+  console.log('Command palette initialized');
   bindUiEvents();
 }
 
