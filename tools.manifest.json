@@ -265,7 +265,12 @@
       ],
       "seoTitle": "Case Converter | ToolNexus",
       "seoDescription": "Convert text between upper, lower, and title case.",
-      "exampleInput": "tool nexus"
+      "exampleInput": "tool nexus",
+      "clientSafeActions": [
+        "upper",
+        "lower",
+        "title"
+      ]
     },
     {
       "slug": "html-entities",
