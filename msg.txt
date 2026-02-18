@@ -1,0 +1,14 @@
+🔒 [Security Fix] Remove insecure internal auth configuration
+
+🎯 **What:**
+- Removed `InternalAuth` section with hardcoded credentials from `src/ToolNexus.Web/appsettings.json`.
+- Removed insecure default values from `InternalAuthOptions`.
+- Added validation to `InternalUserPrincipalFactory` to prevent startup/usage without explicit configuration.
+- Added unit tests to verify secure failure mode.
+
+⚠️ **Risk:**
+- Previously, the application defaulted to an insecure 'internal-dev-user' with full permissions if configuration was missing or if the default `appsettings.json` was deployed to production. This allowed unauthorized access to internal tools.
+
+🛡️ **Solution:**
+- The fix ensures that `InternalAuth` is disabled by default.
+- Attempts to use it without explicit configuration (e.g., via environment variables or secure `appsettings.Development.json` in dev only) will now throw an `InvalidOperationException`, failing securely.

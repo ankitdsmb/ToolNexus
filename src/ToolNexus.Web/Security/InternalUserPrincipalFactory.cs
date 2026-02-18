@@ -14,6 +14,12 @@ public sealed class InternalUserPrincipalFactory(IOptions<InternalAuthOptions> a
     public ClaimsPrincipal CreatePrincipal()
     {
         var options = authOptions.Value;
+
+        if (string.IsNullOrWhiteSpace(options.UserId))
+        {
+            throw new InvalidOperationException("Internal authentication is not configured.");
+        }
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, options.UserId),
