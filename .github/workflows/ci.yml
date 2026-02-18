@@ -31,16 +31,7 @@ jobs:
 
       - name: Collect coverage and enforce threshold
         run: |
-          dotnet test tests/ToolNexus.Tools.Json.Tests/ToolNexus.Tools.Json.Tests.csproj \
-            -c Release \
-            --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=./TestResults/coverage/ \
-            /p:Include="[ToolNexus.Application]*,[ToolNexus.Domain]*" \
-            /p:Threshold=90 \
-            /p:ThresholdType=line \
-            /p:ThresholdStat=total
+          dotnet test tests/ToolNexus.Tools.Json.Tests/ToolNexus.Tools.Json.Tests.csproj             -c Release             --no-build             /p:CollectCoverage=true             /p:CoverletOutputFormat=cobertura             /p:CoverletOutput=./TestResults/coverage/             /p:Include="[ToolNexus.Application]*"             /p:Threshold=90             /p:ThresholdType=line             /p:ThresholdStat=total
 
       - name: Publish coverage artifact
         uses: actions/upload-artifact@v4
