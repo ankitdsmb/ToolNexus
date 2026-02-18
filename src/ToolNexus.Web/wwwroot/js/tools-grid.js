@@ -6,6 +6,7 @@
   if (!cards.length) return;
 
   requestAnimationFrame(() => {
+    grid.classList.remove('is-loading');
     grid.classList.add('is-ready');
   });
 

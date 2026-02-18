@@ -17,19 +17,19 @@
     var index = 0;
 }
 
-<section class="u-stack">
+<section class="u-stack" data-reveal>
   <h1>All Tools</h1>
   <p class="u-muted">Choose a utility by category or jump directly into a tool.</p>
 </section>
 
-<div class="chips" aria-label="Tool categories">
+<div class="chips" data-reveal style="--reveal-index:1" aria-label="Tool categories">
   @foreach (var category in Model.Categories)
   {
     <a class="chip" href="/tools/@category">@category</a>
   }
 </div>
 
-<div class="tool-grid" id="toolGrid" aria-live="polite">
+<div class="tool-grid is-loading" data-reveal style="--reveal-index:2" id="toolGrid" aria-live="polite">
   @foreach (var tool in Model.Tools)
   {
     @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })

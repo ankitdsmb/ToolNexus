@@ -131,10 +131,24 @@
   /* Motion */
   --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-instant: 90ms;
   --duration-hover: 160ms;
+  --duration-short: 180ms;
   --duration-standard: 220ms;
+  --duration-medium: 280ms;
+  --duration-long: 420ms;
   --duration-page: 320ms;
   --duration-micro: 120ms;
+  --stagger-fast: 40ms;
+  --stagger-standard: 72ms;
+
+  /* Motion - Guidelines */
+  --motion-distance-micro: 2px;
+  --motion-distance-standard: 8px;
+  --motion-distance-emphasis: 16px;
 
   /* Legacy aliases for existing styles */
   --transition: var(--duration-standard) var(--ease-standard);
