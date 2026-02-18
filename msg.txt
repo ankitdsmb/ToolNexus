@@ -1,6 +1,4 @@
-Fix CI and Integration Tests: Remove lock file cache, fix serialization, and add API key
+Fix CI Workflow Property Quote Issue
 
-- **.github/workflows/ci.yml**: Removed  because  is missing.
-- **tests/ToolNexus.Api.IntegrationTests/SanitizeErrorMiddlewareTests.cs**: Fixed JSON deserialization to be case-insensitive.
-- **src/ToolNexus.Api/Controllers/ToolsController.cs**: Moved  to parameter for  to fix model binding 500 errors.
-- **tests/ToolNexus.Api.IntegrationTests/ToolsEndpointIntegrationTests.cs**: Added  header for  test as it requires one.
+- Quoted the entire `/p:Include` MSBuild property argument in `.github/workflows/ci.yml` to prevent shell expansion issues.
+- Verified that all tests continue to pass locally.
