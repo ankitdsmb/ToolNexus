@@ -11,7 +11,7 @@
     var trendLabel = usageScore >= 90 ? "P99" : usageScore >= 80 ? "P95" : "P90";
 }
 
-<a class="tool-card @(isNew ? "is-new" : string.Empty) @(isPopular ? "is-popular" : string.Empty)"
+<a class="tool-card @(isNew ? "is-new" : string.Empty) @(isPopular ? "is-popular" : string.Empty)" data-reveal data-tilt-card
    href="/tools/@Model.Slug"
    data-tool-slug="@Model.Slug"
    style="--stagger-index:@index"
