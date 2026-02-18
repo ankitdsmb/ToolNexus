@@ -51,12 +51,12 @@ public sealed class ToolsController(
     [Authorize(Policy = ToolActionRequirement.PolicyName)]
     [Consumes("application/json")]
     [HttpPost("{slug}/{toolAction}")]
-    public Task<ActionResult<ToolExecutionResponse>> Execute(
+    public async Task<ActionResult<ToolExecutionResponse>> Execute(
         [FromRoute, Required, MinLength(1)] string slug,
         [FromRoute(Name = "toolAction"), Required, MinLength(1)] string action,
         [FromBody] ExecuteToolRequest request,
         CancellationToken cancellationToken)
-        => ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
+        => await ExecuteInternalAsync(slug, action, request.Input, request.Options, cancellationToken);
 
     private async Task<ActionResult<ToolExecutionResponse>> ExecuteInternalAsync(
         string slug,
@@ -90,6 +90,6 @@ public sealed class ToolsController(
     }
 
     public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
+        [Required] string Input,
         IDictionary<string, string>? Options = null);
 }

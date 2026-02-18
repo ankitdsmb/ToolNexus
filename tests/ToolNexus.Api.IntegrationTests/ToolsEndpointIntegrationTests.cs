@@ -91,6 +91,7 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     public async Task Post_ToolEndpoint_ReturnsSuccess_ForJsonValidator()
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken("json-validator:validate"));
+        _client.DefaultRequestHeaders.Add("X-API-KEY", "replace-with-production-api-key"); // Default key from appsettings.json
 
         var response = await _client.PostAsJsonAsync(
             "/api/v1/tools/json-validator/validate",
