@@ -252,7 +252,10 @@
       ],
       "seoTitle": "UUID Generator | ToolNexus",
       "seoDescription": "Generate random UUIDs for development.",
-      "exampleInput": "count=5"
+      "exampleInput": "count=5",
+      "clientSafeActions": [
+        "generate"
+      ]
     },
     {
       "slug": "case-converter",
