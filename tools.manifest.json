@@ -42,7 +42,10 @@
       ],
       "seoTitle": "JSON to XML Converter | ToolNexus",
       "seoDescription": "Transform JSON payloads into XML format.",
-      "exampleInput": "{\"order\":{\"id\":101}}"
+      "exampleInput": "{\"order\":{\"id\":101}}",
+      "clientSafeActions": [
+        "convert"
+      ]
     },
     {
       "slug": "xml-to-json",

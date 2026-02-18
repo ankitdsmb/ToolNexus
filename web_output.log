@@ -1,0 +1,40 @@
+Using launch settings from src/ToolNexus.Web/Properties/launchSettings.json...
+info: ToolNexus.Application.Services.ManifestExecutorAlignmentValidator[0]
+      Manifest and executor registration alignment validation passed for 25 tools.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*) FROM "sqlite_master" WHERE "type" = 'table' AND "rootpage" IS NOT NULL;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ToolContents" AS "t")
+warn: Microsoft.AspNetCore.Server.Kestrel[64]
+      HTTP/2 is not enabled for 127.0.0.1:5000. The endpoint is configured to use HTTP/1.1 and HTTP/2, but TLS is not enabled. HTTP/2 requires TLS application protocol negotiation. Connections to this endpoint will use HTTP/1.1.
+warn: Microsoft.AspNetCore.Server.Kestrel[64]
+      HTTP/2 is not enabled for [::1]:5000. The endpoint is configured to use HTTP/1.1 and HTTP/2, but TLS is not enabled. HTTP/2 requires TLS application protocol negotiation. Connections to this endpoint will use HTTP/1.1.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5000
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /app/src/ToolNexus.Web
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@__normalizedSlug_0='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      SELECT "t0"."Id", "t0"."Keywords", "t0"."LongArticle", "t0"."MetaDescription", "t0"."MetaTitle", "t0"."ShortDescription", "t0"."Slug", "t0"."Title", "t1"."Id", "t1"."SortOrder", "t1"."ToolContentId", "t1"."Value", "t2"."Id", "t2"."Answer", "t2"."Question", "t2"."SortOrder", "t2"."ToolContentId", "t3"."Id", "t3"."RelatedSlug", "t3"."SortOrder", "t3"."ToolContentId"
+      FROM (
+          SELECT "t"."Id", "t"."Keywords", "t"."LongArticle", "t"."MetaDescription", "t"."MetaTitle", "t"."ShortDescription", "t"."Slug", "t"."Title"
+          FROM "ToolContents" AS "t"
+          WHERE "t"."Slug" = @__normalizedSlug_0
+          LIMIT 1
+      ) AS "t0"
+      LEFT JOIN "ToolFeatures" AS "t1" ON "t0"."Id" = "t1"."ToolContentId"
+      LEFT JOIN "ToolFaqs" AS "t2" ON "t0"."Id" = "t2"."ToolContentId"
+      LEFT JOIN "ToolRelated" AS "t3" ON "t0"."Id" = "t3"."ToolContentId"
+      ORDER BY "t0"."Id", "t1"."Id", "t2"."Id"
