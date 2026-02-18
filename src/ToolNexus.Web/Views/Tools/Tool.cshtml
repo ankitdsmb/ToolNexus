@@ -141,7 +141,7 @@
       <ul>
       @foreach (var related in Model.Content.RelatedTools)
       {
-        <li><a href="/tools/@related.Slug">@related.Title</a></li>
+        <li><a href="/tools/@related.RelatedSlug">@related.RelatedSlug</a></li>
       }
       </ul>
     }
