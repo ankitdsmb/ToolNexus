@@ -1,39 +1,65 @@
 :root {
-  --color-bg: #f4f7fc;
-  --color-surface: #ffffff;
-  --color-surface-elevated: #f7faff;
-  --color-border: #c6d1e1;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #41516d;
-  --color-accent: #3f67ff;
-  --color-muted: #5e7292;
+  color-scheme: light;
 
-  --shadow-sm: 0 10px 24px rgba(18, 34, 58, 0.09);
-  --shadow-md: 0 20px 44px rgba(18, 30, 50, 0.16);
+  /* Core semantic theme variables */
+  --background: #f3f6fb;
+  --surface: #ffffff;
+  --surface-elevated: #f8faff;
+  --text-primary: #111827;
+  --text-secondary: #475569;
+  --border: #cdd6e5;
+  --accent: #3f67ff;
+  --shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
+  /* Spacing scale (4px system) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  /* Radius scale (12px system) */
+  --radius-xs: 0.5rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* Shadow scale */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.1);
+  --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.14);
+  --shadow-lg: 0 24px 48px rgba(15, 23, 42, 0.2);
 
   --container: min(1200px, calc(100% - 2rem));
-  --focus-ring: 0 0 0 3px rgba(63, 103, 255, 0.36);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 36%, transparent);
 
   --z-header: 40;
   --z-modal: 100;
-
-  /* Legacy aliases for existing component styles */
-  --bg-primary: var(--color-bg);
-  --bg-surface: var(--color-surface);
-  --bg-elevated: var(--color-surface-elevated);
-  --border-default: var(--color-border);
-  --border-strong: color-mix(in srgb, var(--color-border) 78%, var(--color-accent));
-  --text-primary: var(--color-text-primary);
-  --text-secondary: var(--color-text-secondary);
-  --accent-primary: var(--color-accent);
-  --accent-soft: color-mix(in srgb, var(--color-accent) 18%, transparent);
 
   --success-bg: #e8fff4;
   --success-text: #0e7b4e;
   --danger-bg: #ffecef;
   --danger-text: #b52d43;
+
+  /* Compatibility aliases */
+  --color-bg: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-accent: var(--accent);
+  --color-muted: color-mix(in srgb, var(--text-secondary) 88%, #7e8ea9);
+
+  --bg-primary: var(--background);
+  --bg-surface: var(--surface);
+  --bg-elevated: var(--surface-elevated);
+  --border-default: var(--border);
+  --border-strong: color-mix(in srgb, var(--border) 78%, var(--accent));
+  --accent-primary: var(--accent);
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
 }
