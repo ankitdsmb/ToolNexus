@@ -23,19 +23,13 @@
     });
 }
 
-<section class="hero" aria-labelledby="heroHeading">
-    <div class="hero__glow" aria-hidden="true"></div>
-    <div class="hero__container">
-        <p class="hero__eyebrow">Built for speed and trust</p>
-        <h1 id="heroHeading" class="hero__title">
-            Professional developer tools, instantly in your browser.
-        </h1>
+<partial name="_Hero" />
 
-        <p class="hero__subtitle">
-            Format, validate, convert, and optimize data in seconds with a lightweight interface engineered for performance.
-        </p>
-
-        <form class="hero__search" role="search" aria-label="Find tools">
+<section class="tool-section" id="featuredTools" aria-labelledby="featuredToolsHeading">
+    <header class="tool-section__header">
+        <h2 id="featuredToolsHeading" class="section-title">Featured Tools</h2>
+        <p class="section-subtitle">Start with our most-used utilities for everyday engineering workflows.</p>
+        <form class="hero__search" role="search" aria-label="Filter featured tools">
             <label for="toolSearch" class="u-sr-only">Search featured developer tools</label>
             <input id="toolSearch"
                    class="search"
@@ -43,13 +37,6 @@
                    autocomplete="off"
                    spellcheck="false" />
         </form>
-    </div>
-</section>
-
-<section class="tool-section" aria-labelledby="featuredToolsHeading">
-    <header class="tool-section__header">
-        <h2 id="featuredToolsHeading" class="section-title">Featured Tools</h2>
-        <p class="section-subtitle">Start with our most-used utilities for everyday engineering workflows.</p>
     </header>
 
     <div class="grid" id="featuredGrid">
@@ -71,6 +58,49 @@
     (function () {
         const searchBox = document.getElementById('toolSearch');
         const cards = Array.from(document.querySelectorAll('#featuredGrid .card'));
+        const typewriterText = document.getElementById('heroTypewriter');
+        const heroScroll = document.querySelector('.hero__scroll');
+
+        if (typewriterText) {
+            const tools = ['JSON Formatter', 'Regex Tester', 'Base64 Encoder', 'SQL Formatter', 'Text Diff'];
+            let toolIndex = 0;
+            let charIndex = 0;
+            let direction = 1;
+
+            const tick = () => {
+                const current = tools[toolIndex];
+                charIndex += direction;
+
+                typewriterText.textContent = current.slice(0, charIndex);
+
+                if (charIndex === current.length) {
+                    direction = -1;
+                    setTimeout(tick, 1300);
+                    return;
+                }
+
+                if (charIndex === 0) {
+                    direction = 1;
+                    toolIndex = (toolIndex + 1) % tools.length;
+                    setTimeout(tick, 280);
+                    return;
+                }
+
+                setTimeout(tick, direction > 0 ? 85 : 45);
+            };
+
+            tick();
+        }
+
+        if (heroScroll) {
+            heroScroll.addEventListener('click', (event) => {
+                const targetId = heroScroll.getAttribute('href');
+                const target = targetId ? document.querySelector(targetId) : null;
+                if (!target) return;
+                event.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
 
         if (!searchBox || cards.length === 0) return;
 
