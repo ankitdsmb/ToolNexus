@@ -16,7 +16,10 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
 
     public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _client = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("Security:Jwt:SigningKey", "toolnexus-development-signing-key-change-in-production");
+        }).CreateClient();
     }
 
     [Fact]

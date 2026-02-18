@@ -33,8 +33,10 @@ public sealed class PolicyEnforcementStep(IHttpContextAccessor accessor, IApiKey
 
         if (!policy.AllowAnonymous)
         {
+            var isAuthenticated = accessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
             var key = accessor.HttpContext?.Request.Headers["X-API-KEY"].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(key) || !apiKeyValidator.IsValid(key.AsSpan()))
+
+            if (!isAuthenticated && (string.IsNullOrWhiteSpace(key) || !apiKeyValidator.IsValid(key.AsSpan())))
             {
                 return Task.FromResult(new ToolExecutionResponse(false, string.Empty, "API key is required."));
             }
