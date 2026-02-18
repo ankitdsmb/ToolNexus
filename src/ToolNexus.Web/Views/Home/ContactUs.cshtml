@@ -3,38 +3,28 @@
     ViewData["Description"] = "Contact ToolNexus with feedback, feature requests, or support questions through our secure frontend-only contact form.";
     ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/contact-us";
     ViewData["Keywords"] = "contact ToolNexus, ToolNexus support, feedback";
-    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
-    {
-        @context = "https://schema.org",
-        @type = "ContactPage",
-        name = "Contact ToolNexus",
-        description = "Contact page for ToolNexus.",
-        url = $"{Context.Request.Scheme}://{Context.Request.Host}/contact-us",
-        mainEntity = new
-        {
-            @type = "Organization",
-            name = "ToolNexus",
-            url = $"{Context.Request.Scheme}://{Context.Request.Host}/"
-        }
-    });
 }
 
-<section class="content-page">
-    <h1>Contact Us</h1>
-    <p id="contactHelp">Share feedback, report issues, or suggest tools. This form is frontend-only and does not submit to a backend.</p>
+<section class="static-page contact-page">
+    <header class="static-page__header">
+        <h1>Contact Us</h1>
+        <p id="contactHelp">Share feedback, report issues, or suggest tools. This form is frontend-only and does not submit to a backend.</p>
+    </header>
 
     <form id="contactForm" class="contact-form" novalidate aria-describedby="contactHelp">
-        <label for="name">Name</label>
-        <input id="name" name="name" type="text" required maxlength="80" autocomplete="name" />
+        <div class="contact-form__grid">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" required maxlength="80" autocomplete="name" />
 
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
 
-        <label for="subject">Subject</label>
-        <input id="subject" name="subject" type="text" required maxlength="120" />
+            <label for="subject">Subject</label>
+            <input id="subject" name="subject" type="text" required maxlength="120" />
+        </div>
 
         <label for="message">Message</label>
-        <textarea id="message" name="message" required maxlength="2000" rows="6"></textarea>
+        <textarea id="message" name="message" required maxlength="2000" rows="8"></textarea>
 
         <button type="submit" class="primary">Send Message</button>
         <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>

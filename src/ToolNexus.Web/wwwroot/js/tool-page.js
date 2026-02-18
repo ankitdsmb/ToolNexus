@@ -1,4 +1,3 @@
-import { modalManager } from "./modal-manager.js";
 document.addEventListener('DOMContentLoaded', () => {
 const page = document.querySelector('.tool-page');
 
@@ -42,9 +41,6 @@ const runBtnLabel = runBtn?.querySelector('.tool-btn__label');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const shareBtn = document.getElementById('shareBtn');
-const shortcutBtn = document.getElementById('shortcutBtn');
-const shortcutDialog = document.getElementById('shortcutDialog');
-const shortcutDialogId = "toolShortcuts";
 
 const collectionNameInput = document.getElementById('collectionNameInput');
 const saveCollectionBtn = document.getElementById('saveCollectionBtn');
@@ -294,7 +290,6 @@ function bindEvents() {
   });
 
   shareBtn?.addEventListener('click', createShareLink);
-  shortcutBtn?.addEventListener('click', toggleShortcutDialog);
   saveCollectionBtn?.addEventListener('click', saveToCollection);
 
   actionSelect?.addEventListener('change', () => persistSession());
@@ -322,18 +317,9 @@ function bindEvents() {
       return;
     }
 
-    if (event.key === '?' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-      event.preventDefault();
-      toggleShortcutDialog();
-    }
   });
 
   window.addEventListener('toolnexus:themechange', applyEditorTheme);
-  document.addEventListener('click', (event) => {
-    if (event.target.closest('[data-tool-shortcuts-close]')) {
-      modalManager.closeModal(shortcutDialogId);
-    }
-  });
 }
 
 
@@ -793,16 +779,6 @@ function saveToCollection() {
 
   renderUxLists();
   showToast(`Saved to ${rawName}.`, 'success');
-}
-
-function toggleShortcutDialog() {
-  if (!shortcutDialog) return;
-
-  if (modalManager.getTopModalId() === shortcutDialogId) {
-    modalManager.closeModal(shortcutDialogId);
-  } else {
-    modalManager.openModal(shortcutDialogId);
-  }
 }
 
 function renderUxLists() {

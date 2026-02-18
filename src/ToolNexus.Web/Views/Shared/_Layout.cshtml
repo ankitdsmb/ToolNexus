@@ -61,7 +61,6 @@
             }
         }
     });
-
 }
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -75,11 +74,6 @@
     <meta name="robots" content="@robots" />
     <meta name="theme-color" content="#0b1020" />
     <link rel="canonical" href="@canonicalUrl" />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
-    <link rel="preload" href="~/css/site.css" as="style" asp-append-version="true" />
-    <link rel="modulepreload" href="~/js/ui-state-manager.js" asp-append-version="true" />
-    <link rel="modulepreload" href="~/js/dynamic-widget-engine.js" asp-append-version="true" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ToolNexus" />
@@ -100,17 +94,12 @@
     }
 
     <script type="application/ld+json">@Html.Raw(defaultJsonLd)</script>
-
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Head", required: false)
 </head>
 <body class="page-enter">
 <div class="app-shell">
     <partial name="_Header" model="headerModel" />
-
-    <div class="alert-strip" role="note">
-        <span>Never paste secrets or sensitive credentials.</span>
-    </div>
 
     <main class="container" role="main">
         @RenderBody()
@@ -119,12 +108,22 @@
     <partial name="_Footer" model="footerModel" />
 </div>
 
+<div id="commandPaletteModal" class="command-palette" hidden>
+    <button class="command-palette__backdrop" type="button" data-command-close aria-label="Close command palette"></button>
+    <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+        <header class="command-palette__header">
+            <h2 id="commandPaletteTitle" class="command-palette__title">Command palette</h2>
+            <button class="command-palette__close" type="button" data-command-close aria-label="Close command palette">✕</button>
+        </header>
+        <label class="u-sr-only" for="commandPaletteInput">Search tools</label>
+        <input id="commandPaletteInput" class="command-palette__input" type="text" placeholder="Search tools and actions..." autocomplete="off" />
+        <ul id="commandPaletteList" class="command-palette__list" role="listbox"></ul>
+    </section>
+</div>
 
-
-<script type="module" src="~/js/modal-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/ui-state-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/theme-manager.js" asp-append-version="true"></script>
-<script type="module" src="~/js/command-palette-launcher.js" asp-append-version="true"></script>
+<script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
 <script type="module" src="~/js/tools-grid.js" asp-append-version="true"></script>
 <script type="module" src="~/js/dynamic-widget-engine.js" asp-append-version="true"></script>
 <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>

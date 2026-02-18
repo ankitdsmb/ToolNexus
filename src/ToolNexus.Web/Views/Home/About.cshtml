@@ -1,48 +1,36 @@
 @{
     ViewData["Title"] = "About ToolNexus | Free Online Developer Tools";
-    ViewData["Description"] = "Learn about ToolNexus and our mission to deliver fast, privacy-conscious, free online developer tools for modern workflows.";
+    ViewData["Description"] = "Learn what ToolNexus provides, our product principles, and why teams rely on our browser-based developer tooling.";
     ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/about";
-    ViewData["Keywords"] = "about ToolNexus, developer tools, free utilities, online coding tools";
-    ViewData["JsonLd"] = System.Text.Json.JsonSerializer.Serialize(new
-    {
-        @context = "https://schema.org",
-        @type = "AboutPage",
-        name = "About ToolNexus",
-        description = "Learn about ToolNexus and our mission.",
-        url = $"{Context.Request.Scheme}://{Context.Request.Host}/about",
-        isPartOf = new
-        {
-            @type = "WebSite",
-            name = "ToolNexus",
-            url = $"{Context.Request.Scheme}://{Context.Request.Host}/"
-        }
-    });
+    ViewData["Keywords"] = "about ToolNexus, developer tooling platform, browser developer tools";
 }
 
-<section class="content-page">
-    <h1>About ToolNexus</h1>
-    <p>
-        ToolNexus is built for developers who need practical utilities without unnecessary friction.
-        We focus on speed, clean UI, and reliable tool behavior so you can stay in flow.
-    </p>
+<section class="static-page">
+    <header class="static-page__header">
+        <h1>About ToolNexus</h1>
+        <p>ToolNexus is built for developers who need practical utilities without unnecessary friction. We focus on speed, clean UI, and reliable tool behavior so you can stay in flow.</p>
+    </header>
 
-    <h2>What we provide</h2>
-    <ul>
-        <li>Free browser-based developer tools across common categories.</li>
-        <li>Task-focused experiences for data conversion, formatting, and validation.</li>
-        <li>Consistent interfaces that are easy to learn and fast to use.</li>
-    </ul>
+    <section class="static-page__section">
+        <h2>What we provide</h2>
+        <ul>
+            <li>Free browser-based developer tools across common categories.</li>
+            <li>Task-focused experiences for data conversion, formatting, and validation.</li>
+            <li>Consistent interfaces that are easy to learn and fast to use.</li>
+        </ul>
+    </section>
 
-    <h2>Our product principles</h2>
-    <ul>
-        <li>Keep tools straightforward and predictable.</li>
-        <li>Prioritize performance and accessibility.</li>
-        <li>Improve discoverability with clear information architecture.</li>
-    </ul>
+    <section class="static-page__section">
+        <h2>Our product principles</h2>
+        <ul>
+            <li>Keep tools straightforward and predictable.</li>
+            <li>Prioritize performance and accessibility.</li>
+            <li>Improve discoverability with clear information architecture.</li>
+        </ul>
+    </section>
 
-    <h2>Why teams use ToolNexus</h2>
-    <p>
-        From local debugging to production support, ToolNexus helps engineers quickly format,
-        transform, and validate content without installing heavyweight software.
-    </p>
+    <section class="static-page__section">
+        <h2>Why teams use ToolNexus</h2>
+        <p>From local debugging to production support, ToolNexus helps engineers quickly format, transform, and validate content without installing heavyweight software.</p>
+    </section>
 </section>
