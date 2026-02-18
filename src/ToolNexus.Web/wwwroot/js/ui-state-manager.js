@@ -96,4 +96,3 @@ class UiStateManager {
 
 export const uiStateManager = new UiStateManager();
 uiStateManager.boot();
-window.ToolNexusUiState = uiStateManager;
