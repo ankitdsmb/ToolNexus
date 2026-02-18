@@ -4,19 +4,23 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ToolNexus.Api.IntegrationTests;
 
 public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
+    private readonly ITestOutputHelper _output;
 
-    public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
+    public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory, ITestOutputHelper output)
     {
         _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _output = output;
     }
 
     [Fact]
@@ -25,6 +29,11 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken("json-formatter:format"));
 
         var response = await _client.GetAsync("/api/tools/json-formatter/format?input=%7B%22name%22%3A%22Ada%22%7D");
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            _output.WriteLine(await response.Content.ReadAsStringAsync());
+        }
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -77,6 +86,12 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
                 input = "{\"name\":\"Ada\"}"
             });
 
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            _output.WriteLine($"Failed Response: {response.StatusCode} - {content}");
+        }
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var payload = await response.Content.ReadFromJsonAsync<ToolExecutionResponse>();
@@ -98,6 +113,12 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
             {
                 input = "{\"valid\":true}"
             });
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            _output.WriteLine($"Failed Response: {response.StatusCode} - {content}");
+        }
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
