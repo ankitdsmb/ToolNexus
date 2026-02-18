@@ -13,6 +13,8 @@
         url = canonicalUrl,
         description = $"Explore {Model.Category} developer tools on ToolNexus."
     });
+
+    var index = 0;
 }
 
 <section class="u-stack">
@@ -20,12 +22,13 @@
   <p class="u-muted">Minimal workflows for @Model.Category-related tasks.</p>
 </section>
 
-<div class="grid">
+<div class="tool-grid" id="toolGrid" aria-live="polite">
   @foreach (var tool in Model.Tools)
   {
-    <a class="card" href="/tools/@tool.Slug">
-      <h3>@tool.Title</h3>
-      <p>@tool.SeoDescription</p>
-    </a>
+    @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
   }
 </div>
+
+@section Scripts {
+  <script src="~/js/tools-grid.js" asp-append-version="true"></script>
+}
