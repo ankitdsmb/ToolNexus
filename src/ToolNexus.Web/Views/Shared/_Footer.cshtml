@@ -25,13 +25,14 @@
                 <span>⌘K Open palette</span>
                 <span>⌘Enter Run tool</span>
                 <span>⌘Shift+S Share</span>
+                <span class="footer__build-chip">Build @Model.BuildNumber</span>
             </section>
 
             <section class="footer__column" aria-label="Support links">
                 <p class="footer__title">Support</p>
-                <a href="#" aria-label="Fuel ToolNexus">☕ Fuel ToolNexus</a>
                 <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
                 <a href="/disclaimer">Disclaimer</a>
+                <span>Version @Model.VersionDisplay</span>
             </section>
 
             <section class="footer__column" aria-label="Developer stack we love">
@@ -44,6 +45,7 @@
 
         <div class="footer__bottom">
             <span>© @DateTime.UtcNow.Year ToolNexus</span>
+            <a class="footer__fuel-link" href="#" aria-label="Fuel ToolNexus">☕ Fuel ToolNexus</a>
             <span>Built for developer velocity</span>
         </div>
     </div>
