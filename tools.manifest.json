@@ -138,7 +138,10 @@
       ],
       "seoTitle": "URL Encoder | ToolNexus",
       "seoDescription": "Percent-encode unsafe URL characters.",
-      "exampleInput": "https://example.com?q=hello world"
+      "exampleInput": "https://example.com?q=hello world",
+      "clientSafeActions": [
+        "encode"
+      ]
     },
     {
       "slug": "url-decode",
