@@ -3,13 +3,19 @@
 @import url("./base.css");
 @import url("./command-palette.css");
 
+@font-face {
+  font-family: "Inter";
+  src: local("Inter Variable"), local("Inter");
+  font-display: swap;
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 html {
   scroll-behavior: smooth;
 }
 body {
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--text);
   background: var(--bg);
   line-height: 1.5;
