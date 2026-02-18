@@ -7,16 +7,19 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ToolNexus.Api.IntegrationTests;
 
 public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
+    private readonly ITestOutputHelper _output;
 
-    public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
+    public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory, ITestOutputHelper output)
     {
         _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _output = output;
     }
 
     [Fact]
@@ -98,6 +101,12 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
             {
                 input = "{\"valid\":true}"
             });
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            _output.WriteLine($"Response: {content}");
+        }
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
