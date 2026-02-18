@@ -39,8 +39,6 @@ function applyRecentTools() {
     const slug = card.dataset.toolSlug;
     const isRecent = recentSet.has(slug);
     card.classList.toggle('is-recent', isRecent);
-    const badge = card.querySelector('[data-recent-badge]');
-    if (badge) badge.hidden = !isRecent;
   });
 }
 
