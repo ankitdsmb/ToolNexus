@@ -171,3 +171,126 @@ body.command-palette-open {
     padding: .8rem;
   }
 }
+
+.command-palette__meta-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.command-palette__kbd {
+  font-size: .68rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 6px;
+  padding: .15rem .34rem;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+}
+
+.shortcut-coachmark {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, #8ab4ff 30%);
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  border-radius: 12px;
+  padding: .55rem .65rem;
+  box-shadow: 0 16px 44px color-mix(in srgb, #000 42%, transparent);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.shortcut-coachmark.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.shortcut-coachmark p {
+  margin: 0;
+  font-size: .82rem;
+}
+
+.shortcut-coachmark button {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  min-height: 2rem;
+  padding: 0 .55rem;
+  cursor: pointer;
+}
+
+.shortcut-help {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.shortcut-help__overlay {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: color-mix(in srgb, #02040c 62%, transparent);
+}
+
+.shortcut-help__dialog {
+  position: relative;
+  width: min(520px, 100%);
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 68%, #8ab4ff 32%);
+  padding: 1rem;
+  background: var(--bg-elevated);
+  box-shadow: 0 30px 90px color-mix(in srgb, #000 54%, transparent);
+}
+
+.shortcut-help__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shortcut-help__header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.shortcut-help__header button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.shortcut-help ul {
+  margin: .8rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: .55rem;
+}
+
+.shortcut-help li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: .6rem;
+  font-size: .92rem;
+}
+
+.shortcut-help kbd,
+.shortcut-coachmark kbd {
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 6px;
+  padding: .1rem .35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .72rem;
+}
