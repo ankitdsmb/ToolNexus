@@ -11,22 +11,38 @@
         <p id="contactHelp">Share feedback, report issues, or suggest tools. This form is frontend-only and does not submit to a backend.</p>
     </header>
 
-    <form id="contactForm" class="contact-form" novalidate aria-describedby="contactHelp">
-        <div class="contact-form__grid">
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" required maxlength="80" autocomplete="name" />
+    <form id="contactForm" class="contact-form contact-form--elite" novalidate aria-describedby="contactHelp">
+        <div class="contact-form__grid contact-form__grid--elite">
+            <div class="floating-field">
+                <input id="name" name="name" type="text" required maxlength="80" autocomplete="name" placeholder=" " />
+                <label for="name">Name</label>
+                <small class="field-error" data-error-for="name"></small>
+            </div>
 
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
+            <div class="floating-field">
+                <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" placeholder=" " />
+                <label for="email">Email</label>
+                <small class="field-error" data-error-for="email"></small>
+            </div>
 
-            <label for="subject">Subject</label>
-            <input id="subject" name="subject" type="text" required maxlength="120" />
+            <div class="floating-field floating-field--full">
+                <input id="subject" name="subject" type="text" required maxlength="120" placeholder=" " />
+                <label for="subject">Subject</label>
+                <small class="field-error" data-error-for="subject"></small>
+            </div>
         </div>
 
-        <label for="message">Message</label>
-        <textarea id="message" name="message" required maxlength="2000" rows="8"></textarea>
+        <div class="floating-field floating-field--textarea">
+            <textarea id="message" name="message" required maxlength="2000" rows="8" placeholder=" "></textarea>
+            <label for="message">Message</label>
+            <div class="contact-form__meta-row">
+                <small class="field-error" data-error-for="message"></small>
+                <small id="messageCounter" class="char-counter" aria-live="polite">0 / 2000</small>
+            </div>
+        </div>
 
-        <button type="submit" class="primary">Send Message</button>
+        <button type="submit" class="tool-btn tool-btn--primary contact-form__submit">Send Message</button>
+        <p class="contact-form__security">Your draft stays in your browser. No server-side storage in this demo.</p>
         <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>
     </form>
 </section>
@@ -35,21 +51,62 @@
 <script>
   const form = document.getElementById('contactForm');
   const status = document.getElementById('contactStatus');
+  const counter = document.getElementById('messageCounter');
+
+  const validators = {
+    name: (value) => value.trim().length >= 2 ? '' : 'Enter at least 2 characters.',
+    email: (value) => /.+@.+\..+/.test(value) ? '' : 'Enter a valid email address.',
+    subject: (value) => value.trim().length >= 3 ? '' : 'Subject should be at least 3 characters.',
+    message: (value) => value.trim().length >= 10 ? '' : 'Message should be at least 10 characters.'
+  };
+
+  const setError = (fieldId, messageText) => {
+    const errorEl = form?.querySelector(`[data-error-for="${fieldId}"]`);
+    const input = document.getElementById(fieldId);
+    if (!errorEl || !input) return !messageText;
+
+    errorEl.textContent = messageText;
+    input.setAttribute('aria-invalid', messageText ? 'true' : 'false');
+    input.closest('.floating-field')?.classList.toggle('is-invalid', !!messageText);
+    return !messageText;
+  };
+
+  const validateField = (fieldId) => {
+    const input = document.getElementById(fieldId);
+    if (!input) return true;
+    const validator = validators[fieldId];
+    const errorMessage = validator ? validator(input.value || '') : '';
+    return setError(fieldId, errorMessage);
+  };
+
+  ['name', 'email', 'subject', 'message'].forEach((fieldId) => {
+    const input = document.getElementById(fieldId);
+    input?.addEventListener('input', () => {
+      validateField(fieldId);
+      if (fieldId === 'message' && counter) {
+        counter.textContent = `${input.value.length} / 2000`;
+      }
+    });
+  });
 
   form?.addEventListener('submit', (event) => {
     event.preventDefault();
 
-    if (!form.checkValidity()) {
-      status.textContent = 'Please complete all required fields with valid details.';
+    const isValid = ['name', 'email', 'subject', 'message'].every(validateField);
+    if (!isValid) {
+      status.textContent = 'Please resolve the inline validation errors and try again.';
       status.classList.remove('success');
       status.classList.add('error');
       return;
     }
 
-    status.textContent = 'Thanks for your message. This demo form does not send data to a server.';
+    status.textContent = 'Message sent successfully. Thanks for helping improve ToolNexus.';
     status.classList.remove('error');
-    status.classList.add('success');
+    status.classList.add('success', 'is-pop');
+
+    window.setTimeout(() => status.classList.remove('is-pop'), 500);
     form.reset();
+    counter.textContent = '0 / 2000';
   });
 </script>
 }
