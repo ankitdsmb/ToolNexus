@@ -30,7 +30,7 @@ public sealed class MinifierToolExecutor : ToolExecutorBase
 
     private static ToolResult MinifyCss(string input)
     {
-        var result = Uglify.Css(input, CssSettingsForMinify());
+        var result = Uglify.Css(input, MinifySettings);
         if (result.HasErrors)
         {
             return ToolResult.Fail(FormatErrors(result.Errors));
@@ -41,7 +41,7 @@ public sealed class MinifierToolExecutor : ToolExecutorBase
 
     private static ToolResult FormatCss(string input)
     {
-        var result = Uglify.Css(input, CssSettingsForFormat());
+        var result = Uglify.Css(input, FormatSettings);
         if (result.HasErrors)
         {
             return ToolResult.Fail(FormatErrors(result.Errors));
@@ -50,7 +50,7 @@ public sealed class MinifierToolExecutor : ToolExecutorBase
         return ToolResult.Ok(result.Code);
     }
 
-    private static CssSettings CssSettingsForMinify() => new()
+    private static readonly CssSettings MinifySettings = new()
     {
         CommentMode = CssComment.None,
         MinifyExpressions = true,
@@ -58,7 +58,7 @@ public sealed class MinifierToolExecutor : ToolExecutorBase
         OutputMode = OutputMode.SingleLine
     };
 
-    private static CssSettings CssSettingsForFormat() => new()
+    private static readonly CssSettings FormatSettings = new()
     {
         CommentMode = CssComment.Important,
         MinifyExpressions = false,
