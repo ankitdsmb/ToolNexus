@@ -3,3 +3,4 @@ obj/
 .vs/
 *.db-shm
 *.db-wal
+.keyring/
