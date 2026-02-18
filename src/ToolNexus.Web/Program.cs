@@ -1,9 +1,12 @@
+using System.IO.Compression;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
-using System.IO.Compression;
 using ToolNexus.Application;
 using ToolNexus.Infrastructure;
 using ToolNexus.Web.Options;
+using ToolNexus.Web.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,21 +43,54 @@ builder.Services.AddOutputCache(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
+builder.Services.Configure<InternalAuthOptions>(builder.Configuration.GetSection(InternalAuthOptions.SectionName));
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
+builder.Services.AddSingleton<IInternalUserPrincipalFactory, InternalUserPrincipalFactory>();
+
+var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
+if (!string.IsNullOrWhiteSpace(keyRingPath))
+{
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(keyRingPath))
+        .SetApplicationName("ToolNexus.SharedAuth");
+}
+else
+{
+    builder.Services.AddDataProtection().SetApplicationName("ToolNexus.SharedAuth");
+}
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.Cookie.Name = "ToolNexus.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.LoginPath = "/auth/login";
+        options.AccessDeniedPath = "/auth/login";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins("https://localhost:5173")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
 
-var app = builder.Build();  
+var app = builder.Build();
 
 /* =========================================================
    ERROR HANDLING
@@ -160,6 +196,8 @@ else
    ========================================================= */
 
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseOutputCache();
 
 app.MapControllerRoute(

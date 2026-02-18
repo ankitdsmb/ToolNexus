@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
@@ -55,10 +58,52 @@ public static class ServiceCollectionExtensions
 
         var signingKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
+        var keyRingPath = configuration["DataProtection:KeyRingPath"];
+        if (!string.IsNullOrWhiteSpace(keyRingPath))
+        {
+            services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(keyRingPath))
+                .SetApplicationName("ToolNexus.SharedAuth");
+        }
+        else
+        {
+            services.AddDataProtection().SetApplicationName("ToolNexus.SharedAuth");
+        }
+
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = "toolnexus-smart";
+                options.DefaultChallengeScheme = "toolnexus-smart";
+            })
+            .AddPolicyScheme("toolnexus-smart", "JWT or Cookie", options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    var authHeader = context.Request.Headers.Authorization.ToString();
+                    return authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                        ? JwtBearerDefaults.AuthenticationScheme
+                        : CookieAuthenticationDefaults.AuthenticationScheme;
+                };
+            })
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = true;
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("AuthDiagnostics");
+                        logger.LogInformation("Authenticated request using {Scheme} scheme.", JwtBearerDefaults.AuthenticationScheme);
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("AuthDiagnostics");
+                        logger.LogWarning(context.Exception, "JWT authentication failed.");
+                        return Task.CompletedTask;
+                    }
+                };
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -70,12 +115,43 @@ public static class ServiceCollectionExtensions
                     IssuerSigningKey = signingKey,
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
+            })
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.Cookie.Name = "ToolNexus.Auth";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromHours(8);
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("AuthDiagnostics");
+                        logger.LogInformation("Authenticated request using {Scheme} scheme.", CookieAuthenticationDefaults.AuthenticationScheme);
+                        return Task.CompletedTask;
+                    },
+                    OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    },
+                    OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         services.AddAuthorization(options =>
         {
             options.AddPolicy(ToolActionRequirement.PolicyName, policy =>
             {
+                policy.AddAuthenticationSchemes(
+                    JwtBearerDefaults.AuthenticationScheme,
+                    CookieAuthenticationDefaults.AuthenticationScheme);
                 policy.RequireAuthenticatedUser();
                 policy.AddRequirements(new ToolActionRequirement());
             });
@@ -171,7 +247,8 @@ public static class ServiceCollectionExtensions
             {
                 policy.WithOrigins(options.AllowedOrigins)
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 
