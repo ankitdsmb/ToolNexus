@@ -8,6 +8,7 @@ const slug = page.dataset.slug ?? '';
 const apiBase = window.ToolNexusConfig?.apiBaseUrl ?? '';
 const toolExecutionPathPrefix = normalizePathPrefix(window.ToolNexusConfig?.toolExecutionPathPrefix ?? '/api/v1/tools');
 const maxClientInputBytes = 1024 * 1024;
+const recentJsonStorageKey = 'toolnexus.recentJson';
 
 const clientSafeActions = new Set(
   (page.dataset.clientSafeActions ?? '')
@@ -66,6 +67,18 @@ function getUtf8SizeInBytes(input) {
 
 function isEligibleForClientExecution(input) {
   return getUtf8SizeInBytes(input) <= maxClientInputBytes;
+}
+
+function storeRecentJsonCandidate(output) {
+  if (typeof output !== 'string' || !output.trim()) return;
+
+  try {
+    const parsed = JSON.parse(output);
+    const normalized = JSON.stringify(parsed, null, 2);
+    localStorage.setItem(recentJsonStorageKey, normalized);
+  } catch (_error) {
+    // Not JSON; ignore for command palette quick-copy.
+  }
 }
 
 /* ===============================
@@ -435,6 +448,7 @@ async function run() {
 
     renderInsight(insight);
     outputEditor.setValue(result);
+    storeRecentJsonCandidate(result);
     setOutputState(true);
     setResultStatus('success', 'Output updated');
   } catch (error) {
