@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using ToolNexus.Api.Configuration;
@@ -39,6 +40,14 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
+    options.AddSecurityDefinition(CookieAuthenticationDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+    {
+        Description = "Cookie authentication. Sign in through ToolNexus.Web to receive ToolNexus.Auth cookie.",
+        Name = "ToolNexus.Auth",
+        In = ParameterLocation.Cookie,
+        Type = SecuritySchemeType.ApiKey
+    });
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -48,6 +57,17 @@ builder.Services.AddSwaggerGen(options =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = JwtBearerDefaults.AuthenticationScheme
+                }
+            },
+            Array.Empty<string>()
+        },
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = CookieAuthenticationDefaults.AuthenticationScheme
                 }
             },
             Array.Empty<string>()
