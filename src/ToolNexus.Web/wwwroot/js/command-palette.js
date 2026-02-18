@@ -27,6 +27,9 @@ if (palette && input && list) {
 }
 
 function init() {
+  palette.hidden = true;
+  palette.dataset.state = 'closed';
+  palette.classList.remove('is-open', 'is-closing');
   bindUiEvents();
 }
 
