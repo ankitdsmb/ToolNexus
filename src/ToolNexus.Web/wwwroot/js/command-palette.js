@@ -1,3 +1,5 @@
+import { modalManager } from './modal-manager.js';
+
 const SELECTORS = {
   modal: '#commandPaletteModal',
   input: '#commandPaletteInput',
@@ -12,15 +14,44 @@ const state = {
   open: false,
   tools: [],
   filtered: [],
-  activeIndex: 0
+  activeIndex: 0,
+  elements: null
 };
 
+function createCommandPalette() {
+  const wrapper = document.createElement('div');
+  wrapper.id = 'commandPaletteModal';
+  wrapper.className = 'command-palette';
+  wrapper.hidden = true;
+  wrapper.innerHTML = `
+    <button class="command-palette__backdrop" type="button" data-command-close aria-label="Close command palette"></button>
+    <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+      <header class="command-palette__header">
+        <h2 id="commandPaletteTitle" class="command-palette__title">Command palette</h2>
+        <button class="command-palette__close" type="button" data-command-close aria-label="Close command palette">✕</button>
+      </header>
+      <label class="u-sr-only" for="commandPaletteInput">Search tools</label>
+      <input id="commandPaletteInput" class="command-palette__input" type="text" placeholder="Search tools and actions..." autocomplete="off" />
+      <ul id="commandPaletteList" class="command-palette__list" role="listbox"></ul>
+    </section>`;
+
+  document.body.append(wrapper);
+  return wrapper;
+}
+
 function queryElements() {
-  return {
-    modal: document.querySelector(SELECTORS.modal),
-    input: document.querySelector(SELECTORS.input),
-    list: document.querySelector(SELECTORS.list)
+  if (state.elements) {
+    return state.elements;
+  }
+
+  const modal = document.querySelector(SELECTORS.modal) || createCommandPalette();
+  state.elements = {
+    modal,
+    input: modal.querySelector(SELECTORS.input),
+    list: modal.querySelector(SELECTORS.list)
   };
+
+  return state.elements;
 }
 
 function isEditableElement(target) {
@@ -117,22 +148,6 @@ function focusInput() {
   });
 }
 
-function openCommandPalette(seed = '') {
-  const { modal, input } = queryElements();
-  if (!modal || !input) {
-    return;
-  }
-
-  state.open = true;
-  modal.hidden = false;
-  modal.classList.add('is-open');
-  document.body.classList.add('is-modal-open');
-
-  input.value = seed;
-  filterTools(seed);
-  focusInput();
-}
-
 function closeCommandPalette() {
   const { modal } = queryElements();
   if (!modal || !state.open) {
@@ -154,14 +169,7 @@ function activateIndex(index = state.activeIndex) {
   window.location.assign(item.href);
 }
 
-function onDocumentClick(event) {
-  const trigger = event.target.closest(SELECTORS.trigger);
-  if (trigger) {
-    event.preventDefault();
-    openCommandPalette();
-    return;
-  }
-
+function onModalClick(event) {
   const closeTarget = event.target.closest(SELECTORS.close);
   if (closeTarget) {
     event.preventDefault();
@@ -176,13 +184,73 @@ function onDocumentClick(event) {
   }
 }
 
-function onDocumentKeydown(event) {
+function bindInput() {
+  const { input } = queryElements();
+  if (!input) {
+    return;
+  }
+
+  input.addEventListener('input', (event) => {
+    filterTools(event.target.value || '');
+  });
+}
+
+function bindModalEvents() {
+  const { modal } = queryElements();
+  if (!modal) {
+    return;
+  }
+
+  modal.addEventListener('click', onModalClick);
+}
+
+async function ensureInitialized() {
+  if (state.initialized) {
+    return;
+  }
+
+  queryElements();
+  state.initialized = true;
+  bindInput();
+  bindModalEvents();
+  await loadTools();
+}
+
+async function openCommandPalette(seed = '') {
+  await ensureInitialized();
+
+  const { modal, input } = queryElements();
+  if (!modal || !input) {
+    return;
+  }
+
+  state.open = true;
+  modal.hidden = false;
+  modal.classList.add('is-open');
+  document.body.classList.add('is-modal-open');
+
+  input.value = seed;
+  filterTools(seed);
+  focusInput();
+}
+
+async function onDocumentClick(event) {
+  const trigger = event.target.closest(SELECTORS.trigger);
+  if (!trigger) {
+    return;
+  }
+
+  event.preventDefault();
+  await modalManager.openModal('commandPalette');
+}
+
+async function onDocumentKeydown(event) {
   const key = event.key.toLowerCase();
   const usesModifier = event.ctrlKey || event.metaKey;
 
   if (usesModifier && key === 'k') {
     event.preventDefault();
-    openCommandPalette();
+    await modalManager.openModal('commandPalette');
     return;
   }
 
@@ -222,32 +290,21 @@ function onDocumentKeydown(event) {
   }
 }
 
-function bindInput() {
-  const { input } = queryElements();
-  if (!input) {
-    return;
-  }
-
-  input.addEventListener('input', (event) => {
-    filterTools(event.target.value || '');
+function registerModals() {
+  modalManager.registerModal('commandPalette', {
+    open: openCommandPalette,
+    close: closeCommandPalette
   });
 }
 
-async function initCommandPalette() {
-  if (state.initialized) {
-    return;
-  }
-
-  state.initialized = true;
-  await loadTools();
-  bindInput();
-
+function initCommandPalette() {
+  registerModals();
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('keydown', onDocumentKeydown);
 }
 
-window.openCommandPalette = openCommandPalette;
-window.closeCommandPalette = closeCommandPalette;
+window.openCommandPalette = (seed = '') => modalManager.openModal('commandPalette', seed);
+window.closeCommandPalette = () => modalManager.closeModal('commandPalette');
 window.ToolNexusPlatform = {
   ...(window.ToolNexusPlatform || {}),
   isMac
@@ -259,4 +316,4 @@ if (document.readyState === 'loading') {
   initCommandPalette();
 }
 
-export { openCommandPalette, closeCommandPalette, initCommandPalette };
+export { openCommandPalette, closeCommandPalette, initCommandPalette, createCommandPalette };

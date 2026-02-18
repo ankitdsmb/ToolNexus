@@ -153,6 +153,8 @@ input { width: 100%; border: 1px solid var(--border-default); border-radius: var
 .footer__meta { display: grid; gap: .45rem; }
 .footer__brand { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--text-primary); }
 .footer__tagline, .footer__version { margin: 0; color: var(--text-secondary); }
+.footer__tip { margin: .2rem 0 0; color: var(--text-secondary); font-size: .86rem; }
+.footer__tip kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .footer__security { display: inline-flex; align-items: center; gap: .4rem; color: var(--text-secondary); font-size: .86rem; }
 .footer__shortcuts-label { margin: .3rem 0 0; color: var(--text-secondary); font-size: .86rem; }
 .footer__shortcut-list { display: flex; flex-wrap: wrap; gap: .45rem; }
