@@ -1,24 +1,23 @@
 import { modalManager } from './modal-manager.js';
 import { uiStateManager } from './ui-state-manager.js';
 
-const palette = document.getElementById('commandPalette');
+const paletteId = 'commandPalette';
+const palette = document.getElementById(paletteId);
 const input = document.getElementById('commandPaletteInput');
 const list = document.getElementById('commandPaletteList');
 const themeToggle = document.getElementById('themeToggle');
 const globalSearch = document.getElementById('globalToolSearch');
 const paletteTrigger = document.querySelector('[data-open-palette]');
 
-const helpOverlayId = 'shortcutHelp';
-const firstHintId = 'shortcutHint';
 const MAX_RENDER = 22;
 const RECENT_JSON_KEY = 'toolnexus.recentJson';
 const PINNED_KEY = 'toolnexus.pinnedTools';
 
 const catalog = readCatalog();
-let isOpen = false;
 let activeIndex = -1;
 let renderedItems = [];
 let previouslyFocused = null;
+const eventController = new AbortController();
 
 const activeToolPageSlug = document.querySelector('.tool-page')?.dataset.slug;
 if (activeToolPageSlug) uiStateManager.recordToolUsage(activeToolPageSlug);
@@ -28,15 +27,11 @@ if (palette && input && list) {
 }
 
 function init() {
-  maybeShowFirstVisitHint();
   bindUiEvents();
 }
 
-function maybeShowFirstVisitHint() {
-  if (uiStateManager.hasSeenShortcutHint()) return;
-  if (modalManager.getTopModalId() === 'commandPalette') return;
-  uiStateManager.markShortcutHintSeen();
-  modalManager.openModal(firstHintId);
+function isPaletteOpen() {
+  return modalManager.getTopModalId() === paletteId;
 }
 
 function readCatalog() {
@@ -60,21 +55,15 @@ function readStorageArray(key) {
   }
 }
 
-function writeStorageArray(key, values) {
-  try { localStorage.setItem(key, JSON.stringify(values)); } catch { /* noop */ }
-}
-
 function closePalette() {
-  if (!isOpen) return;
-  isOpen = false;
-  modalManager.closeModal('commandPalette');
+  if (!isPaletteOpen()) return;
+  modalManager.closeModal(paletteId);
   if (previouslyFocused?.focus) previouslyFocused.focus();
 }
 
 function openPalette(seed = '') {
   previouslyFocused = document.activeElement;
-  isOpen = true;
-  modalManager.openModal('commandPalette', { suspendOthers: true });
+  modalManager.openModal(paletteId, { suspendOthers: true });
   input.value = seed;
   renderItems(seed);
   requestAnimationFrame(() => input.focus());
@@ -184,55 +173,63 @@ function renderItems(query = '') {
     li.setAttribute('role', 'option');
 
     li.innerHTML = `<div class="command-palette__action"><span class="command-palette__text"><span class="command-palette__item-title">${item.icon ? `${item.icon} ` : ''}${item.title}</span><span class="command-palette__item-desc">${item.description || item.category}</span></span><span class="command-palette__meta-wrap"><span class="command-palette__meta">${item.meta || item.category || 'Command'}</span>${item.shortcut ? `<kbd class="command-palette__kbd">${item.shortcut}</kbd>` : ''}</span></div>`;
-    li.addEventListener('mouseenter', () => setActiveIndex(index));
-    li.addEventListener('click', () => { if (!item.disabled) runItem(item); });
+    li.addEventListener('mouseenter', () => setActiveIndex(index), { signal: eventController.signal });
+    li.addEventListener('click', () => { if (!item.disabled) runItem(item); }, { signal: eventController.signal });
     list.appendChild(li);
   });
 
   setActiveIndex(0);
 }
 
-function toggleHelpOverlay(forceOpen) {
-  const isOpenHelp = modalManager.getTopModalId() === helpOverlayId;
-  const next = typeof forceOpen === 'boolean' ? forceOpen : !isOpenHelp;
-  if (next) modalManager.openModal(helpOverlayId);
-  else modalManager.closeModal(helpOverlayId);
-}
-
 function handleGlobalShortcuts(event) {
   const key = event.key.toLowerCase();
   const withMeta = event.metaKey || event.ctrlKey;
 
-  if (withMeta && key === 'k') { event.preventDefault(); isOpen ? closePalette() : openPalette(); return; }
+  if (withMeta && key === 'k') { event.preventDefault(); isPaletteOpen() ? closePalette() : openPalette(); return; }
   if (withMeta && event.shiftKey && key === 'd') { event.preventDefault(); themeToggle?.click(); return; }
-  if (withMeta && event.shiftKey && key === 'r') { event.preventDefault(); const recent = (uiStateManager.state.recents || [])[0]; if (recent) window.location.assign(`/tools/${recent}`); return; }
-  if (withMeta && key === '/') { event.preventDefault(); toggleHelpOverlay(); return; }
+  if (withMeta && event.shiftKey && key === 'r') {
+    event.preventDefault();
+    const recent = (uiStateManager.state.recents || [])[0];
+    if (recent) window.location.assign(`/tools/${recent}`);
+    return;
+  }
+}
+
+function handlePaletteControls(event) {
+  if (!isPaletteOpen()) return;
+  if (event.key === 'ArrowDown') { event.preventDefault(); setActiveIndex(activeIndex + 1); return; }
+  if (event.key === 'ArrowUp') { event.preventDefault(); setActiveIndex(activeIndex - 1); return; }
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const item = renderedItems[activeIndex];
+    if (!item?.disabled) runItem(item);
+  }
 }
 
 function bindUiEvents() {
-  window.addEventListener('keydown', (event) => {
-    handleGlobalShortcuts(event);
-    if (!isOpen) return;
-    if (event.key === 'Escape') { event.preventDefault(); closePalette(); return; }
-    if (event.key === 'ArrowDown') { event.preventDefault(); setActiveIndex(activeIndex + 1); return; }
-    if (event.key === 'ArrowUp') { event.preventDefault(); setActiveIndex(activeIndex - 1); return; }
-    if (event.key === 'Enter') { event.preventDefault(); const item = renderedItems[activeIndex]; if (!item?.disabled) runItem(item); }
-  });
+  window.addEventListener('keydown', handleGlobalShortcuts, { signal: eventController.signal });
+  window.addEventListener('keydown', handlePaletteControls, { signal: eventController.signal });
 
-  input?.addEventListener('input', () => renderItems(input.value));
-  palette?.querySelectorAll('[data-command-close]').forEach((b) => b.addEventListener('click', closePalette));
-  document.querySelectorAll('[data-shortcut-help-close]').forEach((b) => b.addEventListener('click', () => toggleHelpOverlay(false)));
-  document.querySelectorAll('[data-shortcut-hint-close]').forEach((b) => b.addEventListener('click', () => modalManager.closeModal(firstHintId)));
+  input?.addEventListener('input', () => renderItems(input.value), { signal: eventController.signal });
+  palette?.querySelectorAll('[data-command-close]').forEach((b) => b.addEventListener('click', closePalette, { signal: eventController.signal }));
 
-  paletteTrigger?.addEventListener('click', () => openPalette(''));
+  paletteTrigger?.addEventListener('click', () => openPalette(''), { signal: eventController.signal });
 
   if (globalSearch) {
-    globalSearch.addEventListener('focus', () => { openPalette(globalSearch.value || ''); globalSearch.blur(); });
-    globalSearch.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); openPalette(globalSearch.value || ''); } });
+    globalSearch.addEventListener('focus', () => {
+      openPalette(globalSearch.value || '');
+      globalSearch.blur();
+    }, { signal: eventController.signal });
+    globalSearch.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        openPalette(globalSearch.value || '');
+      }
+    }, { signal: eventController.signal });
   }
 }
 
 const topbar = document.querySelector('.topbar');
 window.addEventListener('scroll', () => {
   topbar?.classList.toggle('is-scrolled', window.scrollY > 12);
-}, { passive: true });
+}, { passive: true, signal: eventController.signal });

@@ -28,7 +28,11 @@ class ModalManager {
 
   registerModal(element) {
     const id = element?.dataset?.modalId;
-    if (!id || this.modals.has(id)) return;
+    if (!id) return;
+    if (this.modals.has(id)) {
+      console.warn(`Modal ${id} already registered.`);
+      return;
+    }
 
     const controller = new AbortController();
     const signal = controller.signal;
@@ -67,12 +71,18 @@ class ModalManager {
     const modal = this.modals.get(id) || this.tryRegisterById(id);
     if (!modal) return false;
 
+    if (this.stack.includes(id)) {
+      console.warn(`Modal ${id} already in stack.`);
+      this.activeModalId = id;
+      this.applyZIndex();
+      return true;
+    }
+
     if (options.suspendOthers && this.stack.length) {
       this.suspended = [...this.stack];
       this.closeAllModals({ preserveSuspended: true });
     }
 
-    this.stack = this.stack.filter((item) => item !== id);
     this.stack.push(id);
     this.activeModalId = id;
 
@@ -86,8 +96,12 @@ class ModalManager {
   }
 
   closeModal(id, options = {}) {
+    if (!this.modals.has(id)) return false;
+
     const modal = this.modals.get(id);
     if (!modal) return false;
+
+    if (modal.element.classList.contains('is-closing')) return false;
 
     modal.element.classList.remove('is-open');
     modal.element.classList.add('is-closing');

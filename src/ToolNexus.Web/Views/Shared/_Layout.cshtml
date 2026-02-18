@@ -91,6 +91,8 @@
     <link rel="modulepreload" href="~/js/ui-state-manager.js" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/dynamic-widget-engine.js" asp-append-version="true" />
     <link rel="modulepreload" href="~/js/command-palette.js" asp-append-version="true" />
+    <link rel="modulepreload" href="~/js/help-overlay.js" asp-append-version="true" />
+    <link rel="modulepreload" href="~/js/onboarding-hint.js" asp-append-version="true" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ToolNexus" />
@@ -152,9 +154,8 @@
     </section>
 </div>
 
-<div id="shortcutHintModal" class="tn-modal shortcut-hint-modal" data-modal-root data-modal-id="shortcutHint" data-modal-remove-on-close="true" hidden>
-    <button class="tn-modal__backdrop" type="button" data-modal-backdrop aria-label="Close shortcut hint"></button>
-    <section class="tn-modal__dialog shortcut-hint-modal__dialog" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="shortcutHintTitle">
+<aside id="shortcutHint" class="shortcut-hint" role="status" aria-live="polite" hidden>
+    <section class="shortcut-hint__panel" aria-labelledby="shortcutHintTitle">
         <header class="shortcut-hint-modal__header">
             <h2 id="shortcutHintTitle">Keyboard shortcut unlocked</h2>
             <button type="button" class="tn-modal__close" data-shortcut-hint-close aria-label="Close shortcut hint">✕</button>
@@ -162,7 +163,7 @@
         <p><strong>Tip:</strong> Press <kbd>⌘K</kbd> to open tools instantly, then type to jump.</p>
         <button class="shortcut-hint-modal__cta" type="button" data-shortcut-hint-close>Got it</button>
     </section>
-</div>
+</aside>
 
 <div id="shortcutHelpOverlay" class="shortcut-help tn-modal" data-modal-root data-modal-id="shortcutHelp" hidden>
     <button class="tn-modal__backdrop shortcut-help__overlay" type="button" data-modal-backdrop aria-label="Close shortcut help"></button>
@@ -185,6 +186,8 @@
 <script type="module" src="~/js/version-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/dynamic-widget-engine.js" asp-append-version="true"></script>
 <script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
+<script type="module" src="~/js/help-overlay.js" asp-append-version="true"></script>
+<script type="module" src="~/js/onboarding-hint.js" asp-append-version="true"></script>
 <script type="module" src="~/js/motion-system.js" asp-append-version="true"></script>
 
 @await RenderSectionAsync("Scripts", required: false)
