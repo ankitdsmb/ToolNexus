@@ -50,7 +50,11 @@ class ModalManager {
       event.stopPropagation();
     }, { signal });
 
-    if (element.hidden || !element.classList.contains('is-open')) {
+    const shouldStartOpen = element.dataset.modalOpenOnLoad === 'true';
+    if (!shouldStartOpen) {
+      // Normalize modal state on hydration so stale DOM/session state cannot leave overlays stuck open.
+      element.hidden = true;
+      element.classList.remove('is-open', 'is-closing');
       element.dataset.state = 'closed';
     }
 
