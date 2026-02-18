@@ -2,7 +2,6 @@ const KEYS = {
   usage: 'toolnexus.toolUsage',
   sessions: 'toolnexus.totalSessions',
   recents: 'toolnexus.recentTools',
-  firstVisit: 'toolnexus_shortcut_hint_shown',
   theme: 'toolnexus-theme'
 };
 
@@ -73,14 +72,6 @@ class UiStateManager {
     if (ms < 250) return { label: 'Fast', tone: 'fast', value: ms };
     if (ms < 700) return { label: 'Stable', tone: 'stable', value: ms };
     return { label: 'Degraded', tone: 'intensive', value: ms };
-  }
-
-  hasSeenShortcutHint() {
-    return localStorage.getItem(KEYS.firstVisit) === 'true';
-  }
-
-  markShortcutHintSeen() {
-    localStorage.setItem(KEYS.firstVisit, 'true');
   }
 
   syncTheme(theme) {

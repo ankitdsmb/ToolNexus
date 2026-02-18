@@ -10,6 +10,7 @@
             </a>
             <p class="footer__tagline">Developer-first utility platform for faster shipping.</p>
             <p class="footer__version" data-version-display="@Model.VersionDisplay" data-build-number="@Model.BuildNumber">@Model.VersionDisplay · Build @Model.BuildNumber</p>
+            <p class="footer__shortcut">Shortcut: Press <kbd>⌘K</kbd> any time to open the command palette.</p>
         </div>
 
         <nav class="footer__links" aria-label="Footer Navigation">
@@ -44,7 +45,10 @@
         </nav>
 
         <div class="footer__bottom">
-            <span>© @DateTime.UtcNow.Year ToolNexus. All rights reserved.</span>
+            <div class="footer__bottom-meta">
+                <span>© @DateTime.UtcNow.Year ToolNexus. All rights reserved.</span>
+                <span class="footer__perf" data-performance-badge>Stable · --ms</span>
+            </div>
             <div class="footer__social" aria-label="Social links">
                 <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="ToolNexus on GitHub">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

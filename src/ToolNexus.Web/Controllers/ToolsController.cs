@@ -22,6 +22,23 @@ public sealed class ToolsController(
         return View(new ToolIndexViewModel { Tools = tools, Categories = categories });
     }
 
+
+    [HttpGet("catalog")]
+    [OutputCache(Duration = 300)]
+    public IActionResult Catalog()
+    {
+        var tools = toolCatalogService.GetAllTools()
+            .Select(tool => new
+            {
+                slug = tool.Slug,
+                title = tool.Title,
+                category = tool.Category,
+                description = tool.SeoDescription
+            });
+
+        return Json(tools);
+    }
+
     [HttpGet("{segment}")]
     [OutputCache(Duration = 300, VaryByRouteValueNames = ["segment"])]
     public async Task<IActionResult> Segment(string segment, CancellationToken cancellationToken)
