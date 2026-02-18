@@ -19,7 +19,7 @@ body {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-body-md);
   line-height: var(--line-height-normal);
-  color: var(--text-primary);
+  color: var(--text-primary, #111827);
   background: var(--surface-base);
 }
 
@@ -33,7 +33,7 @@ h6 {
   font-family: var(--font-family-display);
   line-height: var(--line-height-tight);
   letter-spacing: -0.02em;
-  color: var(--text-primary);
+  color: var(--text-primary, #111827);
 }
 
 h1 { font-size: var(--font-size-h1); }
