@@ -35,7 +35,3 @@
     @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
   }
 </div>
-
-@section Scripts {
-  <script type="module" src="~/js/tools-grid.js" asp-append-version="true"></script>
-}

@@ -25,22 +25,8 @@
     </div>
   </header>
 
-  <div class="tool-page__actions" role="toolbar" aria-label="Tool actions">
-    <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
-      <span class="spinner" aria-hidden="true"></span>
-      <span class="tool-btn__label" data-loading-label="Running…" data-default-label="Run">Run</span>
-    </button>
-    <button id="copyBtn" class="tool-btn" type="button">Copy Output</button>
-    <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
-    <button id="shareBtn" class="tool-btn" type="button">Share Link</button>
-    <button id="shortcutBtn" class="tool-btn" type="button" aria-haspopup="dialog">Shortcuts</button>
-    <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl + Enter</p>
-  </div>
-
-  <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
-
-  <section class="tool-page__grid">
-    <section class="tool-panel" aria-labelledby="toolInputHeading">
+  <section class="tool-layout" aria-label="Tool workspace">
+    <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
       <div class="panel-header">
         <h2 id="toolInputHeading">Input</h2>
       </div>
@@ -57,11 +43,24 @@
       </div>
     </section>
 
-    <section class="tool-panel" aria-labelledby="toolOutputHeading">
+    <section class="tool-layout__actions tool-page__actions" role="toolbar" aria-label="Tool actions">
+      <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="tool-btn__label" data-loading-label="Running…" data-default-label="Run">Run</span>
+      </button>
+      <button id="copyBtn" class="tool-btn" type="button">Copy Output</button>
+      <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
+      <button id="shareBtn" class="tool-btn" type="button">Share Link</button>
+      <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl/Cmd + Enter to run</p>
+    </section>
+
+    <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading">
       <div class="panel-header">
         <h2 id="toolOutputHeading">Output</h2>
         <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">Ready</p>
       </div>
+
+      <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
 
       <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
         <strong>No output yet.</strong>
@@ -104,22 +103,6 @@
 
   <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
 
-  <div id="shortcutDialog" class="tn-modal shortcut-dialog" data-modal-root data-modal-id="toolShortcuts" hidden>
-    <button class="tn-modal__backdrop" type="button" data-modal-backdrop aria-label="Close keyboard shortcuts"></button>
-    <section class="tn-modal__dialog shortcut-dialog__content" data-modal-dialog role="dialog" aria-modal="true" aria-labelledby="shortcutTitle">
-      <header class="shortcut-dialog__header">
-        <h2 id="shortcutTitle">Keyboard shortcuts</h2>
-        <button class="tn-modal__close" type="button" data-tool-shortcuts-close aria-label="Close keyboard shortcuts">✕</button>
-      </header>
-      <ul class="shortcut-list">
-        <li><kbd>Ctrl/Cmd + Enter</kbd><span>Run current tool</span></li>
-        <li><kbd>Ctrl/Cmd + K</kbd><span>Open command palette</span></li>
-        <li><kbd>Ctrl/Cmd + Shift + S</kbd><span>Create shareable link</span></li>
-        <li><kbd>?</kbd><span>Toggle this shortcut sheet</span></li>
-      </ul>
-    </section>
-  </div>
-
 @if (Model.Content is not null)
 {
   <section class="tool-panel">
@@ -155,21 +138,10 @@
       <ul>
       @foreach (var related in Model.Content.RelatedTools)
       {
-        <li><a href="/tools/@related.RelatedSlug">@related.RelatedSlug</a></li>
+        <li><a href="/tools/@related.Slug">@related.Title</a></li>
       }
       </ul>
     }
   </section>
 }
-
 </article>
-
-@section Scripts {
-  <script type="module">
-    window.ToolNexusConfig = {
-      apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
-      toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix))
-    };
-  </script>
-  <script type="module" src="~/js/tool-page.js" asp-append-version="true"></script>
-}

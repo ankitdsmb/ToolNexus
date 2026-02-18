@@ -8,14 +8,10 @@
         </a>
 
         <div class="topbar__search-wrap">
-            <label class="u-sr-only" for="globalToolSearch">Search tools</label>
-            <div class="topbar__search-shell">
-                <input id="globalToolSearch"
-                       class="topbar__search"
-                       placeholder="Find a tool instantly…"
-                       autocomplete="off" />
-                <button class="topbar__search-shortcut" type="button" aria-label="Open command palette" data-open-palette>⌘K</button>
-            </div>
+            <button class="topbar__search-shell" type="button" data-command-palette-trigger aria-label="Open command palette">
+                <span class="topbar__search-placeholder">Find a tool instantly...</span>
+                <span class="topbar__search-shortcut" aria-hidden="true">⌘K</span>
+            </button>
         </div>
 
         <nav class="topbar__nav" aria-label="Primary Navigation">
@@ -34,8 +30,11 @@
                 type="button"
                 aria-label="Activate dark theme"
                 aria-pressed="false">
-            <span class="theme-toggle__icon" aria-hidden="true">◐</span>
-            <span class="theme-toggle__text">Theme</span>
+            <span class="theme-toggle__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="presentation" focusable="false">
+                    <path d="M12 2.5a1 1 0 0 1 1 1v1.15a1 1 0 1 1-2 0V3.5a1 1 0 0 1 1-1Zm0 16.35a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.15a1 1 0 0 1 1-1Zm9.5-7.35a1 1 0 1 1 0 2h-1.15a1 1 0 1 1 0-2h1.15ZM4.65 12.5a1 1 0 1 1 0 2H3.5a1 1 0 1 1 0-2h1.15Zm13.1 5.35a1 1 0 0 1 1.42 0l.82.82a1 1 0 0 1-1.42 1.42l-.82-.82a1 1 0 0 1 0-1.42Zm-12.32 0a1 1 0 0 1 1.42 1.42l-.82.82a1 1 0 1 1-1.42-1.42l.82-.82Zm13.14-12.32a1 1 0 0 1 1.42 1.42l-.82.82a1 1 0 1 1-1.42-1.42l.82-.82Zm-12.32 0a1 1 0 1 1 1.42 1.42l-.82.82a1 1 0 0 1-1.42-1.42l.82-.82ZM12 7.25a4.75 4.75 0 1 0 0 9.5V7.25Z"/>
+                </svg>
+            </span>
         </button>
     </div>
 </header>
