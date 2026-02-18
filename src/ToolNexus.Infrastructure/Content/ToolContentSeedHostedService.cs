@@ -30,9 +30,13 @@ public sealed class ToolContentSeedHostedService(
         }
 
         var tools = manifestRepository.LoadTools();
+        var toolsByCategory = tools.ToLookup(t => t.Category, StringComparer.OrdinalIgnoreCase);
+
+        var toolEntities = new List<ToolContentEntity>(tools.Count);
+
         foreach (var tool in tools)
         {
-            dbContext.ToolContents.Add(new ToolContentEntity
+            toolEntities.Add(new ToolContentEntity
             {
                 Slug = tool.Slug,
                 Title = tool.Title,
@@ -51,12 +55,15 @@ public sealed class ToolContentSeedHostedService(
                         SortOrder = 0
                     }
                 ],
-                RelatedTools = tools.Where(x => x.Category.Equals(tool.Category, StringComparison.OrdinalIgnoreCase) && x.Slug != tool.Slug)
+                RelatedTools = toolsByCategory[tool.Category]
+                    .Where(x => x.Slug != tool.Slug)
                     .Take(3)
                     .Select((x, index) => new ToolRelatedEntity { RelatedSlug = x.Slug, SortOrder = index })
                     .ToList()
             });
         }
+
+        dbContext.ToolContents.AddRange(toolEntities);
 
         var categories = tools.Select(x => x.Category).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         foreach (var category in categories)
