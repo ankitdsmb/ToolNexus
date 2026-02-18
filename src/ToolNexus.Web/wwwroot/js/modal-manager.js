@@ -50,6 +50,10 @@ class ModalManager {
       event.stopPropagation();
     }, { signal });
 
+    if (element.hidden || !element.classList.contains('is-open')) {
+      element.dataset.state = 'closed';
+    }
+
     this.modals.set(id, { id, element, backdrop, dialog, controller });
     this.applyZIndex();
   }
@@ -89,6 +93,7 @@ class ModalManager {
 
     modal.element.hidden = false;
     modal.element.classList.add('is-open');
+    modal.element.dataset.state = 'open';
     this.syncBodyLock();
     this.applyZIndex();
     requestAnimationFrame(() => modal.dialog?.focus?.());
@@ -110,6 +115,7 @@ class ModalManager {
     const finish = () => {
       modal.element.classList.remove('is-closing');
       modal.element.hidden = true;
+      modal.element.dataset.state = 'closed';
       this.stack = this.stack.filter((item) => item !== id);
       this.activeModalId = this.getTopModalId();
       this.syncBodyLock();

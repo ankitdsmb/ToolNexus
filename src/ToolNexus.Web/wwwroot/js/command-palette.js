@@ -35,7 +35,9 @@ function bootstrap() {
 }
 
 function init() {
-  console.log('Command palette initialized');
+  palette.hidden = true;
+  palette.dataset.state = 'closed';
+  palette.classList.remove('is-open', 'is-closing');
   bindUiEvents();
 }
 
