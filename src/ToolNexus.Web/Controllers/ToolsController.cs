@@ -51,14 +51,21 @@ public sealed class ToolsController(
 
         var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
         var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
-        return View("Tool", new ToolPageViewModel
+        var viewModel = new ToolPageViewModel
         {
             Tool = tool,
             ApiBaseUrl = apiBaseUrl,
             ToolExecutionPathPrefix = apiPathPrefix,
             Seo = seo,
             Content = content
-        });
+        };
+
+        if (string.Equals(tool.Slug, "json-formatter", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("JsonFormatter", viewModel);
+        }
+
+        return View("Tool", viewModel);
     }
 
     private static string ResolveApiBaseUrl(string? configuredApiBaseUrl)
