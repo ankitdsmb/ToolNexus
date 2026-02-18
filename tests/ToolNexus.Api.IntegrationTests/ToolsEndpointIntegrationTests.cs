@@ -17,6 +17,9 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
     {
         _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        // The default policy requires an API key if not AllowAnonymous.
+        // We add a valid key from appsettings.json to satisfy this requirement for all tests.
+        _client.DefaultRequestHeaders.Add("X-API-KEY", "replace-with-production-api-key");
     }
 
     [Fact]
@@ -112,6 +115,7 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     public async Task Get_ToolEndpoint_ReturnsUnauthorized_WhenTokenMissing()
     {
         _client.DefaultRequestHeaders.Authorization = null;
+        // Even with API Key, Authorization header is required by [Authorize] policy.
 
         var response = await _client.GetAsync("/api/tools/json-formatter/format?input=%7B%22name%22%3A%22Ada%22%7D");
 
