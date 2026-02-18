@@ -1,3 +1,6 @@
+@using ToolNexus.Application.Services
+@using System.Text.Json
+@inject IToolCatalogService ToolCatalogService
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -115,6 +118,36 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+@{
+    var commandPaletteTools = ToolCatalogService.GetAllTools()
+        .Select(tool => new
+        {
+            slug = tool.Slug,
+            title = tool.Title,
+            category = tool.Category,
+            description = tool.SeoDescription
+        });
+}
+
+<script id="toolCatalogData" type="application/json">@Html.Raw(JsonSerializer.Serialize(commandPaletteTools))</script>
+
+<div id="commandPalette" class="command-palette" hidden>
+    <button class="command-palette__overlay" type="button" data-command-close tabindex="-1" aria-label="Close command palette"></button>
+
+    <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+        <header class="command-palette__header">
+            <p id="commandPaletteTitle" class="command-palette__title">Command Palette</p>
+            <p class="command-palette__shortcut">Esc to close</p>
+        </header>
+
+        <label class="u-sr-only" for="commandPaletteInput">Search tools and commands</label>
+        <input id="commandPaletteInput" class="command-palette__input" type="text" autocomplete="off" placeholder="Search tools, actions, recents..." />
+
+        <p class="command-palette__assistive" id="commandPaletteHint">Use arrow keys to navigate and Enter to run a command.</p>
+        <ul id="commandPaletteList" class="command-palette__list" role="listbox" aria-describedby="commandPaletteHint"></ul>
+    </section>
+</div>
+
 <script>
     (function () {
         var key = 'toolnexus-theme';
@@ -152,6 +185,8 @@
         });
     })();
 </script>
+
+<script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
 
 @await RenderSectionAsync("Scripts", required: false)
 
