@@ -8,53 +8,56 @@ public sealed class ApiCacheHeadersMiddleware(RequestDelegate next)
     private const string NoStore = "no-store";
     private const string PublicMetadataCache = "public,max-age=600";
 
-    public async Task InvokeAsync(HttpContext context)
+    public Task InvokeAsync(HttpContext context)
     {
         var isApiRequest = context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
 
         if (!isApiRequest)
         {
-            await next(context);
-            return;
+            return next(context);
         }
 
-        await next(context);
-
-        if (context.Response.StatusCode >= 400)
+        context.Response.OnStarting(() =>
         {
-            context.Response.Headers.CacheControl = NoStore;
-            context.Response.Headers.Remove("ETag");
-            return;
-        }
-
-        var isPost = HttpMethods.IsPost(context.Request.Method);
-        var isToolResultEndpoint = context.Request.Path.StartsWithSegments("/api/v1/tools", StringComparison.OrdinalIgnoreCase) ||
-                                   context.Request.Path.StartsWithSegments("/api/tools", StringComparison.OrdinalIgnoreCase);
-
-        if (isPost || isToolResultEndpoint)
-        {
-            context.Response.Headers.CacheControl = NoStore;
-            context.Response.Headers.Remove("ETag");
-            return;
-        }
-
-        if (HttpMethods.IsGet(context.Request.Method) &&
-            context.Request.Path.Value?.Contains("metadata", StringComparison.OrdinalIgnoreCase) is true)
-        {
-            var eTag = BuildMetadataETag(context);
-            context.Response.Headers.CacheControl = PublicMetadataCache;
-            context.Response.Headers.ETag = eTag;
-
-            if (context.Request.Headers.IfNoneMatch.Any(v => string.Equals(v, eTag, StringComparison.Ordinal)))
+            if (context.Response.StatusCode >= 400)
             {
-                context.Response.StatusCode = StatusCodes.Status304NotModified;
-                context.Response.ContentLength = 0;
+                context.Response.Headers.CacheControl = NoStore;
+                context.Response.Headers.Remove("ETag");
+                return Task.CompletedTask;
             }
 
-            return;
-        }
+            var isPost = HttpMethods.IsPost(context.Request.Method);
+            var isToolResultEndpoint = context.Request.Path.StartsWithSegments("/api/v1/tools", StringComparison.OrdinalIgnoreCase) ||
+                                       context.Request.Path.StartsWithSegments("/api/tools", StringComparison.OrdinalIgnoreCase);
 
-        context.Response.Headers.CacheControl = NoStore;
+            if (isPost || isToolResultEndpoint)
+            {
+                context.Response.Headers.CacheControl = NoStore;
+                context.Response.Headers.Remove("ETag");
+                return Task.CompletedTask;
+            }
+
+            if (HttpMethods.IsGet(context.Request.Method) &&
+                context.Request.Path.Value?.Contains("metadata", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                var eTag = BuildMetadataETag(context);
+                context.Response.Headers.CacheControl = PublicMetadataCache;
+                context.Response.Headers.ETag = eTag;
+
+                if (context.Request.Headers.IfNoneMatch.Any(v => string.Equals(v, eTag, StringComparison.Ordinal)))
+                {
+                    context.Response.StatusCode = StatusCodes.Status304NotModified;
+                    context.Response.ContentLength = 0;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            context.Response.Headers.CacheControl = NoStore;
+            return Task.CompletedTask;
+        });
+
+        return next(context);
     }
 
     private static string BuildMetadataETag(HttpContext context)

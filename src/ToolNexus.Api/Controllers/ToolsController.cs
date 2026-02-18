@@ -40,15 +40,6 @@ public sealed class ToolsController(
     public ActionResult<IReadOnlyCollection<string>> Categories() => Ok(catalogService.GetAllCategories());
 
     [Authorize(Policy = ToolActionRequirement.PolicyName)]
-    [HttpGet("{slug}/{toolAction}")]
-    public Task<ActionResult<ToolExecutionResponse>> ExecuteGet(
-        [FromRoute, Required, MinLength(1)] string slug,
-        [FromRoute(Name = "toolAction"), Required, MinLength(1)] string action,
-        [FromQuery, Required] string input,
-        CancellationToken cancellationToken)
-        => ExecuteInternalAsync(slug, action, input, null, cancellationToken);
-
-    [Authorize(Policy = ToolActionRequirement.PolicyName)]
     [Consumes("application/json")]
     [HttpPost("{slug}/{toolAction}")]
     public Task<ActionResult<ToolExecutionResponse>> Execute(
@@ -90,6 +81,6 @@ public sealed class ToolsController(
     }
 
     public sealed record ExecuteToolRequest(
-        [property: Required] string Input,
+        [Required] string Input,
         IDictionary<string, string>? Options = null);
 }
