@@ -5,7 +5,12 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using ToolNexus.Application.Models;
+using ToolNexus.Application.Services;
 using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
@@ -16,7 +21,19 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
 
     public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _client = factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IToolManifestRepository, FakeToolManifestRepository>();
+
+                var descriptor = services.FirstOrDefault(d => d.ImplementationType == typeof(ManifestExecutorAlignmentValidator));
+                if (descriptor != null)
+                {
+                    services.Remove(descriptor);
+                }
+            });
+        }).CreateClient();
     }
 
     [Fact]
@@ -91,6 +108,7 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     public async Task Post_ToolEndpoint_ReturnsSuccess_ForJsonValidator()
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken("json-validator:validate"));
+        _client.DefaultRequestHeaders.Add("X-API-KEY", "replace-with-production-api-key");
 
         var response = await _client.PostAsJsonAsync(
             "/api/v1/tools/json-validator/validate",
@@ -138,4 +156,36 @@ public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplication
     }
 
     private sealed record ToolExecutionResponse(bool Success, string Output, string Error, bool NotFound = false);
+
+    private sealed class FakeToolManifestRepository : IToolManifestRepository
+    {
+        public IReadOnlyCollection<ToolDescriptor> LoadTools()
+        {
+            return new List<ToolDescriptor>
+            {
+                new()
+                {
+                    Slug = "json-formatter",
+                    Title = "JSON Formatter",
+                    Category = "json",
+                    Actions = ["format", "validate"],
+                    SeoTitle = "JSON Formatter",
+                    SeoDescription = "Format JSON",
+                    ExampleInput = "{}",
+                    ClientSafeActions = ["format"]
+                },
+                new()
+                {
+                    Slug = "json-validator",
+                    Title = "JSON Validator",
+                    Category = "json",
+                    Actions = ["validate"],
+                    SeoTitle = "JSON Validator",
+                    SeoDescription = "Validate JSON",
+                    ExampleInput = "{}",
+                    ClientSafeActions = ["validate"]
+                }
+            };
+        }
+    }
 }
