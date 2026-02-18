@@ -36,9 +36,17 @@ public sealed class RedisToolResultCache(
         var normalizedKey = BuildKey(key);
 
         // 1️⃣ Memory cache
-        if (memoryCache.TryGetValue<ToolResultCacheItem>(normalizedKey, out var localValue))
+        try
         {
-            return localValue;
+            if (memoryCache.TryGetValue<ToolResultCacheItem>(normalizedKey, out var localValue))
+            {
+                return localValue;
+            }
+        }
+        catch (Exception ex)
+        {
+             // Log but continue
+             logger.LogWarning(ex, "Failed to read from memory cache for {CacheKey}", normalizedKey);
         }
 
         if (IsCircuitOpen())
@@ -65,7 +73,14 @@ public sealed class RedisToolResultCache(
 
             var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
             var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, payloadByteCount, TimeSpan.FromSeconds(_options.AbsoluteExpirationSeconds));
-            memoryCache.Set(normalizedKey, cached, memoryEntryOptions);
+            try
+            {
+                memoryCache.Set(normalizedKey, cached, memoryEntryOptions);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to set memory cache for {CacheKey} during read", normalizedKey);
+            }
 
             RegisterSuccess();
             return cached;
@@ -93,7 +108,14 @@ public sealed class RedisToolResultCache(
         var payloadByteCount = Encoding.UTF8.GetByteCount(payload);
 
         var memoryEntryOptions = BuildMemoryEntryOptions(normalizedKey, payloadByteCount, ttl);
-        memoryCache.Set(normalizedKey, item, memoryEntryOptions);
+        try
+        {
+            memoryCache.Set(normalizedKey, item, memoryEntryOptions);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to set memory cache for {CacheKey}", normalizedKey);
+        }
 
         if (IsCircuitOpen())
         {
