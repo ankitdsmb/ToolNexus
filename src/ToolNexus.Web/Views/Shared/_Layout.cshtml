@@ -229,7 +229,7 @@
     <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
         <header class="command-palette__header">
             <p id="commandPaletteTitle" class="command-palette__title">Command Palette</p>
-            <p class="command-palette__shortcut">Esc to close</p>
+            <p class="command-palette__shortcut">⌘K to open · Esc to close</p>
         </header>
 
         <label class="u-sr-only" for="commandPaletteInput">Search tools and commands</label>
@@ -237,6 +237,27 @@
 
         <p class="command-palette__assistive" id="commandPaletteHint">Use arrow keys to navigate and Enter to run a command.</p>
         <ul id="commandPaletteList" class="command-palette__list" role="listbox" aria-describedby="commandPaletteHint"></ul>
+    </section>
+</div>
+
+<div id="shortcutCoachmark" class="shortcut-coachmark" hidden>
+    <p><strong>Tip:</strong> Press <kbd>⌘K</kbd> to open tools instantly.</p>
+    <button type="button" data-shortcut-coachmark-close aria-label="Dismiss shortcut tip">Got it</button>
+</div>
+
+<div id="shortcutHelpOverlay" class="shortcut-help" hidden>
+    <button class="shortcut-help__overlay" type="button" data-shortcut-help-close tabindex="-1" aria-label="Close shortcut help"></button>
+    <section class="shortcut-help__dialog" role="dialog" aria-modal="true" aria-labelledby="shortcutHelpTitle" tabindex="-1">
+        <header class="shortcut-help__header">
+            <h2 id="shortcutHelpTitle">Keyboard shortcuts</h2>
+            <button type="button" data-shortcut-help-close aria-label="Close shortcut help">✕</button>
+        </header>
+        <ul>
+            <li><kbd>⌘K</kbd><span>Open command palette</span></li>
+            <li><kbd>⌘⇧D</kbd><span>Toggle theme</span></li>
+            <li><kbd>⌘⇧R</kbd><span>Open most recent tool</span></li>
+            <li><kbd>⌘/</kbd><span>Open shortcut help</span></li>
+        </ul>
     </section>
 </div>
 

@@ -3,12 +3,16 @@ const input = document.getElementById('commandPaletteInput');
 const list = document.getElementById('commandPaletteList');
 const themeToggle = document.getElementById('themeToggle');
 const globalSearch = document.getElementById('globalToolSearch');
+const helpOverlay = document.getElementById('shortcutHelpOverlay');
+const shortcutCoachmark = document.getElementById('shortcutCoachmark');
 
 const RECENT_KEY = 'toolnexus.recentTools';
 const PINNED_KEY = 'toolnexus.pinnedTools';
 const RECENT_JSON_KEY = 'toolnexus.recentJson';
+const COMMAND_HISTORY_KEY = 'toolnexus.commandHistory';
+const COACHMARK_KEY = 'toolnexus.shortcutCoachmarkSeen';
 const MAX_RECENT = 8;
-const MAX_RENDER = 18;
+const MAX_RENDER = 22;
 
 const catalog = readCatalog();
 let isOpen = false;
@@ -21,19 +25,25 @@ if (activeToolPageSlug) {
   writeRecentTool(activeToolPageSlug);
 }
 
+init();
+
+function init() {
+  if (!palette || !input || !list) return;
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setTimeout(showShortcutCoachmark, 420);
+  }
+}
+
 function readCatalog() {
   const source = document.getElementById('toolCatalogData');
-
-  if (!source?.textContent) {
-    return [];
-  }
+  if (!source?.textContent) return [];
 
   try {
     const parsed = JSON.parse(source.textContent);
     return Array.isArray(parsed)
       ? parsed.filter((item) => item && typeof item.slug === 'string' && typeof item.title === 'string')
       : [];
-  } catch (_error) {
+  } catch {
     return [];
   }
 }
@@ -43,7 +53,7 @@ function readStorageArray(key) {
     const value = localStorage.getItem(key);
     const parsed = value ? JSON.parse(value) : [];
     return Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string') : [];
-  } catch (_error) {
+  } catch {
     return [];
   }
 }
@@ -51,9 +61,16 @@ function readStorageArray(key) {
 function writeStorageArray(key, values) {
   try {
     localStorage.setItem(key, JSON.stringify(values));
-  } catch (_error) {
+  } catch {
     // localStorage may be unavailable.
   }
+}
+
+function pushCommandHistory(commandTitle) {
+  if (!commandTitle) return;
+  const history = readStorageArray(COMMAND_HISTORY_KEY);
+  const next = [commandTitle, ...history.filter((entry) => entry !== commandTitle)].slice(0, MAX_RECENT);
+  writeStorageArray(COMMAND_HISTORY_KEY, next);
 }
 
 function writeRecentTool(slug) {
@@ -84,6 +101,31 @@ function openPalette(seed = '') {
   requestAnimationFrame(() => input.focus());
 }
 
+function toggleHelpOverlay(forceOpen) {
+  if (!helpOverlay) return;
+
+  const next = typeof forceOpen === 'boolean' ? forceOpen : helpOverlay.hidden;
+  helpOverlay.hidden = !next;
+  document.body.classList.toggle('shortcut-help-open', next);
+  if (next) {
+    helpOverlay.querySelector('.shortcut-help__dialog')?.focus();
+  }
+}
+
+function showShortcutCoachmark() {
+  if (!shortcutCoachmark || localStorage.getItem(COACHMARK_KEY) === 'true') return;
+
+  shortcutCoachmark.hidden = false;
+  shortcutCoachmark.classList.add('is-visible');
+}
+
+function dismissShortcutCoachmark() {
+  if (!shortcutCoachmark) return;
+  shortcutCoachmark.classList.remove('is-visible');
+  shortcutCoachmark.hidden = true;
+  localStorage.setItem(COACHMARK_KEY, 'true');
+}
+
 function togglePinned(slug) {
   if (!slug) return;
 
@@ -96,9 +138,7 @@ function togglePinned(slug) {
 
 function copyRecentJson() {
   const recentJson = localStorage.getItem(RECENT_JSON_KEY);
-  if (!recentJson) {
-    return;
-  }
+  if (!recentJson) return;
 
   navigator.clipboard.writeText(recentJson).catch(() => {
     // Clipboard access denied.
@@ -107,6 +147,7 @@ function copyRecentJson() {
 
 function runItem(item) {
   if (!item) return;
+  pushCommandHistory(item.title);
 
   if (item.kind === 'tool') {
     writeRecentTool(item.slug);
@@ -116,9 +157,7 @@ function runItem(item) {
 
   if (item.kind === 'quick-open') {
     const firstTool = renderedItems.find((entry) => entry.kind === 'tool');
-    if (firstTool) {
-      runItem(firstTool);
-    }
+    if (firstTool) runItem(firstTool);
     return;
   }
 
@@ -130,11 +169,42 @@ function runItem(item) {
   if (item.kind === 'copy-recent-json') {
     copyRecentJson();
     closePalette();
+    return;
+  }
+
+  if (item.kind === 'open-recent-tool') {
+    const latest = readStorageArray(RECENT_KEY)[0];
+    if (latest) {
+      window.location.assign(`/tools/${latest}`);
+    }
   }
 }
 
 function normalizedQuery(value) {
   return (value || '').trim().toLowerCase();
+}
+
+function fuzzyScore(needle, haystack) {
+  if (!needle) return 0;
+  if (!haystack) return -1;
+
+  const query = needle.toLowerCase();
+  const text = haystack.toLowerCase();
+
+  if (text.startsWith(query)) return 120;
+  if (text.includes(query)) return 80 - Math.max(0, text.indexOf(query));
+
+  let score = 0;
+  let qi = 0;
+  for (let i = 0; i < text.length && qi < query.length; i += 1) {
+    if (text[i] === query[qi]) {
+      score += 4;
+      if (i > 0 && text[i - 1] === query[qi - 1]) score += 3;
+      qi += 1;
+    }
+  }
+
+  return qi === query.length ? score : -1;
 }
 
 function toToolItem(tool, meta = '') {
@@ -144,7 +214,8 @@ function toToolItem(tool, meta = '') {
     title: tool.title,
     description: tool.description,
     meta,
-    category: tool.category
+    category: tool.category,
+    shortcut: '↵'
   };
 }
 
@@ -154,22 +225,17 @@ function getFilteredTools(query) {
   const recentSet = new Set(readStorageArray(RECENT_KEY));
 
   const scored = catalog
-    .filter((tool) => {
-      if (!lookup) return true;
-      return [tool.title, tool.slug, tool.category, tool.description]
-        .join(' ')
-        .toLowerCase()
-        .includes(lookup);
-    })
     .map((tool) => {
-      const text = `${tool.title} ${tool.slug} ${tool.category} ${tool.description}`.toLowerCase();
-      const startsWith = text.startsWith(lookup) ? 4 : 0;
+      const combined = [tool.title, tool.slug, tool.category, tool.description].join(' ');
+      const fuzzy = lookup ? fuzzyScore(lookup, combined) : 0;
+      if (lookup && fuzzy < 0) return null;
+
       const pinned = pinnedSet.has(tool.slug) ? 30 : 0;
       const recent = recentSet.has(tool.slug) ? 14 : 0;
-      const titleMatch = tool.title.toLowerCase().includes(lookup) ? 8 : 0;
-
-      return { tool, score: pinned + recent + startsWith + titleMatch };
+      const categoryBonus = lookup && fuzzyScore(lookup, tool.category || '') > 0 ? 6 : 0;
+      return { tool, score: fuzzy + pinned + recent + categoryBonus };
     })
+    .filter(Boolean)
     .sort((a, b) => b.score - a.score || a.tool.title.localeCompare(b.tool.title));
 
   const items = [];
@@ -177,9 +243,7 @@ function getFilteredTools(query) {
   if (!lookup) {
     for (const slug of readStorageArray(PINNED_KEY)) {
       const tool = catalog.find((entry) => entry.slug === slug);
-      if (tool) {
-        items.push(toToolItem(tool, 'Pinned'));
-      }
+      if (tool) items.push(toToolItem(tool, 'Pinned'));
     }
 
     for (const slug of readStorageArray(RECENT_KEY)) {
@@ -203,11 +267,13 @@ function getQuickActions(query) {
   const lookup = normalizedQuery(query);
   const actions = [];
   const hasRecentJson = Boolean(localStorage.getItem(RECENT_JSON_KEY));
+  const hasRecentTool = Boolean(readStorageArray(RECENT_KEY)[0]);
 
   const quickItems = [
-    { kind: 'quick-open', title: 'Quick open tool', description: 'Jump to the top matching tool instantly.' },
-    { kind: 'copy-recent-json', title: 'Quick copy recent JSON', description: hasRecentJson ? 'Copy the most recent JSON output.' : 'Run a JSON tool first to enable this command.', disabled: !hasRecentJson },
-    { kind: 'theme-toggle', title: 'Theme toggle', description: 'Switch between dark and light theme.' }
+    { kind: 'quick-open', title: 'Quick open tool', description: 'Jump to the top matching tool instantly.', category: 'Quick Actions', shortcut: '↵' },
+    { kind: 'copy-recent-json', title: 'Quick copy recent JSON', description: hasRecentJson ? 'Copy the most recent JSON output.' : 'Run a JSON tool first to enable this command.', disabled: !hasRecentJson, category: 'Quick Actions', shortcut: '⌘C' },
+    { kind: 'open-recent-tool', title: 'Open most recent tool', description: hasRecentTool ? 'Reopen your last tool immediately.' : 'Open and run a tool to enable this shortcut.', disabled: !hasRecentTool, category: 'Recents', shortcut: '⌘⇧R' },
+    { kind: 'theme-toggle', title: 'Toggle theme', description: 'Switch between dark and light theme.', category: 'Display', shortcut: '⌘⇧D' }
   ];
 
   for (const item of quickItems) {
@@ -217,7 +283,18 @@ function getQuickActions(query) {
     }
   }
 
-  return actions;
+  const recentCommands = readStorageArray(COMMAND_HISTORY_KEY)
+    .filter((entry) => !lookup || entry.toLowerCase().includes(lookup))
+    .slice(0, 3)
+    .map((entry) => ({
+      kind: 'history',
+      title: `Recent: ${entry}`,
+      description: 'Previously executed command',
+      disabled: true,
+      category: 'History'
+    }));
+
+  return [...actions, ...recentCommands];
 }
 
 function setActiveIndex(next) {
@@ -239,6 +316,12 @@ function setActiveIndex(next) {
   if (active?.id) {
     input.setAttribute('aria-activedescendant', active.id);
   }
+
+  const item = renderedItems[activeIndex];
+  if (item?.kind === 'tool') {
+    input.setAttribute('data-preview', `${item.title} • ${item.category || 'Tool'}`);
+  }
+
   active?.scrollIntoView({ block: 'nearest' });
 }
 
@@ -279,19 +362,27 @@ function renderItems(query = '') {
 
     const desc = document.createElement('span');
     desc.className = 'command-palette__item-desc';
-    if (item.kind === 'tool') {
-      desc.textContent = item.description || item.category || item.slug;
-    } else {
-      desc.textContent = item.description;
-    }
+    desc.textContent = item.kind === 'tool' ? (item.description || item.category || item.slug) : item.description;
 
     textWrap.append(title, desc);
 
+    const metaWrap = document.createElement('span');
+    metaWrap.className = 'command-palette__meta-wrap';
+
     const meta = document.createElement('span');
     meta.className = 'command-palette__meta';
-    meta.textContent = item.meta || (item.kind === 'tool' ? item.category : 'Command');
+    meta.textContent = item.meta || item.category || (item.kind === 'tool' ? item.category : 'Command');
 
-    content.append(textWrap, meta);
+    metaWrap.append(meta);
+
+    if (item.shortcut) {
+      const shortcut = document.createElement('kbd');
+      shortcut.className = 'command-palette__kbd';
+      shortcut.textContent = item.shortcut;
+      metaWrap.append(shortcut);
+    }
+
+    content.append(textWrap, metaWrap);
 
     if (item.kind === 'tool') {
       const pinButton = document.createElement('button');
@@ -310,28 +401,60 @@ function renderItems(query = '') {
 
     li.addEventListener('mouseenter', () => setActiveIndex(index));
     li.addEventListener('click', () => {
-      if (!item.disabled) {
+      if (!item.disabled && item.kind !== 'history') {
         runItem(item);
       }
     });
+
     list.appendChild(li);
   });
 
   setActiveIndex(0);
 }
 
-window.addEventListener('keydown', (event) => {
-  const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+function handleGlobalShortcuts(event) {
+  const key = event.key.toLowerCase();
+  const withMeta = event.metaKey || event.ctrlKey;
 
-  if (isShortcut) {
+  if (withMeta && key === 'k') {
     event.preventDefault();
-    if (isOpen) {
-      closePalette();
-    } else {
-      openPalette();
-    }
+    isOpen ? closePalette() : openPalette();
+    dismissShortcutCoachmark();
     return;
   }
+
+  if (withMeta && event.shiftKey && key === 'd') {
+    event.preventDefault();
+    themeToggle?.click();
+    dismissShortcutCoachmark();
+    return;
+  }
+
+  if (withMeta && event.shiftKey && key === 'r') {
+    event.preventDefault();
+    const recent = readStorageArray(RECENT_KEY)[0];
+    if (recent) {
+      window.location.assign(`/tools/${recent}`);
+    }
+    dismissShortcutCoachmark();
+    return;
+  }
+
+  if (withMeta && key === '/') {
+    event.preventDefault();
+    toggleHelpOverlay();
+    dismissShortcutCoachmark();
+    return;
+  }
+
+  if (event.key === 'Escape' && !helpOverlay?.hidden) {
+    event.preventDefault();
+    toggleHelpOverlay(false);
+  }
+}
+
+window.addEventListener('keydown', (event) => {
+  handleGlobalShortcuts(event);
 
   if (!isOpen) return;
 
@@ -356,33 +479,57 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
     event.preventDefault();
     const item = renderedItems[activeIndex];
-    if (!item?.disabled) {
+    if (!item?.disabled && item?.kind !== 'history') {
       runItem(item);
     }
   }
 });
 
-input.addEventListener('input', () => renderItems(input.value));
+input?.addEventListener('input', () => renderItems(input.value));
 
-palette.querySelectorAll('[data-command-close]').forEach((button) => {
+palette?.querySelectorAll('[data-command-close]').forEach((button) => {
   button.addEventListener('click', closePalette);
 });
 
-list.addEventListener('mousedown', (event) => {
+list?.addEventListener('mousedown', (event) => {
   event.preventDefault();
 });
 
+helpOverlay?.querySelectorAll('[data-shortcut-help-close]').forEach((button) => {
+  button.addEventListener('click', () => toggleHelpOverlay(false));
+});
+
+shortcutCoachmark?.querySelectorAll('[data-shortcut-coachmark-close]').forEach((button) => {
+  button.addEventListener('click', dismissShortcutCoachmark);
+});
 
 if (globalSearch) {
   globalSearch.addEventListener('focus', () => {
     openPalette(globalSearch.value || '');
     globalSearch.blur();
+    dismissShortcutCoachmark();
   });
 
   globalSearch.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       openPalette(globalSearch.value || '');
+      dismissShortcutCoachmark();
     }
   });
 }
+
+const prefetchCache = new Set();
+document.addEventListener('pointerenter', (event) => {
+  const anchor = event.target.closest('a[href^="/tools/"]');
+  if (!anchor) return;
+
+  const href = anchor.getAttribute('href');
+  if (!href || prefetchCache.has(href)) return;
+  prefetchCache.add(href);
+
+  const prefetch = document.createElement('link');
+  prefetch.rel = 'prefetch';
+  prefetch.href = href;
+  document.head.appendChild(prefetch);
+}, { capture: true });
