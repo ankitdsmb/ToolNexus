@@ -31,7 +31,7 @@ public sealed class PolicyEnforcementStep(IHttpContextAccessor accessor, IApiKey
             return Task.FromResult(new ToolExecutionResponse(false, string.Empty, "HTTP method is not allowed for this tool."));
         }
 
-        if (!policy.AllowAnonymous)
+        if (!policy.AllowAnonymous && accessor.HttpContext?.User?.Identity?.IsAuthenticated != true)
         {
             var key = accessor.HttpContext?.Request.Headers["X-API-KEY"].FirstOrDefault();
             if (string.IsNullOrWhiteSpace(key) || !apiKeyValidator.IsValid(key.AsSpan()))

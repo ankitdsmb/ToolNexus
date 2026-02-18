@@ -14,11 +14,11 @@ public sealed class ApiCacheHeadersMiddleware(RequestDelegate next)
 
         if (!isApiRequest)
         {
-            await next(context);
+            await next(context); if (context.Response.HasStarted) return;
             return;
         }
 
-        await next(context);
+        await next(context); if (context.Response.HasStarted) return;
 
         if (context.Response.StatusCode >= 400)
         {
