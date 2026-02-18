@@ -1,6 +1,14 @@
 import { modalManager } from './modal-manager.js';
 import { uiStateManager } from './ui-state-manager.js';
 
+document.addEventListener('DOMContentLoaded', () => {
+  const palette = document.getElementById('commandPalette');
+  if (palette) {
+    palette.hidden = true;
+    palette.dataset.state = 'closed';
+  }
+});
+
 const paletteId = 'commandPalette';
 const palette = document.getElementById(paletteId);
 const input = document.getElementById('commandPaletteInput');
