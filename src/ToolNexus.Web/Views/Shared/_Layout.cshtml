@@ -187,6 +187,26 @@
     })();
 </script>
 
+
+<script>
+    (function () {
+        document.addEventListener('click', function (event) {
+            var anchor = event.target.closest('a[href]');
+            if (!anchor) return;
+            if (anchor.target && anchor.target !== '_self') return;
+            if (anchor.hasAttribute('download')) return;
+            var href = anchor.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+            if (anchor.origin !== window.location.origin) return;
+            document.body.classList.add('page-transitioning');
+        });
+
+        window.addEventListener('pageshow', function () {
+            document.body.classList.remove('page-transitioning');
+        });
+    })();
+</script>
+
 <script type="module" src="~/js/command-palette.js" asp-append-version="true"></script>
 
 @await RenderSectionAsync("Scripts", required: false)

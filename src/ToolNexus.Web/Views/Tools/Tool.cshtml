@@ -32,6 +32,8 @@
     </button>
     <button id="copyBtn" class="tool-btn" type="button">Copy Output</button>
     <button id="downloadBtn" class="tool-btn" type="button">Download Output</button>
+    <button id="shareBtn" class="tool-btn" type="button">Share Link</button>
+    <button id="shortcutBtn" class="tool-btn" type="button" aria-haspopup="dialog">Shortcuts</button>
     <p class="shortcut-hint" id="shortcutHint">Shortcut: Ctrl + Enter</p>
   </div>
 
@@ -51,6 +53,7 @@
       <div class="editor-field">
         <label for="inputEditor" class="editor-label">Tool input</label>
         <textarea id="inputEditor" aria-describedby="shortcutHint">@Model.Tool.ExampleInput</textarea>
+        <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
       </div>
     </section>
 
@@ -68,11 +71,53 @@
       <div class="editor-field" id="outputField" hidden>
         <label for="outputEditor" class="editor-label">Tool output</label>
         <textarea id="outputEditor" readonly></textarea>
+        <div id="outputEditorSurface" class="editor-surface" aria-hidden="true"></div>
       </div>
     </section>
   </section>
 
+  <section class="tool-panel tool-ux" aria-labelledby="toolUxHeading">
+    <div class="panel-header">
+      <h2 id="toolUxHeading">Developer UX Layer</h2>
+      <span class="tool-ux__tag">Persistent</span>
+    </div>
+
+    <div class="tool-ux__grid">
+      <section>
+        <h3>Pinned + Recent</h3>
+        <ul id="uxPinnedRecent" class="ux-list"></ul>
+      </section>
+      <section>
+        <h3>Run History</h3>
+        <ul id="uxHistory" class="ux-list"></ul>
+      </section>
+      <section>
+        <h3>Collections</h3>
+        <div class="ux-collection-controls">
+          <input id="collectionNameInput" type="text" placeholder="Collection name" maxlength="32" />
+          <button id="saveCollectionBtn" class="tool-btn" type="button">Save Tool</button>
+        </div>
+        <ul id="uxCollections" class="ux-list"></ul>
+      </section>
+    </div>
+  </section>
+
   <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
+
+  <dialog id="shortcutDialog" class="shortcut-dialog" aria-labelledby="shortcutTitle">
+    <form method="dialog" class="shortcut-dialog__content">
+      <header class="shortcut-dialog__header">
+        <h2 id="shortcutTitle">Keyboard shortcuts</h2>
+        <button class="tool-btn" value="cancel">Close</button>
+      </header>
+      <ul class="shortcut-list">
+        <li><kbd>Ctrl/Cmd + Enter</kbd><span>Run current tool</span></li>
+        <li><kbd>Ctrl/Cmd + K</kbd><span>Open command palette</span></li>
+        <li><kbd>Ctrl/Cmd + Shift + S</kbd><span>Create shareable link</span></li>
+        <li><kbd>?</kbd><span>Toggle this shortcut sheet</span></li>
+      </ul>
+    </form>
+  </dialog>
 
 @if (Model.Content is not null)
 {
