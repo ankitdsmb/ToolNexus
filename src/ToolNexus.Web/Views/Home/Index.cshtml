@@ -42,7 +42,7 @@
     <div class="grid" id="featuredGrid">
         @foreach (var tool in Model.FeaturedTools)
         {
-            <a class="card" href="/tools/@tool.Slug" data-title="@tool.Title" data-description="@tool.SeoDescription">
+            <a class="card" href="/tools/@tool.Slug" data-tool-slug="@tool.Slug" data-title="@tool.Title" data-description="@tool.SeoDescription">
                 <div class="card__content">
                     <h3>@tool.Title</h3>
                     <p>@tool.SeoDescription</p>
@@ -63,22 +63,22 @@
     <div class="trust-stats" role="list" aria-label="ToolNexus live platform stats">
         <article class="trust-stat" role="listitem" data-reveal>
             <p class="trust-stat__label">Tools used today</p>
-            <p class="trust-stat__value"><span data-counter data-target="28491">0</span><span class="trust-stat__suffix">+</span></p>
+            <p class="trust-stat__value"><span data-counter data-dynamic-stat="toolsToday" data-target="28491">0</span><span class="trust-stat__suffix">+</span></p>
             <p class="trust-stat__meta">Active sessions across formatting, conversion, and validation workflows.</p>
         </article>
         <article class="trust-stat" role="listitem" data-reveal>
             <p class="trust-stat__label">Avg response time</p>
-            <p class="trust-stat__value"><span data-counter data-target="42">0</span><span class="trust-stat__suffix">ms</span></p>
+            <p class="trust-stat__value"><span data-counter data-dynamic-stat="loadTime" data-target="42">0</span><span class="trust-stat__suffix">ms</span></p>
             <p class="trust-stat__meta">Client-side execution tuned for instant developer feedback loops.</p>
         </article>
         <article class="trust-stat" role="listitem" data-reveal>
             <p class="trust-stat__label">Uptime</p>
-            <p class="trust-stat__value"><span data-counter data-target="99.99" data-decimals="2">0</span><span class="trust-stat__suffix">%</span></p>
+            <p class="trust-stat__value"><span data-counter data-dynamic-stat="perf" data-target="99.99" data-decimals="2">0</span><span class="trust-stat__suffix">%</span></p>
             <p class="trust-stat__meta">Monitored infrastructure with availability-first deployment practices.</p>
         </article>
         <article class="trust-stat" role="listitem" data-reveal>
             <p class="trust-stat__label">Files processed</p>
-            <p class="trust-stat__value"><span data-counter data-target="1245703">0</span><span class="trust-stat__suffix">+</span></p>
+            <p class="trust-stat__value"><span data-counter data-dynamic-stat="sessions" data-target="1245703">0</span><span class="trust-stat__suffix">+</span></p>
             <p class="trust-stat__meta">Processed securely in-browser without sending source payloads to storage.</p>
         </article>
     </div>

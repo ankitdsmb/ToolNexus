@@ -2,65 +2,40 @@
   const grid = document.getElementById('toolGrid');
   if (!grid) return;
 
-  const cards = Array.from(grid.querySelectorAll('.tool-card'));
+  const cards = Array.from(grid.querySelectorAll('.tool-card[data-tool-slug]'));
   if (!cards.length) return;
+
+  const state = window.ToolNexusUiState;
 
   requestAnimationFrame(() => {
     grid.classList.remove('is-loading');
     grid.classList.add('is-ready');
   });
 
-  const storageKey = 'toolnexus.recentTools';
-  const maxRecent = 8;
-
-  function readRecent() {
-    try {
-      const value = localStorage.getItem(storageKey);
-      const parsed = value ? JSON.parse(value) : [];
-      return Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string') : [];
-    } catch (_error) {
-      return [];
-    }
-  }
-
-  function writeRecent(slug) {
-    if (!slug) return;
-
-    const next = [slug, ...readRecent().filter((item) => item !== slug)].slice(0, maxRecent);
-
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch (_error) {
-      // no-op: localStorage might be disabled by the browser.
-    }
-  }
-
   function applyRecentHighlight() {
-    const recent = new Set(readRecent());
-
+    const recents = new Set((state?.state?.recents || []).filter(Boolean));
     cards.forEach((card) => {
       const slug = card.dataset.toolSlug;
-      const isRecent = Boolean(slug && recent.has(slug));
+      const isRecent = Boolean(slug && recents.has(slug));
       card.classList.toggle('is-recent', isRecent);
-
       const badge = card.querySelector('[data-recent-badge]');
-      if (badge) {
-        badge.hidden = !isRecent;
+      if (badge) badge.hidden = !isRecent;
+
+      const usageNode = card.querySelector('[data-tool-usage]');
+      if (usageNode && state) {
+        usageNode.textContent = String(state.getUsage(slug));
       }
     });
   }
 
   cards.forEach((card) => {
-    card.addEventListener('click', () => {
-      writeRecent(card.dataset.toolSlug || '');
-    });
-
+    const track = () => state?.recordToolUsage(card.dataset.toolSlug || '');
+    card.addEventListener('click', track);
     card.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        writeRecent(card.dataset.toolSlug || '');
-      }
+      if (event.key === 'Enter' || event.key === ' ') track();
     });
   });
 
+  window.addEventListener('toolnexus:statechange', applyRecentHighlight);
   applyRecentHighlight();
 })();

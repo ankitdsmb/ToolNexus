@@ -1,17 +1,17 @@
 :root {
   color-scheme: dark;
 
-  --surface-base: #0a101c;
-  --surface-elevated: #111827;
-  --surface-muted: #0f172a;
+  --surface-base: #070d18;
+  --surface-elevated: #141d30;
+  --surface-muted: #0f1a2e;
   --surface-overlay: rgba(6, 11, 21, 0.72);
 
   --text-primary: #e6edf9;
   --text-secondary: #9fb1cb;
   --text-tertiary: #7f91af;
 
-  --interactive-primary: var(--color-primary-400);
-  --interactive-primary-hover: var(--color-primary-300);
+  --interactive-primary: #7a8dff;
+  --interactive-primary-hover: #96a6ff;
   --interactive-primary-soft: rgba(107, 140, 255, 0.2);
 
   --status-success-bg: rgba(31, 157, 106, 0.18);
@@ -23,7 +23,7 @@
   --status-info-bg: rgba(27, 132, 255, 0.2);
   --status-info-text: #9bc7ff;
 
-  --focus-ring: 0 0 0 3px rgba(107, 140, 255, 0.36);
+  --focus-ring: 0 0 0 3px rgba(122, 141, 255, 0.58);
 
   /* Legacy aliases */
   --bg: var(--surface-base);
@@ -109,4 +109,15 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+}
+
+:root {
+  --z-base: 10;
+  --z-header: 100;
+  --z-dropdown: 200;
+  --z-overlay: 500;
+  --z-modal: 600;
+  --z-command-palette: 700;
+  --z-toast: 800;
+  --z-critical: 900;
 }

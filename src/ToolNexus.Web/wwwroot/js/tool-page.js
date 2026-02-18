@@ -1,3 +1,4 @@
+import { modalManager } from "./modal-manager.js";
 const page = document.querySelector('.tool-page');
 
 if (!page) {
@@ -41,6 +42,7 @@ const downloadBtn = document.getElementById('downloadBtn');
 const shareBtn = document.getElementById('shareBtn');
 const shortcutBtn = document.getElementById('shortcutBtn');
 const shortcutDialog = document.getElementById('shortcutDialog');
+const shortcutDialogId = "toolShortcuts";
 
 const collectionNameInput = document.getElementById('collectionNameInput');
 const saveCollectionBtn = document.getElementById('saveCollectionBtn');
@@ -325,7 +327,13 @@ function bindEvents() {
   });
 
   window.addEventListener('toolnexus:themechange', applyEditorTheme);
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-tool-shortcuts-close]')) {
+      modalManager.closeModal(shortcutDialogId);
+    }
+  });
 }
+
 
 function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
@@ -788,10 +796,10 @@ function saveToCollection() {
 function toggleShortcutDialog() {
   if (!shortcutDialog) return;
 
-  if (shortcutDialog.open) {
-    shortcutDialog.close();
+  if (modalManager.getTopModalId() === shortcutDialogId) {
+    modalManager.closeModal(shortcutDialogId);
   } else {
-    shortcutDialog.showModal();
+    modalManager.openModal(shortcutDialogId);
   }
 }
 
