@@ -1,4 +1,5 @@
 let commandPaletteModulePromise;
+let suppressHeaderFocusOpen = false;
 
 function getSeedFromHeaderSearch() {
   return document.getElementById('globalToolSearch')?.value || '';
@@ -33,14 +34,13 @@ function bindHeaderSearch() {
 
   if (!globalSearch) return;
 
-  globalSearch.addEventListener('focus', (event) => {
-    event.preventDefault();
-    openCommandPalette(globalSearch.value || '');
-    globalSearch.blur();
-  });
-
   globalSearch.addEventListener('click', (event) => {
     event.preventDefault();
+    if (suppressHeaderFocusOpen) {
+      suppressHeaderFocusOpen = false;
+      return;
+    }
+
     openCommandPalette(globalSearch.value || '');
     globalSearch.blur();
   });
@@ -50,11 +50,16 @@ function bindHeaderSearch() {
     event.preventDefault();
     openCommandPalette(globalSearch.value || '');
   });
+
+  window.addEventListener('toolnexus:modalchange', (event) => {
+    if (event?.detail?.activeModalId !== null) return;
+    suppressHeaderFocusOpen = true;
+  });
 }
 
 function bindShortcuts() {
   window.addEventListener('keydown', (event) => {
-    if (event.defaultPrevented || event.isComposing) return;
+    if (event.isComposing) return;
 
     const key = event.key.toLowerCase();
     const withMeta = event.metaKey || event.ctrlKey;
