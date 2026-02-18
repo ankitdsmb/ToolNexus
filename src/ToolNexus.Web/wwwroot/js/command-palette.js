@@ -195,6 +195,8 @@ function setActiveIndex(next) {
   activeIndex = (next + renderedItems.length) % renderedItems.length;
   const options = list.querySelectorAll('[role="option"]');
   options.forEach((option, idx) => option.classList.toggle('is-active', idx === activeIndex));
+  const activeOption = options[activeIndex];
+  activeOption?.scrollIntoView({ block: 'nearest' });
 }
 
 function renderItems(query = '') {
@@ -288,4 +290,3 @@ export function toggleCommandPalette(seed = '') {
 
   openCommandPalette(seed);
 }
-
