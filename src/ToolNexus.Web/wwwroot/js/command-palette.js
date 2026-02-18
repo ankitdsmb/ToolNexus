@@ -1,14 +1,6 @@
 import { modalManager } from './modal-manager.js';
 import { uiStateManager } from './ui-state-manager.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const palette = document.getElementById('commandPalette');
-  if (palette) {
-    palette.hidden = true;
-    palette.dataset.state = 'closed';
-  }
-});
-
 const paletteId = 'commandPalette';
 const palette = document.getElementById(paletteId);
 const input = document.getElementById('commandPaletteInput');
@@ -201,6 +193,8 @@ function renderItems(query = '') {
 }
 
 function handleGlobalShortcuts(event) {
+  if (event.defaultPrevented || event.isComposing) return;
+
   const key = event.key.toLowerCase();
   const withMeta = event.metaKey || event.ctrlKey;
 
@@ -216,6 +210,7 @@ function handleGlobalShortcuts(event) {
 
 function handlePaletteControls(event) {
   if (!isPaletteOpen()) return;
+  if (event.key === 'Escape') { event.preventDefault(); closePalette(); return; }
   if (event.key === 'ArrowDown') { event.preventDefault(); setActiveIndex(activeIndex + 1); return; }
   if (event.key === 'ArrowUp') { event.preventDefault(); setActiveIndex(activeIndex - 1); return; }
   if (event.key === 'Enter') {
@@ -235,7 +230,8 @@ function bindUiEvents() {
   paletteTrigger?.addEventListener('click', () => openPalette(''), { signal: eventController.signal });
 
   if (globalSearch) {
-    globalSearch.addEventListener('focus', () => {
+    globalSearch.addEventListener('click', (event) => {
+      event.preventDefault();
       openPalette(globalSearch.value || '');
       globalSearch.blur();
     }, { signal: eventController.signal });
