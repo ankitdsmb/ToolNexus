@@ -1,0 +1,141 @@
+:root {
+  /* Color - Primary Scale */
+  --color-primary-50: #edf3ff;
+  --color-primary-100: #dbe8ff;
+  --color-primary-200: #bdd2ff;
+  --color-primary-300: #93b1ff;
+  --color-primary-400: #6b8cff;
+  --color-primary-500: #4f68ff;
+  --color-primary-600: #3f4df4;
+  --color-primary-700: #343dd9;
+  --color-primary-800: #2d34af;
+  --color-primary-900: #282f8a;
+
+  /* Color - Neutral Scale */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f7f8fb;
+  --color-neutral-100: #eceff5;
+  --color-neutral-200: #d8deea;
+  --color-neutral-300: #b8c3d7;
+  --color-neutral-400: #8c9ab3;
+  --color-neutral-500: #67748d;
+  --color-neutral-600: #4f5b73;
+  --color-neutral-700: #394459;
+  --color-neutral-800: #252f42;
+  --color-neutral-900: #131b2b;
+  --color-neutral-950: #0a101c;
+
+  /* Accent */
+  --gradient-accent: linear-gradient(135deg, #6b8cff 0%, #00d3ff 48%, #9f7aea 100%);
+
+  /* Semantic */
+  --color-success-500: #1f9d6a;
+  --color-success-600: #15805a;
+  --color-warning-500: #d4801e;
+  --color-warning-600: #ac6111;
+  --color-error-500: #dd3f53;
+  --color-error-600: #b8293d;
+  --color-info-500: #1b84ff;
+  --color-info-600: #1366cc;
+
+  /* Border */
+  --border-subtle: rgba(148, 163, 184, 0.22);
+  --border-default: rgba(148, 163, 184, 0.34);
+  --border-strong: rgba(148, 163, 184, 0.5);
+
+  /* Shadow */
+  --shadow-sm: 0 4px 10px rgba(2, 6, 23, 0.24);
+  --shadow-md: 0 12px 28px rgba(2, 6, 23, 0.28);
+  --shadow-lg: 0 22px 48px rgba(2, 6, 23, 0.34);
+  --shadow-xl: 0 30px 72px rgba(2, 6, 23, 0.4);
+  --shadow-glow: 0 0 0 1px rgba(107, 140, 255, 0.45), 0 0 36px rgba(79, 104, 255, 0.35);
+
+  /* Typography */
+  --font-family-sans: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-family-display: "Space Grotesk", Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-family-code: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --font-size-h1: clamp(2.5rem, 5vw, 3.5rem);
+  --font-size-h2: clamp(2rem, 4vw, 2.75rem);
+  --font-size-h3: clamp(1.625rem, 3vw, 2.125rem);
+  --font-size-h4: clamp(1.375rem, 2.4vw, 1.75rem);
+  --font-size-h5: 1.25rem;
+  --font-size-h6: 1.125rem;
+
+  --font-size-body-lg: 1.125rem;
+  --font-size-body-md: 1rem;
+  --font-size-body-sm: 0.9375rem;
+  --font-size-body-xs: 0.8125rem;
+
+  --font-size-label-lg: 0.875rem;
+  --font-size-label-md: 0.8125rem;
+  --font-size-label-sm: 0.75rem;
+
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+
+  /* Spacing - 4px base */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Layout - 8px grid */
+  --layout-grid-base: 8px;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1440px;
+
+  --section-space-xs: var(--space-8);
+  --section-space-sm: var(--space-12);
+  --section-space-md: var(--space-16);
+  --section-space-lg: var(--space-20);
+  --section-space-xl: var(--space-24);
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Elevation */
+  --elevation-card-bg: rgba(17, 24, 39, 0.72);
+  --elevation-card-border: var(--border-default);
+  --elevation-card-shadow: var(--shadow-sm);
+
+  --elevation-floating-bg: rgba(15, 23, 42, 0.84);
+  --elevation-floating-border: var(--border-strong);
+  --elevation-floating-shadow: var(--shadow-md);
+
+  --elevation-modal-bg: rgba(15, 23, 42, 0.94);
+  --elevation-modal-border: var(--border-strong);
+  --elevation-modal-shadow: var(--shadow-xl);
+
+  --elevation-command-bg: rgba(11, 18, 32, 0.96);
+  --elevation-command-border: rgba(107, 140, 255, 0.36);
+  --elevation-command-shadow: var(--shadow-glow);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --duration-hover: 160ms;
+  --duration-standard: 220ms;
+  --duration-page: 320ms;
+  --duration-micro: 120ms;
+
+  /* Legacy aliases for existing styles */
+  --transition: var(--duration-standard) var(--ease-standard);
+}
