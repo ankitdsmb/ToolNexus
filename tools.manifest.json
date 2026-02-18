@@ -299,7 +299,10 @@
       ],
       "seoTitle": "JSON to YAML Converter | ToolNexus",
       "seoDescription": "Convert JSON payloads into YAML.",
-      "exampleInput": "{\"name\":\"Ada\",\"role\":\"Engineer\"}"
+      "exampleInput": "{\"name\":\"Ada\",\"role\":\"Engineer\"}",
+      "clientSafeActions": [
+        "convert"
+      ]
     }
   ]
 }
