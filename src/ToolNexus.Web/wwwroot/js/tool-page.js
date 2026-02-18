@@ -66,6 +66,7 @@ init().catch((error) => {
 });
 
 async function init() {
+  await loadToolModule();
   await initializeEditors();
   hydrateFromUrl();
   hydrateSession();
@@ -78,6 +79,17 @@ async function init() {
   renderUxLists();
 
   window.ToolNexusRun = run;
+}
+
+async function loadToolModule() {
+  if (!slug) return;
+
+  try {
+    await import(`./tools/${slug}.js`);
+  } catch (error) {
+    // Not every server-backed tool has a dedicated client enhancer module.
+    console.debug(`No dedicated tool module loaded for "${slug}".`, error);
+  }
 }
 
 async function initializeEditors() {
@@ -112,7 +124,9 @@ async function initializeEditors() {
     return;
   }
 
-  if (typeof CodeMirror !== 'undefined') {
+  const codeMirrorReady = await loadCodeMirror();
+
+  if (codeMirrorReady && typeof CodeMirror !== 'undefined') {
     currentEditorType = 'codemirror';
     inputEditor = CodeMirror.fromTextArea(inputTextArea, {
       lineNumbers: true,
@@ -169,6 +183,56 @@ function loadMonaco() {
     };
     loader.onerror = () => resolve(false);
     document.head.appendChild(loader);
+  });
+}
+
+function loadCodeMirror() {
+  return new Promise((resolve) => {
+    if (typeof CodeMirror !== 'undefined') {
+      resolve(true);
+      return;
+    }
+
+    const styleId = 'toolnexus-codemirror-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('link');
+      style.id = styleId;
+      style.rel = 'stylesheet';
+      style.href = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css';
+      style.crossOrigin = 'anonymous';
+      document.head.appendChild(style);
+    }
+
+    const baseScriptId = 'toolnexus-codemirror-script';
+    const modeScriptId = 'toolnexus-codemirror-mode-script';
+
+    const loadScript = (id, src, onload) => {
+      const existing = document.getElementById(id);
+      if (existing) {
+        if (existing.dataset.loaded === 'true') {
+          onload();
+        } else {
+          existing.addEventListener('load', onload, { once: true });
+          existing.addEventListener('error', () => resolve(false), { once: true });
+        }
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = id;
+      script.src = src;
+      script.crossOrigin = 'anonymous';
+      script.addEventListener('load', () => {
+        script.dataset.loaded = 'true';
+        onload();
+      }, { once: true });
+      script.addEventListener('error', () => resolve(false), { once: true });
+      document.head.appendChild(script);
+    };
+
+    loadScript(baseScriptId, 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js', () => {
+      loadScript(modeScriptId, 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js', () => resolve(true));
+    });
   });
 }
 

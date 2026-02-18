@@ -13,6 +13,29 @@
     var keywords = ViewData["Keywords"]?.ToString() ?? "developer tools, online utilities, ToolNexus";
     var robots = ViewData["Robots"]?.ToString() ?? "index,follow";
     var jsonLd = ViewData["JsonLd"]?.ToString();
+    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var socialImageUrl = ViewData["SocialImageUrl"]?.ToString() ?? $"{siteUrl}/assets/toolnexus-og.svg";
+    var defaultJsonLd = JsonSerializer.Serialize(new
+    {
+        @context = "https://schema.org",
+        @graph = new object[]
+        {
+            new
+            {
+                @type = "Organization",
+                name = "ToolNexus",
+                url = siteUrl,
+                logo = $"{siteUrl}/assets/toolnexus-og.svg"
+            },
+            new
+            {
+                @type = "WebSite",
+                name = "ToolNexus",
+                url = siteUrl,
+                description = "Developer-first utility platform for faster shipping."
+            }
+        }
+    });
 }
 
 @{
@@ -40,14 +63,23 @@
     <meta name="description" content="@description" />
     <meta name="keywords" content="@keywords" />
     <meta name="robots" content="@robots" />
+    <meta name="theme-color" content="#0b1020" />
     <link rel="canonical" href="@canonicalUrl" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+    <link rel="preload" href="~/css/site.css" as="style" asp-append-version="true" />
+    <link rel="modulepreload" href="~/js/command-palette.js" asp-append-version="true" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ToolNexus" />
     <meta property="og:title" content="@title" />
     <meta property="og:description" content="@description" />
     <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:image" content="@socialImageUrl" />
+    <meta property="og:image:alt" content="ToolNexus developer utility platform" />
 
     <meta name="twitter:card" content="summary" />
+    <meta name="twitter:image" content="@socialImageUrl" />
     <meta name="twitter:title" content="@title" />
     <meta name="twitter:description" content="@description" />
 
@@ -58,11 +90,12 @@
         </script>
     }
 
+    <script type="application/ld+json">
+        @Html.Raw(defaultJsonLd)
+    </script>
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Head", required: false)
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
-          crossorigin="anonymous" />
 </head>
 
 <body>
@@ -177,8 +210,6 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
 @{
     var commandPaletteTools = ToolCatalogService.GetAllTools()
         .Select(tool => new
