@@ -35,6 +35,7 @@ public static class ToolExecutorRegistration
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("html-entities"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("yaml-to-json"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("json-to-yaml"));
+        services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("file-merge"));
 
         return services;
     }
