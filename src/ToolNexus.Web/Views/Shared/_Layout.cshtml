@@ -12,28 +12,6 @@
     var jsonLd = ViewData["JsonLd"]?.ToString();
     var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var socialImageUrl = ViewData["SocialImageUrl"]?.ToString() ?? $"{siteUrl}/assets/toolnexus-og.svg";
-    var currentPath = ViewContext.HttpContext.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
-
-    bool IsActive(string path)
-    {
-        var normalizedPath = path.ToLowerInvariant();
-        return normalizedPath == "/"
-            ? string.Equals(currentPath, "/", StringComparison.Ordinal)
-            : currentPath.StartsWith(normalizedPath, StringComparison.Ordinal);
-    }
-
-    var headerModel = new LayoutHeaderViewModel
-    {
-        Links =
-        [
-            new NavLinkViewModel { Text = "Home", Href = "/", IsActive = IsActive("/") },
-            new NavLinkViewModel { Text = "Tools", Href = "/tools", IsActive = IsActive("/tools") },
-            new NavLinkViewModel { Text = "About", Href = "/about", IsActive = IsActive("/about") },
-            new NavLinkViewModel { Text = "Disclaimer", Href = "/disclaimer", IsActive = IsActive("/disclaimer") },
-            new NavLinkViewModel { Text = "Contact Us", Href = "/contact-us", IsActive = IsActive("/contact-us") }
-        ]
-    };
-
     var footerModel = new LayoutFooterViewModel
     {
         VersionDisplay = AppVersion.VersionDisplay,
@@ -99,7 +77,7 @@
 </head>
 <body class="page-enter">
 <div class="app-shell">
-    <partial name="_Header" model="headerModel" />
+    <partial name="_Header" />
 
     <main class="container" role="main">
         @RenderBody()
@@ -112,6 +90,7 @@
 <script type="module" src="~/js/theme-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/version-manager.js" asp-append-version="true"></script>
 <script type="module" src="~/js/command-palette-loader.js" asp-append-version="true"></script>
+<script type="module" src="~/js/header-state.js" asp-append-version="true"></script>
 <script type="module">
     if (document.querySelector('[data-tool-group], .tools-index')) {
         import('/js/tools-grid.js');
