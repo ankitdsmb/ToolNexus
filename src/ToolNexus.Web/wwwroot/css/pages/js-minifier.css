@@ -1,0 +1,59 @@
+.tool-page[data-slug="js-minifier"] .tool-page__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.js-minifier-badge {
+  margin-top: 12px;
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary, #2563eb) 10%, transparent);
+  color: var(--text-muted, #475569);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.tool-page[data-slug="js-minifier"] .tool-layout__panel {
+  padding: 24px;
+}
+
+.tool-page[data-slug="js-minifier"] .editor-field textarea,
+.tool-page[data-slug="js-minifier"] .editor-surface {
+  font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+}
+
+.js-minifier-options,
+.js-minifier-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 14px;
+  align-items: center;
+}
+
+.js-minifier-options label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--text-muted, #475569);
+}
+
+.js-minifier-options select {
+  min-height: 34px;
+}
+
+.js-minifier-metrics {
+  font-size: 0.875rem;
+  color: var(--text-muted, #475569);
+  margin-bottom: 10px;
+}
+
+.js-minifier-processing {
+  margin: 0 0 10px;
+  color: var(--text-muted, #64748b);
+  font-size: 0.875rem;
+}
