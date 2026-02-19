@@ -43,9 +43,12 @@
         @foreach (var tool in Model.FeaturedTools)
         {
             <a class="card" href="/tools/@tool.Slug" data-tool-slug="@tool.Slug" data-title="@tool.Title" data-description="@tool.SeoDescription">
-                <div class="card__content">
-                    <h3>@tool.Title</h3>
-                    <p>@tool.SeoDescription</p>
+                <div class="card__top-row">
+                    <span class="tool-card__icon" aria-hidden="true">@tool.Title.Substring(0, Math.Min(tool.Title.Length, 2)).ToUpperInvariant()</span>
+                    <div class="card__content">
+                        <h3>@tool.Title</h3>
+                        <p>@tool.SeoDescription</p>
+                    </div>
                 </div>
                 <span class="card__arrow" aria-hidden="true">→</span>
             </a>
