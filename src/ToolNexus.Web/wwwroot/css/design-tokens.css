@@ -43,6 +43,18 @@
   --text-meta-size: 0.76rem;
   --text-meta-line: 1.35;
 
+  --color-surface-0: var(--background);
+  --color-surface-1: var(--surface);
+  --color-surface-2: var(--surface-elevated);
+  --color-surface-3: color-mix(in srgb, var(--surface-elevated) 90%, var(--accent));
+  --color-border-subtle: color-mix(in srgb, var(--border) 78%, transparent);
+  --color-border-default: color-mix(in srgb, var(--border) 90%, transparent);
+  --color-text-muted: color-mix(in srgb, var(--text-secondary) 90%, transparent);
+  --color-text-meta: color-mix(in srgb, var(--text-secondary) 74%, transparent);
+  --color-interactive-primary: var(--accent);
+  --color-interactive-primary-hover: color-mix(in srgb, var(--accent) 84%, white);
+  --color-interactive-secondary: color-mix(in srgb, var(--accent) 20%, transparent);
+
   --section-space-y: var(--space-8);
   --section-space-gap: var(--space-6);
 
