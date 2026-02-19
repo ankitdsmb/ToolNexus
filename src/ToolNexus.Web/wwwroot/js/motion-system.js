@@ -19,6 +19,8 @@ function initRevealAnimations() {
   const nodes = Array.from(document.querySelectorAll('[data-reveal]'));
   if (!nodes.length) return;
 
+  document.documentElement.classList.add('motion-reveal-ready');
+
   nodes.forEach((node, index) => {
     if (!node.style.getPropertyValue('--reveal-index')) {
       node.style.setProperty('--reveal-index', String(index));
@@ -26,6 +28,7 @@ function initRevealAnimations() {
   });
 
   if (prefersReducedMotion.matches || !('IntersectionObserver' in window)) {
+    document.documentElement.classList.remove('motion-reveal-ready');
     nodes.forEach((node) => node.classList.add('is-visible'));
     return;
   }
