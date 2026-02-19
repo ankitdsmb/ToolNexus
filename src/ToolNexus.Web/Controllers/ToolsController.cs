@@ -105,6 +105,10 @@ public sealed class ToolsController(
         {
             return View("JsonValidator", viewModel);
         }
+        else if (string.Equals(tool.Slug, "sql-formatter", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("SqlFormatter", viewModel);
+        }
         else if (string.Equals(tool.Slug, "file-merge", StringComparison.OrdinalIgnoreCase))
         {
             return View("fileMerge", viewModel);
