@@ -38,6 +38,7 @@ function createCommandPalette() {
       </header>
       <label class="u-sr-only" for="commandPaletteInput">Search tools</label>
       <input id="commandPaletteInput" class="command-palette__input" type="text" placeholder="Search tools and actions..." autocomplete="off" />
+      <p class="command-palette__helper">Use ↑ ↓ to navigate, Enter to run, Esc to dismiss.</p>
       <div class="command-palette__list-wrap">
         <ul id="commandPaletteList" class="command-palette__list" role="listbox"></ul>
       </div>
