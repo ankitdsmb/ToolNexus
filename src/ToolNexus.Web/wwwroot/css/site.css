@@ -1184,3 +1184,159 @@ button.primary:hover {
     --workspace-gutter: 12px;
   }
 }
+
+/* ===== Phase 3 brand + trust upgrade ===== */
+.trust-stat {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .5rem .75rem;
+  align-items: start;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+}
+
+.trust-stat__icon {
+  width: 2rem;
+  height: 2rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: .66rem;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border-subtle));
+  font-size: .95rem;
+  font-weight: 700;
+}
+
+.trust-stat__label,
+.trust-stat__meta {
+  grid-column: 2;
+}
+
+.trust-stat__value {
+  grid-column: 1 / -1;
+  margin: .15rem 0 .1rem;
+  font-size: clamp(2.05rem, 3.8vw, 2.8rem);
+  line-height: 1;
+}
+
+.trust-stat__suffix {
+  font-size: .72em;
+  font-weight: 700;
+  vertical-align: baseline;
+}
+
+.testimonial-card {
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 92%, transparent), color-mix(in srgb, var(--surface) 92%, transparent));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--shadow) 14%, transparent);
+  display: grid;
+  gap: .7rem;
+}
+
+.testimonial-card__badge {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.testimonial-card__quote {
+  margin-bottom: .35rem;
+  line-height: 1.55;
+}
+
+.footer {
+  border-top: 1px solid color-mix(in srgb, var(--border) 38%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+}
+
+.footer__container {
+  padding: 1rem 0 .75rem;
+  gap: .8rem;
+}
+
+.footer__columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .75rem;
+}
+
+.footer__column {
+  display: grid;
+  gap: .42rem;
+}
+
+.footer__column h3 {
+  margin: 0;
+  font-size: .73rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-subtle);
+}
+
+.footer__column a {
+  color: color-mix(in srgb, var(--text-primary) 86%, transparent);
+  font-size: .88rem;
+  line-height: 1.35;
+}
+
+.footer__column a:hover {
+  color: var(--accent);
+}
+
+.footer__bottom-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .35rem;
+  padding-top: .65rem;
+  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 75%, transparent);
+  color: color-mix(in srgb, var(--text-secondary) 74%, transparent);
+  font-size: .75rem;
+}
+
+.footer__bottom-strip kbd {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 90%, transparent);
+}
+
+html[data-theme='light'] .footer {
+  background: linear-gradient(180deg, #f8faff, #f4f6fb);
+}
+
+@media (max-width: 900px) {
+  .footer__columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .trust-stat {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-stat__label,
+  .trust-stat__meta,
+  .trust-stat__value {
+    grid-column: 1;
+  }
+
+  .footer__columns {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .footer__bottom-strip {
+    gap: .28rem .45rem;
+  }
+}
