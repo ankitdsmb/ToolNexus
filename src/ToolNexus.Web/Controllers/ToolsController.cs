@@ -97,6 +97,10 @@ public sealed class ToolsController(
         {
             return View("fileMerge", viewModel);
         }
+        else if (string.Equals(tool.Slug, "html-entities", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("htmlEntities", viewModel);
+        }
         return View("Tool", viewModel);
     }
 

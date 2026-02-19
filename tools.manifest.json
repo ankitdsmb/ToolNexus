@@ -278,6 +278,10 @@
         "encode",
         "decode"
       ],
+      "clientSafeActions": [
+        "encode",
+        "decode"
+      ],
       "seoTitle": "HTML Entities Tool | ToolNexus",
       "seoDescription": "Encode and decode HTML entities.",
       "exampleInput": "<span>hello</span>"
