@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Privacy | ToolNexus";
+    ViewData["Description"] = "Review the ToolNexus privacy policy, including data handling, storage practices, and your responsibilities when using tools.";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/privacy";
+    ViewData["Keywords"] = "ToolNexus privacy policy, developer tools data policy";
+}
+
+<section class="static-page legal-page">
+    <header class="static-page__header">
+        <h1>Privacy</h1>
+        <p>ToolNexus is designed for fast utility workflows with clear privacy expectations.</p>
+    </header>
+
+    <section class="static-page__section">
+        <h2>Data you provide</h2>
+        <p>Input data you submit is used to execute requested tool actions and return outputs. Avoid submitting confidential, regulated, or sensitive personal information unless you fully understand associated risks.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Operational telemetry</h2>
+        <p>We may collect operational metrics such as request volume, latency, and anonymized usage events to maintain reliability, improve performance, and detect abuse.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Storage and retention</h2>
+        <p>Temporary processing artifacts may be retained for caching, diagnostics, and service protection. Retention windows are limited to operational needs and system security requirements.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Third-party services</h2>
+        <p>ToolNexus may use trusted infrastructure providers for hosting and delivery. These providers process infrastructure metadata under their own security and compliance controls.</p>
+    </section>
+</section>

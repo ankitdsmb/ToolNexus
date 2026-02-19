@@ -250,3 +250,44 @@
   .command-palette__action { padding: 12px; }
   .command-palette__badge:nth-child(2) { display: none; }
 }
+
+/* ===== Founder command palette elite restore ===== */
+.command-palette__backdrop {
+  animation-duration: 120ms;
+}
+
+.command-palette__dialog {
+  border-color: color-mix(in srgb, var(--border) 30%, transparent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--shadow) 20%, transparent);
+  animation-duration: 220ms;
+}
+
+.command-palette__input,
+.command-palette__action {
+  transition-duration: 120ms;
+}
+
+.command-palette__list-wrap {
+  border-color: color-mix(in srgb, var(--border) 20%, transparent);
+}
+
+.command-palette__section-items {
+  gap: 0.62rem;
+}
+
+.command-palette__action {
+  border-color: color-mix(in srgb, var(--border) 18%, transparent);
+  background: color-mix(in srgb, var(--surface) 22%, transparent);
+  padding-block: 0.82rem;
+}
+
+.command-palette__item.is-active .command-palette__action {
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-elevated));
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.command-palette .tool-card__icon {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  transform: translateY(0.02rem);
+}

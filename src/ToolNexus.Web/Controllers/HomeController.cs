@@ -34,6 +34,12 @@ public sealed class HomeController(IToolCatalogService toolCatalogService, ISite
         return View();
     }
 
+    [HttpGet("/privacy")]
+    public IActionResult Privacy()
+    {
+        return View();
+    }
+
     [HttpGet("/sitemap.xml")]
     [OutputCache(Duration = 3600)]
     public async Task<ContentResult> Sitemap(CancellationToken cancellationToken)
