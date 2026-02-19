@@ -27,7 +27,7 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
         ["regex-tester"] = ["test"],
         ["text-diff"] = ["compare"],
         ["uuid-generator"] = ["generate"],
-        ["case-converter"] = ["upper", "lower", "title"],
+        ["case-converter"] = ["lowercase", "uppercase", "title-case", "sentence-case", "camel-case", "pascal-case", "snake-case", "screaming-snake-case", "kebab-case", "dot-case", "path-case", "alternating-case"],
         ["html-entities"] = ["encode", "decode"],
         ["yaml-to-json"] = ["convert"],
         ["json-to-yaml"] = ["convert"]
@@ -64,9 +64,21 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
             ("regex-tester", "test") => RegexTest(request),
             ("text-diff", "compare") => TextDiff(request.Input),
             ("uuid-generator", "generate") => Guid.NewGuid().ToString(),
-            ("case-converter", "upper") => request.Input.ToUpperInvariant(),
-            ("case-converter", "lower") => request.Input.ToLowerInvariant(),
-            ("case-converter", "title") => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(request.Input.ToLowerInvariant()),
+            ("case-converter", "upper") => ConvertCase("uppercase", request.Input),
+            ("case-converter", "lower") => ConvertCase("lowercase", request.Input),
+            ("case-converter", "title") => ConvertCase("title-case", request.Input),
+            ("case-converter", "lowercase") => ConvertCase(action, request.Input),
+            ("case-converter", "uppercase") => ConvertCase(action, request.Input),
+            ("case-converter", "title-case") => ConvertCase(action, request.Input),
+            ("case-converter", "sentence-case") => ConvertCase(action, request.Input),
+            ("case-converter", "camel-case") => ConvertCase(action, request.Input),
+            ("case-converter", "pascal-case") => ConvertCase(action, request.Input),
+            ("case-converter", "snake-case") => ConvertCase(action, request.Input),
+            ("case-converter", "screaming-snake-case") => ConvertCase(action, request.Input),
+            ("case-converter", "kebab-case") => ConvertCase(action, request.Input),
+            ("case-converter", "dot-case") => ConvertCase(action, request.Input),
+            ("case-converter", "path-case") => ConvertCase(action, request.Input),
+            ("case-converter", "alternating-case") => ConvertCase(action, request.Input),
             ("html-entities", "encode") => WebUtility.HtmlEncode(request.Input),
             ("html-entities", "decode") => WebUtility.HtmlDecode(request.Input),
             ("yaml-to-json", "convert") => YamlToJson(request.Input),
@@ -312,4 +324,134 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
                 break;
         }
     }
+
+    private static string ConvertCase(string action, string input)
+    {
+        var lines = input.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
+        return string.Join('\n', lines.Select(line => ConvertCaseLine(action, NormalizeLine(line))));
+    }
+
+    private static string NormalizeLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return string.Empty;
+        }
+
+        return Regex.Replace(line.Replace('\t', ' '), @"[ \f\v]+", " ").Trim();
+    }
+
+    private static string ConvertCaseLine(string action, string line)
+    {
+        if (string.IsNullOrEmpty(line))
+        {
+            return string.Empty;
+        }
+
+        var words = ParseWords(line);
+
+        return action.ToLowerInvariant() switch
+        {
+            "lowercase" => line.ToLowerInvariant(),
+            "uppercase" => line.ToUpperInvariant(),
+            "title-case" => string.Join(" ", words.Select(TitleToken)),
+            "sentence-case" => SentenceCase(words),
+            "camel-case" => CamelCase(words),
+            "pascal-case" => string.Concat(words.Select(TitleToken)),
+            "snake-case" => string.Join("_", words.Select(x => x.Lower)),
+            "screaming-snake-case" => string.Join("_", words.Select(x => x.Lower.ToUpperInvariant())),
+            "kebab-case" => string.Join("-", words.Select(x => x.Lower)),
+            "dot-case" => string.Join(".", words.Select(x => x.Lower)),
+            "path-case" => string.Join("/", words.Select(x => x.Lower)),
+            "alternating-case" => AlternatingCase(line),
+            _ => line
+        };
+    }
+
+    private static List<WordToken> ParseWords(string line)
+    {
+        var withBoundaries = Regex.Replace(line, "([\\p{Ll}\\p{Nd}])([\\p{Lu}])", "$1 $2");
+        withBoundaries = Regex.Replace(withBoundaries, "([\\p{Lu}]+)([\\p{Lu}][\\p{Ll}])", "$1 $2");
+        withBoundaries = Regex.Replace(withBoundaries, "([\\p{L}])(\\p{Nd})", "$1 $2");
+        withBoundaries = Regex.Replace(withBoundaries, "(\\p{Nd})(\\p{L})", "$1 $2");
+
+        return Regex.Split(withBoundaries, @"[\s_\-./\\]+|[^\p{L}\p{N}]+")
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => new WordToken(x, x.ToLowerInvariant(), IsAcronym(x)))
+            .ToList();
+    }
+
+    private static bool IsAcronym(string word) => Regex.IsMatch(word, @"^\p{Lu}[\p{Lu}\p{Nd}]{1,}$");
+
+    private static string TitleToken(WordToken word)
+    {
+        if (word.IsAcronym)
+        {
+            return word.Raw;
+        }
+
+        return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(word.Lower);
+    }
+
+    private static string SentenceCase(List<WordToken> words)
+    {
+        if (words.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var sentence = new List<string>(words.Count);
+
+        for (var index = 0; index < words.Count; index++)
+        {
+            var word = words[index];
+            if (word.IsAcronym)
+            {
+                sentence.Add(word.Raw);
+                continue;
+            }
+
+            sentence.Add(index == 0 ? CultureInfo.InvariantCulture.TextInfo.ToTitleCase(word.Lower) : word.Lower);
+        }
+
+        return string.Join(" ", sentence);
+    }
+
+    private static string CamelCase(List<WordToken> words)
+    {
+        if (words.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var result = new StringBuilder(words[0].Lower);
+        foreach (var word in words.Skip(1))
+        {
+            result.Append(word.IsAcronym ? word.Raw : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(word.Lower));
+        }
+
+        return result.ToString();
+    }
+
+    private static string AlternatingCase(string input)
+    {
+        var useUpper = true;
+        var builder = new StringBuilder(input.Length);
+        foreach (var c in input)
+        {
+            if (char.IsLetter(c))
+            {
+                builder.Append(useUpper ? char.ToUpperInvariant(c) : char.ToLowerInvariant(c));
+                useUpper = !useUpper;
+            }
+            else
+            {
+                builder.Append(c);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private sealed record WordToken(string Raw, string Lower, bool IsAcronym);
 }
