@@ -97,6 +97,10 @@ public sealed class ToolsController(
         {
             return View("jsonToYaml", viewModel);
         }
+        else if (string.Equals(tool.Slug, "yaml-to-json", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("yamlToJson", viewModel);
+        }
         else if (string.Equals(tool.Slug, "csv-to-json", StringComparison.OrdinalIgnoreCase))
         {
             return View("CsvToJson", viewModel);
