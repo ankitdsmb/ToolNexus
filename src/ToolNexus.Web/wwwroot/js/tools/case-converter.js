@@ -1,3 +1,6 @@
+import { getKeyboardEventManager } from './keyboard-event-manager.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
+
 const CASE_ACTIONS = Object.freeze({
   LOWERCASE: 'lowercase',
   UPPERCASE: 'uppercase',
@@ -20,6 +23,7 @@ const ACTION_ALIASES = Object.freeze({
 });
 
 const DEFAULT_ACTION = CASE_ACTIONS.LOWERCASE;
+const TOOL_ID = 'case-converter';
 const PREVIEW_ACTIONS = [
   CASE_ACTIONS.CAMEL_CASE,
   CASE_ACTIONS.PASCAL_CASE,
@@ -199,19 +203,21 @@ const ErrorHandler = {
 };
 
 class CaseConverterUi {
-  constructor() {
-    this.page = document.querySelector('.tool-page[data-slug="case-converter"]');
+  constructor(root) {
+    this.page = root;
     if (!this.page) return;
 
-    this.input = document.getElementById('inputEditor');
-    this.output = document.getElementById('outputEditor');
-    this.actionSelect = document.getElementById('actionSelect');
-    this.runBtn = document.getElementById('runBtn');
-    this.copyBtn = document.getElementById('copyBtn');
-    this.resultStatus = document.getElementById('resultStatus');
+    this.input = this.page.querySelector('#inputEditor');
+    this.output = this.page.querySelector('#outputEditor');
+    this.actionSelect = this.page.querySelector('#actionSelect');
+    this.runBtn = this.page.querySelector('#runBtn');
+    this.copyBtn = this.page.querySelector('#copyBtn');
+    this.resultStatus = this.page.querySelector('#resultStatus');
 
     this.isAutoMode = true;
     this.pendingAutoRun = null;
+    this.eventController = new AbortController();
+    this.disposeKeyboardHandler = () => {};
   }
 
   init() {
@@ -267,7 +273,7 @@ class CaseConverterUi {
     const known = new Set(Array.from(this.actionSelect.options).map((o) => o.value));
     for (const [value, label] of optionMap.entries()) {
       if (known.has(value)) continue;
-      const option = document.createElement('option');
+      const option = this.page.ownerDocument.createElement('option');
       option.value = value;
       option.textContent = label;
       this.actionSelect.appendChild(option);
@@ -277,11 +283,11 @@ class CaseConverterUi {
       this.actionSelect.value = CASE_ACTIONS.CAMEL_CASE;
     }
 
-    const previewBar = document.getElementById('quickPreviewBar');
+    const previewBar = this.page.querySelector('#quickPreviewBar');
     if (!previewBar) return;
 
     PREVIEW_ACTIONS.forEach((action) => {
-      const button = document.createElement('button');
+      const button = this.page.ownerDocument.createElement('button');
       button.type = 'button';
       button.className = 'tool-btn tool-btn--outline case-preview-btn';
       button.dataset.action = action;
@@ -291,26 +297,27 @@ class CaseConverterUi {
   }
 
   bindEvents() {
-    const autoToggle = document.getElementById('autoConvertToggle');
-    const clearBtn = document.getElementById('clearInputBtn');
-    const swapBtn = document.getElementById('swapTextBtn');
-    const metrics = document.getElementById('caseMetrics');
+    const autoToggle = this.page.querySelector('#autoConvertToggle');
+    const clearBtn = this.page.querySelector('#clearInputBtn');
+    const swapBtn = this.page.querySelector('#swapTextBtn');
+    const metrics = this.page.querySelector('#caseMetrics');
+    const signal = this.eventController.signal;
 
     this.input.addEventListener('input', () => {
       this.refreshCounts();
       this.updateButtonStates();
       if (this.isAutoMode) this.safeAutoRun();
-    });
+    }, { signal });
 
     this.actionSelect.addEventListener('change', () => {
       this.updateSelectedPreview();
       if (this.isAutoMode) this.safeAutoRun();
-    });
+    }, { signal });
 
     autoToggle?.addEventListener('change', () => {
       this.isAutoMode = autoToggle.checked;
       if (this.isAutoMode) this.safeAutoRun();
-    });
+    }, { signal });
 
     clearBtn?.addEventListener('click', () => {
       this.input.value = '';
@@ -318,7 +325,7 @@ class CaseConverterUi {
       this.updateButtonStates();
       this.safeAutoRun();
       this.input.focus();
-    });
+    }, { signal });
 
     swapBtn?.addEventListener('click', () => {
       const input = this.input.value;
@@ -328,7 +335,7 @@ class CaseConverterUi {
       this.refreshCounts();
       this.updateButtonStates();
       this.safeAutoRun();
-    });
+    }, { signal });
 
     metrics?.addEventListener('click', (event) => {
       const target = event.target;
@@ -338,30 +345,33 @@ class CaseConverterUi {
       this.actionSelect.value = previewAction;
       this.updateSelectedPreview();
       this.safeAutoRun();
-    });
+    }, { signal });
 
-    document.getElementById('quickPreviewBar')?.addEventListener('click', (event) => {
+    this.page.querySelector('#quickPreviewBar')?.addEventListener('click', (event) => {
       const button = event.target.closest('button[data-action]');
       if (!(button instanceof HTMLButtonElement)) return;
       this.actionSelect.value = button.dataset.action ?? CASE_ACTIONS.CAMEL_CASE;
       this.updateSelectedPreview();
       this.safeAutoRun();
-    });
+    }, { signal });
 
-    window.addEventListener('keydown', (event) => {
-      if (!(event.ctrlKey || event.metaKey)) return;
-      const key = event.key.toLowerCase();
-      if (key === 'l') {
-        event.preventDefault();
-        this.input.value = '';
-        this.refreshCounts();
-        this.updateButtonStates();
-        this.safeAutoRun();
-      }
+    this.disposeKeyboardHandler = getKeyboardEventManager().register({
+      root: this.page,
+      onKeydown: (event) => {
+        if (!(event.ctrlKey || event.metaKey)) return;
+        const key = event.key.toLowerCase();
+        if (key === 'l') {
+          event.preventDefault();
+          this.input.value = '';
+          this.refreshCounts();
+          this.updateButtonStates();
+          this.safeAutoRun();
+        }
 
-      if (key === 'c' && this.output === document.activeElement && this.copyBtn) {
-        this.copyBtn.classList.add('is-copied-feedback');
-        setTimeout(() => this.copyBtn.classList.remove('is-copied-feedback'), 350);
+        if (key === 'c' && this.output === this.page.ownerDocument.activeElement && this.copyBtn) {
+          this.copyBtn.classList.add('is-copied-feedback');
+          setTimeout(() => this.copyBtn.classList.remove('is-copied-feedback'), 350);
+        }
       }
     });
 
@@ -369,7 +379,7 @@ class CaseConverterUi {
   }
 
   refreshCounts() {
-    const metrics = document.getElementById('caseMetrics');
+    const metrics = this.page.querySelector('#caseMetrics');
     if (!metrics) return;
 
     const input = this.input.value ?? '';
@@ -390,7 +400,7 @@ class CaseConverterUi {
   }
 
   updateSelectedPreview() {
-    document.querySelectorAll('.case-preview-btn').forEach((button) => {
+    this.page.querySelectorAll('.case-preview-btn').forEach((button) => {
       const isSelected = button.dataset.action === this.actionSelect.value;
       button.classList.toggle('is-active', isSelected);
     });
@@ -403,6 +413,16 @@ class CaseConverterUi {
       this.runBtn?.click();
     }, 90);
   }
+
+  destroy() {
+    this.disposeKeyboardHandler();
+    this.disposeKeyboardHandler = () => {};
+    this.eventController.abort();
+    if (this.pendingAutoRun) {
+      window.clearTimeout(this.pendingAutoRun);
+      this.pendingAutoRun = null;
+    }
+  }
 }
 
 export async function runTool(action, input) {
@@ -414,11 +434,36 @@ export async function runTool(action, input) {
   }
 }
 
-const initializer = new CaseConverterUi();
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initializer.init(), { once: true });
-} else {
-  initializer.init();
+function resolveRoot() {
+  return document.querySelector('.tool-page[data-slug="case-converter"]');
+}
+
+export function create(root = resolveRoot()) {
+  if (!root) {
+    return null;
+  }
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => {
+      const app = new CaseConverterUi(root);
+      app.init();
+      return app;
+    },
+    destroy: (app) => app?.destroy()
+  });
+}
+
+const handle = create(resolveRoot());
+handle?.create();
+handle?.init();
+
+export function destroy(root = resolveRoot()) {
+  if (!root) {
+    return;
+  }
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
 window.ToolNexusModules = window.ToolNexusModules || {};
