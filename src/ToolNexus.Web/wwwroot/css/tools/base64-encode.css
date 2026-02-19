@@ -1,0 +1,116 @@
+.base64-tool__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.base64-badge {
+  border: 1px solid var(--border-color, #d7dce3);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface-muted, #f7f9fc);
+}
+
+.base64-workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.base64-panel {
+  padding: 24px;
+}
+
+.base64-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.base64-meta {
+  color: var(--text-muted, #64748b);
+  font-size: 0.85rem;
+}
+
+.base64-mode-toggle,
+.base64-actions,
+.base64-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.base64-dropzone {
+  border: 1px dashed var(--border-color, #cdd5df);
+  border-radius: var(--radius-md, 12px);
+  padding: 24px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  background: var(--surface-muted, #f7f9fc);
+}
+
+.base64-dropzone.is-dragover {
+  border-color: var(--color-primary, #2563eb);
+}
+
+.base64-dropzone__hint,
+.base64-shortcuts {
+  color: var(--text-muted, #64748b);
+  font-size: 0.85rem;
+}
+
+.base64-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.base64-warning {
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  margin: 0 0 14px;
+}
+
+.base64-loading {
+  margin-bottom: 10px;
+  color: var(--text-muted, #64748b);
+}
+
+.base64-error {
+  margin-bottom: 12px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+  border-radius: var(--radius-sm, 8px);
+  padding: 12px;
+}
+
+.base64-error h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.base64-error p {
+  margin: 0;
+}
+
+.base64-error__action {
+  margin-top: 6px !important;
+  color: #7f1d1d;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 960px) {
+  .base64-workspace {
+    grid-template-columns: 1fr;
+  }
+}
