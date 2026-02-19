@@ -93,6 +93,11 @@ public sealed class ToolsController(
         {
             return View("json2csv", viewModel);
         }
+        else if (string.Equals(tool.Slug, "csv-to-json", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("CsvToJson", viewModel);
+        }
+
         return View("Tool", viewModel);
     }
 
