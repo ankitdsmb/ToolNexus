@@ -21,20 +21,7 @@
         <h2 id="toolInputHeading">Input</h2>
       </div>
 
-      <div class="sample-panel">
-        <h3>Sample Data</h3>
-        <pre id="sampleInput">@Model.Tool.ExampleInput</pre>
-      </div>
-
-      <div class="editor-field">
-        <label for="inputEditor" class="editor-label">Tool input</label>
-        <textarea id="inputEditor" aria-describedby="editorShortcutHint">@Model.Tool.ExampleInput</textarea>
-        <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
-      </div>
-    </section>
-
-    <section class="tool-layout__actions tool-panel tool-toolbar tool-toolbar--center" aria-label="Tool controls">
-      <div class="tool-toolbar__top tool-page__action-selector">
+      <div class="tool-page__action-selector">
         <label for="actionSelect">Action</label>
         <select id="actionSelect">
           @foreach (var action in Model.Tool.Actions)
@@ -55,6 +42,17 @@
       </div>
 
       <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl/Cmd + Enter to run</p>
+
+      <div class="sample-panel">
+        <h3>Sample Data</h3>
+        <pre id="sampleInput">@Model.Tool.ExampleInput</pre>
+      </div>
+
+      <div class="editor-field">
+        <label for="inputEditor" class="editor-label">Tool input</label>
+        <textarea id="inputEditor" aria-describedby="editorShortcutHint">@Model.Tool.ExampleInput</textarea>
+        <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
+      </div>
     </section>
 
     <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading">
