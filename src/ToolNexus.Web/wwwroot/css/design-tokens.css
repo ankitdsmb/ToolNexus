@@ -43,6 +43,19 @@
   --text-meta-size: 0.76rem;
   --text-meta-line: 1.35;
 
+  --type-display-size: var(--text-display-size);
+  --type-display-line: var(--text-display-line);
+  --type-heading-size: var(--text-heading-size);
+  --type-heading-line: var(--text-heading-line);
+  --type-subheading-size: var(--text-subheading-size);
+  --type-subheading-line: var(--text-subheading-line);
+  --type-body-size: var(--text-body-size);
+  --type-body-line: var(--text-body-line);
+  --type-caption-size: var(--text-caption-size);
+  --type-caption-line: var(--text-caption-line);
+  --type-meta-size: var(--text-meta-size);
+  --type-meta-line: var(--text-meta-line);
+
   --color-surface-0: var(--background);
   --color-surface-1: var(--surface);
   --color-surface-2: var(--surface-elevated);
@@ -53,7 +66,9 @@
   --color-text-meta: color-mix(in srgb, var(--text-secondary) 74%, transparent);
   --color-interactive-primary: var(--accent);
   --color-interactive-primary-hover: color-mix(in srgb, var(--accent) 84%, white);
+  --color-interactive-primary-active: color-mix(in srgb, var(--accent) 72%, #0f172a);
   --color-interactive-secondary: color-mix(in srgb, var(--accent) 20%, transparent);
+  --color-interactive-secondary-hover: color-mix(in srgb, var(--accent) 30%, transparent);
 
   --section-space-y: var(--space-8);
   --section-space-gap: var(--space-6);
