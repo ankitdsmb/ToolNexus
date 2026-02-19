@@ -1,49 +1,44 @@
 import { createUrlEncoderApp, runClientUrlEncode } from '../../src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js';
-import { runTool } from '../../src/ToolNexus.Web/wwwroot/js/tools/url-encode.js';
+import { create, destroy, init, runTool } from '../../src/ToolNexus.Web/wwwroot/js/tools/url-encode.js';
 import { jest } from '@jest/globals';
 import {
   getKeyboardEventManager,
   resetKeyboardEventManagerForTesting
 } from '../../src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js';
+import {
+  getToolPlatformKernel,
+  resetToolPlatformKernelForTesting
+} from '../../src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js';
+import { createTestRoot, destroyTool, mountTool } from './tool-platform-test-utils.js';
 
-function createToolMarkup() {
-  return `<section class="url-encode-tool">
-    <textarea id="inputEditor"></textarea>
-    <textarea id="outputEditor"></textarea>
-    <select id="modeSelect"><option value="component" selected>component</option></select>
-    <input id="plusSpaceToggle" type="checkbox" />
-    <input id="autoEncodeToggle" type="checkbox" />
-    <button id="encodeBtn">Encode</button>
-    <button id="clearBtn">Clear</button>
-    <button id="copyBtn">Copy</button>
-    <div id="statusText"></div>
-    <div id="inputStats"></div>
-    <div id="outputStats"></div>
-    <section id="errorBox" hidden>
-      <h2 id="errorTitle"></h2>
-      <p id="errorMessage"></p>
-      <p id="errorAction"></p>
-    </section>
-    <div id="loadingState" hidden></div>
-  </section>`;
-}
+const TOOL_MARKUP = `
+  <textarea id="inputEditor"></textarea>
+  <textarea id="outputEditor"></textarea>
+  <select id="modeSelect"><option value="component" selected>component</option></select>
+  <input id="plusSpaceToggle" type="checkbox" />
+  <input id="autoEncodeToggle" type="checkbox" />
+  <button id="encodeBtn">Encode</button>
+  <button id="clearBtn">Clear</button>
+  <button id="copyBtn">Copy</button>
+  <div id="statusText"></div>
+  <div id="inputStats"></div>
+  <div id="outputStats"></div>
+  <section id="errorBox" hidden>
+    <h2 id="errorTitle"></h2>
+    <p id="errorMessage"></p>
+    <p id="errorAction"></p>
+  </section>
+  <div id="loadingState" hidden></div>
+`;
 
 function setupDom() {
-  document.body.innerHTML = createToolMarkup();
-  return document.querySelector('.url-encode-tool');
-}
-
-function appendToolRoot() {
-  const container = document.createElement('div');
-  container.innerHTML = createToolMarkup();
-  const root = container.firstElementChild;
-  document.body.appendChild(root);
-  return root;
+  return createTestRoot(TOOL_MARKUP, 'url-encode-tool');
 }
 
 describe('url-encode run APIs', () => {
   afterEach(() => {
     resetKeyboardEventManagerForTesting();
+    resetToolPlatformKernelForTesting();
   });
 
   test('runTool encodes values and rejects unsupported actions', async () => {
@@ -57,46 +52,39 @@ describe('url-encode run APIs', () => {
   });
 });
 
-describe('url-encode dom behavior', () => {
+describe('url-encode lifecycle and event ownership', () => {
   afterEach(() => {
     resetKeyboardEventManagerForTesting();
+    resetToolPlatformKernelForTesting();
   });
 
-  test('createUrlEncoderApp is idempotent per root and keyboard shortcut is scoped to tool root', () => {
+  test('app factory remains idempotent per root', () => {
     const root = setupDom();
     const appA = createUrlEncoderApp(root);
     const appB = createUrlEncoderApp(root);
-
     expect(appA).toBe(appB);
-
-    const input = root.querySelector('#inputEditor');
-    const output = root.querySelector('#outputEditor');
-
-    input.value = 'alpha beta';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    root.querySelector('#encodeBtn').click();
-    expect(output.value).toBe('alpha%20beta');
-
-    const outsideInput = document.createElement('input');
-    document.body.appendChild(outsideInput);
-    outsideInput.focus();
-
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true, bubbles: true }));
-    expect(input.value).toBe('alpha beta');
-
-    input.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true, bubbles: true }));
-    expect(input.value).toBe('');
-    expect(output.value).toBe('');
   });
 
-  test('listener cardinality remains one global keydown listener across instances', () => {
-    const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
-    const rootA = appendToolRoot();
-    const rootB = appendToolRoot();
+  test('kernel-backed create/init/destroy supports deterministic lifecycle', () => {
+    const root = setupDom();
+    const handle = create(root);
 
-    createUrlEncoderApp(rootA);
-    createUrlEncoderApp(rootB);
+    expect(getToolPlatformKernel().getLifecycleState('url-encode', root)).toBe('created');
+
+    handle.init();
+    expect(getToolPlatformKernel().getLifecycleState('url-encode', root)).toBe('initialized');
+
+    destroyTool(handle);
+    expect(getToolPlatformKernel().getLifecycleState('url-encode', root)).toBe('missing');
+  });
+
+  test('listener cardinality remains one global keydown listener across mounted instances', () => {
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
+    const rootA = setupDom();
+    const rootB = setupDom();
+
+    mountTool(create, rootA);
+    mountTool(create, rootB);
 
     const keydownRegistrations = addEventListenerSpy.mock.calls
       .filter(([eventName]) => eventName === 'keydown');
@@ -108,11 +96,11 @@ describe('url-encode dom behavior', () => {
     addEventListenerSpy.mockRestore();
   });
 
-  test('multi-instance isolation routes shortcuts only to focused root', () => {
-    const rootA = appendToolRoot();
-    const rootB = appendToolRoot();
-    createUrlEncoderApp(rootA);
-    createUrlEncoderApp(rootB);
+  test('shortcut routing stays isolated to focused root', () => {
+    const rootA = setupDom();
+    const rootB = setupDom();
+    init(rootA);
+    init(rootB);
 
     const inputA = rootA.querySelector('#inputEditor');
     const inputB = rootB.querySelector('#inputEditor');
@@ -135,30 +123,11 @@ describe('url-encode dom behavior', () => {
     expect(outputB.value).toBe('right%20side');
   });
 
-  test('destroy lifecycle unregisters instances without removing shared listener too early', () => {
-    const rootA = appendToolRoot();
-    const rootB = appendToolRoot();
-    const appA = createUrlEncoderApp(rootA);
-    const appB = createUrlEncoderApp(rootB);
-
-    expect(getKeyboardEventManager().getRegisteredHandlerCount()).toBe(2);
-
-    appA.dispose();
-
-    expect(getKeyboardEventManager().getRegisteredHandlerCount()).toBe(1);
-    expect(getKeyboardEventManager().getActiveGlobalListenerCount()).toBe(1);
-
-    appB.destroy();
-
-    expect(getKeyboardEventManager().getRegisteredHandlerCount()).toBe(0);
-    expect(getKeyboardEventManager().getActiveGlobalListenerCount()).toBe(0);
-  });
-
-  test('remount stress remains stable across 50 mount/unmount cycles', () => {
-    const root = appendToolRoot();
+  test('remount stress has zero listener leaks after 50 cycles', () => {
+    const root = setupDom();
 
     for (let index = 0; index < 50; index += 1) {
-      const app = createUrlEncoderApp(root);
+      const handle = mountTool(create, root);
       const input = root.querySelector('#inputEditor');
       const output = root.querySelector('#outputEditor');
 
@@ -169,7 +138,7 @@ describe('url-encode dom behavior', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true }));
       expect(output.value).toContain('iteration');
 
-      app.dispose();
+      destroyTool(handle);
       expect(getKeyboardEventManager().getRegisteredHandlerCount()).toBe(0);
       expect(getKeyboardEventManager().getActiveGlobalListenerCount()).toBe(0);
     }

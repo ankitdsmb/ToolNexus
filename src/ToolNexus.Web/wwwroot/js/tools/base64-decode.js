@@ -1,3 +1,6 @@
+import { getKeyboardEventManager } from './keyboard-event-manager.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
+
 const BASE64_CONFIG = {
   DEBOUNCE_MS: 250,
   LARGE_INPUT_WARNING_BYTES: 1024 * 1024,
@@ -154,6 +157,7 @@ class Base64DecodeController {
       decoded: null,
       debounceTimer: null
     };
+    this.disposeKeyboardHandler = () => {};
     this.bindEvents();
     this.refreshUi();
   }
@@ -198,7 +202,9 @@ class Base64DecodeController {
       }
     });
 
-    document.addEventListener('keydown', (event) => {
+    this.disposeKeyboardHandler = getKeyboardEventManager().register({
+      root: document.querySelector('.tool-page') || document.body,
+      onKeydown: (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
         event.preventDefault();
         this.decodeFromInput();
@@ -208,7 +214,14 @@ class Base64DecodeController {
         event.preventDefault();
         this.clearInput();
       }
+      }
     });
+  }
+
+  destroy() {
+    this.disposeKeyboardHandler();
+    this.disposeKeyboardHandler = () => {};
+    clearTimeout(this.state.debounceTimer);
   }
 
   decodeFromInput() {
@@ -424,9 +437,51 @@ export function runTool(action, input, options = {}) {
   return Base64Decoder.decode(normalized);
 }
 
+const TOOL_ID = 'base64-decode';
+
+function resolveRoot() {
+  return document.querySelector('.tool-page');
+}
+
+export function create(root = resolveRoot()) {
+  if (!root) {
+    return null;
+  }
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => {
+      const controller = new Base64DecodeController();
+      window.base64DecodeController = controller;
+      return controller;
+    },
+    destroy: (controller) => {
+      controller?.destroy?.();
+      if (window.base64DecodeController === controller) {
+        delete window.base64DecodeController;
+      }
+    }
+  });
+}
+
+export function init(root = resolveRoot()) {
+  const handle = create(root);
+  handle?.init();
+  return handle;
+}
+
+export function destroy(root = resolveRoot()) {
+  if (!root) {
+    return;
+  }
+
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  window.base64DecodeController = new Base64DecodeController();
+  init();
 });
 
 window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['base64-decode'] = { runTool };
+window.ToolNexusModules['base64-decode'] = { runTool, create, init, destroy };
