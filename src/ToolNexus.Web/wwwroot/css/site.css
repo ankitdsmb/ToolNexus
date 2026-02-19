@@ -754,3 +754,120 @@ button:disabled {
     gap: .35rem .5rem;
   }
 }
+
+/* ===== Founder UX platform stabilization overrides ===== */
+.shell-layer {
+  width: 100%;
+}
+
+.shell-layer--workspace {
+  flex: 1;
+  display: flex;
+}
+
+.container {
+  width: var(--container);
+  min-width: 0;
+  padding-top: var(--space-6);
+}
+
+.topbar {
+  min-height: 3.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 78%, transparent);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.topbar__inner {
+  width: var(--container);
+  min-height: 3.75rem;
+  grid-template-columns: minmax(170px, auto) minmax(280px, 620px) minmax(190px, auto);
+}
+
+.topbar__search-shell {
+  min-height: 2.3rem;
+}
+
+.topbar__search-shortcut {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.tool-card__header {
+  align-items: baseline;
+}
+
+.tool-card__icon {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  line-height: 1;
+  font-size: 0.88rem;
+  margin-top: 0.06rem;
+}
+
+.tool-layout--elite {
+  gap: var(--space-4);
+}
+
+.tool-layout--elite .tool-layout__actions {
+  z-index: 4;
+}
+
+.tool-page__action-selector {
+  position: relative;
+  z-index: 5;
+}
+
+.tool-page__action-selector select {
+  position: relative;
+  z-index: 5;
+}
+
+.tool-panel--output {
+  min-height: 30rem;
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+}
+
+#outputField,
+#outputEmptyState {
+  min-height: 22rem;
+  animation: outputFadeIn 220ms var(--ease-out);
+}
+
+#outputField[hidden],
+#outputEmptyState[hidden] {
+  display: block;
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
+.tool-panel--output::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--surface-elevated) 92%, transparent));
+}
+
+@keyframes outputFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.footer__container {
+  width: var(--container);
+}
+
+@media (max-width: 1040px) {
+  .topbar__inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+}

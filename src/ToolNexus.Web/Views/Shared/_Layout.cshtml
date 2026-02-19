@@ -77,13 +77,19 @@
 </head>
 <body class="page-enter">
 <div class="app-shell">
-    <partial name="_Header" />
+    <div class="shell-layer shell-layer--command">
+        <partial name="_Header" />
+    </div>
 
-    <main class="container" role="main">
-        @RenderBody()
-    </main>
+    <div class="shell-layer shell-layer--workspace">
+        <main class="container" role="main">
+            @RenderBody()
+        </main>
+    </div>
 
-    <partial name="_Footer" model="footerModel" />
+    <div class="shell-layer shell-layer--system">
+        <partial name="_Footer" model="footerModel" />
+    </div>
 </div>
 
 <script type="module" src="~/js/ui-state-manager.js" asp-append-version="true"></script>
