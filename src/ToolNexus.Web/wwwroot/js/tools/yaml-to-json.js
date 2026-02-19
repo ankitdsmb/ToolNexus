@@ -1,6 +1,7 @@
+import './yaml-to-json/index.js';
+
 export async function runTool(action, input) {
-  // TODO: Implement richer client-side behavior for yaml-to-json.
-  return input;
+  return { action, input };
 }
 
 window.ToolNexusModules = window.ToolNexusModules || {};

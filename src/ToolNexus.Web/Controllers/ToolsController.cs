@@ -97,6 +97,10 @@ public sealed class ToolsController(
         {
             return View("jsonToYaml", viewModel);
         }
+        else if (string.Equals(tool.Slug, "yaml-to-json", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("yamlToJson", viewModel);
+        }
         else if (string.Equals(tool.Slug, "csv-to-json", StringComparison.OrdinalIgnoreCase))
         {
             return View("CsvToJson", viewModel);
@@ -105,6 +109,10 @@ public sealed class ToolsController(
         {
             return View("JsonValidator", viewModel);
         }
+        else if (string.Equals(tool.Slug, "sql-formatter", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("SqlFormatter", viewModel);
+        }
         else if (string.Equals(tool.Slug, "file-merge", StringComparison.OrdinalIgnoreCase))
         {
             return View("fileMerge", viewModel);
@@ -112,6 +120,19 @@ public sealed class ToolsController(
         else if (string.Equals(tool.Slug, "html-entities", StringComparison.OrdinalIgnoreCase))
         {
             return View("htmlEntities", viewModel);
+        }
+        else if (string.Equals(tool.Slug, "uuid-generator", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("uuidGenerator", viewModel);
+        else if (string.Equals(tool.Slug, "url-encode", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("urlEncode", viewModel);
+        else if (string.Equals(tool.Slug, "url-decode", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("urlDecode", viewModel);
+        else if (string.Equals(tool.Slug, "text-diff", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("TextDiff", viewModel);
         }
         return View("Tool", viewModel);
     }
