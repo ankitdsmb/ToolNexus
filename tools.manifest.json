@@ -53,7 +53,10 @@
       ],
       "seoTitle": "XML to JSON Converter | ToolNexus",
       "seoDescription": "Convert XML documents to JSON with one click.",
-      "exampleInput": "<order><id>101</id></order>"
+      "exampleInput": "<order><id>101</id></order>",
+      "clientSafeActions": [
+        "convert"
+      ]
     },
     {
       "slug": "xml-formatter",

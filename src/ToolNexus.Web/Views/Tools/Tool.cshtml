@@ -12,6 +12,11 @@
     <link rel="stylesheet" href="~/css/pages/js-minifier.css" asp-append-version="true" />
 }
 
+@if (string.Equals(Model.Tool.Slug, "xml-to-json", StringComparison.OrdinalIgnoreCase))
+{
+    <link rel="stylesheet" href="~/css/pages/xml-to-json.css" asp-append-version="true" />
+}
+
 <article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
   <header class="tool-page__heading">
     <div>
