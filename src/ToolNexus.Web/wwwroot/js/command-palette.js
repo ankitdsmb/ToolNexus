@@ -74,6 +74,30 @@ function formatUsage(count) {
   return `Used ${count}x`;
 }
 
+const TOOL_ICON_MAP = {
+  json: '{}',
+  xml: '</>',
+  yaml: 'Y',
+  csv: '▦',
+  sql: '⌘',
+  regex: '.*',
+  html: '<>',
+  markdown: 'M↓',
+  base64: '64',
+  url: '↗',
+  uuid: 'ID',
+  case: 'Aa',
+  diff: '±',
+  minifier: '⚡',
+  default: '•'
+};
+
+function getToolIcon(slug = '') {
+  const normalized = String(slug).toLowerCase();
+  const match = Object.keys(TOOL_ICON_MAP).find((key) => key !== 'default' && normalized.includes(key));
+  return TOOL_ICON_MAP[match || 'default'];
+}
+
 function createCommandFromTool(tool) {
   const usage = uiStateManager.getUsage(tool.slug);
   const isRecent = (uiStateManager.state.recents || []).includes(tool.slug);
@@ -83,7 +107,7 @@ function createCommandFromTool(tool) {
     slug: tool.slug,
     title: tool.title,
     description: tool.description,
-    icon: '{}',
+    icon: getToolIcon(tool.slug),
     category: isRecent ? 'Recents' : 'Tool',
     shortcut: '↩ Open',
     usage,
@@ -163,7 +187,6 @@ function renderCommandRow(command, index) {
           </div>
         </div>
         <span class="command-palette__meta">
-          <span class="command-palette__badge command-palette__badge--category">${escapeHtml(command.category)}</span>
           <span class="command-palette__badge">${escapeHtml(command.shortcut)}</span>
           <span class="command-palette__badge">${escapeHtml(formatUsage(command.usage))}</span>
           <span class="command-palette__arrow" aria-hidden="true">➜</span>
