@@ -19,6 +19,21 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Frontend platform guard
+        run: npm run check:platform
+
+      - name: Frontend tests with coverage
+        run: npm run test:js -- --runInBand
+
       - name: Restore
         run: dotnet restore ToolNexus.sln
 
