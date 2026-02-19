@@ -15,33 +15,31 @@
     <header class="json-formatter-header">
         <div>
             <h1>@Model.Tool.Title</h1>
-            <p class="json-formatter-description">@Model.Tool.SeoDescription</p>
+            <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
         </div>
-        <div class="json-formatter-metrics" aria-live="polite">
-            <p><span>Execution</span><strong id="perfTime">Ready</strong></p>
-            <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
-            <p><span>Payload</span><strong id="payloadStats">0 B</strong></p>
-        </div>
+        <span class="json-processing-badge">Client-side processing</span>
     </header>
 
-    <section id="largeFileWarning" class="tool-warning" hidden>
-        Large payload detected (&gt; 1MB). Run operations only when needed.
-    </section>
-
     <section class="json-toolbar" role="toolbar" aria-label="JSON formatter actions">
-        <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
-        <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
-        <button id="validateBtn" class="tool-btn" type="button">Validate</button>
-        <button id="sortBtn" class="tool-btn" type="button">Sort Keys</button>
-        <button id="autofixBtn" class="tool-btn" type="button">Auto-fix</button>
-        <button id="escapeBtn" class="tool-btn" type="button">Escape</button>
-        <button id="unescapeBtn" class="tool-btn" type="button">Unescape</button>
-        <button id="copyBtn" class="tool-btn" type="button">Copy</button>
-        <button id="downloadBtn" class="tool-btn" type="button">Download</button>
-        <button id="clearBtn" class="tool-btn" type="button">Reset</button>
-
-        <label class="tool-toggle"><input id="wrapToggle" type="checkbox" /> Word Wrap</label>
-        <label class="tool-toggle"><input id="diffToggle" type="checkbox" /> Diff View</label>
+        <div class="json-toolbar-row">
+            <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
+            <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
+            <button id="validateBtn" class="tool-btn" type="button">Validate only</button>
+            <button id="clearBtn" class="tool-btn" type="button">Clear</button>
+            <button id="copyBtn" class="tool-btn" type="button">Copy output</button>
+            <button id="downloadBtn" class="tool-btn" type="button">Download JSON</button>
+        </div>
+        <div class="json-toolbar-row">
+            <label class="tool-toggle" for="indentSizeSelect">Indentation
+                <select id="indentSizeSelect" class="tool-select" aria-label="Indentation size">
+                    <option value="2" selected>2 spaces</option>
+                    <option value="4">4 spaces</option>
+                </select>
+            </label>
+            <label class="tool-toggle"><input id="sortKeysToggle" type="checkbox" /> Sort object keys</label>
+            <label class="tool-toggle"><input id="autoFormatToggle" type="checkbox" /> Auto format on input</label>
+            <label class="tool-toggle"><input id="wrapToggle" type="checkbox" /> Word wrap</label>
+        </div>
     </section>
 
     <section id="errorBox" class="tool-error" role="alert" aria-live="assertive" hidden>
@@ -53,35 +51,38 @@
     <section class="json-workspace">
         <section class="json-panel">
             <div class="panel-header">
-                <h2>Input</h2>
-                <p>Paste JSON or drop a file. Use Ctrl+Enter to format.</p>
+                <h2>Input JSON</h2>
+                <p>Ctrl+Enter to format · Ctrl+L to clear</p>
             </div>
-            <div id="dropZone" class="drop-zone">
-                <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
-            </div>
+            <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
         </section>
 
         <section class="json-panel">
             <div class="panel-header">
-                <h2>Output</h2>
-                <p id="resultStatus">No output yet.</p>
+                <h2>Output JSON</h2>
+                <p id="resultStatus">Ready for formatting.</p>
             </div>
             <div id="outputEditor" class="editor-surface" aria-label="JSON output editor"></div>
-            <div id="diffEditor" class="editor-surface" hidden></div>
         </section>
     </section>
 
+    <section class="json-metrics" aria-live="polite">
+        <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
+        <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
+        <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>
+        <p><span>Output size</span><strong id="outputStats">0 chars / 0 lines</strong></p>
+    </section>
+
+    <section id="processingIndicator" class="tool-warning" hidden>Processing large JSON payload…</section>
     <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
 </article>
 
 @section Scripts {
     <script>
         window.ToolNexusConfig = {
-          apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
-          toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
           jsonExampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput))
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js" crossorigin="anonymous"></script>
-    <script type="module" src="~/js/tools/json-formatter.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/tools/json-formatter/index.js" asp-append-version="true"></script>
 }
