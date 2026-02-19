@@ -1,0 +1,62 @@
+.xml-json-tool .tool-layout--elite {
+  gap: 1.5rem;
+}
+
+.xml-json-tool .tool-panel {
+  padding: 1.5rem;
+}
+
+.xml-json-tool .editor-field textarea,
+.xml-json-tool .editor-surface {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+}
+
+.xml-json-tool__badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: .75rem;
+  padding: .25rem .625rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--color-accent-strong, #0d9488);
+  background: var(--color-accent-muted, rgba(13, 148, 136, .12));
+}
+
+.xml-json-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: .75rem;
+  margin: 1rem 0;
+}
+
+.xml-json-controls__field {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  font-size: .875rem;
+}
+
+.xml-json-controls__field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.65rem;
+}
+
+.xml-json-controls input[type='text'],
+.xml-json-controls select {
+  min-height: 2.25rem;
+  padding: .45rem .6rem;
+  border-radius: .5rem;
+  border: 1px solid var(--border-muted, #d4d4d8);
+  background: var(--surface-raised, #fff);
+  color: inherit;
+}
+
+.xml-json-controls__metrics {
+  grid-column: 1 / -1;
+  margin: .25rem 0 0;
+  color: var(--text-muted, #52525b);
+  font-size: .8125rem;
+}
