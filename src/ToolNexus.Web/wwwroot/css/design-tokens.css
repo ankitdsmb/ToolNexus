@@ -1,149 +1,56 @@
+/* ==========================
+   FOUNDATION: TOKENS
+========================== */
 :root {
-  color-scheme: light;
+  --font-sans: "Inter", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
 
-  --background: #f4f7fc;
-  --surface: #edf2fa;
-  --surface-elevated: #ffffff;
-  --card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --border: #d9e2ef;
-  --accent: #4568f2;
-
-  /* strict spacing scale */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
-  --space-9: 80px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  --space-11: 56px;
+  --space-12: 64px;
 
+  --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
   --radius-xl: 24px;
-
-  --border-subtle: color-mix(in srgb, var(--border) 78%, transparent);
-  --border-default: var(--border);
-  --border-strong: color-mix(in srgb, var(--border) 64%, var(--accent));
-
-  --text-display-size: clamp(2.25rem, 4.2vw, 3.8rem);
-  --text-display-line: 1.08;
-  --text-heading-size: clamp(1.55rem, 2.4vw, 2.15rem);
-  --text-heading-line: 1.15;
-  --text-subheading-size: 1.05rem;
-  --text-subheading-line: 1.5;
-  --text-body-size: 0.96rem;
-  --text-body-line: 1.55;
-  --text-caption-size: 0.84rem;
-  --text-caption-line: 1.45;
-  --text-meta-size: 0.76rem;
-  --text-meta-line: 1.35;
-
-  --type-display-size: var(--text-display-size);
-  --type-display-line: var(--text-display-line);
-  --type-heading-size: var(--text-heading-size);
-  --type-heading-line: var(--text-heading-line);
-  --type-subheading-size: var(--text-subheading-size);
-  --type-subheading-line: var(--text-subheading-line);
-  --type-body-size: var(--text-body-size);
-  --type-body-line: var(--text-body-line);
-  --type-caption-size: var(--text-caption-size);
-  --type-caption-line: var(--text-caption-line);
-  --type-meta-size: var(--text-meta-size);
-  --type-meta-line: var(--text-meta-line);
-
-  --color-surface-0: var(--background);
-  --color-surface-1: var(--surface);
-  --color-surface-2: var(--surface-elevated);
-  --color-surface-3: color-mix(in srgb, var(--surface-elevated) 90%, var(--accent));
-  --color-border-subtle: color-mix(in srgb, var(--border) 78%, transparent);
-  --color-border-default: color-mix(in srgb, var(--border) 90%, transparent);
-  --color-text-muted: color-mix(in srgb, var(--text-secondary) 90%, transparent);
-  --color-text-meta: color-mix(in srgb, var(--text-secondary) 74%, transparent);
-  --color-interactive-primary: var(--accent);
-  --color-interactive-primary-hover: color-mix(in srgb, var(--accent) 84%, white);
-  --color-interactive-primary-active: color-mix(in srgb, var(--accent) 72%, #0f172a);
-  --color-interactive-secondary: color-mix(in srgb, var(--accent) 20%, transparent);
-  --color-interactive-secondary-hover: color-mix(in srgb, var(--accent) 30%, transparent);
-
-  --section-space-y: var(--space-8);
-  --section-space-gap: var(--space-6);
-  --section-space-compact: var(--space-7);
-  --section-space-standard: var(--space-8);
-  --section-space-loose: var(--space-9);
-
-  --stroke-weight: 1px;
   --radius-pill: 999px;
-  --control-height-sm: calc(var(--space-6) + var(--space-1));
-  --control-height-md: calc(var(--space-6) + var(--space-3));
-  --icon-size-md: calc(var(--space-6) + var(--space-2));
 
-  --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.12);
-  --shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.16);
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: clamp(22px, 2.2vw, 30px);
+  --text-2xl: clamp(30px, 4.4vw, 52px);
 
-  --container-max: 1280px;
-  --container-gutter: 24px;
-  --container-width: min(var(--container-max), calc(100% - (var(--container-gutter) * 2)));
+  --line-tight: 1.2;
+  --line-snug: 1.35;
+  --line-base: 1.55;
 
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
-  --duration-fast: 120ms;
-  --duration-standard: 180ms;
-  --duration-slow: 240ms;
-  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 8px 22px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 16px 36px rgba(0, 0, 0, 0.28);
 
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --container-max: 1240px;
+  --container-gutter: clamp(16px, 4vw, 28px);
+
+  --z-base: 1;
   --z-header: 40;
   --z-modal: 100;
-
-  --success-bg: #e8fff4;
-  --success-text: #0a7a4a;
-  --danger-bg: #ffecef;
-  --danger-text: #b4233e;
-
-  --container: var(--container-width);
-  --space-xxs: var(--space-1);
-  --space-xs: var(--space-2);
-  --space-sm: var(--space-3);
-  --space-md: var(--space-4);
-  --space-lg: var(--space-5);
-  --space-xl: var(--space-6);
-
-  --radius-6: var(--radius-sm);
-  --radius-10: var(--radius-sm);
-  --radius-16: var(--radius-md);
-  --radius-20: var(--radius-lg);
-  --radius-28: var(--radius-xl);
-
-  --elevation-1: var(--shadow-sm);
-  --elevation-2: var(--shadow-md);
-  --elevation-3: var(--shadow-lg);
-  --layer-0-bg: var(--background);
-  --layer-1-bg: var(--surface);
-  --layer-2-bg: var(--surface-elevated);
-  --layer-3-bg: color-mix(in srgb, var(--surface-elevated) 88%, var(--accent) 12%);
-  --shadow-xs: var(--shadow-sm);
-  --shadow: var(--shadow-md);
-
-  --color-bg: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
-  --color-card: var(--card);
-  --color-border: var(--border);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-accent: var(--accent);
-  --color-muted: color-mix(in srgb, var(--text-secondary) 92%, #5e708f);
-
-  --bg-primary: var(--background);
-  --bg-surface: var(--surface);
-  --bg-elevated: var(--surface-elevated);
-  --bg-card: var(--card);
-  --border-default: var(--border);
-  --border-strong: color-mix(in srgb, var(--border) 64%, var(--accent));
-  --accent-primary: var(--accent);
-  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --z-toast: 120;
 }
