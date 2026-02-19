@@ -1,10 +1,15 @@
 @model ToolPageViewModel
-@{
+@{ 
     ViewData["Title"] = Model.Seo.Title;
     ViewData["Description"] = Model.Seo.Description;
     ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
     ViewData["JsonLd"] = Model.Seo.JsonLd;
     ViewData["Keywords"] = Model.Seo.Keywords;
+}
+
+@if (string.Equals(Model.Tool.Slug, "js-minifier", StringComparison.OrdinalIgnoreCase))
+{
+    <link rel="stylesheet" href="~/css/pages/js-minifier.css" asp-append-version="true" />
 }
 
 <article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
