@@ -10,7 +10,9 @@
   --space-xl: var(--space-8);
 
   --surface-base: var(--background);
-  --surface-card: var(--surface);
+  --surface-card: var(--card, var(--surface));
+  --section-pad-top: clamp(5rem, 8vw, 6.25rem);
+  --section-pad-bottom: clamp(3.75rem, 6vw, 5rem);
   --text-muted: color-mix(in srgb, var(--text-secondary) 90%, #6f819f);
   --text-subtle: color-mix(in srgb, var(--text-secondary) 78%, #7e8ea9);
   --border-subtle: color-mix(in srgb, var(--border) 72%, transparent);
@@ -44,7 +46,7 @@ body::after {
   background: linear-gradient(180deg, color-mix(in srgb, var(--background) 55%, transparent), transparent 45%);
 }
 
-h1, h2, h3 { line-height: 1.2; }
+h1, h2, h3 { line-height: 1.2; font-weight: var(--heading-weight, 700); letter-spacing: -0.01em; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: none; }
 
@@ -190,7 +192,7 @@ a:focus-visible,
 }
 
 .hero {
-  margin-bottom: var(--space-lg);
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
   border: 1px solid var(--border-subtle);
   position: relative;
   isolation: isolate;
@@ -239,6 +241,14 @@ a:focus-visible,
 .tool-panel,
 .static-page,
 .contact-form { padding: var(--space-lg); }
+
+.tool-section,
+.trust-section,
+.static-page,
+.contact-form {
+  padding-top: var(--section-pad-top);
+  padding-bottom: var(--section-pad-bottom);
+}
 .tool-section { display: grid; gap: var(--space-4); }
 .tool-section__header { display: grid; gap: .5rem; }
 .hero__search { max-width: 640px; }
@@ -522,6 +532,10 @@ button, .hero-btn, .tool-btn, .theme-toggle, .card, .chip, .trust-link, .hero__s
   .topbar__explore { padding: 0 .7rem; min-height: 2.2rem; font-size: .78rem; }
   .theme-toggle { width: 2.2rem; height: 2.2rem; }
   .container { width: min(100% - 1rem, 1200px); padding-top: var(--space-lg); }
+  :root {
+    --section-pad-top: clamp(4.25rem, 12vw, 5rem);
+    --section-pad-bottom: clamp(3.25rem, 9vw, 4rem);
+  }
   .tools-index__toolbar-top,
   .contact-form__grid,
   .trust-stats,
