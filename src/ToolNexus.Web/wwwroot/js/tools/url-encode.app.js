@@ -51,6 +51,10 @@ class UrlEncodeApp {
     this.dom.autoEncodeToggle?.addEventListener('change', () => this.onConfigChanged());
 
     document.addEventListener('keydown', (event) => {
+      if (!this.root.contains(event.target) && !this.root.contains(document.activeElement)) {
+        return;
+      }
+
       if (!event.ctrlKey && !event.metaKey) {
         return;
       }
@@ -207,8 +211,19 @@ class UrlEncodeApp {
   }
 }
 
+const ROOT_APP_INSTANCE_KEY = '__toolNexusUrlEncodeApp';
+
 export function createUrlEncoderApp(root) {
-  return new UrlEncodeApp(root);
+  if (root?.[ROOT_APP_INSTANCE_KEY]) {
+    return root[ROOT_APP_INSTANCE_KEY];
+  }
+
+  const app = new UrlEncodeApp(root);
+  if (root) {
+    root[ROOT_APP_INSTANCE_KEY] = app;
+  }
+
+  return app;
 }
 
 export function runClientUrlEncode(input, options = {}) {
