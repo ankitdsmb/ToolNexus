@@ -105,6 +105,10 @@ public sealed class ToolsController(
         {
             return View("JsonValidator", viewModel);
         }
+        else if (string.Equals(tool.Slug, "sql-formatter", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("SqlFormatter", viewModel);
+        }
         else if (string.Equals(tool.Slug, "file-merge", StringComparison.OrdinalIgnoreCase))
         {
             return View("fileMerge", viewModel);
@@ -116,6 +120,9 @@ public sealed class ToolsController(
         else if (string.Equals(tool.Slug, "url-decode", StringComparison.OrdinalIgnoreCase))
         {
             return View("urlDecode", viewModel);
+        else if (string.Equals(tool.Slug, "text-diff", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("TextDiff", viewModel);
         }
         return View("Tool", viewModel);
     }
