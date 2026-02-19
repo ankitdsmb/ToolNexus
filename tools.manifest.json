@@ -303,6 +303,20 @@
       "seoTitle": "JSON to YAML Converter | ToolNexus",
       "seoDescription": "Convert JSON payloads into YAML.",
       "exampleInput": "{\"name\":\"Ada\",\"role\":\"Engineer\"}"
+    },
+    {
+      "slug": "file-merge",
+      "title": "File Merge Tool",
+      "category": "text",
+      "actions": [
+        "merge"
+      ],
+      "seoTitle": "File Merge Tool Online | ToolNexus",
+      "seoDescription": "Merge multiple text-based files safely in your browser with type-aware strategies.",
+      "exampleInput": "Upload text, JSON, CSV, XML, or YAML files to merge.",
+      "clientSafeActions": [
+        "merge"
+      ]
     }
   ]
 }

@@ -30,7 +30,8 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
         ["case-converter"] = ["upper", "lower", "title"],
         ["html-entities"] = ["encode", "decode"],
         ["yaml-to-json"] = ["convert"],
-        ["json-to-yaml"] = ["convert"]
+        ["json-to-yaml"] = ["convert"],
+        ["file-merge"] = ["merge"]
     };
 
     public override string Slug { get; } = slug;
@@ -71,6 +72,7 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
             ("html-entities", "decode") => WebUtility.HtmlDecode(request.Input),
             ("yaml-to-json", "convert") => YamlToJson(request.Input),
             ("json-to-yaml", "convert") => JsonToYaml(request.Input),
+            ("file-merge", "merge") => request.Input,
             _ => throw new InvalidOperationException($"Unsupported route: {Slug}/{action}")
         };
 
