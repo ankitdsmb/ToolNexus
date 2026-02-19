@@ -83,7 +83,7 @@ function createCommandFromTool(tool) {
     slug: tool.slug,
     title: tool.title,
     description: tool.description,
-    icon: '🧰',
+    icon: '{}',
     category: isRecent ? 'Recents' : 'Tool',
     shortcut: '↩ Open',
     usage,
@@ -105,7 +105,7 @@ function createDisplayCommand() {
     slug: 'theme-toggle',
     title,
     description: 'Toggle ToolNexus display theme preferences.',
-    icon: '🖥️',
+    icon: '◐',
     category: 'Actions',
     shortcut: '⌘D',
     usage: 0,
@@ -155,13 +155,13 @@ function renderCommandRow(command, index) {
   return `
     <li class="command-palette__item ${isActive ? 'is-active' : ''}" role="option" aria-selected="${isActive}">
       <button type="button" class="command-palette__action" data-index="${index}">
-        <span class="command-palette__left">
-          <span class="command-palette__icon" aria-hidden="true">${escapeHtml(command.icon)}</span>
-          <span class="command-palette__content">
-            <span class="command-palette__item-title">${escapeHtml(command.title)}</span>
-            <span class="command-palette__item-desc">${escapeHtml(command.description)}</span>
-          </span>
-        </span>
+        <div class="command-item">
+          <span class="tool-card__icon" aria-hidden="true">${escapeHtml(command.icon)}</span>
+          <div class="command-item__content">
+            <span class="command-item__title">${escapeHtml(command.title)}</span>
+            <span class="command-item__description">${escapeHtml(command.description)}</span>
+          </div>
+        </div>
         <span class="command-palette__meta">
           <span class="command-palette__badge command-palette__badge--category">${escapeHtml(command.category)}</span>
           <span class="command-palette__badge">${escapeHtml(command.shortcut)}</span>

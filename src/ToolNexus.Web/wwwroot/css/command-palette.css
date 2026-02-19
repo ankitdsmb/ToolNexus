@@ -195,22 +195,31 @@
   transition: transform 120ms var(--ease-out), border-color 120ms var(--ease-out), opacity var(--duration-fast) ease-out, box-shadow 120ms var(--ease-out), background-color 120ms var(--ease-out);
 }
 
-.command-palette__left { min-width: 0; display: flex; align-items: center; gap: var(--space-3); }
+.command-item {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
 
-.command-palette__icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-10);
-  border: 1px solid rgba(113, 139, 207, 0.38);
+.command-palette .tool-card__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, rgba(57, 83, 164, 0.52), rgba(24, 39, 90, 0.56));
+  font-size: 14px;
+  line-height: 1;
+  color: var(--color-accent);
+  background: rgba(120, 140, 255, 0.08);
+  border: 0;
+  flex-shrink: 0;
 }
 
-.command-palette__content { min-width: 0; display: grid; gap: 0.16rem; }
-.command-palette__item-title { font-weight: 670; font-size: 0.98rem; color: rgba(234, 242, 255, 0.95); }
-.command-palette__item-desc,
+.command-item__content { min-width: 0; display: grid; gap: 0.16rem; }
+.command-item__title { font-weight: 670; font-size: 0.98rem; color: rgba(234, 242, 255, 0.95); }
+.command-item__description,
 .command-palette__empty { color: rgba(179, 194, 226, 0.74); font-size: 0.84rem; }
 
 .command-palette__meta {
