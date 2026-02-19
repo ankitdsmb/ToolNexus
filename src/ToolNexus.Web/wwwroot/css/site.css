@@ -2091,8 +2091,8 @@ html[data-theme='dark'] .tool-panel {
 /* ===== Homepage layout system refactor ===== */
 :root {
   --section-space: var(--space-8);
-  --section-space-tight: 72px;
-  --card-min-height: 380px;
+  --section-space-tight: var(--space-7);
+  --card-min-height: 384px;
 }
 
 .container,
@@ -2157,6 +2157,8 @@ html[data-theme='dark'] .tool-panel {
 }
 
 .hero__subtitle {
+  font-size: 1.0625rem;
+  line-height: 1.6;
   max-width: 65ch;
 }
 
@@ -2174,10 +2176,11 @@ html[data-theme='dark'] .tool-panel {
   min-height: var(--space-6);
   padding-inline: var(--space-4);
   border-radius: var(--radius-md);
+  font-weight: 700;
 }
 
 .hero-btn--secondary {
-  background: transparent;
+  background: color-mix(in srgb, var(--layer-2-bg) 78%, transparent);
   border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
   color: var(--text-secondary);
 }
@@ -2209,6 +2212,18 @@ html[data-theme='dark'] .tool-panel {
   margin-bottom: var(--space-5);
 }
 
+.section-title {
+  margin: 0;
+  font-size: clamp(1.75rem, 2.8vw, 2.25rem);
+  line-height: 1.2;
+}
+
+.section-subtitle {
+  margin: 0;
+  max-width: 62ch;
+  line-height: 1.6;
+}
+
 .discovery-search-shell {
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--border));
@@ -2235,6 +2250,8 @@ html[data-theme='dark'] .tool-panel {
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   grid-template-rows: auto auto auto 1fr auto;
+  background: color-mix(in srgb, var(--layer-2-bg) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
 }
 
 .card__icon {
@@ -2247,7 +2264,7 @@ html[data-theme='dark'] .tool-panel {
 .card__badge {
   border-radius: 999px;
   font-weight: 600;
-  font-size: .74rem;
+  font-size: .75rem;
   line-height: 1.2;
 }
 
@@ -2276,6 +2293,7 @@ html[data-theme='dark'] .tool-panel {
 .trust-stat {
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--layer-2-bg) 92%, var(--accent) 8%);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
 }
 
 .trust-grid {
@@ -2285,11 +2303,13 @@ html[data-theme='dark'] .tool-panel {
 
 .privacy-card {
   background: color-mix(in srgb, var(--layer-2-bg) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
 }
 
 .trust-links {
   padding: var(--space-3);
   border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
 .testimonial-grid {
@@ -2301,6 +2321,8 @@ html[data-theme='dark'] .tool-panel {
 .testimonial-card {
   padding: var(--space-4);
   border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--layer-2-bg) 96%, transparent);
 }
 
 .testimonial-card__quote::before {
@@ -2326,6 +2348,7 @@ html[data-theme='dark'] .tool-panel {
 
 .footer {
   margin-top: var(--space-7);
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
 }
 
 .footer__container {
@@ -2339,10 +2362,30 @@ html[data-theme='dark'] .tool-panel {
   gap: var(--space-5);
 }
 
+.footer__column {
+  gap: var(--space-2);
+}
+
 .footer__bottom-strip {
   padding-top: var(--space-3);
   border-top: 1px solid color-mix(in srgb, var(--border) 66%, transparent);
   font-size: .82rem;
+}
+
+:root[data-theme='light'] .hero,
+:root[data-theme='light'] .tool-section,
+:root[data-theme='light'] .trust-section {
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+:root[data-theme='dark'] .hero,
+:root[data-theme='dark'] .tool-section,
+:root[data-theme='dark'] .trust-section {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+}
+
+:root[data-theme='dark'] .hero-btn--secondary {
+  color: color-mix(in srgb, var(--text-primary) 88%, #c5d2f0);
 }
 
 :root[data-theme='dark'] .card__badge[data-badge="popular"] { color: #8fafff; }
