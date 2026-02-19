@@ -113,6 +113,10 @@ public sealed class ToolsController(
         {
             return View("htmlEntities", viewModel);
         }
+        else if (string.Equals(tool.Slug, "url-decode", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("urlDecode", viewModel);
+        }
         return View("Tool", viewModel);
     }
 
