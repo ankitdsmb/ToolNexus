@@ -40,17 +40,43 @@
     </header>
 
     <div class="grid" id="featuredGrid">
-        @foreach (var tool in Model.FeaturedTools)
+        @foreach (var tool in Model.FeaturedTools.Select((tool, index) => new { tool, index }))
         {
-            <a class="card" href="/tools/@tool.Slug" data-tool-slug="@tool.Slug" data-title="@tool.Title" data-description="@tool.SeoDescription">
-                <div class="card__top-row">
-                    <span class="tool-card__icon" aria-hidden="true">@tool.Title.Substring(0, Math.Min(tool.Title.Length, 2)).ToUpperInvariant()</span>
-                    <div class="card__content">
-                        <h3>@tool.Title</h3>
-                        <p>@tool.SeoDescription</p>
+            var title = tool.tool.Title;
+            var slug = tool.tool.Slug;
+            var description = string.IsNullOrWhiteSpace(tool.tool.SeoDescription)
+                ? "Instant utility workflows with zero context switching."
+                : tool.tool.SeoDescription;
+            var normalized = $"{title} {slug}".ToLowerInvariant();
+            var badge = tool.index switch
+            {
+                0 => "Popular",
+                1 => "Fast",
+                _ when normalized.Contains("ai") => "AI Enhanced",
+                _ when normalized.Contains("json") || normalized.Contains("formatter") => "Developer Favorite",
+                _ => "New"
+            };
+
+            <a class="card" href="/tools/@slug" data-tool-slug="@slug" data-title="@title" data-description="@description">
+                <header class="card__header">
+                    <span class="card__icon" aria-hidden="true">@title.Substring(0, Math.Min(title.Length, 2)).ToUpperInvariant()</span>
+                    <div class="card__title-wrap">
+                        <div class="card__title-row">
+                            <h3>@title</h3>
+                            <span class="card__badge">@badge</span>
+                        </div>
+                        <p>@description</p>
                     </div>
-                </div>
-                <span class="card__arrow" aria-hidden="true">→</span>
+                    <span class="card__arrow" aria-hidden="true">↗</span>
+                </header>
+
+                <ul class="card__highlights" aria-label="Tool highlights">
+                    <li>✔ Privacy safe</li>
+                    <li>✔ Instant processing</li>
+                    <li>⚡ Fast response</li>
+                </ul>
+
+                <span class="card__cta">Launch Tool</span>
             </a>
         }
     </div>
@@ -125,7 +151,6 @@
         const searchBox = document.getElementById('toolSearch');
         const cards = Array.from(document.querySelectorAll('#featuredGrid .card'));
         const typewriterText = document.getElementById('heroTypewriter');
-        const heroScroll = document.querySelector('.hero__scroll');
         const counterNodes = Array.from(document.querySelectorAll('[data-counter]'));
 
         if (typewriterText) {
@@ -157,16 +182,6 @@
             };
 
             tick();
-        }
-
-        if (heroScroll) {
-            heroScroll.addEventListener('click', (event) => {
-                const targetId = heroScroll.getAttribute('href');
-                const target = targetId ? document.querySelector(targetId) : null;
-                if (!target) return;
-                event.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
         }
 
         if (counterNodes.length) {
