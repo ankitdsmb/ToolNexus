@@ -97,7 +97,10 @@ public sealed class ToolsController(
         {
             return View("CsvToJson", viewModel);
         }
-
+        else if (string.Equals(tool.Slug, "file-merge", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("fileMerge", viewModel);
+        }
         return View("Tool", viewModel);
     }
 

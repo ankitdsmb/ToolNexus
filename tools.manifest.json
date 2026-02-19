@@ -262,13 +262,36 @@
       "title": "Case Converter",
       "category": "text",
       "actions": [
-        "upper",
-        "lower",
-        "title"
+        "lowercase",
+        "uppercase",
+        "title-case",
+        "sentence-case",
+        "camel-case",
+        "pascal-case",
+        "snake-case",
+        "screaming-snake-case",
+        "kebab-case",
+        "dot-case",
+        "path-case",
+        "alternating-case"
       ],
       "seoTitle": "Case Converter | ToolNexus",
-      "seoDescription": "Convert text between upper, lower, and title case.",
-      "exampleInput": "tool nexus"
+      "seoDescription": "Convert text across developer-friendly case formats with consistent, Unicode-safe output.",
+      "exampleInput": "userAPIResponse\njson payload_parser",
+      "clientSafeActions": [
+        "lowercase",
+        "uppercase",
+        "title-case",
+        "sentence-case",
+        "camel-case",
+        "pascal-case",
+        "snake-case",
+        "screaming-snake-case",
+        "kebab-case",
+        "dot-case",
+        "path-case",
+        "alternating-case"
+      ]
     },
     {
       "slug": "html-entities",
@@ -303,6 +326,20 @@
       "seoTitle": "JSON to YAML Converter | ToolNexus",
       "seoDescription": "Convert JSON payloads into YAML.",
       "exampleInput": "{\"name\":\"Ada\",\"role\":\"Engineer\"}"
+    },
+    {
+      "slug": "file-merge",
+      "title": "File Merge Tool",
+      "category": "text",
+      "actions": [
+        "merge"
+      ],
+      "seoTitle": "File Merge Tool Online | ToolNexus",
+      "seoDescription": "Merge multiple text-based files safely in your browser with type-aware strategies.",
+      "exampleInput": "Upload text, JSON, CSV, XML, or YAML files to merge.",
+      "clientSafeActions": [
+        "merge"
+      ]
     }
   ]
 }

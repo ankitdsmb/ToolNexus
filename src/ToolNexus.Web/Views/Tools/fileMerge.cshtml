@@ -1,0 +1,56 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/tools/file-merge.css" asp-append-version="true" />
+}
+
+<article class="file-merge-tool tool-page" data-slug="@Model.Tool.Slug">
+    <header class="tool-page__heading">
+        <h1>@Model.Tool.Title</h1>
+        <p>@Model.Tool.SeoDescription</p>
+    </header>
+
+    <section class="file-merge-layout">
+        <aside class="panel left-panel">
+            <h2>Upload</h2>
+            <label id="dropzone" class="dropzone" for="fileInput">Drop files or click to select</label>
+            <input id="fileInput" type="file" multiple accept=".txt,.md,.log,.ini,.cfg,.conf,.cs,.js,.ts,.html,.css,.scss,.sql,.json,.csv,.xml,.yaml,.yml" hidden />
+            <ul id="fileList" class="file-list" aria-label="Uploaded files"></ul>
+        </aside>
+
+        <main class="panel center-panel">
+            <div class="preview-header">
+                <h2>Preview</h2>
+                <button id="mergeBtn" class="tool-btn tool-btn--primary" type="button">Merge</button>
+            </div>
+            <pre id="previewOutput" class="preview-output"></pre>
+            <p id="mergeStats" class="merge-stats">Files: 0 | In: 0 B | Out: 0 B | Time: 0 ms</p>
+        </main>
+
+        <aside class="panel right-panel">
+            <h2>Settings</h2>
+            <label>Merge mode <select id="mergeMode"><option value="concat">Concatenate</option><option value="smart">Smart</option></select></label>
+            <label>JSON merge <select id="jsonMode"><option value="shallow">Shallow</option><option value="deep">Deep</option></select></label>
+            <label>Conflict mode <select id="conflictMode"><option value="overwrite">Overwrite</option><option value="preserve">Preserve</option><option value="rename">Rename</option></select></label>
+            <label><input type="checkbox" id="includeHeaders" checked /> Include separators</label>
+            <label>Separator <input id="separator" type="text" value="-----" /></label>
+            <label><input type="checkbox" id="preserveOrder" checked /> Preserve file order</label>
+            <label>Max total size (MB) <input id="maxSizeMb" type="number" min="1" value="50" /></label>
+            <h3>Export</h3>
+            <label>Output name <input id="outputName" type="text" value="merged-output" /></label>
+            <label>Extension <select id="outputExtension"><option>txt</option><option>json</option><option>csv</option><option>xml</option><option>yaml</option></select></label>
+            <div class="actions">
+                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy</button>
+                <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
+            </div>
+        </aside>
+    </section>
+</article>
+
+@section Scripts {
+    <script type="module" src="~/js/tools/file-merge/main.js" asp-append-version="true"></script>
+}
