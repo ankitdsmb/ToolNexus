@@ -124,12 +124,15 @@ public sealed class ToolsController(
         else if (string.Equals(tool.Slug, "uuid-generator", StringComparison.OrdinalIgnoreCase))
         {
             return View("uuidGenerator", viewModel);
+        }
         else if (string.Equals(tool.Slug, "url-encode", StringComparison.OrdinalIgnoreCase))
         {
             return View("urlEncode", viewModel);
+        }
         else if (string.Equals(tool.Slug, "url-decode", StringComparison.OrdinalIgnoreCase))
         {
             return View("urlDecode", viewModel);
+        }
         else if (string.Equals(tool.Slug, "text-diff", StringComparison.OrdinalIgnoreCase))
         {
             return View("TextDiff", viewModel);
