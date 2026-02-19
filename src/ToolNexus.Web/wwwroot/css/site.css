@@ -766,31 +766,52 @@ button:disabled {
 }
 
 .container {
-  width: var(--container);
+  width: min(var(--container), calc(100% - 1.5rem));
   min-width: 0;
   padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
 }
 
 .topbar {
   min-height: 3.75rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 78%, transparent);
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 28%, transparent);
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  backdrop-filter: blur(9px);
 }
 
 .topbar__inner {
-  width: var(--container);
+  width: min(var(--container), calc(100% - 1.5rem));
   min-height: 3.75rem;
-  grid-template-columns: minmax(170px, auto) minmax(280px, 620px) minmax(190px, auto);
+  grid-template-columns: minmax(170px, auto) minmax(300px, 640px) minmax(184px, auto);
+  gap: 0.75rem;
+}
+
+.brand__dot {
+  width: 0.56rem;
+  height: 0.56rem;
+  box-shadow: none;
+  opacity: 0.9;
 }
 
 .topbar__search-shell {
-  min-height: 2.3rem;
+  min-height: 2.2rem;
+  border-color: color-mix(in srgb, var(--border) 36%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 75%, transparent);
+}
+
+.topbar__search-shell:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .topbar__search-shortcut {
   font-size: 0.72rem;
   letter-spacing: 0.02em;
+}
+
+.topbar__explore {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: none;
 }
 
 .tool-card__header {
@@ -810,28 +831,61 @@ button:disabled {
 }
 
 .tool-layout--elite {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
+.tool-layout--elite .tool-layout__panel {
+  min-width: 0;
+}
+
+.tool-layout--elite .tool-layout__panel:first-child,
+.tool-layout--elite .tool-layout__panel:last-child {
+  grid-column: span 6;
+}
+
 .tool-layout--elite .tool-layout__actions {
-  z-index: 4;
+  display: none;
+}
+
+.tool-panel {
+  border-color: color-mix(in srgb, var(--border) 42%, transparent);
+  box-shadow: none;
 }
 
 .tool-page__action-selector {
   position: relative;
-  z-index: 5;
+  z-index: 6;
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: var(--space-3);
 }
 
 .tool-page__action-selector select {
   position: relative;
-  z-index: 5;
+  z-index: 6;
+  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), background-color 180ms var(--ease-out);
+}
+
+.tool-toolbar__actions {
+  justify-content: flex-start;
+  margin-bottom: var(--space-2);
+}
+
+.tool-toolbar__actions .tool-btn {
+  flex: 0 0 auto;
+  min-width: 108px;
 }
 
 .tool-panel--output {
   min-height: 30rem;
   display: grid;
+  grid-template-rows: auto auto minmax(22rem, 1fr);
   align-content: start;
   gap: var(--space-3);
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
 }
 
 #outputField,
@@ -846,6 +900,7 @@ button:disabled {
   visibility: hidden;
   pointer-events: none;
   position: absolute;
+  inset: auto 0 0;
 }
 
 .tool-panel--output::after {
@@ -862,12 +917,55 @@ button:disabled {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.footer {
+  border-top: 1px solid color-mix(in srgb, var(--border) 26%, transparent);
+}
+
 .footer__container {
-  width: var(--container);
+  width: min(var(--container), calc(100% - 1.5rem));
+  padding: 0.45rem 0 0.5rem;
+  gap: 0.24rem;
+}
+
+.footer__tools,
+.footer__trust,
+.footer__system-line {
+  gap: 0.28rem 0.42rem;
+}
+
+.footer__system-line kbd {
+  background: color-mix(in srgb, var(--surface-elevated) 75%, transparent);
+}
+
+@media (max-width: 1160px) {
+  .tool-layout--elite .tool-layout__panel:first-child,
+  .tool-layout--elite .tool-layout__panel:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 1040px) {
   .topbar__inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar__inner {
+    width: calc(100% - 0.8rem);
+  }
+
+  .container,
+  .footer__container {
+    width: calc(100% - 1rem);
+  }
+
+  .footer__system-line {
+    font-size: 0.68rem;
+  }
+
+  .tool-toolbar__actions .tool-btn {
+    min-width: calc(50% - 0.45rem);
+    flex: 1 1 calc(50% - 0.45rem);
   }
 }
