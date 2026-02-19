@@ -2,13 +2,13 @@
   color-scheme: light;
 
   /* Core semantic theme variables */
-  --background: #f3f6fb;
+  --background: #f8f9fc;
   --surface: #ffffff;
-  --surface-elevated: #f8faff;
+  --surface-elevated: #fbfcff;
   --text-primary: #0b1220;
   --text-secondary: #334155;
-  --border: #c9d4e7;
-  --accent: #3f67ff;
+  --border: #d7dfed;
+  --accent: #4568f2;
 
   /* 4px spacing scale */
   --space-1: 0.25rem;
@@ -38,9 +38,9 @@
 
   /* Elevation + shadows (reduced glow) */
   --elevation-0: none;
-  --elevation-1: 0 6px 14px rgba(15, 23, 42, 0.08);
-  --elevation-2: 0 10px 26px rgba(15, 23, 42, 0.12);
-  --elevation-3: 0 18px 44px rgba(9, 16, 34, 0.16);
+  --elevation-1: 0 4px 10px rgba(15, 23, 42, 0.06);
+  --elevation-2: 0 8px 20px rgba(15, 23, 42, 0.1);
+  --elevation-3: 0 14px 30px rgba(9, 16, 34, 0.12);
 
   --shadow-xs: var(--elevation-1);
   --shadow-sm: var(--elevation-2);
