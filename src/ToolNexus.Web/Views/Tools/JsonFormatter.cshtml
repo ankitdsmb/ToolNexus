@@ -12,13 +12,12 @@
 }
 
 <article class="json-formatter-page tool-page" data-slug="@Model.Tool.Slug">
-    <header class="json-formatter-hero">
+    <header class="json-formatter-header">
         <div>
-            <p class="json-formatter-eyebrow">Developer Utility</p>
             <h1>@Model.Tool.Title</h1>
-            <p>@Model.Tool.SeoDescription</p>
+            <p class="json-formatter-description">@Model.Tool.SeoDescription</p>
         </div>
-        <div class="json-formatter-meta" aria-live="polite">
+        <div class="json-formatter-metrics" aria-live="polite">
             <p><span>Execution</span><strong id="perfTime">Ready</strong></p>
             <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
             <p><span>Payload</span><strong id="payloadStats">0 B</strong></p>
@@ -26,43 +25,49 @@
     </header>
 
     <section id="largeFileWarning" class="tool-warning" hidden>
-        Large payload detected (&gt; 1MB). Some operations may take longer.
+        Large payload detected (&gt; 1MB). Run operations only when needed.
     </section>
 
     <section class="json-toolbar" role="toolbar" aria-label="JSON formatter actions">
         <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
         <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
         <button id="validateBtn" class="tool-btn" type="button">Validate</button>
+        <button id="sortBtn" class="tool-btn" type="button">Sort Keys</button>
         <button id="autofixBtn" class="tool-btn" type="button">Auto-fix</button>
-        <button id="copyBtn" class="tool-btn" type="button">Copy Result</button>
-        <button id="downloadBtn" class="tool-btn" type="button">Download</button>
-        <!-- Add these new buttons to the toolbar -->
-        <button id="compressBtn" class="tool-btn" type="button">Compress</button>
         <button id="escapeBtn" class="tool-btn" type="button">Escape</button>
         <button id="unescapeBtn" class="tool-btn" type="button">Unescape</button>
-        <button id="sortBtn" class="tool-btn" type="button">Sort Keys</button>
-        <button id="statsBtn" class="tool-btn" type="button">Statistics</button>
+        <button id="copyBtn" class="tool-btn" type="button">Copy</button>
+        <button id="downloadBtn" class="tool-btn" type="button">Download</button>
+        <button id="clearBtn" class="tool-btn" type="button">Reset</button>
 
-        <label class="tool-toggle"><input id="treeToggle" type="checkbox" /> JSON Tree</label>
-        <label class="tool-toggle"><input id="diffToggle" type="checkbox" /> Split Diff</label>
         <label class="tool-toggle"><input id="wrapToggle" type="checkbox" /> Word Wrap</label>
+        <label class="tool-toggle"><input id="diffToggle" type="checkbox" /> Diff View</label>
     </section>
 
-    <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
+    <section id="errorBox" class="tool-error" role="alert" aria-live="assertive" hidden>
+        <h2 id="errorTitle" class="tool-error-title"></h2>
+        <p id="errorDetail" class="tool-error-detail"></p>
+        <p id="errorLocation" class="tool-error-location" hidden></p>
+    </section>
 
     <section class="json-workspace">
         <section class="json-panel">
-            <div class="panel-header"><h2>Input</h2><p>Drop a JSON file or paste content to auto-format.</p></div>
+            <div class="panel-header">
+                <h2>Input</h2>
+                <p>Paste JSON or drop a file. Use Ctrl+Enter to format.</p>
+            </div>
             <div id="dropZone" class="drop-zone">
                 <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
             </div>
         </section>
 
         <section class="json-panel">
-            <div class="panel-header"><h2>Output</h2><p id="resultStatus">No output yet.</p></div>
+            <div class="panel-header">
+                <h2>Output</h2>
+                <p id="resultStatus">No output yet.</p>
+            </div>
             <div id="outputEditor" class="editor-surface" aria-label="JSON output editor"></div>
             <div id="diffEditor" class="editor-surface" hidden></div>
-            <div id="treeView" class="tree-view" hidden></div>
         </section>
     </section>
 
