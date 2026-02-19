@@ -81,7 +81,18 @@ public sealed class ToolsController(
         {
             return View("JsonFormatter", viewModel);
         }
-
+        else if (string.Equals(tool.Slug, "base64-decode", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("base64Decode", viewModel);
+        }
+        else if (string.Equals(tool.Slug, "base64-encode", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("base64Encode", viewModel);
+        }
+        else if (string.Equals(tool.Slug, "json-to-csv", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("json2csv", viewModel);
+        }
         return View("Tool", viewModel);
     }
 

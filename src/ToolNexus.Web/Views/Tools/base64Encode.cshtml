@@ -1,0 +1,438 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+    ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["JsonLd"] = Model.Seo.JsonLd;
+    ViewData["Keywords"] = Model.Seo.Keywords;
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/tools/base64-encode.css" asp-append-version="true" />
+    <meta property="og:title" content="@Model.Seo.Title" />
+    <meta property="og:description" content="@Model.Seo.Description" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="@Model.Seo.CanonicalUrl" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Model.Seo.Title" />
+    <meta name="twitter:description" content="@Model.Seo.Description" />
+}
+
+<article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
+    <header class="tool-page__heading">
+        <div>
+            <h1>@Model.Tool.Title</h1>
+            <p class="tool-page__description">@Model.Tool.SeoDescription</p>
+        </div>
+        <div class="tool-page__meta" aria-live="polite">
+            <p><span>Action</span><strong id="currentAction">@Model.Tool.Actions.FirstOrDefault()</strong></p>
+            <p><span>Encoding</span><strong id="encodingState" class="encoding-state">UTF-8</strong></p>
+            <p><span>Size</span><strong id="payloadSize">0 B</strong></p>
+            <p><span>Time</span><strong id="perfTime">0 ms</strong></p>
+        </div>
+    </header>
+
+    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace">
+        <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
+            <div class="panel-header">
+                <h2 id="toolInputHeading">Input</h2>
+                <div class="panel-header__actions">
+                    <button id="clearInputBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Clear input" title="Clear input">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 6.5L11.5 3 13 4.5 9.5 8 13 11.5 11.5 13 8 9.5 4.5 13 3 11.5 6.5 8 3 4.5 4.5 3 8 6.5z" />
+                        </svg>
+                    </button>
+                    <button id="pasteBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Paste from clipboard" title="Paste from clipboard">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M10 2H6a1 1 0 0 0-1 1v1h6V3a1 1 0 0 0-1-1zm2 2V3a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v1H3v10h10V4h-1z" />
+                        </svg>
+                    </button>
+                    <button id="uploadBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Upload text file" title="Upload text file">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 2L3 7h3v4h4V7h3L8 2z M2 13h12v1H2v-1z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="tool-page__action-selector">
+                <label for="actionSelect">Select Action</label>
+                <select id="actionSelect" class="tool-select" aria-describedby="actionDescription">
+                    @foreach (var action in Model.Tool.Actions)
+                    {
+                        <option value="@action.ToLowerInvariant()">@action</option>
+                    }
+                </select>
+                <p id="actionDescription" class="action-description">
+                    <span id="encodeDesc" class="action-desc" data-action="encode">Convert text to Base64 encoded string (UTF-8)</span>
+                </p>
+            </div>
+
+            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
+                <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="tool-btn__label" data-loading-label="Encoding…" data-default-label="Encode">Encode</span>
+                </button>
+                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4 4v10h8V4H4zm1 1h6v8H5V5z M6 2h6v1H6V2z" />
+                    </svg>
+                    Copy Result
+                </button>
+                <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 12L3 7h3V2h4v5h3l-5 5z M2 13h12v1H2v-1z" />
+                    </svg>
+                    Download
+                </button>
+                <button id="shareBtn" class="tool-btn tool-btn--ghost" type="button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M12 10a2 2 0 0 0-1.4.6l-4.5-2.7c0-.3.1-.6.1-.9s0-.6-.1-.9l4.5-2.7c.4.3.9.6 1.4.6a2 2 0 1 0-2-2l-4.5 2.7a2 2 0 1 0 0 2.8l4.5 2.7A2 2 0 1 0 12 10z" />
+                    </svg>
+                    Share
+                </button>
+            </div>
+
+            <p class="shortcut-hint" id="editorShortcutHint">
+                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to encode |
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> to copy |
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>U</kbd> for URL-safe
+            </p>
+
+            <div class="tool-options">
+                <details class="tool-options__details" open>
+                    <summary>Encoding Options</summary>
+                    <div class="tool-options__content">
+                        <div class="tool-options__row">
+                            <label for="encodingSelect" class="tool-label">Character Encoding:</label>
+                            <select id="encodingSelect" class="tool-select tool-select--small">
+                                <option value="utf-8">UTF-8 (Recommended)</option>
+                                <option value="ascii">ASCII</option>
+                                <option value="utf-16le">UTF-16 LE</option>
+                                <option value="utf-16be">UTF-16 BE</option>
+                                <option value="latin1">Latin-1 (ISO-8859-1)</option>
+                            </select>
+                        </div>
+                        <div class="tool-options__row">
+                            <label class="tool-checkbox">
+                                <input type="checkbox" id="urlSafeCheck">
+                                <span>URL-safe Base64</span>
+                                <small>Replace +/ with -_ (no padding)</small>
+                            </label>
+                            <label class="tool-checkbox">
+                                <input type="checkbox" id="omitPaddingCheck">
+                                <span>Omit padding</span>
+                                <small>Remove trailing = characters</small>
+                            </label>
+                        </div>
+                        <div class="tool-options__row">
+                            <label class="tool-checkbox">
+                                <input type="checkbox" id="lineBreakCheck">
+                                <span>Add line breaks</span>
+                                <small>Break every 76 characters (MIME)</small>
+                            </label>
+                            <label class="tool-checkbox">
+                                <input type="checkbox" id="stripNullCheck" checked>
+                                <span>Strip null characters</span>
+                                <small>Remove \u0000 from input</small>
+                            </label>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="sample-panel">
+                <h3>Sample Data</h3>
+                <div class="sample-panel__content">
+                    <pre id="sampleInput" class="sample-panel__pre">@Model.Tool.ExampleInput</pre>
+                    <button id="loadSampleBtn" class="tool-btn tool-btn--small" type="button">Load Sample</button>
+                </div>
+                <div class="sample-panel__examples">
+                    <button class="sample-example" data-example="text">Plain Text</button>
+                    <button class="sample-example" data-example="json">JSON</button>
+                    <button class="sample-example" data-example="html">HTML</button>
+                    <button class="sample-example" data-example="unicode">Unicode</button>
+                </div>
+            </div>
+
+            <div class="editor-field">
+                <label for="inputEditor" class="editor-label">
+                    Text to Encode
+                    <span id="inputStats" class="editor-stats">
+                        <span id="charCount">0 chars</span> |
+                        <span id="byteCount">0 B</span>
+                    </span>
+                </label>
+                <textarea id="inputEditor" class="tool-textarea tool-textarea--mono" aria-describedby="editorShortcutHint" placeholder="Enter text to encode to Base64...">@Model.Tool.ExampleInput</textarea>
+                <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
+            </div>
+
+            <div class="input-analysis" id="inputAnalysis" hidden>
+                <h4>Input Analysis</h4>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <span class="analysis-label">Words:</span>
+                        <span id="wordCount" class="analysis-value">0</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">Lines:</span>
+                        <span id="lineCount" class="analysis-value">0</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">Non-ASCII:</span>
+                        <span id="nonAsciiCount" class="analysis-value">0</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">Null chars:</span>
+                        <span id="nullCharCount" class="analysis-value">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading">
+            <div class="panel-header">
+                <h2 id="toolOutputHeading">Output</h2>
+                <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">
+                    <span class="result-indicator__dot"></span>
+                    <span class="result-indicator__text">Ready</span>
+                </p>
+            </div>
+
+            <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
+
+            <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
+                <div class="tool-empty-state__icon" aria-hidden="true">🔐</div>
+                <strong>No output yet</strong>
+                <p>Enter text and click Encode to generate Base64</p>
+                <div class="tool-empty-state__tips">
+                    <span class="shortcut-hint">💡 Tip: Try the sample data to get started</span>
+                    <span class="shortcut-hint">⌨️ Use Ctrl/Cmd + Enter for quick encode</span>
+                    <span class="shortcut-hint">📁 Drop a text file anywhere to load it</span>
+                </div>
+            </div>
+
+            <div class="editor-field" id="outputField" hidden>
+                <div class="editor-field__header">
+                    <label for="outputEditor" class="editor-label">
+                        Base64 Output
+                        <span id="outputStats" class="editor-stats">
+                            <span id="outputLength">0 chars</span> |
+                            <span id="outputBytes">0 B</span>
+                            <span id="expansionRatio" class="expansion-badge">+0%</span>
+                        </span>
+                    </label>
+                    <div class="editor-field__actions">
+                        <button id="copyOutputBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Copy output" title="Copy output">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4 4v10h8V4H4zm1 1h6v8H5V5z M6 2h6v1H6V2z" />
+                            </svg>
+                        </button>
+                        <button id="downloadOutputBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Download output" title="Download output">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 12L3 7h3V2h4v5h3l-5 5z M2 13h12v1H2v-1z" />
+                            </svg>
+                        </button>
+                        <button id="viewRawBtn" class="tool-btn tool-btn--icon" type="button" aria-label="View raw bytes" title="View raw bytes">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M2 2v12h12V2H2zm1 1h10v10H3V3z M5 5h6v1H5V5z M5 7h6v1H5V7z M5 9h6v1H5V9z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="outputEditor" class="tool-textarea tool-textarea--mono" readonly placeholder="Base64 output will appear here..." wrap="off"></textarea>
+                <div id="outputEditorSurface" class="editor-surface" aria-hidden="true"></div>
+
+                <div id="rawBytesView" class="raw-bytes-view" hidden>
+                    <h4>Raw Bytes (Hex)</h4>
+                    <pre id="rawBytesHex" class="raw-bytes-hex"></pre>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <section class="tool-panel tool-ux" aria-labelledby="toolUxHeading">
+        <div class="panel-header">
+            <h2 id="toolUxHeading">Developer UX Layer</h2>
+            <p class="panel-header__description">Save and manage your frequently used text snippets</p>
+        </div>
+
+        <div class="tool-ux__grid">
+            <section class="ux-section">
+                <h3 class="ux-section__title">
+                    <span>📌 Pinned + Recent</span>
+                    <button id="clearRecentBtn" class="ux-section__action" title="Clear recent items">Clear</button>
+                </h3>
+                <ul id="uxPinnedRecent" class="ux-list">
+                    <li class="ux-list__empty">No recent items yet</li>
+                </ul>
+            </section>
+
+            <section class="ux-section">
+                <h3 class="ux-section__title">
+                    <span>📋 Encode History</span>
+                    <button id="clearHistoryBtn" class="ux-section__action" title="Clear history">Clear</button>
+                </h3>
+                <ul id="uxHistory" class="ux-list">
+                    <li class="ux-list__empty">No history yet</li>
+                </ul>
+            </section>
+
+            <section class="ux-section">
+                <h3 class="ux-section__title">
+                    <span>📚 Snippets</span>
+                </h3>
+                <div class="ux-collection-controls">
+                    <div class="ux-collection-input-group">
+                        <input id="collectionNameInput" type="text" placeholder="Snippet name" maxlength="32" class="ux-collection-input" />
+                        <button id="saveCollectionBtn" class="tool-btn tool-btn--primary" type="button">Save</button>
+                    </div>
+                    <p class="ux-collection-hint">Save text snippets for quick encoding</p>
+                </div>
+                <ul id="uxCollections" class="ux-list">
+                    <li class="ux-list__empty">No snippets saved</li>
+                </ul>
+            </section>
+        </div>
+    </section>
+
+    <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
+
+    @if (Model.Content is not null)
+    {
+        <section class="tool-panel tool-content">
+            <h2 class="tool-content__title">How It Works</h2>
+            <div class="tool-content__body">
+                @Html.Raw(Model.Content.LongArticle)
+            </div>
+
+            @if (Model.Content.Features.Any())
+            {
+                <div class="tool-features">
+                    <h3>Features</h3>
+                    <ul class="tool-features__list">
+                        @foreach (var feature in Model.Content.Features)
+                        {
+                            <li class="tool-features__item">
+                                <span class="tool-features__icon" aria-hidden="true">✓</span>
+                                @feature
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (Model.Content.Faqs.Any())
+            {
+                <div class="tool-faq">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="tool-faq__list">
+                        @foreach (var faq in Model.Content.Faqs)
+                        {
+                            <details class="tool-faq__item">
+                                <summary class="tool-faq__question">@faq.Question</summary>
+                                <div class="tool-faq__answer">@Html.Raw(faq.Answer)</div>
+                            </details>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.Content.RelatedTools.Any())
+            {
+                <div class="tool-related">
+                    <h3>Related Tools</h3>
+                    <ul class="tool-related__list">
+                        @foreach (var related in Model.Content.RelatedTools)
+                        {
+                            <li class="tool-related__item">
+                                <a href="/tools/@related.RelatedSlug" class="tool-related__link">@related.RelatedSlug</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </section>
+    }
+
+    <section class="tool-panel tool-help">
+        <h2 class="tool-help__title">Base64 Encoding Guide</h2>
+        <div class="tool-help__content">
+            <p>Base64 encoding converts binary data into an ASCII string format using 64 printable characters.</p>
+
+            <h4>How Encoding Works:</h4>
+            <ol>
+                <li>Text is converted to bytes using selected character encoding</li>
+                <li>Bytes are grouped into 24-bit (3-byte) chunks</li>
+                <li>Each chunk is split into four 6-bit values</li>
+                <li>Each 6-bit value maps to a Base64 character (A-Z, a-z, 0-9, +, /)</li>
+                <li>Padding (=) is added if the last chunk is incomplete</li>
+            </ol>
+
+            <h4>Encoding Options Explained:</h4>
+            <dl>
+                <dt><strong>Character Encoding</strong></dt>
+                <dd>Determines how text is converted to bytes. UTF-8 is recommended for universal compatibility.</dd>
+
+                <dt><strong>URL-safe Base64</strong></dt>
+                <dd>Replaces + with - and / with _ for use in URLs and filenames. Padding is usually omitted.</dd>
+
+                <dt><strong>MIME encoding</strong></dt>
+                <dd>Adds line breaks every 76 characters for email compatibility.</dd>
+            </dl>
+
+            <h4>Size Calculation:</h4>
+            <pre class="help-code">
+Input: n bytes
+Output: ceil(n / 3) * 4 bytes
+Overhead: ~33% larger</pre>
+
+            <h4>Common Use Cases:</h4>
+            <ul>
+                <li><strong>Data URLs</strong> - Embed images in CSS/HTML</li>
+                <li><strong>Email attachments</strong> - MIME encoding</li>
+                <li><strong>JWT tokens</strong> - URL-safe Base64</li>
+                <li><strong>API authentication</strong> - Basic auth headers</li>
+                <li><strong>JSON serialization</strong> - Store binary data</li>
+            </ul>
+
+            <h4>Keyboard Shortcuts:</h4>
+            <ul>
+                <li><kbd>Ctrl/Cmd + Enter</kbd> - Encode text</li>
+                <li><kbd>Ctrl/Cmd + Shift + C</kbd> - Copy output</li>
+                <li><kbd>Ctrl/Cmd + Shift + U</kbd> - Toggle URL-safe mode</li>
+                <li><kbd>Ctrl/Cmd + Shift + P</kbd> - Toggle padding</li>
+            </ul>
+        </div>
+    </section>
+</article>
+
+@section Scripts {
+    <script>
+        window.ToolNexusConfig = {
+          apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
+          toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
+          actions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Actions)),
+          exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
+          toolName: '@Model.Tool.Slug',
+          version: '1.0.0',
+          maxInputSize: 10 * 1024 * 1024, // 10MB
+          defaultEncoding: 'utf-8'
+        };
+    </script>
+
+    <script type="module" src="~/js/tools/base64-encode.js" asp-append-version="true"></script>
+
+    @if (Model.Tool.ClientSafeActions?.Any() == true)
+    {
+        <script type="module">
+            import { runTool } from '/js/tools/base64-encode.js';
+
+            window.ToolNexusModules = window.ToolNexusModules || {};
+            window.ToolNexusModules['base64-encode'] = {
+              runTool,
+              actions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
+            };
+        </script>
+    }
+}

@@ -1,0 +1,858 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+    ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["JsonLd"] = Model.Seo.JsonLd;
+    ViewData["Keywords"] = Model.Seo.Keywords;
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/tools/base64-decode.css" asp-append-version="true" />
+    <meta property="og:title" content="@Model.Seo.Title" />
+    <meta property="og:description" content="@Model.Seo.Description" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="@Model.Seo.CanonicalUrl" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Model.Seo.Title" />
+    <meta name="twitter:description" content="@Model.Seo.Description" />
+}
+
+<article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
+    <header class="tool-page__heading">
+        <div>
+            <h1>@Model.Tool.Title</h1>
+            <p class="tool-page__description">@Model.Tool.SeoDescription</p>
+        </div>
+        <div class="tool-page__meta" aria-live="polite">
+            <p><span>Action</span><strong id="currentAction">@Model.Tool.Actions.FirstOrDefault()</strong></p>
+            <p><span>Status</span><strong id="validationState" class="validation-state">Ready</strong></p>
+            <p><span>Size</span><strong id="payloadSize">0 B</strong></p>
+        </div>
+    </header>
+
+    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace">
+        <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
+            <div class="panel-header">
+                <h2 id="toolInputHeading">Input</h2>
+                <div class="panel-header__actions">
+                    <button id="clearInputBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Clear input" title="Clear input">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 6.5L11.5 3 13 4.5 9.5 8 13 11.5 11.5 13 8 9.5 4.5 13 3 11.5 6.5 8 3 4.5 4.5 3 8 6.5z" />
+                        </svg>
+                    </button>
+                    <button id="pasteBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Paste from clipboard" title="Paste from clipboard">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M10 2H6a1 1 0 0 0-1 1v1h6V3a1 1 0 0 0-1-1zm2 2V3a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v1H3v10h10V4h-1z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="tool-page__action-selector">
+                <label for="actionSelect">Select Action</label>
+                <select id="actionSelect" class="tool-select" aria-describedby="actionDescription">
+                    @foreach (var action in Model.Tool.Actions)
+                    {
+                        <option value="@action.ToLowerInvariant()">@action</option>
+                    }
+                </select>
+                <p id="actionDescription" class="action-description">
+                    <span id="decodeDesc" class="action-desc" data-action="decode">Convert Base64 string back to readable text</span>
+                    <span id="encodeDesc" class="action-desc" data-action="encode" hidden>Convert text to Base64 encoded string</span>
+                    <span id="validateDesc" class="action-desc" data-action="validate" hidden>Check if input is valid Base64 format</span>
+                </p>
+            </div>
+
+            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
+                <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Run">Run</span>
+                </button>
+                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4 4v10h8V4H4zm1 1h6v8H5V5z M6 2h6v1H6V2z" />
+                    </svg>
+                    Copy Result
+                </button>
+                <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 12L3 7h3V2h4v5h3l-5 5z M2 13h12v1H2v-1z" />
+                    </svg>
+                    Download
+                </button>
+                <button id="shareBtn" class="tool-btn tool-btn--ghost" type="button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M12 10a2 2 0 0 0-1.4.6l-4.5-2.7c0-.3.1-.6.1-.9s0-.6-.1-.9l4.5-2.7c.4.3.9.6 1.4.6a2 2 0 1 0-2-2l-4.5 2.7a2 2 0 1 0 0 2.8l4.5 2.7A2 2 0 1 0 12 10z" />
+                    </svg>
+                    Share
+                </button>
+            </div>
+
+            <p class="shortcut-hint" id="editorShortcutHint">
+                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run |
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> to copy
+            </p>
+
+            <div class="tool-options">
+                <details class="tool-options__details" open>
+                    <summary>Advanced Options</summary>
+                    <div class="tool-options__content">
+                        <label class="tool-checkbox">
+                            <input type="checkbox" id="strictModeCheck">
+                            <span>Strict Mode</span>
+                            <small>Require correct padding and length</small>
+                        </label>
+                        <label class="tool-checkbox">
+                            <input type="checkbox" id="autoDetectCheck" checked>
+                            <span>Auto-detect Encoding</span>
+                            <small>Try to detect UTF-8 vs Latin-1</small>
+                        </label>
+                        <label class="tool-checkbox">
+                            <input type="checkbox" id="handleUrlSafeCheck" checked>
+                            <span>Handle URL-safe Base64</span>
+                            <small>Convert -_ to +/ automatically</small>
+                        </label>
+                    </div>
+                </details>
+            </div>
+
+            <div class="sample-panel">
+                <h3>Sample Data</h3>
+                <div class="sample-panel__content">
+                    <pre id="sampleInput" class="sample-panel__pre">@Model.Tool.ExampleInput</pre>
+                    <button id="loadSampleBtn" class="tool-btn tool-btn--small" type="button">Load Sample</button>
+                </div>
+            </div>
+
+            <div class="editor-field">
+                <label for="inputEditor" class="editor-label">
+                    Tool input
+                    <span id="inputStats" class="editor-stats">0 chars | 0 B</span>
+                </label>
+                <textarea id="inputEditor" class="tool-textarea" aria-describedby="editorShortcutHint" placeholder="Enter Base64 string or text here...">@Model.Tool.ExampleInput</textarea>
+                <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
+            </div>
+        </section>
+
+        <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading">
+            <div class="panel-header">
+                <h2 id="toolOutputHeading">Output</h2>
+                <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">
+                    <span class="result-indicator__dot"></span>
+                    <span class="result-indicator__text">Ready</span>
+                </p>
+            </div>
+
+            <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
+
+            <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
+                <div class="tool-empty-state__icon" aria-hidden="true">🔐</div>
+                <strong>No output yet</strong>
+                <p>Run the selected action to see the result here</p>
+                <div class="tool-empty-state__tips">
+                    <span class="shortcut-hint">💡 Tip: Try the sample data to get started</span>
+                    <span class="shortcut-hint">⌨️ Use Ctrl/Cmd + Enter for quick run</span>
+                </div>
+            </div>
+
+            <div class="editor-field" id="outputField" hidden>
+                <div class="editor-field__header">
+                    <label for="outputEditor" class="editor-label">
+                        Tool output
+                        <span id="outputStats" class="editor-stats">0 chars | 0 B</span>
+                    </label>
+                    <div class="editor-field__actions">
+                        <button id="copyOutputBtn" class="tool-btn tool-btn--icon" type="button" aria-label="Copy output" title="Copy output">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4 4v10h8V4H4zm1 1h6v8H5V5z M6 2h6v1H6V2z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="outputEditor" class="tool-textarea" readonly placeholder="Output will appear here..."></textarea>
+                <div id="outputEditorSurface" class="editor-surface" aria-hidden="true"></div>
+            </div>
+        </section>
+    </section>
+
+    <section class="tool-panel tool-ux" aria-labelledby="toolUxHeading">
+        <div class="panel-header">
+            <h2 id="toolUxHeading">Developer UX Layer</h2>
+            <p class="panel-header__description">Save and manage your frequently used configurations</p>
+        </div>
+
+        <div class="tool-ux__grid">
+            <section class="ux-section">
+                <h3 class="ux-section__title">
+                    <span>📌 Pinned + Recent</span>
+                    <button id="clearRecentBtn" class="ux-section__action" title="Clear recent items">Clear</button>
+                </h3>
+                <ul id="uxPinnedRecent" class="ux-list">
+                    <li class="ux-list__empty">No recent items yet</li>
+                </ul>
+            </section>
+
+            <section class="ux-section">
+                <h3 class="ux-section__title">
+                    <span>📋 Run History</span>
+                    <button id="clearHistoryBtn" class="ux-section__action" title="Clear history">Clear</button>
+                </h3>
+                <ul id="uxHistory" class="ux-list">
+                    <li class="ux-list__empty">No history yet</li>
+                </ul>
+            </section>
+
+            <section class="ux-section">
+                <h3 class="ux-section__title">
+                    <span>📚 Collections</span>
+                </h3>
+                <div class="ux-collection-controls">
+                    <div class="ux-collection-input-group">
+                        <input id="collectionNameInput" type="text" placeholder="Collection name" maxlength="32" class="ux-collection-input" />
+                        <button id="saveCollectionBtn" class="tool-btn tool-btn--primary" type="button">Save</button>
+                    </div>
+                    <p class="ux-collection-hint">Save current config for later use</p>
+                </div>
+                <ul id="uxCollections" class="ux-list">
+                    <li class="ux-list__empty">No collections saved</li>
+                </ul>
+            </section>
+        </div>
+    </section>
+
+    <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
+
+    @if (Model.Content is not null)
+    {
+        <section class="tool-panel tool-content">
+            <h2 class="tool-content__title">How It Works</h2>
+            <div class="tool-content__body">
+                @Html.Raw(Model.Content.LongArticle)
+            </div>
+
+            @if (Model.Content.Features.Any())
+            {
+                <div class="tool-features">
+                    <h3>Features</h3>
+                    <ul class="tool-features__list">
+                        @foreach (var feature in Model.Content.Features)
+                        {
+                            <li class="tool-features__item">
+                                <span class="tool-features__icon" aria-hidden="true">✓</span>
+                                @feature
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (Model.Content.Faqs.Any())
+            {
+                <div class="tool-faq">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="tool-faq__list">
+                        @foreach (var faq in Model.Content.Faqs)
+                        {
+                            <details class="tool-faq__item">
+                                <summary class="tool-faq__question">@faq.Question</summary>
+                                <div class="tool-faq__answer">@Html.Raw(faq.Answer)</div>
+                            </details>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.Content.RelatedTools.Any())
+            {
+                <div class="tool-related">
+                    <h3>Related Tools</h3>
+                    <ul class="tool-related__list">
+                        @foreach (var related in Model.Content.RelatedTools)
+                        {
+                            <li class="tool-related__item">
+                                <a href="/tools/@related.RelatedSlug" class="tool-related__link">@related.RelatedSlug</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </section>
+    }
+
+    <section class="tool-panel tool-help">
+        <h2 class="tool-help__title">Need Help?</h2>
+        <div class="tool-help__content">
+            <p>Base64 is a binary-to-text encoding scheme that represents binary data in an ASCII string format.</p>
+            <h4>Common Use Cases:</h4>
+            <ul>
+                <li>Email attachments (MIME)</li>
+                <li>Data URLs in web development</li>
+                <li>Storing binary data in JSON</li>
+                <li>Authentication tokens</li>
+            </ul>
+            <h4>Quick Tips:</h4>
+            <ul>
+                <li>Base64 strings are typically 33% larger than the original data</li>
+                <li>Valid Base64 uses only A-Z, a-z, 0-9, +, /, and = for padding</li>
+                <li>URL-safe Base64 replaces + with - and / with _</li>
+                <li>Use Strict Mode when working with encoded files</li>
+            </ul>
+        </div>
+    </section>
+</article>
+
+@section Scripts {
+    <script>
+        window.ToolNexusConfig = {
+          apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
+          toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
+          actions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Actions)),
+          exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
+          toolName: '@Model.Tool.Slug',
+          version: '1.0.0'
+        };
+    </script>
+    <script type="module" src="~/js/tools/base64-decode.js" asp-append-version="true"></script>
+
+    @if (Model.Tool.ClientSafeActions?.Any() == true)
+    {
+        <script type="module">
+            import { runTool } from '/js/tools/base64-decode.js';
+
+            window.ToolNexusModules = window.ToolNexusModules || {};
+            window.ToolNexusModules['base64-decode'] = {
+              runTool,
+              actions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
+            };
+        </script>
+    }
+}
+<style>
+    /* base64-decode.css - Enhanced styling for Base64 decoder */
+
+    .tool-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Tool Layout */
+    .tool-layout--elite {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .tool-panel {
+        background: var(--surface-color, #1e1e1e);
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color, #333);
+    }
+
+    /* Panel Headers */
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+    /* Action Selector */
+    .tool-page__action-selector {
+        margin-bottom: 1.5rem;
+    }
+
+        .tool-page__action-selector label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary, #888);
+        }
+
+        .tool-page__action-selector select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--input-bg, #2d2d2d);
+            color: var(--text-primary, #fff);
+            border: 1px solid var(--border-color, #444);
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+            .tool-page__action-selector select:hover {
+                border-color: var(--primary-color, #4a9eff);
+            }
+
+            .tool-page__action-selector select:focus {
+                outline: none;
+                border-color: var(--primary-color, #4a9eff);
+                box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+            }
+
+    /* Toolbar Actions */
+    .tool-toolbar__actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .tool-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--btn-bg, #2d2d2d);
+        color: var(--text-primary, #fff);
+        border: 1px solid transparent;
+    }
+
+    .tool-btn--primary {
+        background: var(--primary-color, #4a9eff);
+        color: white;
+    }
+
+        .tool-btn--primary:hover:not(:disabled) {
+            background: var(--primary-hover, #3a7acc);
+            transform: translateY(-1px);
+        }
+
+    .tool-btn--outline {
+        border-color: var(--border-color, #444);
+        background: transparent;
+    }
+
+        .tool-btn--outline:hover:not(:disabled) {
+            border-color: var(--primary-color, #4a9eff);
+            color: var(--primary-color, #4a9eff);
+        }
+
+    .tool-btn--ghost {
+        background: transparent;
+        border-color: transparent;
+    }
+
+        .tool-btn--ghost:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+    .tool-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Button spinner */
+    .tool-btn .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .tool-btn[aria-busy="true"] .spinner {
+        display: inline-block;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Copy success animation */
+    .copy-success {
+        animation: copyFlash 0.45s ease;
+    }
+
+    @@keyframes copyFlash {
+        0%, 100% {
+            background-color: transparent;
+        }
+
+        50% {
+            background-color: var(--success-color, #28a745);
+            color: white;
+        }
+    }
+
+    /* Shortcut Hint */
+    .shortcut-hint {
+        font-size: 0.85rem;
+        color: var(--text-secondary, #888);
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Sample Panel */
+    .sample-panel {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--surface-hover, #252525);
+        border-radius: 6px;
+    }
+
+        .sample-panel h3 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            color: var(--text-secondary, #888);
+        }
+
+        .sample-panel pre {
+            margin: 0;
+            padding: 0.75rem;
+            background: var(--surface-color, #1e1e1e);
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+            .sample-panel pre:hover {
+                background: var(--surface-hover, #2a2a2a);
+            }
+
+    /* Editor Field */
+    .editor-field {
+        width: 100%;
+    }
+
+    .editor-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-secondary, #888);
+    }
+
+    .editor-surface {
+        border: 1px solid var(--border-color, #444);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 1rem;
+        background: var(--input-bg, #2d2d2d);
+        color: var(--text-primary, #fff);
+        border: 1px solid var(--border-color, #444);
+        border-radius: 6px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color, #4a9eff);
+            box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+        }
+
+        textarea[readonly] {
+            background: var(--surface-hover, #252525);
+            cursor: default;
+        }
+
+    /* Result Indicator */
+    .result-indicator {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .result-indicator--idle {
+        background: var(--surface-hover, #252525);
+        color: var(--text-secondary, #888);
+    }
+
+    .result-indicator--success {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+
+    .result-indicator--error {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .result-indicator--warning {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    /* Tool Error */
+    .tool-error {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    /* Empty State */
+    .tool-empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: var(--surface-hover, #252525);
+        border-radius: 6px;
+        color: var(--text-secondary, #888);
+    }
+
+    .tool-empty-state__icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .tool-empty-state strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary, #fff);
+    }
+
+    /* UX Layer */
+    .tool-ux {
+        margin-top: 2rem;
+        grid-column: span 2;
+    }
+
+    .tool-ux__grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .tool-ux h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.1rem;
+        color: var(--text-secondary, #888);
+    }
+
+    .ux-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background: var(--surface-hover, #252525);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .ux-list__item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border-color, #333);
+        transition: background-color 0.2s;
+    }
+
+        .ux-list__item:last-child {
+            border-bottom: none;
+        }
+
+        .ux-list__item:hover {
+            background: var(--surface-color, #1e1e1e);
+        }
+
+    .ux-list__item-title {
+        flex: 1;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text-primary, #fff);
+    }
+
+    .ux-list__item-action {
+        padding: 0.25rem 0.75rem;
+        background: var(--btn-bg, #2d2d2d);
+        border: 1px solid var(--border-color, #444);
+        border-radius: 4px;
+        color: var(--text-primary, #fff);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .ux-list__item-action:hover {
+            background: var(--primary-color, #4a9eff);
+            border-color: var(--primary-color, #4a9eff);
+        }
+
+    .ux-collection-controls {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+        .ux-collection-controls input {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--input-bg, #2d2d2d);
+            color: var(--text-primary, #fff);
+            border: 1px solid var(--border-color, #444);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+    /* Toast Region */
+    .toast-region {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-width: 350px;
+    }
+
+    .toast {
+        padding: 1rem 2.5rem 1rem 1rem;
+        background: var(--surface-color, #2d2d2d);
+        color: var(--text-primary, #fff);
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border-left: 4px solid;
+        animation: slideIn 0.3s ease;
+        position: relative;
+        border: 1px solid var(--border-color, #444);
+    }
+
+    .toast--success {
+        border-left-color: #28a745;
+    }
+
+    .toast--error {
+        border-left-color: #dc3545;
+    }
+
+    .toast--warning {
+        border-left-color: #ffc107;
+    }
+
+    .toast--info {
+        border-left-color: #4a9eff;
+    }
+
+    .toast-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        color: var(--text-secondary, #888);
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary, #fff);
+        }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .tool-layout--elite {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .tool-ux__grid {
+            grid-template-columns: 1fr;
+        }
+
+        .toast-region {
+            bottom: 1rem;
+            right: 1rem;
+            left: 1rem;
+            max-width: none;
+        }
+
+        .tool-toolbar__actions {
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    /* Dark mode optimizations */
+    @@media (prefers-color-scheme: dark) {
+        :root {
+            --surface-color: #1e1e1e;
+            --surface-hover: #252525;
+            --text-primary: #fff;
+            --text-secondary: #888;
+            --border-color: #333;
+            --input-bg: #2d2d2d;
+            --btn-bg: #2d2d2d;
+        }
+    }
+
+    /* High contrast mode */
+    @@media (prefers-contrast: high) {
+        .tool-btn {
+            border: 2px solid currentColor;
+        }
+
+        .result-indicator {
+            border: 2px solid currentColor;
+        }
+    }
+</style>
