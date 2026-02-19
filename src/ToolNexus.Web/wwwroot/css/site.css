@@ -1892,3 +1892,198 @@ html[data-theme='dark'] .trust-section { background: #0f1729; }
     gap: var(--space-2);
   }
 }
+
+/* ===== Elite design-system hardening overrides ===== */
+:root {
+  --section-rhythm: var(--space-6);
+  --content-rhythm: var(--space-4);
+  --control-height: 48px;
+  --border-soft: color-mix(in srgb, var(--border) 82%, transparent);
+}
+
+body { background: var(--layer-0-bg); }
+
+.topbar,
+.hero,
+.tool-section,
+.trust-section,
+.footer {
+  background: var(--layer-1-bg);
+}
+
+.card,
+.tool-card,
+.trust-stat,
+.testimonial-card,
+.privacy-card,
+.trust-links,
+.tools-index__toolbar,
+.tool-panel {
+  background: var(--layer-2-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-1);
+}
+
+.card:hover,
+.tool-card:hover,
+.trust-link:hover,
+.tool-btn:hover,
+.hero-btn:hover {
+  box-shadow: var(--elevation-2);
+}
+
+.container { padding-block: var(--space-4) var(--space-7); }
+.hero,
+.tool-section,
+.trust-section,
+.footer { margin-block-start: var(--section-rhythm); }
+
+.hero__container,
+#featuredTools,
+#trust,
+.footer__container,
+.tool-layout,
+.tool-page,
+.tool-discovery,
+.trust-grid,
+.testimonial-grid,
+.tools-index,
+.tool-toolbar,
+.static-page,
+.contact-form {
+  gap: var(--content-rhythm);
+}
+
+.hero__container,
+#featuredTools,
+#trust,
+.footer__container,
+.tool-panel,
+.privacy-card,
+.testimonial-card,
+.card,
+.tool-card,
+.trust-links {
+  padding: var(--space-4);
+}
+
+.tool-discovery__row,
+.tool-discovery__chips,
+.tool-group,
+.tool-group__header,
+.card__header,
+.card__title-wrap,
+.card__highlights,
+.testimonial-card__meta,
+.footer__column,
+.ux-collection-controls { gap: var(--space-2); }
+
+.section-title,
+.tool-page__heading h1,
+.hero__title { line-height: 1.2; }
+
+.section-subtitle,
+.hero__subtitle,
+.tool-page__heading p,
+.card p,
+.card__highlights,
+.trust-stat__meta,
+.testimonial-card__quote { line-height: 1.55; color: var(--text-secondary); }
+
+.tool-btn,
+.hero-btn,
+.topbar__explore,
+.theme-toggle,
+.topbar__search-shell,
+.chip,
+.trust-link,
+.card__cta {
+  min-height: var(--control-height);
+  border-radius: var(--radius-sm);
+}
+
+.tool-btn,
+.hero-btn,
+.card__cta {
+  padding-inline: var(--space-3);
+  border: 1px solid var(--border-soft);
+}
+
+.tool-btn--primary,
+.hero-btn--primary,
+.card__cta {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 88%, #94abff), var(--accent));
+  color: #fff;
+  border-color: color-mix(in srgb, var(--accent) 75%, transparent);
+  box-shadow: 0 0 0 var(--space-1) color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.tool-btn--outline,
+.tool-btn--ghost,
+.hero-btn--secondary,
+.chip,
+.trust-link {
+  background: var(--layer-2-bg);
+  color: var(--text-primary);
+}
+
+.card {
+  min-height: 320px;
+  grid-template-rows: auto auto auto 1fr auto;
+  align-content: start;
+}
+
+.card__highlights { margin: 0; }
+.card__cta { margin-top: auto; }
+
+.trust-stat__value { margin-block: var(--space-1) var(--space-2); }
+
+html[data-theme='dark'] .hero,
+html[data-theme='dark'] .tool-section,
+html[data-theme='dark'] .trust-section,
+html[data-theme='dark'] .footer {
+  background: color-mix(in srgb, var(--layer-1-bg) 92%, #020611);
+}
+
+html[data-theme='dark'] .card,
+html[data-theme='dark'] .tool-card,
+html[data-theme='dark'] .trust-stat,
+html[data-theme='dark'] .testimonial-card,
+html[data-theme='dark'] .privacy-card,
+html[data-theme='dark'] .trust-links,
+html[data-theme='dark'] .tools-index__toolbar,
+html[data-theme='dark'] .tool-panel {
+  background: color-mix(in srgb, var(--layer-2-bg) 90%, #000 10%);
+  border-color: color-mix(in srgb, var(--border) 92%, transparent);
+  box-shadow: var(--elevation-2);
+}
+
+@media (max-width: 1040px) {
+  .hero__container,
+  .trust-grid,
+  .tool-layout,
+  .testimonial-grid,
+  .contact-form__grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .container,
+  .hero__container,
+  #featuredTools,
+  #trust,
+  .footer__container,
+  .tool-panel,
+  .privacy-card,
+  .testimonial-card,
+  .card,
+  .tool-card,
+  .trust-links { padding: var(--space-3); }
+
+  .tool-btn,
+  .hero-btn,
+  .card__cta,
+  .topbar__explore,
+  .theme-toggle,
+  .topbar__search-shell { min-height: var(--space-6); }
+}
