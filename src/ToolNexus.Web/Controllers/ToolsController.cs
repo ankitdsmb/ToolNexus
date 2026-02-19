@@ -117,6 +117,9 @@ public sealed class ToolsController(
         {
             return View("htmlEntities", viewModel);
         }
+        else if (string.Equals(tool.Slug, "uuid-generator", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("uuidGenerator", viewModel);
         else if (string.Equals(tool.Slug, "url-encode", StringComparison.OrdinalIgnoreCase))
         {
             return View("urlEncode", viewModel);
