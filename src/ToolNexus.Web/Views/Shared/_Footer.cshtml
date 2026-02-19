@@ -1,52 +1,29 @@
 @model ToolNexus.Web.Models.Layout.LayoutFooterViewModel
 
 <footer class="footer">
-    <div class="footer__inner">
-        <div class="footer__meta">
-            <a href="/" class="footer__brand" aria-label="ToolNexus Home">
-                <span class="brand__dot" aria-hidden="true"></span>
-                <span>ToolNexus</span>
-            </a>
-            <p class="footer__tagline">Production-ready developer tooling for fast, privacy-first workflows.</p>
-            <p class="footer__creative">Built with late nights, blue gradients, and unreasonable optimism.</p>
-            <p class="footer__version" data-version-display="@Model.VersionDisplay" data-build-number="@Model.BuildNumber">Version @Model.VersionDisplay · Build @Model.BuildNumber</p>
-        </div>
-
-        <nav class="footer__links" aria-label="Footer Navigation">
-            <section class="footer__column" aria-label="Product links">
-                <p class="footer__title">Product</p>
-                <a href="/tools">Tools</a>
-                <a href="/about">About</a>
-                <a href="/contact-us">Contact</a>
-            </section>
-
-            <section class="footer__column" aria-label="Keyboard shortcuts">
-                <p class="footer__title">Keyboard Shortcuts</p>
-                <span>⌘K Open palette</span>
-                <span>⌘Enter Run tool</span>
-                <span>⌘Shift+S Share</span>
-                <span class="footer__build-chip">Build @Model.BuildNumber</span>
-            </section>
-
-            <section class="footer__column" aria-label="Support links">
-                <p class="footer__title">Support</p>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-                <a href="/disclaimer">Disclaimer</a>
-                <span>Version @Model.VersionDisplay</span>
-            </section>
-
-            <section class="footer__column" aria-label="Developer stack we love">
-                <p class="footer__title">Developer Stack We Love</p>
-                <span>DigitalOcean</span>
-                <span>JetBrains</span>
-                <span>GitHub</span>
-            </section>
-        </nav>
-
+    <div class="footer__container">
         <div class="footer__bottom">
-            <span>© @DateTime.UtcNow.Year ToolNexus</span>
-            <a class="footer__fuel-link" href="#" aria-label="Fuel ToolNexus">☕ Fuel ToolNexus</a>
-            <span>Built for developer velocity</span>
+            <span class="footer__brand">© 2026 ToolNexus</span>
+
+            <span class="footer__separator" aria-hidden="true">│</span>
+
+            <span class="footer__tagline">
+                Built for developer velocity
+            </span>
+
+            <span class="footer__separator" aria-hidden="true">│</span>
+
+            <span class="footer__version">
+                v1.0.0 · Build development-202602190606
+            </span>
+
+            <span class="footer__separator" aria-hidden="true">│</span>
+
+            <span class="footer__shortcuts" aria-label="Keyboard shortcuts">
+                <kbd>⌘K</kbd> Palette ·
+                <kbd>⌘Enter</kbd> Run ·
+                <kbd>⌘⇧S</kbd> Share
+            </span>
         </div>
     </div>
 </footer>
