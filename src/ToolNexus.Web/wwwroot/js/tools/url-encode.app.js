@@ -5,12 +5,14 @@ import { KEYBOARD, PROCESSING_LIMITS } from './url-encode.constants.js';
 import { normalizeInput } from './url-encode.normalizer.js';
 import { createInitialState } from './url-encode.state.js';
 import { formatNumber, getByteCount, getCharacterCount, writeClipboard } from './url-encode.utils.js';
+import { getKeyboardEventManager } from './keyboard-event-manager.js';
 
 class UrlEncodeApp {
   constructor(root) {
     this.root = root;
     this.state = createInitialState();
     this.dom = this.resolveDom(root);
+    this.disposeKeyboardHandler = () => {};
 
     if (!this.dom.inputEditor || !this.dom.outputEditor) {
       return;
@@ -50,25 +52,37 @@ class UrlEncodeApp {
     this.dom.plusSpaceToggle?.addEventListener('change', () => this.onConfigChanged());
     this.dom.autoEncodeToggle?.addEventListener('change', () => this.onConfigChanged());
 
-    document.addEventListener('keydown', (event) => {
-      if (!this.root.contains(event.target) && !this.root.contains(document.activeElement)) {
-        return;
-      }
+    this.disposeKeyboardHandler = getKeyboardEventManager().register({
+      root: this.root,
+      onKeydown: (event) => {
+        if (!event.ctrlKey && !event.metaKey) {
+          return;
+        }
 
-      if (!event.ctrlKey && !event.metaKey) {
-        return;
-      }
+        if (event.key === KEYBOARD.ENTER) {
+          event.preventDefault();
+          this.runEncode();
+        }
 
-      if (event.key === KEYBOARD.ENTER) {
-        event.preventDefault();
-        this.runEncode();
-      }
-
-      if (event.key.toLowerCase() === KEYBOARD.KEY_L) {
-        event.preventDefault();
-        this.clearAll();
+        if (event.key.toLowerCase() === KEYBOARD.KEY_L) {
+          event.preventDefault();
+          this.clearAll();
+        }
       }
     });
+  }
+
+  dispose() {
+    this.disposeKeyboardHandler();
+    this.disposeKeyboardHandler = () => {};
+
+    if (this.root?.[ROOT_APP_INSTANCE_KEY] === this) {
+      delete this.root[ROOT_APP_INSTANCE_KEY];
+    }
+  }
+
+  destroy() {
+    this.dispose();
   }
 
   onInputChanged() {
