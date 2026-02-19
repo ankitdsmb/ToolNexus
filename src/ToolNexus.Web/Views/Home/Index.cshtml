@@ -26,10 +26,11 @@
 <div class="home-page">
 <partial name="_Hero" />
 
-<section class="tool-section" data-reveal id="featuredTools" aria-labelledby="featuredToolsHeading">
+<section class="tool-section home-surface home-surface--base" data-reveal id="featuredTools" aria-labelledby="featuredToolsHeading">
     <header class="tool-section__header">
-        <h2 id="featuredToolsHeading" class="section-title">Featured Tools</h2>
-        <p class="section-subtitle">Start with our most-used utilities for everyday engineering workflows.</p>
+        <p class="tool-section__eyebrow">Tool discovery</p>
+        <h2 id="featuredToolsHeading" class="section-title">Find the right utility in seconds</h2>
+        <p class="section-subtitle">Search fast, launch instantly, and keep your workflow in one place.</p>
         <div class="tool-discovery" aria-label="Tool discovery controls">
             <form class="hero__search" role="search" aria-label="Filter featured tools">
                 <label for="toolSearch" class="u-sr-only">Search featured developer tools</label>
@@ -87,16 +88,14 @@
 
             <a class="card" href="/tools/@slug" data-tool-slug="@slug" data-title="@title" data-description="@description">
                 <header class="card__header">
-                    <span class="card__icon" aria-hidden="true">@title.Substring(0, Math.Min(title.Length, 2)).ToUpperInvariant()</span>
-                    <div class="card__title-wrap">
-                        <div class="card__title-row">
-                            <h3>@title</h3>
-                            <span class="card__badge" data-badge="@badge">@badge.Replace("-", " ")</span>
-                        </div>
-                        <p>@description</p>
+                    <div class="card__title-row">
+                        <span class="card__icon" aria-hidden="true">@title.Substring(0, Math.Min(title.Length, 2)).ToUpperInvariant()</span>
+                        <h3>@title</h3>
                     </div>
-                    <span class="card__arrow" aria-hidden="true">↗</span>
+                    <span class="card__badge" data-badge="@badge">@badge.Replace("-", " ")</span>
                 </header>
+
+                <p class="card__description">@description</p>
 
                 <ul class="card__highlights" aria-label="Tool highlights">
                     <li>Client-side execution by default</li>
@@ -104,53 +103,52 @@
                     <li>Built for daily engineering workflows</li>
                 </ul>
 
-                <span class="card__cta">Launch Tool</span>
+                <div class="card__action">
+                    <span class="card__cta">Launch Tool</span>
+                    <span class="card__arrow" aria-hidden="true">↗</span>
+                </div>
             </a>
         }
     </div>
 </section>
 
-<section class="trust-section" data-reveal id="trust" aria-labelledby="trustHeading">
+<section class="trust-section home-surface home-surface--muted" data-reveal id="trust" aria-labelledby="trustHeading">
     <header class="trust-section__header">
-        <p class="trust-section__eyebrow">Built for developers who value reliability</p>
-        <h2 id="trustHeading" class="section-title">Trust &amp; platform credibility</h2>
-        <p class="section-subtitle">ToolNexus prioritizes speed, transparency, and privacy with production-grade quality standards.</p>
+        <p class="trust-section__eyebrow">Platform telemetry</p>
+        <h2 id="trustHeading" class="section-title">Live reliability signals</h2>
+        <p class="section-subtitle">Operational metrics continuously monitored for developer teams.</p>
     </header>
 
     <div class="trust-stats" role="list" aria-label="ToolNexus live platform stats">
         <article class="trust-stat" role="listitem" data-reveal>
-            <span class="trust-stat__icon" aria-hidden="true">◉</span>
             <p class="trust-stat__label">Tools used today</p>
             <p class="trust-stat__value"><span data-counter data-dynamic-stat="toolsToday" data-target="28491">0</span><span class="trust-stat__suffix">+</span></p>
-            <p class="trust-stat__meta">Active sessions across formatting, conversion, and validation workflows.</p>
+            <p class="trust-stat__meta">● Active sessions</p>
         </article>
         <article class="trust-stat" role="listitem" data-reveal>
-            <span class="trust-stat__icon" aria-hidden="true">⚡</span>
             <p class="trust-stat__label">Avg response time</p>
             <p class="trust-stat__value"><span data-counter data-dynamic-stat="loadTime" data-target="42">0</span><span class="trust-stat__suffix">ms</span></p>
-            <p class="trust-stat__meta">Client-side execution tuned for instant developer feedback loops.</p>
+            <p class="trust-stat__meta">● p50 interaction latency</p>
         </article>
         <article class="trust-stat" role="listitem" data-reveal>
-            <span class="trust-stat__icon" aria-hidden="true">◈</span>
             <p class="trust-stat__label">Uptime</p>
             <p class="trust-stat__value"><span data-counter data-dynamic-stat="perf" data-target="99.99" data-decimals="2">0</span><span class="trust-stat__suffix">%</span></p>
-            <p class="trust-stat__meta">Monitored infrastructure with availability-first deployment practices.</p>
+            <p class="trust-stat__meta">● Last 30 days</p>
         </article>
         <article class="trust-stat" role="listitem" data-reveal>
-            <span class="trust-stat__icon" aria-hidden="true">⌁</span>
             <p class="trust-stat__label">Files processed</p>
             <p class="trust-stat__value"><span data-counter data-dynamic-stat="sessions" data-target="1245703">0</span><span class="trust-stat__suffix">+</span></p>
-            <p class="trust-stat__meta">Processed securely in-browser without sending source payloads to storage.</p>
+            <p class="trust-stat__meta">● Secure browser workflows</p>
         </article>
     </div>
 
     <div class="trust-grid">
         <article class="privacy-card" aria-labelledby="privacyHeading">
-            <h3 id="privacyHeading">Privacy commitment</h3>
+            <h3 id="privacyHeading">Security and privacy defaults</h3>
             <ul class="privacy-card__list">
-                <li><strong>100% client-side processing</strong> for core tool operations.</li>
-                <li><strong>No server storage</strong> of file content, snippets, or transformation output.</li>
-                <li><strong>Session-first architecture</strong> designed for security-conscious engineering teams.</li>
+                <li><strong>Client-side processing</strong> for core operations with no hidden uploads.</li>
+                <li><strong>No persistent payload storage</strong> for snippets or transformed outputs.</li>
+                <li><strong>Enterprise-ready architecture</strong> aligned with security-conscious teams.</li>
             </ul>
         </article>
 
@@ -160,6 +158,13 @@
             <a class="trust-link" href="/changelog">Changelog</a>
         </aside>
     </div>
+</section>
+
+<section class="social-section home-surface home-surface--base" data-reveal aria-labelledby="socialHeading">
+    <header class="social-section__header">
+        <p class="tool-section__eyebrow">Social proof</p>
+        <h2 id="socialHeading" class="section-title">Adopted by high-velocity engineering teams</h2>
+    </header>
 
     <div class="testimonial-grid" aria-label="Developer testimonials">
         <article class="testimonial-card" data-reveal>
@@ -266,7 +271,7 @@
 
         const normalizedCards = cards.map((card) => {
             const titleNode = card.querySelector('h3');
-            const descriptionNode = card.querySelector('p');
+            const descriptionNode = card.querySelector('.card__description');
             const title = card.dataset.title || titleNode?.textContent || '';
             const description = card.dataset.description || descriptionNode?.textContent || '';
 
