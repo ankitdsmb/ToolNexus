@@ -1,0 +1,121 @@
+.tool-json-csv {
+  display: grid;
+  gap: 1rem;
+}
+
+.tool-json-csv__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tool-json-csv__description {
+  margin: 0.4rem 0 0;
+}
+
+.tool-json-csv__badge {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.tool-json-csv__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+}
+
+.tool-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.tool-option--select {
+  margin-left: auto;
+}
+
+.tool-json-csv__status {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.tool-json-csv__workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tool-json-csv__panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.tool-json-csv__panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.tool-json-csv__panel-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tool-json-csv__editor {
+  width: 100%;
+  min-height: 24rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.tool-json-csv__editor--output {
+  white-space: pre;
+  overflow: auto;
+}
+
+.tool-json-csv__error {
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--danger, #d92d20) 70%, transparent);
+  background: color-mix(in srgb, var(--danger, #d92d20) 12%, transparent);
+  padding: 1rem;
+}
+
+.tool-json-csv__error h3,
+.tool-json-csv__error p {
+  margin: 0.25rem 0;
+}
+
+.tool-json-csv__error-suggestion {
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .tool-json-csv__workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-option--select {
+    margin-left: 0;
+  }
+}
