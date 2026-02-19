@@ -117,6 +117,9 @@ public sealed class ToolsController(
         {
             return View("htmlEntities", viewModel);
         }
+        else if (string.Equals(tool.Slug, "url-decode", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("urlDecode", viewModel);
         else if (string.Equals(tool.Slug, "text-diff", StringComparison.OrdinalIgnoreCase))
         {
             return View("TextDiff", viewModel);
