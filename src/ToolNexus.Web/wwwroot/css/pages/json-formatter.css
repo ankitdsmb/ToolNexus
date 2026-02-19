@@ -1,10 +1,29 @@
-/* ==================================
-COMPONENTS
-================================== */
+/* ==========================
+TOKENS
+========================== */
+:root {
+  --json-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ==========================
+BASE / RESET
+========================== */
+
+/* ==========================
+TYPOGRAPHY
+========================== */
+
+/* ==========================
+LAYOUT SYSTEM
+========================== */
 .json-formatter-page { display: grid; gap: var(--space-5); }
-
 .json-formatter-hero { display: grid; gap: var(--space-3); }
+.json-workspace { display: grid; grid-template-columns: var(--json-columns); gap: var(--space-4); }
+.json-panel { display: grid; gap: var(--space-3); }
 
+/* ==========================
+COMPONENTS
+========================== */
 .json-toolbar {
   padding: var(--space-3);
   border: 1px solid var(--border-default);
@@ -12,10 +31,13 @@ COMPONENTS
   background: var(--bg-secondary);
 }
 
-.json-workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+/* ==========================
+UTILITIES
+========================== */
 
-.json-panel { display: grid; gap: var(--space-3); }
-
+/* ==========================
+RESPONSIVE
+========================== */
 @media (max-width: 980px) {
   .json-workspace { grid-template-columns: 1fr; }
 }
