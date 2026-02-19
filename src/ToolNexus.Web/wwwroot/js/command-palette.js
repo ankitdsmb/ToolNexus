@@ -189,8 +189,8 @@ function renderCommandRow(command, index) {
         <span class="command-palette__meta">
           <span class="command-palette__badge">${escapeHtml(command.shortcut)}</span>
           <span class="command-palette__badge">${escapeHtml(formatUsage(command.usage))}</span>
-          <span class="command-palette__arrow" aria-hidden="true">➜</span>
         </span>
+        <span class="command-palette__arrow" aria-hidden="true">➜</span>
       </button>
     </li>`;
 }
