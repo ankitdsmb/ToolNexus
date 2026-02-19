@@ -23,7 +23,7 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 16px;
+  --radius-xl: 24px;
 
   --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.08);
   --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.12);
@@ -66,7 +66,7 @@
   --layer-0-bg: var(--background);
   --layer-1-bg: var(--surface);
   --layer-2-bg: var(--surface-elevated);
-  --layer-3-bg: color-mix(in srgb, var(--surface-elevated) 90%, var(--accent) 10%);
+  --layer-3-bg: color-mix(in srgb, var(--surface-elevated) 88%, var(--accent) 12%);
   --shadow-xs: var(--shadow-sm);
   --shadow: var(--shadow-md);
 
