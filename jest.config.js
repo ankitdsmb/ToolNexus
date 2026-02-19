@@ -1,7 +1,8 @@
 export default {
   testEnvironment: 'jsdom',
   collectCoverageFrom: [
-    'src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js'
+    'src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js',
+    'src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js'
   ],
   coverageThreshold: {
     global: {
