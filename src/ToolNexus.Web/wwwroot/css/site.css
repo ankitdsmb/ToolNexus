@@ -752,3 +752,52 @@ RESPONSIVE
   border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
   color: var(--ok);
 }
+
+.html-formatter-badge {
+  display: inline-flex;
+  margin-top: var(--space-2);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.html-formatter-options {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+.html-formatter-options h3 {
+  margin: 0 0 var(--space-3);
+  font-size: 0.95rem;
+}
+
+.html-formatter-options__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.html-formatter-options label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.html-formatter-options input[type="checkbox"] {
+  margin-right: var(--space-2);
+}
+
+.html-formatter-status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
