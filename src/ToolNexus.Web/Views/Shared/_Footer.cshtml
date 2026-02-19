@@ -1,6 +1,6 @@
 @model ToolNexus.Web.Models.Layout.LayoutFooterViewModel
 
-<footer class="footer">
+<footer class="footer" role="contentinfo">
     <div class="footer__container">
         <div class="footer__tools" aria-label="Popular tools">
             <a href="/tools/json-formatter">JSON Formatter</a>
@@ -31,8 +31,10 @@
             <span class="footer__version">v1.0.0 · Build development-202602190606</span>
             <span class="footer__separator" aria-hidden="true">│</span>
             <span class="footer__shortcuts" aria-label="Keyboard shortcuts">
-                <kbd>⌘K</kbd> Palette ·
-                <kbd>⌘Enter</kbd> Run ·
+                <kbd>⌘K</kbd> Palette
+                <span aria-hidden="true">·</span>
+                <kbd>⌘Enter</kbd> Run
+                <span aria-hidden="true">·</span>
                 <kbd>⌘⇧S</kbd> Share
             </span>
         </div>
