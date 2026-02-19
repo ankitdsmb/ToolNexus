@@ -2788,3 +2788,264 @@ html[data-theme='dark'] .hero-preview {
     min-height: 320px;
   }
 }
+
+/* ===== Premium SaaS polish pass v3 ===== */
+:root {
+  --section-space-hero: var(--space-7);
+  --section-space-main: var(--space-6);
+  --section-space-footer: var(--space-7);
+  --text-secondary-strong: color-mix(in srgb, var(--text-secondary) 94%, var(--text-primary));
+  --border-stronger: color-mix(in srgb, var(--border) 88%, var(--text-primary) 12%);
+}
+
+.topbar__inner {
+  min-height: var(--space-7);
+  grid-template-columns: auto minmax(320px, 600px) auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.brand {
+  min-height: var(--space-6);
+}
+
+.brand__dot {
+  width: var(--space-2);
+  height: var(--space-2);
+}
+
+.topbar__search-shell {
+  min-height: var(--space-6);
+  border: 1px solid var(--border-stronger);
+}
+
+.topbar__explore {
+  background: color-mix(in srgb, var(--surface-interactive) 78%, transparent);
+  color: var(--text-secondary-strong);
+  border: 1px solid var(--border-stronger);
+  font-weight: 600;
+}
+
+.hero {
+  padding: var(--section-space-hero);
+}
+
+.hero__container {
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.hero__content {
+  gap: var(--space-4);
+}
+
+.hero__subtitle {
+  color: var(--text-secondary-strong);
+}
+
+.hero__badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hero-badge {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary-strong);
+  border: 1px solid var(--border-stronger);
+}
+
+.hero-btn--primary {
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-preview {
+  transform: none;
+  padding: 0;
+  border: 1px solid var(--border-stronger);
+}
+
+.tool-section,
+.trust-section {
+  padding-top: var(--section-space-main);
+  padding-bottom: var(--section-space-main);
+}
+
+.tool-section__header,
+.trust-section__header {
+  gap: var(--space-2);
+}
+
+.tool-discovery {
+  gap: var(--space-2);
+}
+
+.tool-discovery__row {
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tool-discovery__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary-strong);
+}
+
+.tool-discovery__chip {
+  padding: var(--space-0) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-stronger);
+}
+
+.grid#featuredGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  min-height: 368px;
+  gap: var(--space-2);
+  border: 1px solid var(--border-stronger);
+}
+
+.card__header {
+  align-items: start;
+}
+
+.card__title-row {
+  align-items: center;
+}
+
+.card__highlights {
+  padding-left: var(--space-3);
+}
+
+.card__highlights li {
+  margin-bottom: var(--space-1);
+  color: var(--text-secondary-strong);
+}
+
+.card__cta {
+  min-height: var(--space-6);
+}
+
+.trust-stats {
+  margin-top: var(--space-2);
+}
+
+.trust-stat__label {
+  color: var(--text-secondary-strong);
+  font-size: 0.875rem;
+}
+
+.trust-stat__value {
+  font-size: clamp(1.5rem, 2vw, 1.875rem);
+}
+
+.trust-stat__meta {
+  color: var(--text-secondary-strong);
+}
+
+.trust-grid {
+  margin-top: var(--space-3);
+}
+
+.privacy-card,
+.trust-links,
+.trust-link,
+.testimonial-card {
+  border: 1px solid var(--border-stronger);
+}
+
+.testimonial-grid {
+  margin-top: var(--space-3);
+}
+
+.testimonial-card {
+  gap: var(--space-3);
+}
+
+.testimonial-card__badge {
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: 999px;
+}
+
+.footer {
+  margin-top: var(--section-space-footer);
+}
+
+.footer__container {
+  padding-top: var(--space-7);
+  padding-bottom: var(--space-5);
+}
+
+.footer__columns {
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.footer__column a {
+  color: var(--text-secondary-strong);
+}
+
+.footer__bottom-strip {
+  padding-top: var(--space-4);
+  font-size: 0.875rem;
+}
+
+html[data-theme='dark'] .topbar,
+html[data-theme='dark'] .hero,
+html[data-theme='dark'] #featuredTools,
+html[data-theme='dark'] #trust,
+html[data-theme='dark'] .footer,
+html[data-theme='dark'] .card,
+html[data-theme='dark'] .trust-stat,
+html[data-theme='dark'] .privacy-card,
+html[data-theme='dark'] .trust-links,
+html[data-theme='dark'] .testimonial-card,
+html[data-theme='dark'] .hero-preview,
+html[data-theme='dark'] .topbar__search-shell,
+html[data-theme='dark'] .tool-discovery__chip,
+html[data-theme='dark'] .trust-link {
+  border-color: color-mix(in srgb, var(--border) 94%, #d6e2ff 6%);
+}
+
+@media (max-width: 1200px) {
+  .grid#featuredGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1080px) {
+  .topbar__inner,
+  .hero__container,
+  .trust-grid,
+  .testimonial-grid,
+  .footer__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .hero,
+  #featuredTools,
+  #trust {
+    padding: var(--space-6);
+  }
+}
+
+@media (max-width: 720px) {
+  .hero,
+  #featuredTools,
+  #trust,
+  .footer__container {
+    padding: var(--space-4);
+  }
+
+  .grid#featuredGrid,
+  .trust-stats,
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+}
