@@ -183,7 +183,10 @@
       ],
       "seoTitle": "HTML to Markdown | ToolNexus",
       "seoDescription": "Convert HTML markup to readable Markdown.",
-      "exampleInput": "<h1>ToolNexus</h1>"
+      "exampleInput": "<h1>ToolNexus</h1>",
+      "clientSafeActions": [
+        "convert"
+      ]
     },
     {
       "slug": "css-minifier",
