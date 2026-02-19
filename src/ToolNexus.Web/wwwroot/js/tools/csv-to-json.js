@@ -1,6 +1,9 @@
+'use strict';
+
 const DEFAULT_PREVIEW_ROWS = 50;
 const CHUNK_SIZE = 2000;
 const FORMULA_PREFIXES = new Set(['=', '+', '-', '@']);
+const INIT_FLAG = 'csvJsonInitialized';
 
 class CsvParseError extends Error {
   constructor(message, row) {
@@ -11,6 +14,14 @@ class CsvParseError extends Error {
 }
 
 const idle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+function debounce(callback, waitMs = 200) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback(...args), waitMs);
+  };
+}
 
 function normalizeHeaders(rawHeaders) {
   const used = new Map();
@@ -31,6 +42,10 @@ function parseCustomHeaders(value) {
 }
 
 function parseCsvRecords(input, delimiter) {
+  if (typeof input !== 'string') {
+    throw new CsvParseError('CSV input must be a string.', 1);
+  }
+
   const rows = [];
   let row = [];
   let field = '';
@@ -85,7 +100,7 @@ function parseCsvRecords(input, delimiter) {
 }
 
 function coerceValue(value, detectTypes, emptyAsNull, sanitizeFormulas) {
-  const trimmed = value.trim();
+  const trimmed = String(value ?? '').trim();
 
   if (!trimmed) {
     return emptyAsNull ? null : '';
@@ -147,7 +162,7 @@ function formatError(error) {
     return `CSV Parsing Error\n${error.message}\nApproximate row: ${error.row}`;
   }
 
-  return `Conversion Error\n${error.message || 'Unable to convert CSV input.'}`;
+  return `Conversion Error\n${error?.message || 'Unable to convert CSV input.'}`;
 }
 
 async function convertCsvToJson(input, config) {
@@ -166,34 +181,36 @@ async function convertCsvToJson(input, config) {
   };
 }
 
-function initCsvToJsonApp() {
-  const root = document.querySelector('.csv-json-page');
-  if (!root) {
+function initCsvToJsonApp(doc = document, win = window) {
+  const root = doc.querySelector('.csv-json-page');
+  if (!root || root.dataset[INIT_FLAG] === 'true') {
     return;
   }
 
+  root.dataset[INIT_FLAG] = 'true';
+
   const dom = {
-    convertBtn: document.getElementById('convertBtn'),
-    clearBtn: document.getElementById('clearBtn'),
-    copyBtn: document.getElementById('copyBtn'),
-    downloadBtn: document.getElementById('downloadBtn'),
-    delimiterSelect: document.getElementById('delimiterSelect'),
-    useHeaderToggle: document.getElementById('useHeaderToggle'),
-    customHeadersField: document.getElementById('customHeadersField'),
-    customHeadersInput: document.getElementById('customHeadersInput'),
-    autoConvertToggle: document.getElementById('autoConvertToggle'),
-    prettyToggle: document.getElementById('prettyToggle'),
-    indentSelect: document.getElementById('indentSelect'),
-    typeDetectToggle: document.getElementById('typeDetectToggle'),
-    emptyAsNullToggle: document.getElementById('emptyAsNullToggle'),
-    sanitizeToggle: document.getElementById('sanitizeToggle'),
-    previewRowsInput: document.getElementById('previewRowsInput'),
-    statusText: document.getElementById('statusText'),
-    errorBox: document.getElementById('errorBox'),
-    csvInput: document.getElementById('csvInput'),
-    jsonOutput: document.getElementById('jsonOutput'),
-    rowCount: document.getElementById('rowCount'),
-    charCount: document.getElementById('charCount')
+    convertBtn: doc.getElementById('convertBtn'),
+    clearBtn: doc.getElementById('clearBtn'),
+    copyBtn: doc.getElementById('copyBtn'),
+    downloadBtn: doc.getElementById('downloadBtn'),
+    delimiterSelect: doc.getElementById('delimiterSelect'),
+    useHeaderToggle: doc.getElementById('useHeaderToggle'),
+    customHeadersField: doc.getElementById('customHeadersField'),
+    customHeadersInput: doc.getElementById('customHeadersInput'),
+    autoConvertToggle: doc.getElementById('autoConvertToggle'),
+    prettyToggle: doc.getElementById('prettyToggle'),
+    indentSelect: doc.getElementById('indentSelect'),
+    typeDetectToggle: doc.getElementById('typeDetectToggle'),
+    emptyAsNullToggle: doc.getElementById('emptyAsNullToggle'),
+    sanitizeToggle: doc.getElementById('sanitizeToggle'),
+    previewRowsInput: doc.getElementById('previewRowsInput'),
+    statusText: doc.getElementById('statusText'),
+    errorBox: doc.getElementById('errorBox'),
+    csvInput: doc.getElementById('csvInput'),
+    jsonOutput: doc.getElementById('jsonOutput'),
+    rowCount: doc.getElementById('rowCount'),
+    charCount: doc.getElementById('charCount')
   };
 
   let lastResult = '';
@@ -304,7 +321,7 @@ function initCsvToJsonApp() {
     }
 
     const blob = new Blob([lastResult], { type: 'application/json;charset=utf-8' });
-    const link = document.createElement('a');
+    const link = doc.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'converted.json';
     link.click();
@@ -312,12 +329,12 @@ function initCsvToJsonApp() {
     setBusy(false, 'Download started.');
   });
 
-  const autoConvertHandler = () => {
+  const autoConvertHandler = debounce(() => {
     setBusy(false, dom.csvInput.value.trim() ? 'Ready to convert.' : 'Input is empty.');
     if (dom.autoConvertToggle.checked) {
       runConversion();
     }
-  };
+  }, 150);
 
   [
     dom.csvInput,
@@ -334,7 +351,7 @@ function initCsvToJsonApp() {
     element.addEventListener('change', autoConvertHandler);
   });
 
-  window.addEventListener('keydown', (event) => {
+  win.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
       event.preventDefault();
       runConversion();
@@ -349,7 +366,9 @@ function initCsvToJsonApp() {
   setBusy(false, 'Ready');
 }
 
-document.addEventListener('DOMContentLoaded', initCsvToJsonApp);
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => initCsvToJsonApp(document, window));
+}
 
 export async function runTool(action, input) {
   if (action !== 'convert') {
@@ -371,5 +390,19 @@ export async function runTool(action, input) {
   return JSON.stringify(result.allRecords, null, 2);
 }
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['csv-to-json'] = { runTool };
+export {
+  CsvParseError,
+  coerceValue,
+  convertCsvToJson,
+  formatError,
+  initCsvToJsonApp,
+  normalizeHeaders,
+  parseCsvRecords,
+  parseCustomHeaders,
+  transformRowsToObjects
+};
+
+if (typeof window !== 'undefined') {
+  window.ToolNexusModules = window.ToolNexusModules || {};
+  window.ToolNexusModules['csv-to-json'] = { runTool };
+}
