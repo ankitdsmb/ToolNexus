@@ -1,56 +1,50 @@
-// json-formatter-enhanced.js
+import { ACTIONS, JSON_FORMATTER_CONFIG as CONFIG } from './json-formatter-constants.js';
+import { applyAutoFix, escapeJsonText, toOutputByAction, unescapeJsonText } from './json-formatter-transformers.js';
+import { computeByteSize, formatBytes, parseJsonWithTimeout, toUserFacingValidationError } from './json-formatter-validation.js';
 
-const CONFIG = {
-  LARGE_FILE_THRESHOLD_BYTES: 1024 * 1024, // 1MB
-  PERFORMANCE_THRESHOLD_MS: 100,
-  MARKER_OWNER: 'json-validation',
-  DEBOUNCE_DELAY_MS: 300,
-  MAX_TOASTS: 3,
-  TREE_MAX_DEPTH: 20,
-  TREE_MAX_NODES: 1000,
-  HISTORY_LIMIT: 50
-};
-
-class JSONFormatter {
+class JsonFormatterApp {
   constructor() {
-    this.dom = this.initializeDOM();
-    this.state = {
-      history: [],
-      historyIndex: -1,
-      isProcessing: false,
-      performanceMetrics: {},
-      abortController: null
-    };
+    this.dom = this.resolveDom();
+    this.monaco = null;
+    this.inputEditor = null;
+    this.outputEditor = null;
+    this.diffEditor = null;
+    this.inputModel = null;
+    this.outputModel = null;
 
-    this.init();
+    this.state = {
+      isBusy: false,
+      debounceHandle: null,
+      latestPerformanceMs: 0,
+      lastActionStatus: 'No output yet.'
+    };
   }
 
-  initializeDOM() {
-    const elements = [
-      'formatBtn', 'minifyBtn', 'validateBtn', 'autofixBtn',
-      'copyBtn', 'downloadBtn', 'treeToggle', 'diffToggle',
-      'wrapToggle', 'perfTime', 'validationState', 'payloadStats',
-      'largeFileWarning', 'errorMessage', 'resultStatus',
-      'jsonEditor', 'outputEditor', 'diffEditor', 'treeView',
-      'dropZone', 'toastRegion', 'compressBtn', 'escapeBtn',
-      'unescapeBtn', 'sortBtn', 'statsBtn'
+  resolveDom() {
+    const ids = [
+      'formatBtn', 'minifyBtn', 'validateBtn', 'autofixBtn', 'sortBtn',
+      'copyBtn', 'downloadBtn', 'clearBtn', 'escapeBtn', 'unescapeBtn',
+      'wrapToggle', 'diffToggle', 'jsonEditor', 'outputEditor', 'diffEditor',
+      'perfTime', 'validationState', 'payloadStats', 'resultStatus',
+      'errorBox', 'errorTitle', 'errorDetail', 'errorLocation', 'largeFileWarning',
+      'dropZone', 'toastRegion'
     ];
 
-    return elements.reduce((acc, id) => {
-      acc[id] = document.getElementById(id);
-      return acc;
+    return ids.reduce((elements, id) => {
+      elements[id] = document.getElementById(id);
+      return elements;
     }, {});
   }
 
   async init() {
     if (!this.dom.jsonEditor || !window.require) {
-      throw new Error('Monaco editor loader is unavailable for json-formatter.');
+      throw new Error('JSON formatter cannot start: Monaco loader is unavailable.');
     }
 
     await this.loadMonaco();
     this.bindEvents();
-    this.setupKeyboardShortcuts();
-    this.setupPerformanceObserver();
+    this.updatePayloadState('');
+    this.syncUiState();
   }
 
   async loadMonaco() {
@@ -58,67 +52,50 @@ class JSONFormatter {
       paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' }
     });
 
-    return new Promise((resolve) => {
-      window.require(['vs/editor/editor.main'], () => {
-        this.monaco = window.monaco;
-        this.createEditors();
-        resolve();
-      });
+    await new Promise((resolve) => {
+      window.require(['vs/editor/editor.main'], resolve);
     });
+
+    this.monaco = window.monaco;
+    this.createEditors();
   }
 
   createEditors() {
-    const inputValue = window.ToolNexusConfig?.jsonExampleInput ?? '{\n  "hello": "world"\n}';
+    const seedInput = window.ToolNexusConfig?.jsonExampleInput ?? '{\n  "hello": "world"\n}';
 
-    this.inputModel = this.monaco.editor.createModel(inputValue, 'json');
+    this.inputModel = this.monaco.editor.createModel(seedInput, 'json');
     this.outputModel = this.monaco.editor.createModel('', 'json');
 
-    // Configure JSON language features
-    this.monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-      validate: true,
-      allowComments: false,
-      schemas: [],
-      enableSchemaRequest: false
-    });
-
-    this.inputEditor = this.monaco.editor.create(this.dom.jsonEditor, {
-      model: this.inputModel,
+    const sharedEditorOptions = {
       theme: 'vs-dark',
       minimap: { enabled: false },
       automaticLayout: true,
-      wordWrap: 'off',
       fontSize: 14,
-      lineNumbers: 'on',
+      lineNumbers: 'on'
+    };
+
+    this.inputEditor = this.monaco.editor.create(this.dom.jsonEditor, {
+      ...sharedEditorOptions,
+      model: this.inputModel,
+      readOnly: false,
       glyphMargin: true,
-      folding: true,
       bracketPairColorization: { enabled: true },
-      autoClosingBrackets: 'always',
       formatOnPaste: true,
       formatOnType: true,
-      tabSize: 2,
-      detectIndentation: true
+      wordWrap: 'off'
     });
 
     this.outputEditor = this.monaco.editor.create(this.dom.outputEditor, {
+      ...sharedEditorOptions,
       model: this.outputModel,
-      theme: 'vs-dark',
-      minimap: { enabled: false },
-      automaticLayout: true,
       readOnly: true,
-      wordWrap: 'off',
-      fontSize: 14,
-      lineNumbers: 'on',
-      folding: true
+      wordWrap: 'off'
     });
 
     this.diffEditor = this.monaco.editor.createDiffEditor(this.dom.diffEditor, {
-      theme: 'vs-dark',
-      minimap: { enabled: false },
-      automaticLayout: true,
+      ...sharedEditorOptions,
       readOnly: true,
-      originalEditable: false,
-      renderSideBySide: true,
-      fontSize: 14
+      renderSideBySide: true
     });
 
     this.diffEditor.setModel({
@@ -126,95 +103,48 @@ class JSONFormatter {
       modified: this.outputModel
     });
 
-    this.setupEditorListeners();
-    this.updatePayloadStats(this.inputModel.getValue());
-    this.autoFormatIfValid({ silent: true });
-  }
+    this.inputModel.onDidChangeContent(() => this.handleInputChange());
+    this.outputModel.onDidChangeContent(() => this.syncUiState());
 
-  setupEditorListeners() {
-    // Debounced input handling
-    let debounceTimer;
-    this.inputModel.onDidChangeContent(() => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        const value = this.inputModel.getValue();
-        this.updatePayloadStats(value);
-        this.validateJson({ value, updateState: true });
-        this.addToHistory(value);
-      }, CONFIG.DEBOUNCE_DELAY_MS);
-    });
-
-    // Handle paste events
-    this.inputEditor.onDidPaste(() => {
-      this.autoFormatIfValid();
-    });
-
-    // Handle keyboard shortcuts
-    this.inputEditor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KeyS, () => {
-      this.performAction('format');
-    });
-  }
-
-  setupKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-      // Ctrl+Enter for format
-      if (e.ctrlKey && e.key === 'Enter') {
-        e.preventDefault();
-        this.performAction('format');
-      }
-
-      // Ctrl+Shift+M for minify
-      if (e.ctrlKey && e.shiftKey && e.key === 'M') {
-        e.preventDefault();
-        this.performAction('minify');
-      }
-
-      // Ctrl+Shift+V for validate
-      if (e.ctrlKey && e.shiftKey && e.key === 'V') {
-        e.preventDefault();
-        this.performAction('validate');
-      }
-
-      // Ctrl+Z for undo
-      if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        this.undo();
-      }
-
-      // Ctrl+Y for redo
-      if (e.ctrlKey && e.key === 'y' || (e.ctrlKey && e.shiftKey && e.key === 'Z')) {
-        e.preventDefault();
-        this.redo();
-      }
-    });
+    this.perform(ACTIONS.format, { silentSuccess: true }).catch(() => {});
   }
 
   bindEvents() {
-    // Main actions
-    this.dom.formatBtn?.addEventListener('click', () => this.performAction('format'));
-    this.dom.minifyBtn?.addEventListener('click', () => this.performAction('minify'));
-    this.dom.validateBtn?.addEventListener('click', () => this.performAction('validate'));
-    this.dom.autofixBtn?.addEventListener('click', () => this.performAction('autofix'));
+    this.dom.formatBtn?.addEventListener('click', () => this.perform(ACTIONS.format));
+    this.dom.minifyBtn?.addEventListener('click', () => this.perform(ACTIONS.minify));
+    this.dom.validateBtn?.addEventListener('click', () => this.perform(ACTIONS.validate));
+    this.dom.autofixBtn?.addEventListener('click', () => this.perform(ACTIONS.autofix));
+    this.dom.sortBtn?.addEventListener('click', () => this.perform(ACTIONS.sort));
+    this.dom.escapeBtn?.addEventListener('click', () => this.perform(ACTIONS.escape));
+    this.dom.unescapeBtn?.addEventListener('click', () => this.perform(ACTIONS.unescape));
     this.dom.copyBtn?.addEventListener('click', () => this.copyOutput());
     this.dom.downloadBtn?.addEventListener('click', () => this.downloadOutput());
+    this.dom.clearBtn?.addEventListener('click', () => this.clearAll());
 
-    // New actions
-    this.dom.compressBtn?.addEventListener('click', () => this.compressJSON());
-    this.dom.escapeBtn?.addEventListener('click', () => this.escapeJSON());
-    this.dom.unescapeBtn?.addEventListener('click', () => this.unescapeJSON());
-    this.dom.sortBtn?.addEventListener('click', () => this.sortJSON());
-    this.dom.statsBtn?.addEventListener('click', () => this.showStats());
+    this.dom.wrapToggle?.addEventListener('change', () => {
+      const wordWrap = this.dom.wrapToggle.checked ? 'on' : 'off';
+      this.inputEditor.updateOptions({ wordWrap });
+      this.outputEditor.updateOptions({ wordWrap });
+    });
 
-    // Toggles
-    this.dom.wrapToggle?.addEventListener('change', () => this.toggleWordWrap());
-    this.dom.treeToggle?.addEventListener('change', () => this.toggleTreeView());
-    this.dom.diffToggle?.addEventListener('change', () => this.toggleDiffView());
+    this.dom.diffToggle?.addEventListener('change', () => {
+      const showDiff = this.dom.diffToggle.checked;
+      this.dom.outputEditor.hidden = showDiff;
+      this.dom.diffEditor.hidden = !showDiff;
+      this.syncUiState();
+    });
 
-    // Drag and drop
-    this.setupDragAndDrop();
+    this.registerDragAndDrop();
+
+    document.addEventListener('keydown', (event) => {
+      if (event.ctrlKey && event.key === 'Enter') {
+        event.preventDefault();
+        this.perform(ACTIONS.format);
+      }
+    });
   }
 
-  setupDragAndDrop() {
+  registerDragAndDrop() {
     ['dragenter', 'dragover'].forEach((eventName) => {
       this.dom.dropZone?.addEventListener(eventName, (event) => {
         event.preventDefault();
@@ -231,664 +161,268 @@ class JSONFormatter {
 
     this.dom.dropZone?.addEventListener('drop', async (event) => {
       const file = event.dataTransfer?.files?.[0];
-      if (!file) return;
+      if (!file) {
+        return;
+      }
 
-      // Check file size
-      if (file.size > CONFIG.LARGE_FILE_THRESHOLD_BYTES * 10) {
-        this.showToast('File too large. Maximum size is 10MB.', 'error');
+      if (file.size > CONFIG.maxImportBytes) {
+        this.showToast('File is too large. Maximum supported size is 10MB.', 'error');
         return;
       }
 
       try {
-        const text = await file.text();
-        this.inputModel.setValue(text);
-        this.autoFormatIfValid();
+        this.inputModel.setValue(await file.text());
         this.showToast(`Loaded ${file.name}`, 'success');
-      } catch (error) {
-        this.showError('Failed to read file: ' + error.message);
+      } catch {
+        this.showError({ title: 'Unable to load file', message: 'The dropped file could not be read. Try another file.' });
       }
     });
   }
 
-  async performAction(action) {
-    if (this.state.isProcessing) {
-      this.showToast('Already processing, please wait...', 'warning');
+  handleInputChange() {
+    clearTimeout(this.state.debounceHandle);
+    this.state.debounceHandle = setTimeout(() => {
+      const raw = this.inputModel.getValue();
+      this.updatePayloadState(raw);
+      this.validateOnly(raw);
+      this.syncUiState();
+    }, CONFIG.debounceMs);
+  }
+
+  async perform(action, options = {}) {
+    if (this.state.isBusy) {
       return;
     }
 
-    const start = performance.now();
-    this.state.isProcessing = true;
+    const startedAt = performance.now();
+    this.state.isBusy = true;
+    this.setActionButtonsDisabled(true);
+    this.clearError();
 
     try {
-      this.clearError();
       const raw = this.inputModel.getValue();
 
-      // Cancel any ongoing operation
-      if (this.state.abortController) {
-        this.state.abortController.abort();
-      }
-      this.state.abortController = new AbortController();
-
-      if (action === 'autofix') {
-        const fixed = this.autoFixCommonJsonIssues(raw);
-        this.inputModel.setValue(fixed);
-        this.autoFormatIfValid();
-        this.recordPerformance(action, start);
+      if (action === ACTIONS.autofix) {
+        this.inputModel.setValue(applyAutoFix(raw));
+        this.showToast('Common JSON issues were fixed where possible.', 'success');
+        this.setResultStatus('Auto-fix applied. Review and run Format.');
         return;
       }
 
-      // Parse with error handling for large files
-      const parsed = await this.parseJSONAsync(raw, this.state.abortController.signal);
-
-      if (action === 'validate') {
-        this.handleValidationSuccess();
-        this.recordPerformance(action, start);
+      if (action === ACTIONS.escape) {
+        this.outputModel.setValue(escapeJsonText(raw));
+        this.setResultStatus('Escaped text generated.');
+        this.showToast('Escaped output generated.', 'success');
         return;
       }
 
-      // Generate output based on action
-      let output;
-      switch (action) {
-        case 'minify':
-          output = JSON.stringify(parsed);
-          break;
-        case 'format':
-          output = JSON.stringify(parsed, null, 2);
-          break;
-        case 'compress':
-          output = this.compressJSONString(parsed);
-          break;
-        case 'sort':
-          output = JSON.stringify(this.sortObject(parsed), null, 2);
-          break;
-        default:
-          output = JSON.stringify(parsed, null, 2);
+      if (action === ACTIONS.unescape) {
+        this.outputModel.setValue(unescapeJsonText(raw));
+        this.setResultStatus('Unescaped text generated.');
+        this.showToast('Unescaped output generated.', 'success');
+        return;
       }
 
+      const parsed = await parseJsonWithTimeout(raw, CONFIG.parseTimeoutMs);
+
+      if (action === ACTIONS.validate) {
+        this.markValid();
+        this.setResultStatus('Validation passed.');
+        if (!options.silentSuccess) {
+          this.showToast('JSON is valid.', 'success');
+        }
+        return;
+      }
+
+      const output = toOutputByAction(action, parsed);
       this.outputModel.setValue(output);
       this.outputEditor.revealLine(1);
+      this.markValid();
+      this.setResultStatus(action === ACTIONS.minify ? 'Minified output ready.' : 'Formatted output ready.');
 
-      // Update UI
-      this.dom.resultStatus.textContent = this.getResultStatus(action);
-      this.handleValidationSuccess();
-
-      // Update tree view if enabled
-      if (this.dom.treeToggle?.checked) {
-        this.renderTree(output);
+      if (!options.silentSuccess) {
+        this.showToast('Transformation completed.', 'success');
       }
-
-      this.recordPerformance(action, start);
     } catch (error) {
-      if (error.name === 'AbortError') {
-        this.showToast('Operation cancelled', 'info');
-      } else {
-        this.handleJsonError(error, start);
-      }
+      const uiError = toUserFacingValidationError(this.inputModel.getValue(), error);
+      this.markInvalid(uiError);
     } finally {
-      this.state.isProcessing = false;
-      this.state.abortController = null;
-    }
-  }
-
-  async parseJSONAsync(jsonString, signal) {
-    // For large JSON, use streaming parser
-    if (jsonString.length > CONFIG.LARGE_FILE_THRESHOLD_BYTES) {
-      return this.parseLargeJSON(jsonString, signal);
-    }
-
-    // For small JSON, use regular parser with timeout
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Parsing timeout'));
-      }, 5000);
-
-      try {
-        const result = JSON.parse(jsonString);
-        clearTimeout(timeout);
-        resolve(result);
-      } catch (error) {
-        clearTimeout(timeout);
-        reject(error);
+      const elapsedMs = performance.now() - startedAt;
+      this.state.latestPerformanceMs = elapsedMs;
+      this.state.isBusy = false;
+      this.setActionButtonsDisabled(false);
+      this.dom.perfTime.textContent = `${elapsedMs.toFixed(2)} ms`;
+      if (elapsedMs > CONFIG.slowOperationMs) {
+        console.debug(`json-formatter slow operation: ${elapsedMs.toFixed(2)}ms`);
       }
-    });
+      this.syncUiState();
+    }
   }
 
-  parseLargeJSON(jsonString, signal) {
-    // Use a more efficient parser for large JSON
-    // This is a simplified version - in production, consider using a streaming parser
-    return new Promise((resolve, reject) => {
-      try {
-        // Check for abort signal
-        if (signal?.aborted) {
-          reject(new DOMException('Aborted', 'AbortError'));
-          return;
-        }
-
-        const result = JSON.parse(jsonString);
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  compressJSON() {
-    this.performAction('compress');
-  }
-
-  compressJSONString(obj) {
-    // Remove whitespace and compress
-    return JSON.stringify(obj);
-  }
-
-  escapeJSON() {
+  validateOnly(raw) {
     try {
-      const raw = this.inputModel.getValue();
-      const escaped = raw
-        .replace(/\\/g, '\\\\')
-        .replace(/"/g, '\\"')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(/\t/g, '\\t');
-      this.outputModel.setValue(escaped);
-      this.showToast('JSON escaped', 'success');
+      JSON.parse(raw);
+      this.markValid();
+      return true;
     } catch (error) {
-      this.showError('Failed to escape JSON: ' + error.message);
+      const uiError = toUserFacingValidationError(raw, error);
+      this.markInvalid(uiError, { keepDetailsHidden: true });
+      return false;
     }
   }
 
-  unescapeJSON() {
-    try {
-      const raw = this.inputModel.getValue();
-      const unescaped = raw
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, '\n')
-        .replace(/\\r/g, '\r')
-        .replace(/\\t/g, '\t')
-        .replace(/\\\\/g, '\\');
-      this.outputModel.setValue(unescaped);
-      this.showToast('JSON unescaped', 'success');
-    } catch (error) {
-      this.showError('Failed to unescape JSON: ' + error.message);
-    }
-  }
-
-  sortObject(obj) {
-    if (obj === null || typeof obj !== 'object') {
-      return obj;
-    }
-
-    if (Array.isArray(obj)) {
-      return obj.map(item => this.sortObject(item));
-    }
-
-    return Object.keys(obj)
-      .sort()
-      .reduce((sorted, key) => {
-        sorted[key] = this.sortObject(obj[key]);
-        return sorted;
-      }, {});
-  }
-
-  sortJSON() {
-    this.performAction('sort');
-  }
-
-  showStats() {
-    try {
-      const raw = this.inputModel.getValue();
-      const parsed = JSON.parse(raw);
-
-      const stats = this.calculateJSONStats(parsed, raw);
-
-      // Display stats in a modal or panel
-      const statsHtml = `
-        <div class="stats-panel">
-          <h3>JSON Statistics</h3>
-          <table>
-            <tr><td>Total size:</td><td>${this.formatBytes(raw.length)}</td></tr>
-            <tr><td>Number of keys:</td><td>${stats.keyCount}</td></tr>
-            <tr><td>Array count:</td><td>${stats.arrayCount}</td></tr>
-            <tr><td>Object count:</td><td>${stats.objectCount}</td></tr>
-            <tr><td>String count:</td><td>${stats.stringCount}</td></tr>
-            <tr><td>Number count:</td><td>${stats.numberCount}</td></tr>
-            <tr><td>Boolean count:</td><td>${stats.booleanCount}</td></tr>
-            <tr><td>Null count:</td><td>${stats.nullCount}</td></tr>
-            <tr><td>Max depth:</td><td>${stats.maxDepth}</td></tr>
-          </table>
-        </div>
-      `;
-
-      // Show stats in a modal or tooltip
-      this.showToast('Statistics calculated', 'info');
-      console.log('JSON Stats:', stats);
-    } catch (error) {
-      this.showError('Failed to calculate stats: ' + error.message);
-    }
-  }
-
-  calculateJSONStats(obj, raw) {
-    let keyCount = 0;
-    let arrayCount = 0;
-    let objectCount = 0;
-    let stringCount = 0;
-    let numberCount = 0;
-    let booleanCount = 0;
-    let nullCount = 0;
-    let maxDepth = 0;
-
-    const traverse = (item, depth = 0) => {
-      maxDepth = Math.max(maxDepth, depth);
-
-      if (Array.isArray(item)) {
-        arrayCount++;
-        item.forEach(child => traverse(child, depth + 1));
-      } else if (item && typeof item === 'object') {
-        objectCount++;
-        keyCount += Object.keys(item).length;
-        Object.values(item).forEach(value => traverse(value, depth + 1));
-      } else if (typeof item === 'string') {
-        stringCount++;
-      } else if (typeof item === 'number') {
-        numberCount++;
-      } else if (typeof item === 'boolean') {
-        booleanCount++;
-      } else if (item === null) {
-        nullCount++;
-      }
-    };
-
-    traverse(obj);
-
-    return {
-      keyCount,
-      arrayCount,
-      objectCount,
-      stringCount,
-      numberCount,
-      booleanCount,
-      nullCount,
-      maxDepth
-    };
-  }
-
-  handleValidationSuccess() {
+  markValid() {
     this.dom.validationState.textContent = 'Valid JSON';
-    this.setMarkers([]);
+    this.monaco.editor.setModelMarkers(this.inputModel, CONFIG.markerOwner, []);
     this.clearError();
   }
 
-  handleJsonError(error, start) {
-    const marker = this.parseErrorToMarker(error);
-    this.setMarkers(marker ? [marker] : []);
+  markInvalid(uiError, options = {}) {
     this.dom.validationState.textContent = 'Invalid JSON';
-    this.showError(error.message);
-    this.dom.resultStatus.textContent = 'Validation error';
-    this.recordPerformance('error', start);
-  }
 
-  parseErrorToMarker(error) {
-    const message = String(error?.message ?? 'Invalid JSON');
-    const match = message.match(/position\s(\d+)/i);
+    const line = uiError.location?.line ?? 1;
+    const column = uiError.location?.column ?? 1;
 
-    if (!match) {
-      return {
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-        message,
-        severity: this.monaco.MarkerSeverity.Error
-      };
-    }
-
-    const position = Number.parseInt(match[1], 10);
-    return {
-      startLineNumber: 1,
-      endLineNumber: 1,
-      startColumn: Math.max(1, position),
-      endColumn: Math.max(2, position + 1),
-      message,
+    this.monaco.editor.setModelMarkers(this.inputModel, CONFIG.markerOwner, [{
+      startLineNumber: line,
+      endLineNumber: line,
+      startColumn: column,
+      endColumn: column + 1,
+      message: uiError.message,
       severity: this.monaco.MarkerSeverity.Error
-    };
+    }]);
+
+    if (!options.keepDetailsHidden) {
+      this.showError(uiError);
+      this.setResultStatus('Validation error.');
+    }
   }
 
-  autoFormatIfValid(options = {}) {
-    const start = performance.now();
-    const raw = this.inputModel.getValue();
+  updatePayloadState(raw) {
+    const bytes = computeByteSize(raw);
+    this.dom.payloadStats.textContent = formatBytes(bytes);
+    this.dom.largeFileWarning.hidden = bytes < CONFIG.largePayloadBytes;
+  }
 
-    try {
-      const parsed = JSON.parse(raw);
-      const formatted = JSON.stringify(parsed, null, 2);
-      this.outputModel.setValue(formatted);
-      this.setMarkers([]);
-      this.dom.validationState.textContent = 'Valid JSON';
-      this.dom.resultStatus.textContent = 'Auto-formatted from paste/input.';
-
-      if (!options.silent) {
-        this.showToast('Auto-formatted pasted JSON.', 'success');
+  setActionButtonsDisabled(disabled) {
+    [
+      this.dom.formatBtn,
+      this.dom.minifyBtn,
+      this.dom.validateBtn,
+      this.dom.autofixBtn,
+      this.dom.sortBtn,
+      this.dom.escapeBtn,
+      this.dom.unescapeBtn,
+      this.dom.copyBtn,
+      this.dom.downloadBtn,
+      this.dom.clearBtn
+    ].forEach((button) => {
+      if (!button) {
+        return;
       }
+      button.disabled = disabled;
+      button.setAttribute('aria-disabled', String(disabled));
+    });
+  }
 
-      this.recordPerformance('auto-format', start);
-    } catch (error) {
-      this.validateJson({ value: raw, updateState: true });
-      if (!options.silent) {
-        this.dom.resultStatus.textContent = 'Input changed. Fix errors to format.';
-      }
+  setResultStatus(value) {
+    this.state.lastActionStatus = value;
+    this.dom.resultStatus.textContent = value;
+  }
+
+  syncUiState() {
+    const hasOutput = this.outputModel && this.outputModel.getValue().trim().length > 0;
+    if (this.dom.copyBtn) {
+      this.dom.copyBtn.disabled = !hasOutput || this.state.isBusy;
+    }
+    if (this.dom.downloadBtn) {
+      this.dom.downloadBtn.disabled = !hasOutput || this.state.isBusy;
     }
   }
 
-  validateJson({ value, updateState }) {
-    try {
-      JSON.parse(value);
-      this.setMarkers([]);
-      if (updateState) this.dom.validationState.textContent = 'Valid JSON';
-      return true;
-    } catch (error) {
-      const marker = this.parseErrorToMarker(error);
-      this.setMarkers(marker ? [marker] : []);
-      if (updateState) this.dom.validationState.textContent = 'Invalid JSON';
-      return false;
-    }
-  }
+  showError(error) {
+    this.dom.errorTitle.textContent = error.title;
+    this.dom.errorDetail.textContent = error.message;
 
-  autoFixCommonJsonIssues(raw) {
-    return raw
-      .replace(/[“”]/g, '"')
-      .replace(/[‘’]/g, "'")
-      .replace(/\/\/.*$/gm, '')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/,\s*([}\]])/g, '$1')
-      .replace(/([\{,]\s*)([A-Za-z0-9_]+)\s*:/g, '$1"$2":')
-      .replace(/:\s*'([^']*)'/g, ': "$1"')
-      .replace(/(\r\n|\n|\r)/gm, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  toggleWordWrap() {
-    const wrapValue = this.dom.wrapToggle.checked ? 'on' : 'off';
-    this.inputEditor.updateOptions({ wordWrap: wrapValue });
-    this.outputEditor.updateOptions({ wordWrap: wrapValue });
-  }
-
-  toggleTreeView() {
-    if (!this.dom.treeToggle.checked) {
-      this.dom.treeView.hidden = true;
-      return;
-    }
-
-    const rendered = this.renderTree(this.outputModel.getValue() || this.inputModel.getValue());
-
-    if (!rendered) {
-      this.showError('Tree view is available only for valid JSON.');
-      this.dom.treeToggle.checked = false;
+    if (error.location) {
+      this.dom.errorLocation.hidden = false;
+      this.dom.errorLocation.textContent = `Line ${error.location.line}, Column ${error.location.column}`;
     } else {
-      this.clearError();
-      this.dom.treeView.hidden = false;
+      this.dom.errorLocation.hidden = true;
+      this.dom.errorLocation.textContent = '';
     }
+
+    this.dom.errorBox.hidden = false;
   }
 
-  toggleDiffView() {
-    const enabled = this.dom.diffToggle.checked;
-    this.dom.outputEditor.hidden = enabled;
-    this.dom.diffEditor.hidden = !enabled;
-
-    if (enabled) {
-      this.diffEditor.setModel({
-        original: this.inputModel,
-        modified: this.outputModel
-      });
-    }
-  }
-
-  renderTree(input) {
-    try {
-      const parsed = JSON.parse(input);
-      this.dom.treeView.innerHTML = '';
-      this.dom.treeView.appendChild(this.buildTreeNode(parsed, 'root', 0));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  buildTreeNode(value, key, depth = 0) {
-    if (depth > CONFIG.TREE_MAX_DEPTH) {
-      const div = document.createElement('div');
-      div.textContent = '... (max depth reached)';
-      div.className = 'tree-max-depth';
-      return div;
-    }
-
-    const row = document.createElement('details');
-    row.open = key === 'root' && depth < 2;
-    row.className = 'tree-node';
-
-    const summary = document.createElement('summary');
-    summary.textContent = this.getNodeLabel(value, key);
-    row.appendChild(summary);
-
-    if (value !== null && typeof value === 'object') {
-      const entries = Object.entries(value);
-
-      if (entries.length > CONFIG.TREE_MAX_NODES) {
-        const warning = document.createElement('div');
-        warning.textContent = `... (${entries.length - CONFIG.TREE_MAX_NODES} more items)`;
-        warning.className = 'tree-warning';
-        row.appendChild(warning);
-      }
-
-      entries
-        .slice(0, CONFIG.TREE_MAX_NODES)
-        .forEach(([childKey, childValue]) => {
-          row.appendChild(this.buildTreeNode(childValue, childKey, depth + 1));
-        });
-    } else {
-      const leaf = document.createElement('div');
-      leaf.className = 'tree-leaf';
-      leaf.textContent = this.formatValue(value);
-      row.appendChild(leaf);
-    }
-
-    return row;
-  }
-
-  getNodeLabel(value, key) {
-    if (Array.isArray(value)) {
-      return `${key}: Array(${value.length})`;
-    }
-    if (value && typeof value === 'object') {
-      return `${key}: Object(${Object.keys(value).length})`;
-    }
-    return `${key}: ${typeof value}`;
-  }
-
-  formatValue(value) {
-    if (typeof value === 'string') {
-      return `"${value}"`;
-    }
-    return String(value);
+  clearError() {
+    this.dom.errorBox.hidden = true;
+    this.dom.errorTitle.textContent = '';
+    this.dom.errorDetail.textContent = '';
+    this.dom.errorLocation.textContent = '';
+    this.dom.errorLocation.hidden = true;
   }
 
   async copyOutput() {
-    const value = this.outputModel.getValue();
-
-    if (!value) {
-      this.showToast('No output to copy.', 'error');
+    const output = this.outputModel.getValue();
+    if (!output) {
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(value);
-      this.dom.copyBtn?.classList.add('copy-success');
-      this.showToast('Copied to clipboard.', 'success');
-
-      setTimeout(() => {
-        this.dom.copyBtn?.classList.remove('copy-success');
-      }, 450);
-    } catch (error) {
-      this.showToast('Failed to copy: ' + error.message, 'error');
+      await navigator.clipboard.writeText(output);
+      this.showToast('Copied output to clipboard.', 'success');
+    } catch {
+      this.showToast('Clipboard copy is not available in this browser context.', 'error');
     }
   }
 
   downloadOutput() {
-    const value = this.outputModel.getValue();
-
-    if (!value) {
-      this.showToast('No output to download.', 'error');
+    const output = this.outputModel.getValue();
+    if (!output) {
       return;
     }
 
-    try {
-      const blob = new Blob([value], { type: 'application/json;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `toolnexus-json-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      this.showToast('Downloaded JSON output.', 'success');
-    } catch (error) {
-      this.showToast('Failed to download: ' + error.message, 'error');
-    }
+    const blob = new Blob([output], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${CONFIG.outputFilenamePrefix}-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    this.showToast('Downloaded output as JSON file.', 'success');
   }
 
-  addToHistory(value) {
-    if (this.state.history[this.state.historyIndex] === value) {
+  clearAll() {
+    this.inputModel.setValue('');
+    this.outputModel.setValue('');
+    this.setResultStatus('Editors cleared.');
+    this.markValid();
+    this.updatePayloadState('');
+    this.syncUiState();
+  }
+
+  showToast(message, variant = 'info') {
+    if (!this.dom.toastRegion) {
       return;
     }
 
-    // Remove forward history if we're not at the end
-    if (this.state.historyIndex < this.state.history.length - 1) {
-      this.state.history = this.state.history.slice(0, this.state.historyIndex + 1);
-    }
-
-    this.state.history.push(value);
-
-    // Limit history size
-    if (this.state.history.length > CONFIG.HISTORY_LIMIT) {
-      this.state.history.shift();
-    }
-
-    this.state.historyIndex = this.state.history.length - 1;
-  }
-
-  undo() {
-    if (this.state.historyIndex > 0) {
-      this.state.historyIndex--;
-      this.inputModel.setValue(this.state.history[this.state.historyIndex]);
-    }
-  }
-
-  redo() {
-    if (this.state.historyIndex < this.state.history.length - 1) {
-      this.state.historyIndex++;
-      this.inputModel.setValue(this.state.history[this.state.historyIndex]);
-    }
-  }
-
-  updatePayloadStats(value) {
-    const bytes = new TextEncoder().encode(value).length;
-    this.dom.payloadStats.textContent = this.formatBytes(bytes);
-    this.dom.largeFileWarning.hidden = bytes < CONFIG.LARGE_FILE_THRESHOLD_BYTES;
-  }
-
-  formatBytes(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  }
-
-  getResultStatus(action) {
-    const statuses = {
-      format: 'Formatted output ready.',
-      minify: 'Minified output ready.',
-      compress: 'Compressed output ready.',
-      sort: 'Sorted output ready.',
-      validate: 'JSON validated successfully.'
-    };
-    return statuses[action] || 'Output ready.';
-  }
-
-  setMarkers(markers) {
-    this.monaco.editor.setModelMarkers(this.inputModel, CONFIG.MARKER_OWNER, markers);
-  }
-
-  showError(message) {
-    this.dom.errorMessage.hidden = false;
-    this.dom.errorMessage.textContent = message;
-
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      if (this.dom.errorMessage.textContent === message) {
-        this.dom.errorMessage.hidden = true;
-      }
-    }, 5000);
-  }
-
-  clearError() {
-    this.dom.errorMessage.hidden = true;
-    this.dom.errorMessage.textContent = '';
-  }
-
-  showToast(message, type = 'info') {
-    if (!this.dom.toastRegion) return;
-
-    // Limit number of toasts
-    if (this.dom.toastRegion.children.length >= CONFIG.MAX_TOASTS) {
+    while (this.dom.toastRegion.children.length >= CONFIG.maxToasts) {
       this.dom.toastRegion.firstChild?.remove();
     }
 
     const toast = document.createElement('div');
-    toast.className = `toast toast--${type}`;
-    toast.setAttribute('role', 'alert');
+    toast.className = `toast toast--${variant}`;
     toast.textContent = message;
-
-    // Add close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'toast-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => toast.remove();
-    toast.appendChild(closeBtn);
+    toast.setAttribute('role', 'status');
 
     this.dom.toastRegion.appendChild(toast);
-
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.remove();
-      }
-    }, 3000);
-  }
-
-  recordPerformance(action, start) {
-    const elapsed = performance.now() - start;
-    this.state.performanceMetrics[action] = elapsed;
-
-    this.dom.perfTime.textContent = `${elapsed.toFixed(2)} ms`;
-
-    // Warn if operation is slow
-    if (elapsed > CONFIG.PERFORMANCE_THRESHOLD_MS) {
-      console.warn(`Slow operation detected: ${action} took ${elapsed.toFixed(2)}ms`);
-    }
-  }
-
-  setupPerformanceObserver() {
-    if ('PerformanceObserver' in window) {
-      const observer = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          if (entry.entryType === 'measure' && entry.name.startsWith('json-')) {
-            console.debug(`Performance measure: ${entry.name} = ${entry.duration}ms`);
-          }
-        }
-      });
-
-      observer.observe({ entryTypes: ['measure'] });
-    }
+    window.setTimeout(() => toast.remove(), CONFIG.statusResetMs);
   }
 }
 
-// Initialize the formatter when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  window.jsonFormatter = new JSONFormatter();
+document.addEventListener('DOMContentLoaded', async () => {
+  const app = new JsonFormatterApp();
+  await app.init();
+  window.jsonFormatter = app;
 });
