@@ -1,0 +1,87 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+    ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["JsonLd"] = Model.Seo.JsonLd;
+    ViewData["Keywords"] = Model.Seo.Keywords;
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/pages/json-validator.css" asp-append-version="true" />
+}
+
+<article class="json-validator-page" data-json-validator>
+    <header class="json-validator-page__header">
+        <div>
+            <h1>@Model.Tool.Title</h1>
+            <p class="json-validator-page__description">Validate JSON with precise diagnostics and structure insights. Everything runs locally in your browser.</p>
+        </div>
+        <span class="json-validator-page__badge">Client-side processing</span>
+    </header>
+
+    <section class="json-validator-toolbar" role="toolbar" aria-label="JSON validator controls">
+        <button id="validateBtn" class="tool-btn tool-btn--primary" type="button">Validate</button>
+        <button id="formatBtn" class="tool-btn" type="button">Format JSON</button>
+        <button id="copyBtn" class="tool-btn" type="button">Copy JSON</button>
+        <button id="downloadBtn" class="tool-btn" type="button">Download Valid JSON</button>
+        <button id="clearBtn" class="tool-btn" type="button">Clear</button>
+
+        <label class="tool-toggle"><input id="autoValidateToggle" type="checkbox" /> Auto validate</label>
+        <label class="tool-toggle"><input id="strictModeToggle" type="checkbox" checked /> Strict mode (object/array top-level)</label>
+        <label class="tool-toggle"><input id="treeViewToggle" type="checkbox" /> Tree view</label>
+        <label class="tool-toggle"><input id="schemaModeToggle" type="checkbox" /> Schema mode</label>
+    </section>
+
+    <section id="processingIndicator" class="json-validator-processing" hidden>Processing JSON payload…</section>
+
+    <section class="json-validator-layout" aria-label="JSON validator workspace">
+        <section class="json-validator-panel">
+            <div class="json-validator-panel__header">
+                <h2>Raw JSON Input</h2>
+                <p>Ctrl/Cmd + Enter: Validate · Ctrl/Cmd + L: Clear</p>
+            </div>
+            <label class="json-validator-panel__label" for="jsonInput">JSON</label>
+            <textarea id="jsonInput" class="json-validator-editor" spellcheck="false">@Model.Tool.ExampleInput</textarea>
+            <label id="schemaLabel" class="json-validator-panel__label" for="schemaInput" hidden>JSON Schema (optional)</label>
+            <textarea id="schemaInput" class="json-validator-editor json-validator-editor--schema" spellcheck="false" hidden placeholder='{"type":"object","properties":{"id":{"type":"number"}},"required":["id"]}'></textarea>
+        </section>
+
+        <section class="json-validator-panel">
+            <div class="json-validator-panel__header">
+                <h2>Validation Result</h2>
+                <p id="resultBadge" class="json-validator-result json-validator-result--idle">Awaiting validation</p>
+            </div>
+
+            <section id="successBox" class="json-validator-success" hidden>
+                <h3>Valid JSON</h3>
+                <p id="successDetail"></p>
+            </section>
+
+            <section id="errorBox" class="json-validator-error" role="alert" aria-live="assertive" hidden>
+                <h3 id="errorTitle">Invalid JSON</h3>
+                <p id="errorDescription"></p>
+                <p id="errorLocation"></p>
+            </section>
+
+            <section class="json-validator-metrics" aria-live="polite">
+                <p><span>Top-level</span><strong id="metricTopLevel">-</strong></p>
+                <p><span>Key count</span><strong id="metricKeyCount">0</strong></p>
+                <p><span>Array length</span><strong id="metricArrayLength">0</strong></p>
+                <p><span>Depth</span><strong id="metricDepth">0</strong></p>
+                <p><span>Characters</span><strong id="metricCharacters">0</strong></p>
+                <p><span>Lines</span><strong id="metricLines">0</strong></p>
+                <p><span>Payload size</span><strong id="metricPayloadSize">0 B</strong></p>
+            </section>
+
+            <details id="treeViewPanel" class="json-validator-tree" hidden>
+                <summary>Structure tree</summary>
+                <pre id="treeViewContent"></pre>
+            </details>
+        </section>
+    </section>
+</article>
+
+@section Scripts {
+    <script type="module" src="~/js/tools/json-validator/index.js" asp-append-version="true"></script>
+}
