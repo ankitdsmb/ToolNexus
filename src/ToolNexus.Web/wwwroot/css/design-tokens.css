@@ -49,7 +49,7 @@
   --danger-text: #b4233e;
 
   --container: var(--container-width);
-  --space-2xs: var(--space-0);
+  --space-xxs: var(--space-0);
   --space-xs: var(--space-1);
   --space-sm: var(--space-2);
   --space-md: var(--space-3);

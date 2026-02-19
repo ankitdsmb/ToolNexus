@@ -2789,87 +2789,87 @@ html[data-theme='dark'] .hero-preview {
   }
 }
 
-/* ===== Premium SaaS QA refinement v3 ===== */
+/* ===== Premium SaaS polish pass v3 ===== */
 :root {
-  --section-stack-gap: var(--space-6);
-  --section-inner-gap: var(--space-4);
-  --interactive-height: var(--space-6);
-  --radius-interactive: var(--radius-md);
-  --radius-surface: var(--radius-lg);
-  --title-line-height: 1.2;
-  --body-line-height: 1.55;
+  --section-space-hero: var(--space-7);
+  --section-space-main: var(--space-6);
+  --section-space-footer: var(--space-7);
+  --text-secondary-strong: color-mix(in srgb, var(--text-secondary) 94%, var(--text-primary));
+  --border-stronger: color-mix(in srgb, var(--border) 88%, var(--text-primary) 12%);
 }
 
 .topbar__inner {
   min-height: var(--space-7);
+  grid-template-columns: auto minmax(320px, 600px) auto;
+  gap: var(--space-3);
   align-items: center;
-  grid-template-columns: auto minmax(320px, 520px) auto;
 }
 
-.topbar__search-shell,
-.topbar__explore,
-.theme-toggle {
-  min-height: var(--space-5);
+.brand {
+  min-height: var(--space-6);
+}
+
+.brand__dot {
+  width: var(--space-2);
+  height: var(--space-2);
+}
+
+.topbar__search-shell {
+  min-height: var(--space-6);
+  border: 1px solid var(--border-stronger);
 }
 
 .topbar__explore {
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface-elevated));
-  color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  background: color-mix(in srgb, var(--surface-interactive) 78%, transparent);
+  color: var(--text-secondary-strong);
+  border: 1px solid var(--border-stronger);
   font-weight: 600;
 }
 
 .hero {
-  padding: var(--space-6);
+  padding: var(--section-space-hero);
 }
 
 .hero__container {
   align-items: center;
-  grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
   gap: var(--space-4);
 }
 
 .hero__content {
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .hero__subtitle {
-  color: var(--text-secondary);
-  max-width: 52ch;
-}
-
-.hero__typewriter {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
+  color: var(--text-secondary-strong);
 }
 
 .hero__badges {
   display: flex;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .hero-badge {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
+  color: var(--text-secondary-strong);
+  border: 1px solid var(--border-stronger);
 }
 
-.hero__actions {
-  gap: var(--space-2);
+.hero-btn--primary {
+  box-shadow: var(--shadow-sm);
 }
 
-.hero-btn--primary,
-.card__cta {
-  background: color-mix(in srgb, var(--accent) 92%, #0f172a);
-}
-
-.hero-btn--secondary {
-  color: var(--text-primary);
+.hero-preview {
+  transform: none;
+  padding: 0;
+  border: 1px solid var(--border-stronger);
 }
 
 .tool-section,
 .trust-section {
-  gap: var(--space-4);
-  padding: var(--space-5);
+  padding-top: var(--section-space-main);
+  padding-bottom: var(--section-space-main);
 }
 
 .tool-section__header,
@@ -2877,26 +2877,26 @@ html[data-theme='dark'] .hero-preview {
   gap: var(--space-2);
 }
 
-.section-subtitle {
-  color: var(--text-secondary);
-  max-width: 60ch;
-}
-
 .tool-discovery {
-  display: grid;
   gap: var(--space-2);
 }
 
 .tool-discovery__row {
-  min-height: var(--space-5);
   gap: var(--space-2);
   align-items: center;
 }
 
-.tool-discovery__chip,
-.card__badge {
+.tool-discovery__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary-strong);
+}
+
+.tool-discovery__chip {
+  padding: var(--space-0) var(--space-2);
   border-radius: var(--radius-sm);
-  padding: var(--space-0) var(--space-1);
+  border: 1px solid var(--border-stronger);
 }
 
 .grid#featuredGrid {
@@ -2907,104 +2907,78 @@ html[data-theme='dark'] .hero-preview {
 .card {
   min-height: 368px;
   gap: var(--space-2);
-  padding: var(--space-3);
+  border: 1px solid var(--border-stronger);
 }
 
 .card__header {
   align-items: start;
-  gap: var(--space-2);
 }
 
 .card__title-row {
   align-items: center;
-  gap: var(--space-1);
-}
-
-.card__title-wrap p,
-.card__highlights,
-.trust-stat__meta,
-.testimonial-card__quote,
-.footer__column a,
-.footer__bottom-strip {
-  color: var(--text-secondary);
-  line-height: var(--body-line-height);
 }
 
 .card__highlights {
-  padding-left: var(--space-2);
-  gap: var(--space-1);
+  padding-left: var(--space-3);
 }
 
-.card__highlights li::marker {
-  font-size: .8em;
+.card__highlights li {
+  margin-bottom: var(--space-1);
+  color: var(--text-secondary-strong);
 }
 
 .card__cta {
-  min-height: var(--space-5);
-  border-radius: var(--radius-md);
+  min-height: var(--space-6);
 }
 
 .trust-stats {
-  gap: var(--space-3);
-}
-
-.trust-stat {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .trust-stat__label {
-  font-size: .875rem;
-  color: color-mix(in srgb, var(--text-secondary) 92%, transparent);
+  color: var(--text-secondary-strong);
+  font-size: 0.875rem;
 }
 
 .trust-stat__value {
-  margin: 0;
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-size: clamp(1.5rem, 2vw, 1.875rem);
+}
+
+.trust-stat__meta {
+  color: var(--text-secondary-strong);
 }
 
 .trust-grid {
-  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 .privacy-card,
 .trust-links,
+.trust-link,
 .testimonial-card {
-  padding: var(--space-3);
-}
-
-.privacy-card__list {
-  display: grid;
-  gap: var(--space-1);
-  color: var(--text-secondary);
-}
-
-.trust-link {
-  justify-content: flex-start;
-  padding-inline: var(--space-3);
+  border: 1px solid var(--border-stronger);
 }
 
 .testimonial-grid {
-  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 .testimonial-card {
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .testimonial-card__badge {
   width: var(--space-4);
   height: var(--space-4);
+  border-radius: 999px;
 }
 
 .footer {
-  padding-top: var(--space-4);
+  margin-top: var(--section-space-footer);
 }
 
 .footer__container {
-  gap: var(--space-5);
-  padding-top: var(--space-5);
+  padding-top: var(--space-7);
   padding-bottom: var(--space-5);
 }
 
@@ -3013,77 +2987,65 @@ html[data-theme='dark'] .hero-preview {
   gap: var(--space-5);
 }
 
-.footer__column h3 {
-  margin-bottom: var(--space-1);
-}
-
 .footer__column a {
-  font-size: .9375rem;
+  color: var(--text-secondary-strong);
 }
 
 .footer__bottom-strip {
   padding-top: var(--space-4);
-  font-size: .875rem;
-  row-gap: var(--space-1);
+  font-size: 0.875rem;
 }
 
-html[data-theme='dark'] .topbar__search-shell,
-html[data-theme='dark'] .topbar__explore,
+html[data-theme='dark'] .topbar,
+html[data-theme='dark'] .hero,
+html[data-theme='dark'] #featuredTools,
+html[data-theme='dark'] #trust,
+html[data-theme='dark'] .footer,
 html[data-theme='dark'] .card,
 html[data-theme='dark'] .trust-stat,
 html[data-theme='dark'] .privacy-card,
 html[data-theme='dark'] .trust-links,
 html[data-theme='dark'] .testimonial-card,
-html[data-theme='dark'] .hero-preview {
-  border-color: color-mix(in srgb, var(--border) 96%, #d5e4ff 4%);
-}
-
-html[data-theme='dark'] .hero-btn--secondary,
+html[data-theme='dark'] .hero-preview,
+html[data-theme='dark'] .topbar__search-shell,
+html[data-theme='dark'] .tool-discovery__chip,
 html[data-theme='dark'] .trust-link {
-  background: color-mix(in srgb, var(--surface-elevated) 72%, var(--accent) 28%);
+  border-color: color-mix(in srgb, var(--border) 94%, #d6e2ff 6%);
 }
 
-@media (min-width: 1400px) {
+@media (max-width: 1200px) {
   .grid#featuredGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1080px) {
   .topbar__inner,
   .hero__container,
-  .trust-grid {
+  .trust-grid,
+  .testimonial-grid,
+  .footer__columns {
     grid-template-columns: 1fr;
   }
 
-  .topbar__search-wrap {
-    order: 3;
-  }
-
-  .grid#featuredGrid,
-  .testimonial-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .hero,
+  #featuredTools,
+  #trust {
+    padding: var(--space-6);
   }
 }
 
 @media (max-width: 720px) {
   .hero,
-  .tool-section,
-  .trust-section,
-  .footer {
-    margin-top: var(--space-5);
-  }
-
-  .hero,
-  .tool-section,
-  .trust-section {
+  #featuredTools,
+  #trust,
+  .footer__container {
     padding: var(--space-4);
   }
 
   .grid#featuredGrid,
   .trust-stats,
-  .testimonial-grid,
-  .footer__columns {
+  .testimonial-grid {
     grid-template-columns: 1fr;
   }
 }
