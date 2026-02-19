@@ -969,3 +969,73 @@ button:disabled {
     flex: 1 1 calc(50% - 0.45rem);
   }
 }
+
+/* ===== Founder SaaS refinement pass ===== */
+body::before,
+body::after {
+  background: none;
+}
+
+.topbar {
+  box-shadow: none;
+}
+
+.topbar.is-scrolled {
+  box-shadow: none;
+}
+
+.topbar__search-shell,
+.theme-toggle,
+.topbar__explore,
+.tool-btn,
+button.primary {
+  transition-duration: 120ms;
+}
+
+.topbar__explore,
+.tool-btn--primary,
+.hero-btn--primary,
+button.primary {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  color: var(--text-primary);
+}
+
+.tool-layout--elite {
+  gap: 16px;
+}
+
+.tool-panel,
+.tool-panel--output {
+  border-color: color-mix(in srgb, var(--border) 32%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+
+.tool-page__action-selector,
+.tool-page__action-selector select {
+  z-index: 10;
+}
+
+.tool-page select,
+.tool-page__action-selector select {
+  transition-duration: 180ms;
+}
+
+.tool-empty-state__icon {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--border) 32%, transparent);
+}
+
+.footer {
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .topbar__inner {
+    grid-template-columns: minmax(120px, auto) minmax(0, 1fr) auto;
+  }
+
+  .topbar__search-shortcut {
+    display: none;
+  }
+}
