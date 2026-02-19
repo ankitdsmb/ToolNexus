@@ -113,6 +113,10 @@ public sealed class ToolsController(
         {
             return View("htmlEntities", viewModel);
         }
+        else if (string.Equals(tool.Slug, "text-diff", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("TextDiff", viewModel);
+        }
         return View("Tool", viewModel);
     }
 
