@@ -91,37 +91,7 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
         return Task.FromResult(ToolResult.Ok(output));
     }
 
-    private static string JsonToXml(string input)
-    {
-        using var doc = JsonDocument.Parse(input);
-        var root = new XElement("root");
-        AppendJson(root, doc.RootElement, "item");
-        return root.ToString();
-    }
-
-    private static void AppendJson(XElement parent, JsonElement element, string name)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Object:
-                var obj = new XElement(name);
-                foreach (var prop in element.EnumerateObject())
-                {
-                    AppendJson(obj, prop.Value, prop.Name);
-                }
-                parent.Add(obj);
-                break;
-            case JsonValueKind.Array:
-                foreach (var item in element.EnumerateArray())
-                {
-                    AppendJson(parent, item, name);
-                }
-                break;
-            default:
-                parent.Add(new XElement(name, element.ToString()));
-                break;
-        }
-    }
+    private static string JsonToXml(string input) => JsonToXmlConverter.Convert(input);
 
     private static string XmlToJson(string input)
     {
