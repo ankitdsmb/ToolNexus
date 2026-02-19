@@ -78,10 +78,10 @@
             var normalized = $"{title} {slug}".ToLowerInvariant();
             var badge = tool.index switch
             {
-                0 => "Popular",
-                1 => "Fast",
-                _ when normalized.Contains("json") || normalized.Contains("formatter") => "Developer Favorite",
-                _ => "New"
+                0 => "popular",
+                1 => "fast",
+                _ when normalized.Contains("json") || normalized.Contains("formatter") => "dev-favorite",
+                _ => "new"
             };
 
             <a class="card" href="/tools/@slug" data-tool-slug="@slug" data-title="@title" data-description="@description">
@@ -90,7 +90,7 @@
                     <div class="card__title-wrap">
                         <div class="card__title-row">
                             <h3>@title</h3>
-                            <span class="card__badge" data-badge="@badge">@badge</span>
+                            <span class="card__badge" data-badge="@badge">@badge.Replace("-", " ")</span>
                         </div>
                         <p>@description</p>
                     </div>
