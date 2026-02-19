@@ -83,6 +83,11 @@ export function mountJsonToCsvTool() {
     return;
   }
 
+  if (els.convertBtn.dataset.jsonToCsvInitialized === 'true') {
+    return;
+  }
+  els.convertBtn.dataset.jsonToCsvInitialized = 'true';
+
   let latestCsv = '';
   let converting = false;
   let autoConvertTimer = null;
@@ -186,8 +191,17 @@ export function mountJsonToCsvTool() {
       return;
     }
 
-    await copyToClipboard(latestCsv);
-    setStatus(els, 'CSV copied to clipboard', 'success');
+    try {
+      await copyToClipboard(latestCsv);
+      setStatus(els, 'CSV copied to clipboard', 'success');
+    } catch {
+      showError(els, new ToolError(
+        'CLIPBOARD_UNAVAILABLE',
+        'Clipboard unavailable',
+        'Unable to access your clipboard in this browser context.',
+        'Copy the output manually from the CSV panel.'
+      ));
+    }
   });
 
   els.downloadBtn.addEventListener('click', () => {
