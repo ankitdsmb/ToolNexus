@@ -1,748 +1,432 @@
-// base64-decode.js - Enhanced Base64 Decoder
-
-const CONFIG = {
-  MAX_INPUT_SIZE_BYTES: 10 * 1024 * 1024, // 10MB max input
-  PERFORMANCE_THRESHOLD_MS: 100,
-  DEBOUNCE_DELAY_MS: 300,
-  SUPPORTED_ACTIONS: ['decode', 'encode', 'validate']
+const BASE64_CONFIG = {
+  DEBOUNCE_MS: 250,
+  LARGE_INPUT_WARNING_BYTES: 1024 * 1024,
+  MAX_INPUT_BYTES: 10 * 1024 * 1024,
+  AUTO_DECODE_MIN_CHARS: 8
 };
 
-const BASE64_PATTERN = /^[A-Za-z0-9+/]*={0,2}$/;
-const BASE64URL_PATTERN = /^[A-Za-z0-9_-]*$/;
+const ERROR_TITLES = {
+  validation: 'Input validation failed',
+  decode: 'Decoding failed',
+  system: 'Unexpected error'
+};
 
-class Base64Decoder {
-  constructor() {
-    this.dom = this.initializeDOM();
-    this.state = {
-      isProcessing: false,
-      abortController: null,
-      performanceMetrics: {}
-    };
-
-    this.init();
+class Base64ToolError extends Error {
+  constructor(title, message, code = 'UNKNOWN') {
+    super(message);
+    this.name = 'Base64ToolError';
+    this.title = title;
+    this.code = code;
   }
+}
 
-  initializeDOM() {
-    const elements = [
-      'actionSelect', 'runBtn', 'copyBtn', 'downloadBtn', 'shareBtn',
-      'inputEditor', 'outputEditor', 'errorMessage', 'resultStatus',
-      'outputEmptyState', 'outputField', 'toastRegion'
-    ];
+const Base64Validation = {
+  sanitize(value) {
+    return (value || '').replace(/\s+/g, '');
+  },
 
-    return elements.reduce((acc, id) => {
-      acc[id] = document.getElementById(id);
-      return acc;
-    }, {});
-  }
-
-  init() {
-    if (!this.dom.inputEditor || !this.dom.outputEditor) {
-      console.error('Required DOM elements not found');
-      return;
+  normalizeInput(input, allowUrlSafe) {
+    const compact = this.sanitize(input);
+    if (!compact) {
+      throw new Base64ToolError(ERROR_TITLES.validation, 'Please enter a Base64 string to decode.', 'EMPTY_INPUT');
     }
 
-    this.bindEvents();
-    this.setupKeyboardShortcuts();
-    this.setupTextareaAutoResize();
-    this.updateUxLayer();
+    let normalized = compact;
+    if (allowUrlSafe) {
+      normalized = normalized.replace(/-/g, '+').replace(/_/g, '/');
+    }
 
-    // Initial validation
-    this.validateInput();
+    const firstInvalidIndex = normalized.search(/[^A-Za-z0-9+/=]/);
+    if (firstInvalidIndex >= 0) {
+      throw new Base64ToolError(
+        ERROR_TITLES.validation,
+        `Invalid Base64 string. Unexpected character at position ${firstInvalidIndex + 1}.`,
+        'INVALID_CHARACTER'
+      );
+    }
+
+    const firstPaddingIndex = normalized.indexOf('=');
+    if (firstPaddingIndex !== -1 && /[^=]/.test(normalized.slice(firstPaddingIndex))) {
+      throw new Base64ToolError(
+        ERROR_TITLES.validation,
+        'Invalid Base64 padding. Padding characters must only appear at the end.',
+        'INVALID_PADDING_ORDER'
+      );
+    }
+
+    const missingPadding = normalized.length % 4;
+    if (missingPadding) {
+      normalized = normalized.padEnd(normalized.length + (4 - missingPadding), '=');
+    }
+
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)) {
+      throw new Base64ToolError(ERROR_TITLES.validation, 'Invalid Base64 structure. Verify the encoded input.', 'INVALID_STRUCTURE');
+    }
+
+    return normalized;
+  }
+};
+
+const Base64Decoder = {
+  decode(normalizedBase64) {
+    let binary;
+    try {
+      binary = atob(normalizedBase64);
+    } catch {
+      throw new Base64ToolError(ERROR_TITLES.decode, 'Corrupted Base64 content could not be decoded.', 'CORRUPTED_INPUT');
+    }
+
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    const textResult = this.tryDecodeText(bytes);
+
+    if (textResult.success) {
+      return {
+        type: 'text',
+        text: textResult.text,
+        bytes,
+        utf8: true,
+        isJson: this.looksLikeJson(textResult.text)
+      };
+    }
+
+    return {
+      type: 'binary',
+      bytes,
+      byteLength: bytes.length
+    };
+  },
+
+  tryDecodeText(bytes) {
+    try {
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      if (this.looksBinary(text)) {
+        return { success: false };
+      }
+      return { success: true, text };
+    } catch {
+      return { success: false };
+    }
+  },
+
+  looksBinary(text) {
+    if (!text) return false;
+
+    let controlCount = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      const code = text.charCodeAt(i);
+      const isControl = code < 32 && code !== 9 && code !== 10 && code !== 13;
+      if (isControl) {
+        controlCount += 1;
+      }
+    }
+
+    return controlCount > Math.max(2, Math.floor(text.length * 0.01));
+  },
+
+  looksLikeJson(text) {
+    const trimmed = text.trim();
+    if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
+      return false;
+    }
+
+    try {
+      JSON.parse(trimmed);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  prettyJson(text) {
+    try {
+      return JSON.stringify(JSON.parse(text), null, 2);
+    } catch {
+      return text;
+    }
+  }
+};
+
+class Base64DecodeController {
+  constructor() {
+    this.dom = this.getDom();
+    this.state = {
+      decoding: false,
+      decoded: null,
+      debounceTimer: null
+    };
+    this.bindEvents();
+    this.refreshUi();
+  }
+
+  getDom() {
+    return {
+      inputEditor: document.getElementById('inputEditor'),
+      outputEditor: document.getElementById('outputEditor'),
+      runBtn: document.getElementById('runBtn'),
+      clearInputBtn: document.getElementById('clearInputBtn'),
+      copyBtn: document.getElementById('copyBtn') || document.getElementById('copyOutputBtn'),
+      downloadBtn: document.getElementById('downloadBtn'),
+      errorMessage: document.getElementById('errorMessage'),
+      resultStatus: document.getElementById('resultStatus'),
+      outputField: document.getElementById('outputField'),
+      outputEmptyState: document.getElementById('outputEmptyState'),
+      inputStats: document.getElementById('inputStats'),
+      outputStats: document.getElementById('outputStats'),
+      payloadSize: document.getElementById('payloadSize'),
+      validationState: document.getElementById('validationState'),
+      handleUrlSafeCheck: document.getElementById('handleUrlSafeCheck'),
+      autoDecodeCheck: document.getElementById('autoDecodeCheck') || document.getElementById('autoDetectCheck'),
+      prettyJsonCheck: document.getElementById('prettyJsonCheck'),
+      loadSampleBtn: document.getElementById('loadSampleBtn'),
+      sampleInput: document.getElementById('sampleInput')
+    };
   }
 
   bindEvents() {
-    // Run button
-    this.dom.runBtn?.addEventListener('click', () => this.runAction());
-
-    // Copy button
+    this.dom.runBtn?.addEventListener('click', () => this.decodeFromInput());
+    this.dom.clearInputBtn?.addEventListener('click', () => this.clearInput());
     this.dom.copyBtn?.addEventListener('click', () => this.copyOutput());
+    this.dom.downloadBtn?.addEventListener('click', () => this.downloadDecodedFile());
+    this.dom.prettyJsonCheck?.addEventListener('change', () => this.renderDecodedOutput());
+    this.dom.loadSampleBtn?.addEventListener('click', () => this.loadSample());
 
-    // Download button
-    this.dom.downloadBtn?.addEventListener('click', () => this.downloadOutput());
-
-    // Share button
-    this.dom.shareBtn?.addEventListener('click', () => this.shareOutput());
-
-    // Input handling with debounce
-    let debounceTimer;
     this.dom.inputEditor?.addEventListener('input', () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        this.validateInput();
-        this.autoResizeTextarea(this.dom.inputEditor);
-      }, CONFIG.DEBOUNCE_DELAY_MS);
+      this.refreshUi();
+      if (this.dom.autoDecodeCheck?.checked && this.dom.inputEditor.value.length >= BASE64_CONFIG.AUTO_DECODE_MIN_CHARS) {
+        clearTimeout(this.state.debounceTimer);
+        this.state.debounceTimer = setTimeout(() => this.decodeFromInput(), BASE64_CONFIG.DEBOUNCE_MS);
+      }
     });
 
-    // Action change
-    this.dom.actionSelect?.addEventListener('change', () => {
-      this.updateRunButtonLabel();
-      this.validateInput();
-    });
+    document.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        this.decodeFromInput();
+      }
 
-    // Sample data click
-    const sampleInput = document.getElementById('sampleInput');
-    if (sampleInput) {
-      sampleInput.addEventListener('click', () => {
-        this.dom.inputEditor.value = sampleInput.textContent;
-        this.validateInput();
-        this.showToast('Sample data loaded', 'info');
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        this.clearInput();
+      }
+    });
+  }
+
+  decodeFromInput() {
+    if (this.state.decoding) {
+      return;
+    }
+
+    this.clearError();
+
+    try {
+      this.state.decoding = true;
+      this.updateStatus('Decoding…', 'warning');
+
+      const rawInput = this.dom.inputEditor?.value || '';
+      if (new TextEncoder().encode(rawInput).length > BASE64_CONFIG.MAX_INPUT_BYTES) {
+        throw new Base64ToolError(ERROR_TITLES.validation, 'Input exceeds 10 MB limit. Split the payload and decode in parts.', 'INPUT_TOO_LARGE');
+      }
+
+      const normalized = Base64Validation.normalizeInput(rawInput, Boolean(this.dom.handleUrlSafeCheck?.checked));
+      const decoded = Base64Decoder.decode(normalized);
+
+      this.state.decoded = decoded;
+      this.renderDecodedOutput();
+      this.updateStatus('Decoded successfully', 'success');
+    } catch (error) {
+      this.state.decoded = null;
+      this.renderDecodedOutput();
+      this.showError(this.normalizeError(error));
+      this.updateStatus('Decode failed', 'error');
+    } finally {
+      this.state.decoding = false;
+      this.refreshUi();
+    }
+  }
+
+  renderDecodedOutput() {
+    const decoded = this.state.decoded;
+
+    if (!decoded) {
+      this.dom.outputEditor.value = '';
+      this.dom.outputField.hidden = true;
+      this.dom.outputEmptyState.hidden = false;
+      this.dom.downloadBtn.disabled = true;
+      this.updateOutputStats('0 chars | 0 B');
+      return;
+    }
+
+    this.dom.outputField.hidden = false;
+    this.dom.outputEmptyState.hidden = true;
+
+    if (decoded.type === 'binary') {
+      this.dom.outputEditor.value = `Binary payload detected (${decoded.byteLength.toLocaleString()} bytes). Use Download to save the decoded file safely.`;
+      this.dom.downloadBtn.disabled = false;
+      this.updateOutputStats(`Binary | ${decoded.byteLength.toLocaleString()} B`);
+      return;
+    }
+
+    const formatted = this.dom.prettyJsonCheck?.checked && decoded.isJson
+      ? Base64Decoder.prettyJson(decoded.text)
+      : decoded.text;
+
+    this.dom.outputEditor.value = formatted;
+    this.dom.downloadBtn.disabled = false;
+    this.updateOutputStats(`${formatted.length.toLocaleString()} chars | ${decoded.bytes.length.toLocaleString()} B`);
+  }
+
+  clearInput() {
+    if (!this.dom.inputEditor) {
+      return;
+    }
+
+    this.dom.inputEditor.value = '';
+    this.state.decoded = null;
+    this.clearError();
+    this.updateStatus('Ready', 'idle');
+    this.refreshUi();
+    this.renderDecodedOutput();
+  }
+
+  async copyOutput() {
+    const value = this.dom.outputEditor?.value || '';
+    if (!value) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      this.updateStatus('Copied output', 'success');
+    } catch {
+      this.showError({ title: ERROR_TITLES.system, message: 'Clipboard access failed. Copy manually from the output panel.' });
+    }
+  }
+
+  downloadDecodedFile() {
+    if (!this.state.decoded) {
+      return;
+    }
+
+    const payload = this.state.decoded.type === 'binary'
+      ? this.state.decoded.bytes
+      : new TextEncoder().encode(this.dom.outputEditor.value);
+
+    const extension = this.state.decoded.type === 'binary' ? 'bin' : 'txt';
+    const blob = new Blob([payload], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `decoded-output.${extension}`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  loadSample() {
+    if (!this.dom.sampleInput || !this.dom.inputEditor) {
+      return;
+    }
+
+    this.dom.inputEditor.value = this.dom.sampleInput.textContent?.trim() || '';
+    this.refreshUi();
+    this.decodeFromInput();
+  }
+
+  normalizeError(error) {
+    if (error instanceof Base64ToolError) {
+      return { title: error.title, message: error.message };
+    }
+
+    return { title: ERROR_TITLES.system, message: 'An unexpected issue occurred while decoding.' };
+  }
+
+  showError(error) {
+    if (!this.dom.errorMessage) {
+      return;
+    }
+
+    this.dom.errorMessage.hidden = false;
+    this.dom.errorMessage.textContent = '';
+
+    const title = document.createElement('strong');
+    title.textContent = error.title;
+    const message = document.createElement('p');
+    message.textContent = error.message;
+
+    this.dom.errorMessage.append(title, message);
+  }
+
+  clearError() {
+    if (!this.dom.errorMessage) {
+      return;
+    }
+
+    this.dom.errorMessage.hidden = true;
+    this.dom.errorMessage.textContent = '';
+  }
+
+  refreshUi() {
+    const input = this.dom.inputEditor?.value || '';
+    const inputBytes = new TextEncoder().encode(input).length;
+    const hasInput = input.length > 0;
+
+    if (this.dom.inputStats) {
+      this.dom.inputStats.textContent = `${input.length.toLocaleString()} chars | ${inputBytes.toLocaleString()} B`;
+    }
+
+    if (this.dom.payloadSize) {
+      this.dom.payloadSize.textContent = `${inputBytes.toLocaleString()} B`;
+    }
+
+    if (this.dom.validationState) {
+      this.dom.validationState.textContent = hasInput ? 'Input ready' : 'Waiting for input';
+    }
+
+    if (this.dom.runBtn) {
+      this.dom.runBtn.disabled = !hasInput || this.state.decoding;
+      this.dom.runBtn.setAttribute('aria-busy', String(this.state.decoding));
+    }
+
+    if (this.dom.downloadBtn && !this.state.decoded) {
+      this.dom.downloadBtn.disabled = true;
+    }
+
+    if (inputBytes > BASE64_CONFIG.LARGE_INPUT_WARNING_BYTES) {
+      this.showError({
+        title: 'Large payload warning',
+        message: 'Large input detected. Decoding may take longer. For very large payloads, decode in chunks to keep the UI responsive.'
       });
     }
   }
 
-  setupKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-      // Ctrl+Enter or Cmd+Enter to run
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        this.runAction();
-      }
-
-      // Ctrl+Shift+C to copy output
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
-        e.preventDefault();
-        this.copyOutput();
-      }
-
-      // Ctrl+Shift+D to download
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
-        e.preventDefault();
-        this.downloadOutput();
-      }
-    });
-  }
-
-  setupTextareaAutoResize() {
-    if (this.dom.inputEditor) {
-      this.dom.inputEditor.style.minHeight = '200px';
-      this.dom.inputEditor.style.resize = 'vertical';
-      this.autoResizeTextarea(this.dom.inputEditor);
-    }
-
-    if (this.dom.outputEditor) {
-      this.dom.outputEditor.style.minHeight = '200px';
-      this.dom.outputEditor.style.resize = 'vertical';
+  updateOutputStats(text) {
+    if (this.dom.outputStats) {
+      this.dom.outputStats.textContent = text;
     }
   }
 
-  autoResizeTextarea(textarea) {
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 500) + 'px';
-  }
-
-  async runAction() {
-    if (this.state.isProcessing) {
-      this.showToast('Already processing, please wait...', 'warning');
+  updateStatus(message, state) {
+    if (!this.dom.resultStatus) {
       return;
     }
 
-    const start = performance.now();
-    const action = this.dom.actionSelect?.value;
-
-    if (!CONFIG.SUPPORTED_ACTIONS.includes(action)) {
-      this.showError(`Action '${action}' is not supported.`);
-      return;
-    }
-
-    this.setProcessingState(true);
-    this.clearError();
-
-    try {
-      const input = this.dom.inputEditor.value;
-
-      if (!input) {
-        this.showToast('Please enter some text to process', 'warning');
-        this.setProcessingState(false);
-        return;
-      }
-
-      // Check input size
-      if (input.length > CONFIG.MAX_INPUT_SIZE_BYTES) {
-        throw new Error(`Input too large. Maximum size is ${this.formatBytes(CONFIG.MAX_INPUT_SIZE_BYTES)}`);
-      }
-
-      let output;
-
-      if (action === 'decode') {
-        output = await this.decodeBase64(input);
-        this.showResult(`Decoded ${this.formatBytes(input.length)} successfully`);
-      } else if (action === 'encode') {
-        output = await this.encodeBase64(input);
-        this.showResult(`Encoded ${this.formatBytes(input.length)} successfully`);
-      } else if (action === 'validate') {
-        const isValid = this.validateBase64(input);
-        if (isValid) {
-          this.showResult('✓ Valid Base64 string', 'success');
-        } else {
-          throw new Error('Invalid Base64 format');
-        }
-        this.setProcessingState(false);
-        this.recordPerformance(action, start);
-        return;
-      }
-
-      // Display output
-      this.displayOutput(output);
-
-      // Record performance
-      this.recordPerformance(action, start);
-
-      // Update UX layer
-      this.addToHistory({ action, input, output });
-
-    } catch (error) {
-      this.handleError(error);
-      this.recordPerformance('error', start);
-    } finally {
-      this.setProcessingState(false);
-    }
-  }
-
-  async decodeBase64(input) {
-    try {
-      // Sanitize input
-      const sanitized = this.sanitizeBase64Input(input);
-
-      // Validate
-      if (!this.isValidBase64(sanitized)) {
-        throw new Error('Invalid Base64 input format');
-      }
-
-      // Decode
-      const binary = atob(sanitized);
-      const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
-
-      // Try UTF-8 decoding first
-      try {
-        return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-      } catch {
-        // Fall back to Latin-1 if UTF-8 fails
-        return this.decodeLatin1(bytes);
-      }
-
-    } catch (error) {
-      throw new Error(`Decoding failed: ${error.message}`);
-    }
-  }
-
-  async encodeBase64(input) {
-    try {
-      // Convert to bytes
-      const bytes = new TextEncoder().encode(input);
-
-      // Convert to Base64 in chunks for large inputs
-      let binary = '';
-      const chunkSize = 1024 * 1024; // 1MB chunks
-
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.slice(i, i + chunkSize);
-        binary += String.fromCharCode.apply(null, chunk);
-
-        // Show progress for large files
-        if (bytes.length > chunkSize) {
-          const percent = i / bytes.length;
-          this.updateRunButtonProgress(percent);
-        }
-      }
-
-      return btoa(binary);
-
-    } catch (error) {
-      throw new Error(`Encoding failed: ${error.message}`);
-    }
-  }
-
-  validateBase64(input) {
-    const sanitized = this.sanitizeBase64Input(input);
-    return this.isValidBase64(sanitized);
-  }
-
-  validateInput() {
-    const input = this.dom.inputEditor.value;
-    const action = this.dom.actionSelect?.value;
-
-    if (!input) {
-      this.updateValidationState('idle', 'No input');
-      return;
-    }
-
-    if (action === 'validate' || action === 'decode') {
-      const isValid = this.isValidBase64(this.sanitizeBase64Input(input));
-      this.updateValidationState(
-        isValid ? 'success' : 'error',
-        isValid ? '✓ Valid Base64' : '✗ Invalid Base64'
-      );
-    } else {
-      this.updateValidationState('idle', 'Ready to encode');
-    }
-  }
-
-  isValidBase64(input) {
-    const sanitized = this.sanitizeBase64Input(input);
-
-    if (sanitized.length === 0) return false;
-
-    // Check length is multiple of 4 (optional, some implementations are lenient)
-    // if (sanitized.length % 4 !== 0) return false;
-
-    // Check pattern
-    if (!BASE64_PATTERN.test(sanitized)) return false;
-
-    // Validate padding
-    const padding = sanitized.match(/=+$/);
-    if (padding) {
-      const paddingLength = padding[0].length;
-      if (paddingLength > 2) return false;
-    }
-
-    return true;
-  }
-
-  sanitizeBase64Input(input) {
-    if (typeof input !== 'string') return '';
-
-    // Remove whitespace and line breaks
-    let sanitized = input.replace(/\s+/g, '');
-
-    // Check if it might be Base64URL
-    if (BASE64URL_PATTERN.test(sanitized) && !sanitized.includes('/') && !sanitized.includes('+')) {
-      sanitized = this.fromBase64URL(sanitized);
-    }
-
-    return sanitized;
-  }
-
-  fromBase64URL(base64url) {
-    let base64 = base64url
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-
-    // Add padding if needed
-    while (base64.length % 4) {
-      base64 += '=';
-    }
-
-    return base64;
-  }
-
-  decodeLatin1(bytes) {
-    let result = '';
-    for (let i = 0; i < bytes.length; i++) {
-      result += String.fromCharCode(bytes[i]);
-    }
-    return result;
-  }
-
-  displayOutput(output) {
-    if (!this.dom.outputEditor) return;
-
-    this.dom.outputEditor.value = output;
-    this.autoResizeTextarea(this.dom.outputEditor);
-
-    // Show output field, hide empty state
-    if (this.dom.outputEmptyState) {
-      this.dom.outputEmptyState.hidden = true;
-    }
-    if (this.dom.outputField) {
-      this.dom.outputField.hidden = false;
-    }
-
-    // Update result status
-    if (this.dom.resultStatus) {
-      this.dom.resultStatus.textContent = 'Output ready';
-      this.dom.resultStatus.className = 'result-indicator result-indicator--success';
-    }
-  }
-
-  showResult(message, type = 'success') {
-    if (this.dom.resultStatus) {
-      this.dom.resultStatus.textContent = message;
-      this.dom.resultStatus.className = `result-indicator result-indicator--${type}`;
-    }
-    this.showToast(message, type);
-  }
-
-  updateValidationState(state, message) {
-    if (!this.dom.resultStatus) return;
-
-    const stateClasses = {
-      idle: 'result-indicator--idle',
-      success: 'result-indicator--success',
-      error: 'result-indicator--error',
-      warning: 'result-indicator--warning'
-    };
-
+    const cssState = state || 'idle';
+    this.dom.resultStatus.className = `result-indicator result-indicator--${cssState}`;
     this.dom.resultStatus.textContent = message;
-    this.dom.resultStatus.className = `result-indicator ${stateClasses[state] || stateClasses.idle}`;
-  }
-
-  updateRunButtonLabel() {
-    if (!this.dom.runBtn) return;
-    const action = this.dom.actionSelect?.value;
-    const label = action.charAt(0).toUpperCase() + action.slice(1);
-    const btnLabel = this.dom.runBtn.querySelector('.tool-btn__label');
-    if (btnLabel) {
-      btnLabel.dataset.defaultLabel = label;
-      btnLabel.textContent = this.state.isProcessing ? 'Running…' : label;
-    }
-  }
-
-  updateRunButtonProgress(percent) {
-    if (!this.dom.runBtn) return;
-    const progress = Math.round(percent * 100);
-    this.dom.runBtn.style.background = `linear-gradient(90deg, var(--primary-color) ${progress}%, transparent ${progress}%)`;
-  }
-
-  setProcessingState(isProcessing) {
-    this.state.isProcessing = isProcessing;
-
-    if (this.dom.runBtn) {
-      this.dom.runBtn.ariaBusy = String(isProcessing);
-      const btnLabel = this.dom.runBtn.querySelector('.tool-btn__label');
-      if (btnLabel) {
-        btnLabel.textContent = isProcessing ? 'Running…' : this.dom.actionSelect?.value;
-      }
-    }
-
-    // Disable other buttons while processing
-    if (this.dom.copyBtn) this.dom.copyBtn.disabled = isProcessing;
-    if (this.dom.downloadBtn) this.dom.downloadBtn.disabled = isProcessing;
-    if (this.dom.shareBtn) this.dom.shareBtn.disabled = isProcessing;
-  }
-
-  async copyOutput() {
-    const output = this.dom.outputEditor?.value;
-
-    if (!output) {
-      this.showToast('No output to copy', 'warning');
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(output);
-      this.showCopyFeedback(true);
-      this.showToast('Copied to clipboard!', 'success');
-    } catch (error) {
-      this.showCopyFeedback(false);
-      this.showToast('Failed to copy: ' + error.message, 'error');
-    }
-  }
-
-  showCopyFeedback(success) {
-    if (!this.dom.copyBtn) return;
-
-    this.dom.copyBtn.classList.add(success ? 'copy-success' : 'copy-error');
-
-    setTimeout(() => {
-      this.dom.copyBtn.classList.remove('copy-success', 'copy-error');
-    }, 450);
-  }
-
-  async downloadOutput() {
-    const output = this.dom.outputEditor?.value;
-
-    if (!output) {
-      this.showToast('No output to download', 'warning');
-      return;
-    }
-
-    try {
-      const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-      const action = this.dom.actionSelect?.value || 'decode';
-      a.download = `base64-${action}-${timestamp}.txt`;
-      a.href = url;
-      a.click();
-
-      URL.revokeObjectURL(url);
-      this.showToast('Download started', 'success');
-    } catch (error) {
-      this.showToast('Download failed: ' + error.message, 'error');
-    }
-  }
-
-  async shareOutput() {
-    const output = this.dom.outputEditor?.value;
-
-    if (!output) {
-      this.showToast('No output to share', 'warning');
-      return;
-    }
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Base64 Decoder Output',
-          text: output
-        });
-        this.showToast('Shared successfully', 'success');
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          this.showToast('Share failed: ' + error.message, 'error');
-        }
-      }
-    } else {
-      // Fallback: copy to clipboard
-      this.copyOutput();
-    }
-  }
-
-  updateUxLayer() {
-    this.updatePinnedRecent();
-    this.updateHistory();
-    this.updateCollections();
-  }
-
-  updatePinnedRecent() {
-    const container = document.getElementById('uxPinnedRecent');
-    if (!container) return;
-
-    const recent = this.getFromStorage('recent', []);
-    const pinned = this.getFromStorage('pinned', []);
-
-    const items = [...pinned, ...recent.slice(0, 5 - pinned.length)];
-
-    container.innerHTML = items.map(item => `
-      <li class="ux-list__item" data-id="${item.id}">
-        <span class="ux-list__item-title">${item.title}</span>
-        <button class="ux-list__item-action" onclick="base64Decoder.loadItem('${item.id}')">Load</button>
-      </li>
-    `).join('');
-  }
-
-  updateHistory() {
-    const container = document.getElementById('uxHistory');
-    if (!container) return;
-
-    const history = this.getFromStorage('history', []);
-
-    container.innerHTML = history.slice(0, 10).map(item => `
-      <li class="ux-list__item" data-id="${item.id}">
-        <span class="ux-list__item-title">${item.action}: ${item.input.substring(0, 30)}...</span>
-        <button class="ux-list__item-action" onclick="base64Decoder.loadHistoryItem('${item.id}')">Restore</button>
-      </li>
-    `).join('');
-  }
-
-  updateCollections() {
-    const container = document.getElementById('uxCollections');
-    if (!container) return;
-
-    const collections = this.getFromStorage('collections', []);
-
-    container.innerHTML = collections.map(collection => `
-      <li class="ux-list__item">
-        <span class="ux-list__item-title">${collection.name}</span>
-        <button class="ux-list__item-action" onclick="base64Decoder.loadCollection('${collection.id}')">Load</button>
-      </li>
-    `).join('');
-
-    // Collection save button
-    const saveBtn = document.getElementById('saveCollectionBtn');
-    const collectionInput = document.getElementById('collectionNameInput');
-
-    if (saveBtn && collectionInput) {
-      saveBtn.onclick = () => this.saveCollection(collectionInput.value);
-    }
-  }
-
-  addToHistory({ action, input, output }) {
-    const history = this.getFromStorage('history', []);
-
-    const item = {
-      id: Date.now().toString(),
-      action,
-      input,
-      output,
-      timestamp: new Date().toISOString()
-    };
-
-    history.unshift(item);
-
-    // Keep only last 50 items
-    if (history.length > 50) {
-      history.pop();
-    }
-
-    this.saveToStorage('history', history);
-    this.updateHistory();
-  }
-
-  saveCollection(name) {
-    if (!name.trim()) {
-      this.showToast('Please enter a collection name', 'warning');
-      return;
-    }
-
-    const collections = this.getFromStorage('collections', []);
-    const currentConfig = {
-      action: this.dom.actionSelect?.value,
-      input: this.dom.inputEditor?.value
-    };
-
-    collections.push({
-      id: Date.now().toString(),
-      name: name.trim(),
-      config: currentConfig,
-      timestamp: new Date().toISOString()
-    });
-
-    this.saveToStorage('collections', collections);
-    this.updateCollections();
-    this.showToast(`Saved to collection: ${name}`, 'success');
-
-    // Clear input
-    document.getElementById('collectionNameInput').value = '';
-  }
-
-  loadItem(id) {
-    // Implement loading pinned/recent items
-    this.showToast('Loading item...', 'info');
-  }
-
-  loadHistoryItem(id) {
-    const history = this.getFromStorage('history', []);
-    const item = history.find(h => h.id === id);
-
-    if (item) {
-      this.dom.inputEditor.value = item.input;
-      if (this.dom.actionSelect) {
-        this.dom.actionSelect.value = item.action;
-      }
-      this.validateInput();
-      this.showToast('History item loaded', 'success');
-    }
-  }
-
-  loadCollection(id) {
-    const collections = this.getFromStorage('collections', []);
-    const collection = collections.find(c => c.id === id);
-
-    if (collection?.config) {
-      if (this.dom.actionSelect && collection.config.action) {
-        this.dom.actionSelect.value = collection.config.action;
-      }
-      if (collection.config.input) {
-        this.dom.inputEditor.value = collection.config.input;
-      }
-      this.validateInput();
-      this.showToast(`Loaded collection: ${collection.name}`, 'success');
-    }
-  }
-
-  getFromStorage(key, defaultValue) {
-    try {
-      const item = localStorage.getItem(`base64-${key}`);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  }
-
-  saveToStorage(key, value) {
-    try {
-      localStorage.setItem(`base64-${key}`, JSON.stringify(value));
-    } catch (error) {
-      console.error('Failed to save to storage:', error);
-    }
-  }
-
-  handleError(error) {
-    console.error('Base64 Decoder Error:', error);
-    this.showError(error.message);
-
-    if (this.dom.resultStatus) {
-      this.dom.resultStatus.textContent = 'Error';
-      this.dom.resultStatus.className = 'result-indicator result-indicator--error';
-    }
-  }
-
-  showError(message) {
-    if (this.dom.errorMessage) {
-      this.dom.errorMessage.hidden = false;
-      this.dom.errorMessage.textContent = message;
-
-      // Auto-hide after 5 seconds
-      setTimeout(() => {
-        if (this.dom.errorMessage && this.dom.errorMessage.textContent === message) {
-          this.dom.errorMessage.hidden = true;
-        }
-      }, 5000);
-    }
-  }
-
-  clearError() {
-    if (this.dom.errorMessage) {
-      this.dom.errorMessage.hidden = true;
-      this.dom.errorMessage.textContent = '';
-    }
-  }
-
-  showToast(message, type = 'info') {
-    if (!this.dom.toastRegion) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast--${type}`;
-    toast.setAttribute('role', 'alert');
-    toast.textContent = message;
-
-    // Add close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'toast-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.onclick = () => toast.remove();
-    toast.appendChild(closeBtn);
-
-    this.dom.toastRegion.appendChild(toast);
-
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.remove();
-      }
-    }, 3000);
-  }
-
-  formatBytes(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  }
-
-  recordPerformance(action, start) {
-    const elapsed = performance.now() - start;
-    this.state.performanceMetrics[action] = elapsed;
-
-    if (elapsed > CONFIG.PERFORMANCE_THRESHOLD_MS) {
-      console.warn(`Slow operation detected: ${action} took ${elapsed.toFixed(2)}ms`);
-    }
   }
 }
 
-// Export for module usage
-export async function runTool(action, input) {
-  const decoder = new Base64Decoder();
-
-  if (action === 'decode') {
-    return decoder.decodeBase64(input);
-  } else if (action === 'encode') {
-    return decoder.encodeBase64(input);
-  } else if (action === 'validate') {
-    return decoder.validateBase64(input);
+export function runTool(action, input, options = {}) {
+  if (action !== 'decode') {
+    throw new Base64ToolError(ERROR_TITLES.validation, `Unsupported action: ${action}`, 'UNSUPPORTED_ACTION');
   }
 
-  throw new Error(`Action '${action}' is not supported`);
+  const normalized = Base64Validation.normalizeInput(input, options.urlSafe ?? true);
+  return Base64Decoder.decode(normalized);
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  window.base64Decoder = new Base64Decoder();
+  window.base64DecodeController = new Base64DecodeController();
 });
 
-// Module export
 window.ToolNexusModules = window.ToolNexusModules || {};
 window.ToolNexusModules['base64-decode'] = { runTool };
