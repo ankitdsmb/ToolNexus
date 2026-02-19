@@ -4,6 +4,7 @@
   --section-space-loose: var(--space-9);
 
   --radius-pill: 999px;
+  --stroke-weight: 1px;
 
   --type-display-size: var(--text-display-size);
   --type-display-line: var(--text-display-line);
@@ -24,7 +25,7 @@
   --surface-3: color-mix(in srgb, var(--surface-elevated) 90%, var(--accent));
 
   --text-muted-strong: color-mix(in srgb, var(--text-secondary) 92%, transparent);
-  --text-muted-soft: color-mix(in srgb, var(--text-secondary) 74%, transparent);
+  --text-muted-soft: color-mix(in srgb, var(--text-secondary) 78%, transparent);
 
   --interactive-primary: var(--accent);
   --interactive-primary-hover: color-mix(in srgb, var(--accent) 84%, white);
@@ -47,7 +48,7 @@
 .tool-discovery,
 .trust-link,
 .discovery-search-shell {
-  border: 1px solid var(--stroke-subtle);
+  border: var(--stroke-weight) solid var(--stroke-subtle);
 }
 
 .topbar,
@@ -66,6 +67,38 @@
   border-radius: var(--radius-lg);
 }
 
+.topbar {
+  margin-top: var(--space-4);
+  padding: 0 var(--space-3);
+}
+
+.topbar__inner {
+  min-height: 56px;
+  width: var(--container);
+  gap: var(--space-4);
+}
+
+.topbar__search-shell,
+.theme-toggle,
+.topbar__explore {
+  min-height: 40px;
+  border-radius: var(--radius-pill);
+}
+
+.topbar__search-shell {
+  padding: 0 var(--space-3) 0 var(--space-4);
+}
+
+.topbar__actions {
+  gap: var(--space-2);
+}
+
+.topbar__search-shortcut,
+.topbar__explore {
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+}
+
 .hero,
 .tool-section,
 .trust-section,
@@ -76,7 +109,7 @@
 .home-page {
   display: grid;
   gap: var(--section-space-standard);
-  padding-top: var(--section-space-compact);
+  padding-top: var(--section-space-standard);
   padding-bottom: var(--section-space-loose);
 }
 
@@ -84,7 +117,7 @@
 .home-page .tool-section,
 .home-page .trust-section {
   margin: 0;
-  padding: var(--space-7);
+  padding: var(--section-space-compact);
   box-shadow: var(--elevation-1);
 }
 
@@ -103,6 +136,7 @@
 
 .home-page .hero__eyebrow,
 .home-page .trust-section__eyebrow {
+  margin: 0;
   font-size: var(--type-caption-size);
   line-height: var(--type-caption-line);
   letter-spacing: 0.08em;
@@ -124,6 +158,7 @@
 .home-page .card__title-wrap p,
 .home-page .testimonial-card__quote,
 .home-page .privacy-card__list {
+  margin: 0;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   color: var(--text-muted-strong);
@@ -136,7 +171,7 @@
   align-items: center;
   gap: var(--space-2);
   border-radius: var(--radius-pill);
-  border: 1px solid var(--stroke-default);
+  border: var(--stroke-weight) solid var(--stroke-default);
   background: var(--surface-2);
   padding: 0 var(--space-4);
   font-size: var(--type-caption-size);
@@ -154,7 +189,7 @@
   min-height: 40px;
   padding: 0 var(--space-5);
   border-radius: var(--radius-md);
-  border: 1px solid var(--stroke-default);
+  border: var(--stroke-weight) solid var(--stroke-default);
   font-size: var(--type-caption-size);
   font-weight: 600;
 }
@@ -165,6 +200,10 @@
   border-color: transparent;
 }
 
+.home-page .hero-btn--primary:hover {
+  background: var(--interactive-primary-hover);
+}
+
 .home-page .hero-btn--secondary {
   background: var(--surface-2);
   color: var(--text-primary);
@@ -172,7 +211,8 @@
 
 .home-page .hero-preview {
   background: var(--surface-2);
-  border: 1px solid var(--stroke-default);
+  border: var(--stroke-weight) solid var(--stroke-default);
+  padding: var(--space-5);
 }
 
 .home-page .tool-section,
@@ -189,6 +229,7 @@
 }
 
 .home-page .section-title {
+  margin: 0;
   font-size: var(--type-heading-size);
   line-height: var(--type-heading-line);
   letter-spacing: -0.02em;
@@ -256,6 +297,11 @@
   min-height: 100%;
   display: grid;
   gap: var(--space-4);
+  grid-template-rows: auto 1fr auto;
+}
+
+.home-page .card__header {
+  align-items: start;
 }
 
 .home-page .card__header,
@@ -331,7 +377,6 @@
 }
 
 .home-page .privacy-card__list {
-  margin: 0;
   padding-left: var(--space-5);
   display: grid;
   gap: var(--space-2);
@@ -383,15 +428,23 @@
   color: var(--text-muted-strong);
 }
 
+.footer__column {
+  align-content: start;
+}
+
 .footer__bottom-strip {
   grid-template-columns: repeat(7, auto);
   align-items: center;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--stroke-subtle);
+  border-top: var(--stroke-weight) solid var(--stroke-subtle);
 }
 
 @media (max-width: 1024px) {
-  .home-page { gap: var(--section-space-compact); }
+  .home-page {
+    gap: var(--section-space-compact);
+    padding-top: var(--section-space-compact);
+  }
+
   .home-page .hero__container,
   .home-page .trust-grid,
   .home-page .testimonial-grid {
