@@ -2430,10 +2430,16 @@ html[data-theme='dark'] .tool-panel {
 /* ===== Production SaaS visual QA hardening pass ===== */
 :root {
   --section-stack-gap: var(--space-7);
+  --section-inner-gap: var(--space-4);
+  --interactive-height: var(--space-6);
+  --radius-interactive: var(--radius-md);
+  --radius-surface: var(--radius-lg);
   --surface-page: var(--layer-0-bg);
   --surface-section: var(--layer-1-bg);
   --surface-card: var(--layer-2-bg);
   --surface-interactive: var(--layer-3-bg);
+  --title-line-height: 1.2;
+  --body-line-height: 1.55;
 }
 
 body {
@@ -2458,7 +2464,7 @@ body {
 #featuredTools,
 #trust,
 .footer__container {
-  gap: var(--space-4);
+  gap: var(--section-inner-gap);
 }
 
 .topbar__inner {
@@ -2477,8 +2483,12 @@ body {
 .tool-btn,
 .card__cta,
 .trust-link {
-  min-height: var(--space-6);
-  border-radius: var(--radius-md);
+  min-height: var(--interactive-height);
+  border-radius: var(--radius-interactive);
+}
+
+.topbar__explore {
+  font-weight: 650;
 }
 
 .hero {
@@ -2492,12 +2502,19 @@ body {
   align-items: start;
 }
 
+.hero__title,
+.section-title {
+  line-height: var(--title-line-height);
+  letter-spacing: -0.015em;
+}
+
 .hero__content {
   gap: var(--space-3);
 }
 
 .hero__subtitle {
   max-width: 60ch;
+  line-height: var(--body-line-height);
 }
 
 .hero__typewriter {
@@ -2507,6 +2524,14 @@ body {
 
 .hero__actions {
   gap: var(--space-2);
+}
+
+.hero-btn--primary {
+  font-weight: 700;
+}
+
+.hero-btn--secondary {
+  font-weight: 600;
 }
 
 .hero__badges {
@@ -2539,13 +2564,20 @@ body {
 .privacy-card,
 .trust-links {
   padding: var(--space-4);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   background: var(--surface-card);
 }
 
 .card {
   min-height: 384px;
   grid-template-rows: auto auto auto 1fr auto;
+}
+
+.card__title-wrap p,
+.trust-stat__meta,
+.testimonial-card__quote,
+.section-subtitle {
+  line-height: var(--body-line-height);
 }
 
 .card__header,
@@ -2566,6 +2598,8 @@ body {
 .card__cta {
   width: 100%;
   padding-inline: var(--space-3);
+  justify-content: center;
+  font-weight: 600;
 }
 
 .trust-stat__value {
@@ -2594,6 +2628,15 @@ body {
 
 .footer__column {
   gap: var(--space-2);
+}
+
+.footer__column h3 {
+  line-height: var(--title-line-height);
+}
+
+.footer__column a,
+.footer__bottom-strip {
+  line-height: var(--body-line-height);
 }
 
 .footer__bottom-strip {
