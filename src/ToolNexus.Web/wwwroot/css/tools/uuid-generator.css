@@ -1,0 +1,91 @@
+.uuid-tool {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.uuid-tool__header,
+.uuid-tool__panel {
+  padding: var(--space-5);
+}
+
+.uuid-tool__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.uuid-tool__controls {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.uuid-tool__field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.uuid-tool__field label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.uuid-tool input,
+.uuid-tool select,
+.uuid-tool textarea {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  min-height: var(--control-md);
+  padding: 0 var(--space-3);
+  font-family: var(--font-sans);
+}
+
+.uuid-tool textarea {
+  min-height: 360px;
+  padding: var(--space-3);
+  resize: vertical;
+  font-family: var(--font-mono);
+  line-height: 1.45;
+}
+
+.uuid-tool__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.uuid-tool__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.uuid-tool__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.uuid-tool__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+}
+
+.uuid-tool__status {
+  font-weight: 600;
+}
+
+.uuid-tool__indicator[data-state='busy'] {
+  color: var(--accent);
+}
