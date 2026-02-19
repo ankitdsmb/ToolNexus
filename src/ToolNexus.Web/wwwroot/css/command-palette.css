@@ -217,6 +217,15 @@
   flex-shrink: 0;
 }
 
+[data-theme="light"] .command-palette .tool-card__icon {
+  color: #3e5edb;
+  background: rgba(62, 94, 219, 0.08);
+}
+
+[data-theme="light"] .command-item:hover .tool-card__icon {
+  background: rgba(62, 94, 219, 0.12);
+}
+
 .command-item__content { min-width: 0; display: grid; gap: 0.16rem; }
 .command-item__title { font-weight: 670; font-size: 0.98rem; color: rgba(234, 242, 255, 0.95); }
 .command-item__description,
