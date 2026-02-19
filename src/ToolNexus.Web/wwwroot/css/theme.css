@@ -10,8 +10,8 @@
   --layer-3-bg: #f9fbff;
   --text-primary: #0f172a;
   --text-secondary: #334155;
-  --border: #d7e1ee;
-  --accent: #4568f2;
+  --border: #cfd9e7;
+  --accent: #4a66df;
   --heading-weight: 760;
 
   --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.08);
@@ -31,8 +31,8 @@
   --layer-3-bg: #172846;
   --text-primary: #edf3ff;
   --text-secondary: #bdc9df;
-  --border: rgba(141, 168, 215, 0.34);
-  --accent: #88a1ff;
+  --border: rgba(150, 178, 223, 0.44);
+  --accent: #97adff;
   --heading-weight: 710;
 
   --success-bg: rgba(23, 124, 84, 0.2);
