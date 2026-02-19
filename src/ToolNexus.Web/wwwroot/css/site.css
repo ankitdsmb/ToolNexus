@@ -2426,3 +2426,233 @@ html[data-theme='dark'] .tool-panel {
     margin-top: var(--space-6);
   }
 }
+
+/* ===== Production SaaS visual QA hardening pass ===== */
+:root {
+  --section-stack-gap: var(--space-7);
+  --surface-page: var(--layer-0-bg);
+  --surface-section: var(--layer-1-bg);
+  --surface-card: var(--layer-2-bg);
+  --surface-interactive: var(--layer-3-bg);
+}
+
+body {
+  background: var(--surface-page);
+  color: var(--text-primary);
+}
+
+.container {
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-7);
+}
+
+.hero,
+.tool-section,
+.trust-section,
+.footer {
+  margin-top: var(--section-stack-gap);
+}
+
+.topbar__inner,
+.hero__container,
+#featuredTools,
+#trust,
+.footer__container {
+  gap: var(--space-4);
+}
+
+.topbar__inner {
+  min-height: var(--space-8);
+  grid-template-columns: auto minmax(320px, 560px) auto;
+}
+
+.topbar__actions {
+  gap: var(--space-2);
+}
+
+.topbar__search-shell,
+.theme-toggle,
+.topbar__explore,
+.hero-btn,
+.tool-btn,
+.card__cta,
+.trust-link {
+  min-height: var(--space-6);
+  border-radius: var(--radius-md);
+}
+
+.hero {
+  background: transparent;
+  padding-top: var(--space-7);
+  padding-bottom: var(--space-7);
+}
+
+.hero__container {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: start;
+}
+
+.hero__content {
+  gap: var(--space-3);
+}
+
+.hero__subtitle {
+  max-width: 60ch;
+}
+
+.hero__typewriter {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.hero__actions {
+  gap: var(--space-2);
+}
+
+.hero__badges {
+  gap: var(--space-2);
+}
+
+#featuredTools,
+#trust {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--surface-section);
+}
+
+.tool-section__header,
+.trust-section__header {
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.grid#featuredGrid,
+.trust-stats,
+.testimonial-grid,
+.trust-grid {
+  gap: var(--space-4);
+}
+
+.card,
+.trust-stat,
+.testimonial-card,
+.privacy-card,
+.trust-links {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+
+.card {
+  min-height: 384px;
+  grid-template-rows: auto auto auto 1fr auto;
+}
+
+.card__header,
+.card__title-wrap,
+.card__highlights,
+.testimonial-card,
+.footer__column {
+  gap: var(--space-2);
+}
+
+.card__icon,
+.testimonial-card__badge {
+  width: var(--space-5);
+  height: var(--space-5);
+  border-radius: var(--radius-md);
+}
+
+.card__cta {
+  width: 100%;
+  padding-inline: var(--space-3);
+}
+
+.trust-stat__value {
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.testimonial-card__quote {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.footer {
+  margin-top: var(--space-7);
+  background: var(--surface-section);
+}
+
+.footer__container {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-4);
+}
+
+.footer__columns {
+  gap: var(--space-4);
+}
+
+.footer__column {
+  gap: var(--space-2);
+}
+
+.footer__bottom-strip {
+  padding-top: var(--space-3);
+  gap: var(--space-2);
+}
+
+.footer__system-line kbd,
+.footer__shortcuts kbd {
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
+}
+
+html[data-theme='dark'] #featuredTools,
+html[data-theme='dark'] #trust,
+html[data-theme='dark'] .footer {
+  background: color-mix(in srgb, var(--surface-section) 90%, #030712);
+}
+
+html[data-theme='dark'] .card,
+html[data-theme='dark'] .trust-stat,
+html[data-theme='dark'] .testimonial-card,
+html[data-theme='dark'] .privacy-card,
+html[data-theme='dark'] .trust-links {
+  background: color-mix(in srgb, var(--surface-card) 90%, #030712);
+  border-color: color-mix(in srgb, var(--border) 90%, transparent);
+}
+
+@media (max-width: 1080px) {
+  .topbar__inner,
+  .hero__container,
+  .trust-grid,
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-preview {
+    transform: none;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .container,
+  #featuredTools,
+  #trust,
+  .footer__container {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  .hero,
+  .tool-section,
+  .trust-section,
+  .footer {
+    margin-top: var(--space-6);
+  }
+
+  .card {
+    min-height: 320px;
+  }
+}
