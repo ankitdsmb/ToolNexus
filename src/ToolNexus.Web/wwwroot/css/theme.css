@@ -4,24 +4,24 @@ TOKENS
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --color-bg-primary: #0b1020;
-  --color-bg-secondary: #111a30;
-  --color-bg-tertiary: #18233d;
-  --color-bg-elevated: #1f2d4d;
+  --color-bg-primary: #0d1425;
+  --color-bg-secondary: #141f35;
+  --color-bg-tertiary: #1a2841;
+  --color-bg-elevated: #21314f;
   --color-bg-inverse: #f3f7ff;
 
-  --color-border-subtle: rgba(160, 180, 220, 0.22);
-  --color-border-default: rgba(160, 180, 220, 0.34);
-  --color-border-strong: rgba(187, 204, 238, 0.5);
+  --color-border-subtle: rgba(162, 181, 216, 0.14);
+  --color-border-default: rgba(162, 181, 216, 0.22);
+  --color-border-strong: rgba(177, 196, 232, 0.32);
 
   --color-text-primary: #edf3ff;
   --color-text-secondary: #c2d2ef;
   --color-text-muted: #94abd1;
   --color-text-inverse: #111c33;
 
-  --color-accent: #7ea2ff;
-  --color-accent-strong: #638af2;
-  --color-accent-soft: rgba(126, 162, 255, 0.2);
+  --color-accent: #8aa7ff;
+  --color-accent-strong: #7292ee;
+  --color-accent-soft: rgba(138, 167, 255, 0.15);
 
   --color-success: #5fd4a4;
   --color-success-soft: rgba(95, 212, 164, 0.2);
@@ -30,30 +30,30 @@ TOKENS
   --color-warning: #f8cc86;
   --color-warning-soft: rgba(248, 204, 134, 0.2);
 
-  --focus-ring: 0 0 0 3px rgba(126, 162, 255, 0.36);
+  --focus-ring: 0 0 0 3px rgba(138, 167, 255, 0.24);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --color-bg-primary: #f4f7ff;
+  --color-bg-primary: #f7f9fc;
   --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f5f8ff;
-  --color-bg-elevated: #ebf1ff;
+  --color-bg-tertiary: #f4f7fb;
+  --color-bg-elevated: #eef3f9;
   --color-bg-inverse: #111c33;
 
-  --color-border-subtle: rgba(33, 56, 98, 0.12);
-  --color-border-default: rgba(33, 56, 98, 0.2);
-  --color-border-strong: rgba(33, 56, 98, 0.34);
+  --color-border-subtle: rgba(36, 53, 79, 0.08);
+  --color-border-default: rgba(36, 53, 79, 0.14);
+  --color-border-strong: rgba(36, 53, 79, 0.24);
 
   --color-text-primary: #111c33;
-  --color-text-secondary: #344c78;
-  --color-text-muted: #677ea8;
+  --color-text-secondary: #3f4f68;
+  --color-text-muted: #6f7f97;
   --color-text-inverse: #f3f7ff;
 
-  --color-accent: #4869df;
-  --color-accent-strong: #3555c4;
-  --color-accent-soft: rgba(72, 105, 223, 0.14);
+  --color-accent: #4f6fe2;
+  --color-accent-strong: #425fcb;
+  --color-accent-soft: rgba(79, 111, 226, 0.12);
 
   --color-success: #0f8d5e;
   --color-success-soft: rgba(15, 141, 94, 0.16);
@@ -62,11 +62,11 @@ TOKENS
   --color-warning: #b47614;
   --color-warning-soft: rgba(180, 118, 20, 0.16);
 
-  --shadow-sm: 0 1px 2px rgba(17, 28, 51, 0.1);
-  --shadow-md: 0 10px 24px rgba(17, 28, 51, 0.14);
-  --shadow-lg: 0 20px 40px rgba(17, 28, 51, 0.18);
+  --shadow-sm: 0 1px 2px rgba(17, 28, 51, 0.05);
+  --shadow-md: 0 8px 22px rgba(17, 28, 51, 0.08);
+  --shadow-lg: 0 16px 34px rgba(17, 28, 51, 0.11);
 
-  --focus-ring: 0 0 0 3px rgba(72, 105, 223, 0.24);
+  --focus-ring: 0 0 0 3px rgba(79, 111, 226, 0.18);
 }
 
 :root {
