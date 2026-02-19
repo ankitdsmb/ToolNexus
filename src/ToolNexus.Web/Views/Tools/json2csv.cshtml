@@ -15,7 +15,7 @@
     <header class="tool-json-csv__header">
         <div>
             <h1>@Model.Tool.Title</h1>
-            <p class="tool-json-csv__description">Convert JSON to RFC-compliant CSV entirely in your browser.</p>
+            <p class="tool-json-csv__description">Convert JSON to RFC-compliant CSV with deterministic headers and zero server calls.</p>
         </div>
         <span class="tool-json-csv__badge">Client-side processing</span>
     </header>
@@ -30,6 +30,7 @@
         <label class="tool-option"><input id="flattenToggle" type="checkbox" checked /> Flatten nested</label>
         <label class="tool-option"><input id="includeNullToggle" type="checkbox" /> Include null values</label>
         <label class="tool-option"><input id="sanitizeToggle" type="checkbox" checked /> Sanitize formula cells</label>
+        <label class="tool-option"><input id="prettyToggle" type="checkbox" /> Pretty format input</label>
 
         <label class="tool-option tool-option--select" for="delimiterSelect">
             Delimiter
@@ -39,6 +40,19 @@
                 <option value="tab">Tab</option>
             </select>
         </label>
+
+        <label class="tool-option tool-option--select" for="arrayModeSelect">
+            Arrays
+            <select id="arrayModeSelect">
+                <option value="stringify">Stringify</option>
+                <option value="join">Join with separator</option>
+            </select>
+        </label>
+
+        <label class="tool-option tool-option--input" for="arraySeparatorInput">
+            Array separator
+            <input id="arraySeparatorInput" type="text" value=", " maxlength="8" />
+        </label>
     </section>
 
     <p class="tool-json-csv__status" id="statusText">Ready</p>
@@ -47,7 +61,7 @@
         <section class="tool-json-csv__panel">
             <div class="tool-json-csv__panel-header">
                 <h2>JSON input</h2>
-                <span>Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear</span>
+                <span>Ctrl/Cmd + Enter convert · Ctrl/Cmd + L clear</span>
             </div>
             <textarea id="jsonInput" class="tool-json-csv__editor" spellcheck="false" placeholder='[{"name":"Ada","user":{"email":"ada@example.com"}}]'>@Model.Tool.ExampleInput</textarea>
         </section>
@@ -55,7 +69,7 @@
         <section class="tool-json-csv__panel">
             <div class="tool-json-csv__panel-header">
                 <h2>CSV output preview</h2>
-                <span id="rowCount">0 row(s)</span>
+                <span id="outputStats">0 row(s) · 0 column(s)</span>
             </div>
             <textarea id="csvOutput" class="tool-json-csv__editor tool-json-csv__editor--output" readonly spellcheck="false" placeholder="CSV output will appear here"></textarea>
         </section>
