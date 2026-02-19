@@ -1,12 +1,15 @@
 import {
   RegexToolError,
   initRegexTesterApp,
+  mountRegexTester,
   normalizeRegexOptions,
   runRegexEvaluation,
   runTool,
   sanitizeFlags,
   validateRegexInputs
 } from '../../src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js';
+import { getKeyboardEventManager, resetKeyboardEventManagerForTesting } from '../../src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js';
+import { getToolPlatformKernel, resetToolPlatformKernelForTesting } from '../../src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js';
 
 describe('regex-tester logic', () => {
   test('sanitizes and normalizes options defensively', () => {
@@ -52,8 +55,6 @@ describe('regex-tester logic', () => {
     expect(() => runRegexEvaluation('([a-z]+', 'abc', '')).toThrow('Pattern is not a valid regular expression.');
   });
 
-
-
   test('covers includeMatches false, non-global and capped match collection', () => {
     const withoutMatches = runRegexEvaluation('foo', 'foo foo', '', { includeMatches: false });
     expect(withoutMatches.matchCount).toBe(0);
@@ -76,9 +77,12 @@ describe('regex-tester logic', () => {
   });
 });
 
-describe('regex-tester dom behavior', () => {
+describe('regex-tester platform lifecycle', () => {
   beforeEach(() => {
-    document.body.innerHTML = `<section data-tool="regex-tester">
+    resetKeyboardEventManagerForTesting();
+    resetToolPlatformKernelForTesting();
+
+    document.body.innerHTML = `<section data-tool="regex-tester" class="tool">
       <input data-regex-pattern value="foo" />
       <input data-regex-flags value="g" />
       <textarea data-regex-input>foo foo</textarea>
@@ -91,15 +95,22 @@ describe('regex-tester dom behavior', () => {
     global.cancelAnimationFrame = (id) => clearTimeout(id);
   });
 
-  test('idempotent initialization and input driven updates', async () => {
-    initRegexTesterApp(document, window);
-    initRegexTesterApp(document, window);
+  afterEach(() => {
+    resetKeyboardEventManagerForTesting();
+    resetToolPlatformKernelForTesting();
+  });
 
+  test('idempotent mount and kernel lifecycle state is stable', async () => {
     const root = document.querySelector('[data-tool="regex-tester"]');
-    const output = document.querySelector('[data-regex-output]');
-    const status = document.querySelector('[data-regex-status]');
 
-    expect(root.dataset.regexTesterInitialized).toBe('true');
+    const firstHandle = mountRegexTester(root);
+    const secondHandle = mountRegexTester(root);
+
+    expect(firstHandle).toBe(secondHandle);
+    expect(getToolPlatformKernel().getRegisteredToolCount()).toBe(1);
+    expect(getToolPlatformKernel().getLifecycleState('regex-tester', root)).toBe('initialized');
+
+    const output = document.querySelector('[data-regex-output]');
     expect(output.value).toContain('"matchCount": 2');
 
     const pattern = document.querySelector('[data-regex-pattern]');
@@ -108,50 +119,82 @@ describe('regex-tester dom behavior', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 5));
 
-    expect(status.textContent).toBe('No matches found.');
+    expect(document.querySelector('[data-regex-status]').textContent).toBe('No matches found.');
   });
 
-  test('click updates error status for invalid regex', async () => {
-    initRegexTesterApp(document, window);
+  test('lifecycle cleanup and keyboard listener ownership are isolated', () => {
+    const root = document.querySelector('[data-tool="regex-tester"]');
+    const handle = mountRegexTester(root);
+    const keyboard = getKeyboardEventManager();
 
-    const pattern = document.querySelector('[data-regex-pattern]');
-    const runButton = document.querySelector('[data-regex-run]');
-    const status = document.querySelector('[data-regex-status]');
+    expect(keyboard.getRegisteredHandlerCount()).toBe(1);
+    expect(keyboard.getActiveGlobalListenerCount()).toBe(1);
 
-    pattern.value = '(';
-    runButton.click();
+    handle.destroy();
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(status.textContent).toContain('valid regular expression');
+    expect(keyboard.getRegisteredHandlerCount()).toBe(0);
+    expect(keyboard.getActiveGlobalListenerCount()).toBe(0);
+    expect(getToolPlatformKernel().getRegisteredToolCount()).toBe(0);
   });
 
-
-
-  test('handles missing required elements and cancelAnimationFrame path', async () => {
-    document.body.innerHTML = '<section data-tool="regex-tester"><textarea data-regex-output></textarea></section>';
-    expect(() => initRegexTesterApp(document, window)).not.toThrow();
-
-    document.body.innerHTML = `<section data-tool="regex-tester">
-      <input data-regex-pattern value="foo" />
+  test('keyboard shortcut is scoped to active tool root only', () => {
+    const primary = document.querySelector('[data-tool="regex-tester"]');
+    const secondary = document.createElement('section');
+    secondary.dataset.tool = 'regex-tester';
+    secondary.className = 'tool';
+    secondary.innerHTML = `
+      <input data-regex-pattern value="bar" />
       <input data-regex-flags value="g" />
-      <textarea data-regex-input>foo</textarea>
+      <textarea data-regex-input>bar bar</textarea>
+      <button data-regex-run>Run</button>
       <textarea data-regex-output></textarea>
-      <div data-regex-status></div>
-    </section>`;
+      <div data-regex-status></div>`;
+    document.body.appendChild(secondary);
 
-    initRegexTesterApp(document, window);
-    const pattern = document.querySelector('[data-regex-pattern]');
-    pattern.value = 'f';
-    pattern.dispatchEvent(new Event('input', { bubbles: true }));
-    pattern.value = 'fo';
-    pattern.dispatchEvent(new Event('input', { bubbles: true }));
+    mountRegexTester(primary);
+    mountRegexTester(secondary);
 
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    expect(document.querySelector('[data-regex-output]').value).toContain('"isMatch": true');
+    const firstPattern = primary.querySelector('[data-regex-pattern]');
+    const firstInput = primary.querySelector('[data-regex-input]');
+    const firstStatus = primary.querySelector('[data-regex-status]');
+
+    firstPattern.value = '(';
+    firstInput.focus();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true }));
+
+    expect(firstStatus.textContent).toContain('valid regular expression');
+    expect(secondary.querySelector('[data-regex-status]').textContent).toContain('Matched 2 occurrences');
+  });
+
+  test('remount stress x50 does not leak listeners or handles', () => {
+    const keyboard = getKeyboardEventManager();
+
+    for (let index = 0; index < 50; index += 1) {
+      const root = document.createElement('section');
+      root.dataset.tool = 'regex-tester';
+      root.className = 'tool';
+      root.innerHTML = `
+        <input data-regex-pattern value="foo" />
+        <input data-regex-flags value="g" />
+        <textarea data-regex-input>foo foo</textarea>
+        <button data-regex-run>Run</button>
+        <textarea data-regex-output></textarea>
+        <div data-regex-status></div>`;
+      document.body.appendChild(root);
+
+      const handle = mountRegexTester(root);
+      handle.destroy();
+      root.remove();
+    }
+
+    expect(keyboard.getRegisteredHandlerCount()).toBe(0);
+    expect(keyboard.getActiveGlobalListenerCount()).toBe(0);
+    expect(getToolPlatformKernel().getRegisteredToolCount()).toBe(0);
   });
 
   test('safe no-op without expected root', () => {
     document.body.innerHTML = '<div></div>';
-    expect(() => initRegexTesterApp(document, window)).not.toThrow();
+    expect(() => initRegexTesterApp(document)).not.toThrow();
   });
 });
