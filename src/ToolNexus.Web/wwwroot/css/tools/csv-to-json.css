@@ -1,0 +1,19 @@
+.csv-json-page { display: grid; gap: 1rem; }
+.csv-json-page__header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+.csv-json-page__header h1 { margin: 0 0 0.35rem; }
+.csv-json-page__badge { border: 1px solid var(--border-subtle, #3b4a67); border-radius: 999px; padding: 0.35rem 0.75rem; font-size: 0.78rem; color: var(--text-muted, #a4b4cc); }
+.csv-json-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; padding: 1rem; border: 1px solid var(--border-subtle, #3b4a67); border-radius: 0.75rem; background: var(--surface-2, #0f1729); }
+.csv-json-controls label { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; }
+.csv-json-controls select, .csv-json-controls input[type="text"], .csv-json-controls input[type="number"] { background: var(--surface-3, #111f34); color: var(--text-primary, #e8eef9); border: 1px solid var(--border-subtle, #3b4a67); border-radius: 0.45rem; padding: 0.4rem 0.5rem; }
+.csv-json-controls__custom { min-width: 250px; }
+.csv-json-controls__custom input { width: 100%; }
+.csv-json-status { margin: 0; color: var(--text-muted, #99aac5); }
+.csv-json-error { border: 1px solid #ef4444; background: color-mix(in oklab, #ef4444 12%, transparent); color: #fecaca; border-radius: 0.75rem; padding: 0.75rem 1rem; white-space: pre-line; }
+.csv-json-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.csv-json-panel { border: 1px solid var(--border-subtle, #3b4a67); border-radius: 0.75rem; background: var(--surface-2, #0f1729); padding: 1.5rem; min-height: 500px; display: grid; grid-template-rows: auto auto 1fr; gap: 0.5rem; }
+.csv-json-panel__header { display: flex; justify-content: space-between; align-items: center; }
+.csv-json-panel h2 { margin: 0; }
+.csv-json-panel__hint { margin: 0; font-size: 0.8rem; color: var(--text-muted, #99aac5); }
+.csv-json-metrics { display: inline-flex; gap: 0.75rem; font-size: 0.8rem; color: var(--text-muted, #99aac5); }
+.csv-json-editor { width: 100%; min-height: 0; resize: none; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9rem; line-height: 1.4; padding: 24px; border-radius: 0.75rem; border: 1px solid var(--border-subtle, #3b4a67); background: var(--surface-3, #111f34); color: var(--text-primary, #e8eef9); }
+@media (max-width: 1100px) { .csv-json-layout { grid-template-columns: 1fr; } .csv-json-panel { min-height: 380px; } }
