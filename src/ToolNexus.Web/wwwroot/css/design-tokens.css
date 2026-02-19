@@ -52,8 +52,8 @@
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 
   --duration-fast: 120ms;
-  --duration-standard: 160ms;
-  --duration-slow: 180ms;
+  --duration-standard: 180ms;
+  --duration-slow: 220ms;
   --ease-out: cubic-bezier(.2, .8, .2, 1);
 
   --z-header: 40;

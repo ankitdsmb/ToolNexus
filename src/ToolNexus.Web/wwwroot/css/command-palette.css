@@ -327,3 +327,89 @@
   .command-palette__action { flex-direction: column; align-items: flex-start; }
   .command-palette__meta { margin-left: 0; }
 }
+
+/* ===== Premium lightweight command palette restoration ===== */
+.command-palette__backdrop {
+  opacity: 0;
+  animation: paletteBackdropIn 120ms linear forwards;
+}
+
+.command-palette__dialog {
+  border-color: color-mix(in srgb, var(--border) 35%, transparent);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--shadow) 34%, transparent);
+  animation: paletteDialogIn 220ms var(--ease-out) forwards;
+  transform-origin: center top;
+}
+
+.command-palette__input {
+  min-height: 50px;
+  border-color: color-mix(in srgb, var(--border) 44%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+  box-shadow: none;
+}
+
+.command-palette__list-wrap {
+  border-color: color-mix(in srgb, var(--border) 32%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 56%, transparent);
+}
+
+.command-palette__section-items {
+  gap: 6px;
+}
+
+.command-palette__action {
+  border-color: color-mix(in srgb, var(--border) 30%, transparent);
+  background: color-mix(in srgb, var(--surface) 40%, transparent);
+  padding: 10px 11px;
+  transition: transform 120ms var(--ease-out), border-color 120ms var(--ease-out), background-color 120ms var(--ease-out);
+}
+
+.command-item {
+  align-items: baseline;
+  gap: 10px;
+}
+
+.command-palette .tool-card__icon {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  margin-top: 0;
+  background: transparent;
+  font-size: 0.84rem;
+  border: 0;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.command-item__content {
+  gap: 3px;
+}
+
+.command-item__title {
+  font-size: 0.94rem;
+}
+
+.command-item__description,
+.command-palette__helper,
+.command-palette__hint,
+.command-palette__empty {
+  color: color-mix(in srgb, var(--text-secondary) 66%, transparent);
+}
+
+.command-palette__item.is-active .command-palette__action {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-elevated));
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  box-shadow: none;
+  transform: translate3d(0, -1px, 0);
+}
+
+@keyframes paletteBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes paletteDialogIn {
+  from { opacity: 0; transform: scale(0.985) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
