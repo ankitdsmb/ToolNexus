@@ -1,0 +1,12 @@
+{
+  "name": "toolnexus-web-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:js": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5"
+  }
+}
