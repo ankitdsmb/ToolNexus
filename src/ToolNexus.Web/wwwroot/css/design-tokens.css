@@ -11,6 +11,7 @@
   --accent: #4568f2;
 
   /* strict spacing scale */
+  --space-0: 4px;
   --space-1: 8px;
   --space-2: 12px;
   --space-3: 16px;
@@ -48,6 +49,7 @@
   --danger-text: #b4233e;
 
   --container: var(--container-width);
+  --space-2xs: var(--space-0);
   --space-xs: var(--space-1);
   --space-sm: var(--space-2);
   --space-md: var(--space-3);
