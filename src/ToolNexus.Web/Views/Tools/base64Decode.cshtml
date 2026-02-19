@@ -23,9 +23,9 @@
         <div>
             <h1>@Model.Tool.Title</h1>
             <p class="tool-page__description">@Model.Tool.SeoDescription</p>
+            <p class="privacy-badge">Client-side only · Your input never leaves the browser</p>
         </div>
         <div class="tool-page__meta" aria-live="polite">
-            <p><span>Action</span><strong id="currentAction">@Model.Tool.Actions.FirstOrDefault()</strong></p>
             <p><span>Status</span><strong id="validationState" class="validation-state">Ready</strong></p>
             <p><span>Size</span><strong id="payloadSize">0 B</strong></p>
         </div>
@@ -49,25 +49,10 @@
                 </div>
             </div>
 
-            <div class="tool-page__action-selector">
-                <label for="actionSelect">Select Action</label>
-                <select id="actionSelect" class="tool-select" aria-describedby="actionDescription">
-                    @foreach (var action in Model.Tool.Actions)
-                    {
-                        <option value="@action.ToLowerInvariant()">@action</option>
-                    }
-                </select>
-                <p id="actionDescription" class="action-description">
-                    <span id="decodeDesc" class="action-desc" data-action="decode">Convert Base64 string back to readable text</span>
-                    <span id="encodeDesc" class="action-desc" data-action="encode" hidden>Convert text to Base64 encoded string</span>
-                    <span id="validateDesc" class="action-desc" data-action="validate" hidden>Check if input is valid Base64 format</span>
-                </p>
-            </div>
-
             <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
                 <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
                     <span class="spinner" aria-hidden="true"></span>
-                    <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Run">Run</span>
+                    <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Decode">Decode</span>
                 </button>
                 <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -81,17 +66,11 @@
                     </svg>
                     Download
                 </button>
-                <button id="shareBtn" class="tool-btn tool-btn--ghost" type="button">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M12 10a2 2 0 0 0-1.4.6l-4.5-2.7c0-.3.1-.6.1-.9s0-.6-.1-.9l4.5-2.7c.4.3.9.6 1.4.6a2 2 0 1 0-2-2l-4.5 2.7a2 2 0 1 0 0 2.8l4.5 2.7A2 2 0 1 0 12 10z" />
-                    </svg>
-                    Share
-                </button>
             </div>
 
             <p class="shortcut-hint" id="editorShortcutHint">
                 <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run |
-                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> to copy
+                <kbd>Ctrl</kbd> + <kbd>L</kbd> to clear
             </p>
 
             <div class="tool-options">
@@ -104,14 +83,19 @@
                             <small>Require correct padding and length</small>
                         </label>
                         <label class="tool-checkbox">
-                            <input type="checkbox" id="autoDetectCheck" checked>
-                            <span>Auto-detect Encoding</span>
-                            <small>Try to detect UTF-8 vs Latin-1</small>
+                            <input type="checkbox" id="autoDecodeCheck" checked>
+                            <span>Auto decode while typing</span>
+                            <small>Debounced decoding for faster workflow</small>
                         </label>
                         <label class="tool-checkbox">
                             <input type="checkbox" id="handleUrlSafeCheck" checked>
                             <span>Handle URL-safe Base64</span>
                             <small>Convert -_ to +/ automatically</small>
+                        </label>
+                        <label class="tool-checkbox">
+                            <input type="checkbox" id="prettyJsonCheck" checked>
+                            <span>Pretty print JSON output</span>
+                            <small>Format decoded JSON for readability</small>
                         </label>
                     </div>
                 </details>
@@ -335,6 +319,17 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: 2rem 1rem;
+    }
+
+    .privacy-badge {
+        display: inline-flex;
+        margin-top: 0.5rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        border: 1px solid var(--border-color, #333);
+        background: var(--surface-hover, #252525);
+        color: var(--text-secondary, #b8b8b8);
+        font-size: 0.8rem;
     }
 
     /* Tool Layout */
