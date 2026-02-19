@@ -10,6 +10,8 @@ const DELIMITER_MAP = {
   tab: '\t'
 };
 
+const PREVIEW_ROW_LIMIT = 5000;
+
 function getElements() {
   return {
     jsonInput: document.getElementById('jsonInput'),
@@ -22,13 +24,56 @@ function getElements() {
     flattenToggle: document.getElementById('flattenToggle'),
     includeNullToggle: document.getElementById('includeNullToggle'),
     sanitizeToggle: document.getElementById('sanitizeToggle'),
+    prettyToggle: document.getElementById('prettyToggle'),
     delimiterSelect: document.getElementById('delimiterSelect'),
+    arrayModeSelect: document.getElementById('arrayModeSelect'),
+    arraySeparatorInput: document.getElementById('arraySeparatorInput'),
     statusText: document.getElementById('statusText'),
-    rowCount: document.getElementById('rowCount'),
+    outputStats: document.getElementById('outputStats'),
     errorBox: document.getElementById('errorBox'),
     errorTitle: document.getElementById('errorTitle'),
     errorDetail: document.getElementById('errorDetail'),
     errorSuggestion: document.getElementById('errorSuggestion')
+  };
+}
+
+function setStatus(els, message, tone = 'idle') {
+  els.statusText.textContent = message;
+  els.statusText.dataset.tone = tone;
+}
+
+function clearError(els) {
+  els.errorBox.hidden = true;
+  els.errorTitle.textContent = '';
+  els.errorDetail.textContent = '';
+  els.errorSuggestion.textContent = '';
+}
+
+function showError(els, error) {
+  const friendly = toUserError(error);
+  els.errorTitle.textContent = friendly.title;
+  els.errorDetail.textContent = friendly.message;
+  els.errorSuggestion.textContent = friendly.suggestion;
+  els.errorBox.hidden = false;
+  setStatus(els, 'Conversion failed', 'error');
+}
+
+function updateOutputStats(els, rowCount, columnCount, previewLimited) {
+  const suffix = previewLimited ? ` · previewing first ${PREVIEW_ROW_LIMIT.toLocaleString()} rows` : '';
+  els.outputStats.textContent = `${rowCount.toLocaleString()} row(s) · ${columnCount.toLocaleString()} column(s)${suffix}`;
+}
+
+function getOptions(els) {
+  const delimiter = DELIMITER_MAP[els.delimiterSelect.value] || ',';
+
+  return {
+    delimiter,
+    flattenNested: els.flattenToggle.checked,
+    includeNulls: els.includeNullToggle.checked,
+    preventCsvInjection: els.sanitizeToggle.checked,
+    prettyInput: els.prettyToggle.checked,
+    arrayMode: els.arrayModeSelect.value,
+    arraySeparator: els.arraySeparatorInput.value
   };
 }
 
@@ -40,34 +85,23 @@ export function mountJsonToCsvTool() {
 
   let latestCsv = '';
   let converting = false;
+  let autoConvertTimer = null;
+
+  const syncActionState = () => {
+    const hasInput = els.jsonInput.value.trim().length > 0;
+    const hasOutput = latestCsv.length > 0;
+
+    els.convertBtn.disabled = converting || !hasInput;
+    els.clearBtn.disabled = converting && !hasInput;
+    els.copyBtn.disabled = converting || !hasOutput;
+    els.downloadBtn.disabled = converting || !hasOutput;
+  };
 
   const setProcessing = isProcessing => {
     converting = isProcessing;
-    els.convertBtn.disabled = isProcessing;
     els.convertBtn.textContent = isProcessing ? 'Converting…' : 'Convert';
-    els.statusText.textContent = isProcessing ? 'Processing input…' : 'Ready';
-  };
-
-  const clearError = () => {
-    els.errorBox.hidden = true;
-    els.errorTitle.textContent = '';
-    els.errorDetail.textContent = '';
-    els.errorSuggestion.textContent = '';
-  };
-
-  const showError = error => {
-    const friendly = toUserError(error);
-    els.errorTitle.textContent = friendly.title;
-    els.errorDetail.textContent = friendly.message;
-    els.errorSuggestion.textContent = friendly.suggestion;
-    els.errorBox.hidden = false;
-    els.statusText.textContent = 'Fix errors to continue';
-  };
-
-  const syncActionState = () => {
-    const hasOutput = latestCsv.length > 0;
-    els.copyBtn.disabled = !hasOutput;
-    els.downloadBtn.disabled = !hasOutput;
+    setStatus(els, isProcessing ? 'Processing JSON input…' : 'Ready');
+    syncActionState();
   };
 
   const runConversion = async () => {
@@ -75,42 +109,64 @@ export function mountJsonToCsvTool() {
       return;
     }
 
-    clearError();
+    clearError(els);
     setProcessing(true);
 
     try {
+      const options = getOptions(els);
       const records = parseJsonInput(els.jsonInput.value);
+
+      if (options.prettyInput) {
+        els.jsonInput.value = JSON.stringify(records, null, 2);
+      }
+
       const normalized = await normalizeRows(records, {
-        flattenNested: els.flattenToggle.checked,
-        includeNulls: els.includeNullToggle.checked
+        flattenNested: options.flattenNested,
+        includeNulls: options.includeNulls,
+        arrayMode: options.arrayMode,
+        arraySeparator: options.arraySeparator
       });
 
       if (normalized.headers.length === 0) {
         throw new ToolError(
           'EMPTY_OBJECTS',
-          'No fields found',
-          'Objects were parsed but no fields were discovered for CSV headers.',
+          'No fields discovered',
+          'Objects were parsed, but there are no fields available for CSV headers.',
           'Add at least one key/value pair in your JSON objects.'
         );
       }
 
       latestCsv = buildCsv(normalized.headers, normalized.rows, {
-        delimiter: DELIMITER_MAP[els.delimiterSelect.value],
-        preventCsvInjection: els.sanitizeToggle.checked
+        delimiter: options.delimiter,
+        preventCsvInjection: options.preventCsvInjection
       });
 
-      els.csvOutput.value = latestCsv;
-      els.rowCount.textContent = `${normalized.rows.length.toLocaleString()} row(s), ${normalized.headers.length.toLocaleString()} column(s)`;
-      els.statusText.textContent = 'Conversion completed';
+      const outputLines = latestCsv.split('\n');
+      const previewLimited = outputLines.length > PREVIEW_ROW_LIMIT + 1;
+      els.csvOutput.value = outputLines.slice(0, PREVIEW_ROW_LIMIT + 1).join('\n');
+
+      updateOutputStats(els, normalized.rows.length, normalized.headers.length, previewLimited);
+      setStatus(els, 'Conversion completed', 'success');
     } catch (error) {
       latestCsv = '';
       els.csvOutput.value = '';
-      els.rowCount.textContent = '0 row(s)';
-      showError(error);
+      updateOutputStats(els, 0, 0, false);
+      showError(els, error);
     } finally {
       setProcessing(false);
       syncActionState();
     }
+  };
+
+  const scheduleAutoConvert = () => {
+    if (!els.autoConvert.checked) {
+      return;
+    }
+
+    window.clearTimeout(autoConvertTimer);
+    autoConvertTimer = window.setTimeout(() => {
+      runConversion();
+    }, 250);
   };
 
   els.convertBtn.addEventListener('click', runConversion);
@@ -119,9 +175,9 @@ export function mountJsonToCsvTool() {
     els.jsonInput.value = '';
     els.csvOutput.value = '';
     latestCsv = '';
-    clearError();
-    els.rowCount.textContent = '0 row(s)';
-    els.statusText.textContent = 'Cleared';
+    clearError(els);
+    updateOutputStats(els, 0, 0, false);
+    setStatus(els, 'Input cleared', 'idle');
     syncActionState();
   });
 
@@ -131,7 +187,7 @@ export function mountJsonToCsvTool() {
     }
 
     await copyToClipboard(latestCsv);
-    els.statusText.textContent = 'CSV copied to clipboard';
+    setStatus(els, 'CSV copied to clipboard', 'success');
   });
 
   els.downloadBtn.addEventListener('click', () => {
@@ -140,21 +196,24 @@ export function mountJsonToCsvTool() {
     }
 
     downloadCsv(latestCsv);
-    els.statusText.textContent = 'CSV downloaded';
+    setStatus(els, 'CSV downloaded', 'success');
   });
 
   els.jsonInput.addEventListener('input', () => {
-    if (els.autoConvert.checked) {
-      runConversion();
-    }
+    syncActionState();
+    scheduleAutoConvert();
   });
 
-  [els.flattenToggle, els.includeNullToggle, els.sanitizeToggle, els.delimiterSelect].forEach(control => {
-    control.addEventListener('change', () => {
-      if (els.autoConvert.checked && els.jsonInput.value.trim()) {
-        runConversion();
-      }
-    });
+  [
+    els.flattenToggle,
+    els.includeNullToggle,
+    els.sanitizeToggle,
+    els.prettyToggle,
+    els.delimiterSelect,
+    els.arrayModeSelect,
+    els.arraySeparatorInput
+  ].forEach(control => {
+    control.addEventListener('change', scheduleAutoConvert);
   });
 
   window.addEventListener('keydown', event => {
@@ -169,5 +228,6 @@ export function mountJsonToCsvTool() {
     }
   });
 
+  updateOutputStats(els, 0, 0, false);
   syncActionState();
 }
