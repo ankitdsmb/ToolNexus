@@ -1,5 +1,6 @@
+import './json-to-yaml/index.js';
+
 export async function runTool(action, input) {
-  // TODO: Implement richer client-side behavior for json-to-yaml.
   return input;
 }
 
