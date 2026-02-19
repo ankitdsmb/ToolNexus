@@ -47,3 +47,34 @@
 ## Overall Auditor Conclusion
 - The cycle materially improved behavior and fixed the immediate user-visible bug.
 - Architecture improved only partially because event ownership remains global and lacks explicit lifecycle disposal.
+
+---
+
+## Cycle Validation Report — Text Diff Migration
+
+### Cycle
+- Cycle: 1 (single-tool migration)
+- Tool Migrated: `text-diff`
+- Risk Level: HIGH
+
+### Baseline Snapshot (Before)
+- Output behavior: client-side diff with side-by-side/unified modes, token-level detail options, and copy/download actions.
+- Existing tests status: no dedicated `text-diff` frontend Jest coverage.
+- Listener count: direct `document` keyboard listener + per-control listeners + dynamic scroll listeners.
+- Init pattern: immediate DOM query and implicit boot (`if (dom.compareBtn) { bindEvents(); runCompare(); }`).
+
+### Validation (After)
+- Platform lifecycle: kernelized mount (`create/init/destroy`) via `tool-platform-kernel`.
+- Keyboard ownership: centralized through `KeyboardEventManager` (single managed global listener).
+- Cleanup safety: `AbortController` + view cleanup function + keyboard disposer.
+- Regression check: `npm run test:js` green (90/90 tests passed).
+- Coverage check (migrated tool scope): 83.98% statements for `text-diff*.js` via targeted coverage run.
+
+### Baseline Comparison
+- Output parity: preserved summary, render modes, shortcut intents, and export/copy behavior.
+- UX flow: unchanged controls and same default compare-on-init behavior.
+- Shortcut behavior: preserved (`Ctrl/Cmd+Enter` compare, `Ctrl/Cmd+L` clear) with root-scoped dispatch.
+
+### Approval
+- Status: Approved for this cycle.
+- Regression Risk: Low (kernelized lifecycle + explicit cleanup + stress remount x50 test).
