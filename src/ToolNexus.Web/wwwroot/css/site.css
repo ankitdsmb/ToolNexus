@@ -1176,3 +1176,44 @@ RESPONSIVE
   background: var(--bg-tertiary);
   overflow-x: auto;
 }
+
+.static-page__nav {
+  padding: var(--panel-padding);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+}
+
+.static-page__link-list {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.static-page__link-list a {
+  color: var(--text-primary);
+  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  text-underline-offset: 3px;
+}
+
+.static-page__faq-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.static-page__faq-item {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  padding: var(--space-4);
+}
+
+.static-page__faq-item h3 {
+  font-size: var(--text-md);
+  margin-bottom: var(--space-2);
+}
+
+.static-page__faq-item p {
+  margin: 0;
+}
