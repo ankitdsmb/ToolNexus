@@ -1,8 +1,8 @@
-<article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
+<article class="tool-page" data-slug="" data-client-safe-actions="">
     <header class="tool-page__heading">
         <div>
-            <h1>@Model.Tool.Title</h1>
-            <p class="tool-page__description">@Model.Tool.SeoDescription</p>
+            <h1><span data-bind="tool.title"></span></h1>
+            <p class="tool-page__description"><span data-bind="tool.seoDescription"></span></p>
             <p class="privacy-badge">Client-side only · Your input never leaves the browser</p>
         </div>
         <div class="tool-page__meta" aria-live="polite">
@@ -84,7 +84,7 @@
             <div class="sample-panel">
                 <h3>Sample Data</h3>
                 <div class="sample-panel__content">
-                    <pre id="sampleInput" class="sample-panel__pre">@Model.Tool.ExampleInput</pre>
+                    <pre id="sampleInput" class="sample-panel__pre" data-bind="tool.exampleInput"></pre>
                     <button id="loadSampleBtn" class="tool-btn tool-btn--small" type="button">Load Sample</button>
                 </div>
             </div>
@@ -94,7 +94,7 @@
                     Tool input
                     <span id="inputStats" class="editor-stats">0 chars | 0 B</span>
                 </label>
-                <textarea id="inputEditor" class="tool-textarea" aria-describedby="editorShortcutHint" placeholder="Enter Base64 string or text here...">@Model.Tool.ExampleInput</textarea>
+                <textarea id="inputEditor" class="tool-textarea" aria-describedby="editorShortcutHint" placeholder="Enter Base64 string or text here..." data-bind="tool.exampleInput"></textarea>
                 <div id="inputEditorSurface" class="editor-surface" aria-hidden="true"></div>
             </div>
         </section>

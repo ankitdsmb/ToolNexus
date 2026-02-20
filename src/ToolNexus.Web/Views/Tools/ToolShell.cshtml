@@ -14,6 +14,47 @@
     }
 }
 
+<section class="tool-seo" data-nosnippet="false">
+    <h1>@Model.Tool.Title</h1>
+    <p>@Model.Tool.SeoDescription</p>
+
+    @if (Model.Content is not null)
+    {
+        <section class="tool-seo__intro" aria-label="Tool overview">
+            <h2>@Model.Content.Title</h2>
+            <p>@Model.Content.ShortDescription</p>
+            <div>@Model.Content.LongArticle</div>
+        </section>
+
+        @if (Model.Content.Features.Any())
+        {
+            <section class="tool-seo__features" aria-label="Key features">
+                <h2>Features</h2>
+                <ul>
+                    @foreach (var feature in Model.Content.Features)
+                    {
+                        <li>@feature</li>
+                    }
+                </ul>
+            </section>
+        }
+
+        @if (Model.Content.Faqs.Any())
+        {
+            <section class="tool-seo__faq" aria-label="Frequently asked questions">
+                <h2>FAQ</h2>
+                @foreach (var faq in Model.Content.Faqs)
+                {
+                    <article>
+                        <h3>@faq.Question</h3>
+                        <p>@faq.Answer</p>
+                    </article>
+                }
+            </section>
+        }
+    }
+</section>
+
 <div id="tool-root" data-tool-slug="@Model.Tool.Slug"></div>
 
 @section Scripts {
@@ -21,9 +62,14 @@
         window.ToolNexusConfig = {
             apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
             toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
-            jsonExampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
-            sqlExampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
-            runtimeModulePath: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeModulePath))
+            runtimeModulePath: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeModulePath)),
+            tool: {
+                slug: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Slug)),
+                title: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Title)),
+                seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.SeoDescription)),
+                exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
+                clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
+            }
         };
     </script>
     <script type="module" src="~/js/tool-runtime.js" asp-append-version="true"></script>

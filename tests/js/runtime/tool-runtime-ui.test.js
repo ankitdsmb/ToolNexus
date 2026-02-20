@@ -96,6 +96,16 @@ describe('tool runtime ui bootstrap', () => {
     expect(mount).toHaveBeenCalledTimes(1);
   });
 
+
+  test('throws descriptive error when lifecycle is missing', async () => {
+    await expect(mountToolLifecycle({
+      module: {},
+      slug: 'unknown',
+      root: document.createElement('div'),
+      manifest: {}
+    })).rejects.toThrow('tool-lifecycle-adapter: no supported lifecycle found for "unknown".');
+  });
+
   test('dom elements exist after template load', async () => {
     const root = document.createElement('div');
     global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<button id="formatBtn"></button>' }));

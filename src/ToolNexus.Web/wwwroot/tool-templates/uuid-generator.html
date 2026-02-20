@@ -1,8 +1,8 @@
-<link rel="stylesheet" href="~/css/tools/uuid-generator.css" asp-append-version="true" />
+<link rel="stylesheet" href="/css/tools/uuid-generator.css" />
 
 <article id="uuidGeneratorApp" class="uuid-tool" aria-label="UUID generator workspace">
     <header class="tool-panel uuid-tool__header">
-        <h1>@Model.Tool.Title</h1>
+        <h1><span data-bind="tool.title"></span></h1>
         <p>Generate RFC-compliant UUIDs using secure client-side randomness. No server calls. No telemetry.</p>
         <span class="uuid-tool__badge" aria-label="Security badge">Secure client-side generation</span>
     </header>
@@ -77,4 +77,4 @@
     </section>
 </article>
 
-<script type="module" src="~/js/tools/uuid-generator/index.js" asp-append-version="true"></script>
+<script type="module" src="/js/tools/uuid-generator/index.js"></script>

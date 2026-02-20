@@ -1,7 +1,7 @@
-<article class="tool-yaml-json" data-slug="@Model.Tool.Slug">
+<article class="tool-yaml-json" data-slug="">
     <header class="tool-yaml-json__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h1><span data-bind="tool.title"></span></h1>
             <p class="tool-yaml-json__description">Enterprise-safe YAML parsing with deterministic JSON conversion entirely in your browser.</p>
         </div>
         <span class="tool-yaml-json__badge">Client-side processing</span>
@@ -37,7 +37,7 @@
                 <h2>YAML input</h2>
                 <span>Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear</span>
             </div>
-            <textarea id="yamlInput" class="tool-yaml-json__editor" spellcheck="false" placeholder="service: toolnexus">@Model.Tool.ExampleInput</textarea>
+            <textarea id="yamlInput" class="tool-yaml-json__editor" spellcheck="false" placeholder="service: toolnexus" data-bind="tool.exampleInput"></textarea>
         </section>
 
         <section class="tool-yaml-json__panel">

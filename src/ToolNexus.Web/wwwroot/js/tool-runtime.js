@@ -2,12 +2,14 @@ import { runtimeObserver } from './runtime/runtime-observer.js';
 import { dependencyLoader as defaultDependencyLoader } from './runtime/dependency-loader.js';
 import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-template-loader.js';
 import { mountToolLifecycle as defaultLifecycleAdapter } from './runtime/tool-lifecycle-adapter.js';
+import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
 
 export function createToolRuntime({
   observer = runtimeObserver,
   dependencyLoader = defaultDependencyLoader,
   templateLoader = defaultTemplateLoader,
   lifecycleAdapter = defaultLifecycleAdapter,
+  templateBinder = defaultTemplateBinder,
   getRoot = () => document.getElementById('tool-root'),
   loadManifest: loadManifestOverride,
   importModule = (modulePath) => import(modulePath),
@@ -47,6 +49,8 @@ export function createToolRuntime({
       emit('template_load_start', { toolSlug: slug });
       await templateLoader(slug, root);
       emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
+
+      templateBinder(root, window.ToolNexusConfig ?? {});
 
       const dependencyStartedAt = now();
       emit('dependency_start', { toolSlug: slug });
