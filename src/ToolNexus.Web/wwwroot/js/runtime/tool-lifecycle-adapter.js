@@ -1,4 +1,5 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
+import { normalizeToolExecution } from './tool-execution-normalizer.js';
 
 function toCandidates(module) {
   return [
@@ -24,51 +25,11 @@ async function invokeFirst(candidates, methods, ...args) {
   return { invoked: false, candidate: null, method: null, value: undefined };
 }
 
-async function invokeLifecycleContract(candidates, slug, root, manifest) {
-  for (const candidate of candidates) {
-    const hasFullContract = ['create', 'init', 'destroy', 'runTool'].every((method) =>
-      typeof candidate?.[method] === 'function');
-
-    if (!hasFullContract) {
-      continue;
-    }
-
-    const context = await candidate.create(root, manifest, { slug });
-    await candidate.init(context, root, manifest, { slug });
-    await candidate.runTool(context, root, manifest, { slug });
-
-    return {
-      mounted: true,
-      cleanup: async () => {
-        await candidate.destroy(context, root, manifest, { slug });
-      },
-      mode: 'module.lifecycle-contract'
-    };
-  }
-
-  return null;
-}
-
-function buildCleanup(candidate, context, root, manifest) {
-  if (!candidate) {
-    return undefined;
-  }
-
-  const teardownMethod = ['destroy', 'dispose', 'unmount'].find((method) => typeof candidate?.[method] === 'function');
-  if (!teardownMethod) {
-    return undefined;
-  }
-
-  return async () => {
-    await candidate[teardownMethod](context, root, manifest);
-  };
-}
-
 export function inspectLifecycleContract(module) {
   const candidates = toCandidates(module);
 
   const compliant = candidates.some((candidate) =>
-    ['create', 'init', 'destroy', 'runTool'].every((method) => typeof candidate?.[method] === 'function'));
+    ['create', 'init', 'destroy'].every((method) => typeof candidate?.[method] === 'function'));
 
   return {
     compliant,
@@ -79,103 +40,75 @@ export function inspectLifecycleContract(module) {
   };
 }
 
-async function tryLegacyFallback({ slug, root, manifest }) {
-  const globalResult = await invokeFirst([window], ['runTool', 'init'], root, manifest);
-  if (globalResult.invoked) {
-    return { mounted: true, cleanup: undefined, mode: 'window.global' };
-  }
+async function mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities }) {
+  const normalized = normalizeToolExecution(module, capabilities, { slug, root, context });
+  await normalized.create();
+  await normalized.init();
 
-  const legacyModule = window.ToolNexusModules?.[slug];
-  if (!legacyModule) {
-    return { mounted: false, cleanup: undefined, mode: 'none' };
-  }
+  const normalizedMode = normalized.metadata.mode === 'modern.lifecycle'
+    ? 'module.lifecycle-contract'
+    : normalized.metadata.mode;
 
-  const mountResult = await invokeFirst([legacyModule], ['mount', 'runTool', 'init'], root, manifest);
-  if (mountResult.invoked) {
-    return {
-      mounted: true,
-      cleanup: buildCleanup(mountResult.candidate, mountResult.value, root, manifest),
-      mode: 'window.ToolNexusModules'
-    };
-  }
-
-  const createResult = await invokeFirst([legacyModule], ['create'], { slug, root, manifest });
-  if (createResult.invoked) {
-    await invokeFirst([legacyModule], ['init'], root, manifest);
-    return {
-      mounted: true,
-      cleanup: buildCleanup(legacyModule, createResult.value, root, manifest),
-      mode: 'window.ToolNexusModules.create-init'
-    };
-  }
-
-  return { mounted: false, cleanup: undefined, mode: 'none' };
+  return {
+    mounted: true,
+    cleanup: normalized.destroy,
+    mode: normalizedMode,
+    normalized: normalized.metadata.normalized,
+    autoDestroyGenerated: normalized.metadata.autoDestroyGenerated
+  };
 }
 
-export async function mountToolLifecycle({ module, slug, root, manifest }) {
+async function tryLegacyFallback({ slug, root, manifest, context, capabilities }) {
+  const legacyModule = window.ToolNexusModules?.[slug] ?? {};
+  const normalized = normalizeToolExecution(legacyModule, capabilities, { slug, root, context });
+
+  if (normalized.metadata.mode !== 'none') {
+    await normalized.create();
+    await normalized.init();
+    return {
+      mounted: true,
+      cleanup: normalized.destroy,
+      mode: `window.${normalized.metadata.mode}`,
+      normalized: true,
+      autoDestroyGenerated: normalized.metadata.autoDestroyGenerated
+    };
+  }
+
+  const globalResult = await invokeFirst([window], ['runTool', 'init'], root, manifest);
+  if (globalResult.invoked) {
+    return { mounted: true, cleanup: context?.destroy?.bind(context), mode: 'window.global', normalized: true, autoDestroyGenerated: true };
+  }
+
+  return { mounted: false, cleanup: undefined, mode: 'none', normalized: false, autoDestroyGenerated: false };
+}
+
+export async function mountToolLifecycle({ module, slug, root, manifest, context, capabilities }) {
   const logger = createRuntimeMigrationLogger({ channel: 'lifecycle' });
   const moduleCandidates = toCandidates(module);
 
-  const lifecycleContractResult = await invokeLifecycleContract(moduleCandidates, slug, root, manifest);
-  if (lifecycleContractResult) {
-    logger.info(`Mounted with lifecycle contract for "${slug}".`);
-    return lifecycleContractResult;
-  }
-
-  const mountResult = await invokeFirst(moduleCandidates, ['mount'], root, manifest);
-  if (mountResult.invoked) {
-    return {
-      mounted: true,
-      cleanup: buildCleanup(mountResult.candidate, mountResult.value, root, manifest),
-      mode: 'module.mount'
-    };
-  }
-
-  const createResult = await invokeFirst(moduleCandidates, ['create'], { slug, root, manifest });
-  if (createResult.invoked) {
-    await invokeFirst(moduleCandidates, ['init'], root, manifest);
-    return {
-      mounted: true,
-      cleanup: buildCleanup(createResult.candidate, createResult.value, root, manifest),
-      mode: 'module.create-init'
-    };
-  }
-
-  const legacyInitResult = await invokeFirst(moduleCandidates, ['init', 'runTool'], root, manifest);
-  if (legacyInitResult.invoked) {
-    logger.info(`Mounted with legacy module init/runTool for "${slug}".`);
-    return {
-      mounted: true,
-      cleanup: buildCleanup(legacyInitResult.candidate, legacyInitResult.value, root, manifest),
-      mode: 'module.legacy-init'
-    };
-  }
-
-  if (typeof window.ToolNexusKernel?.create === 'function') {
-    logger.info(`Using ToolNexusKernel.create fallback for "${slug}".`);
-    const kernelContext = await window.ToolNexusKernel.create({ slug, root, manifest, module });
-    if (typeof window.ToolNexusKernel?.init === 'function') {
-      await window.ToolNexusKernel.init(kernelContext ?? { slug, root, manifest, module });
-    }
-
-    return { mounted: true, cleanup: undefined, mode: 'kernel.create-init' };
+  const normalizedResult = await mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities });
+  if (normalizedResult.mode !== 'none') {
+    logger.info(`Mounted normalized lifecycle for "${slug}" via ${normalizedResult.mode}.`);
+    return normalizedResult;
   }
 
   if (typeof window.ToolNexusKernel?.initialize === 'function') {
     logger.info(`Using ToolNexusKernel.initialize fallback for "${slug}".`);
     await window.ToolNexusKernel.initialize({ slug, root, manifest, module });
-    return { mounted: true, cleanup: undefined, mode: 'kernel.initialize' };
+    return { mounted: true, cleanup: context?.destroy?.bind(context), mode: 'kernel.initialize', normalized: false, autoDestroyGenerated: true };
   }
 
   logger.warn(`No modern lifecycle found for "${slug}". Switching to legacy fallback.`);
-  return tryLegacyFallback({ slug, root, manifest });
+  return tryLegacyFallback({ slug, root, manifest, context, capabilities });
 }
 
-export async function legacyAutoInit({ slug, root, manifest }) {
-  const result = await tryLegacyFallback({ slug, root, manifest });
+export async function legacyAutoInit({ slug, root, manifest, context, capabilities }) {
+  const result = await tryLegacyFallback({ slug, root, manifest, context, capabilities });
   return {
     mounted: result.mounted,
     cleanup: result.cleanup,
-    mode: result.mounted ? 'legacy.auto-init' : 'none'
+    mode: result.mounted ? 'legacy.auto-init' : 'none',
+    normalized: result.normalized,
+    autoDestroyGenerated: result.autoDestroyGenerated
   };
 }
