@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
-import { loadToolTemplate } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js';
+import { clearToolTemplateCache, loadToolTemplate } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js';
 import { mountToolLifecycle } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js';
 
 describe('tool runtime ui bootstrap', () => {
@@ -9,6 +9,7 @@ describe('tool runtime ui bootstrap', () => {
     document.body.innerHTML = '';
     delete window.ToolNexusModules;
     delete window.ToolNexusKernel;
+    clearToolTemplateCache();
   });
 
   test('template injected before init', async () => {
@@ -171,6 +172,34 @@ describe('tool runtime ui bootstrap', () => {
 
     expect(runTool).toHaveBeenCalledTimes(1);
     expect(document.getElementById('tool-root').textContent).toContain('fallback');
+  });
+
+
+  test('generic loading template is upgraded to platform contract scaffold', async () => {
+    const root = document.createElement('div');
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => '<section class="tool-generic-template" data-tool-slug="alpha"><div class="tool-generic-template__body">Loading alpha-generic...</div></section>'
+    }));
+
+    await loadToolTemplate('alpha-generic', root);
+
+    expect(root.querySelector('.tool-page[data-slug="alpha-generic"]')).not.toBeNull();
+    expect(root.querySelector('.tool-layout')).not.toBeNull();
+    expect(root.querySelector('.tool-layout__panel')).not.toBeNull();
+    expect(root.querySelector('.tool-panel--output')).not.toBeNull();
+    expect(root.querySelector('#inputEditor')).not.toBeNull();
+    expect(root.querySelector('#outputField')).not.toBeNull();
+  });
+
+  test('throws hard error when generic template contract is missing required panel', async () => {
+    const root = document.createElement('div');
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => '<section class="tool-page" data-template-contract="generic"><div class="tool-layout"></div></section>'
+    }));
+
+    await expect(loadToolTemplate('alpha-generic', root)).rejects.toThrow('Template contract violation.');
   });
 
 });
