@@ -1,0 +1,98 @@
+<article class="sql-formatter-page tool-page" data-slug="@Model.Tool.Slug">
+    <header class="sql-formatter-header">
+        <div>
+            <h1>@Model.Tool.Title</h1>
+            <p class="sql-formatter-description">Beautify SQL safely in your browser with dialect-aware, deterministic formatting.</p>
+        </div>
+        <span class="sql-processing-badge">Client-side processing</span>
+    </header>
+
+    <section class="sql-toolbar" role="toolbar" aria-label="SQL formatter actions">
+        <div class="sql-toolbar-row">
+            <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
+            <button id="clearBtn" class="tool-btn" type="button">Clear</button>
+            <button id="copyBtn" class="tool-btn" type="button">Copy output</button>
+            <button id="downloadBtn" class="tool-btn" type="button">Download .sql</button>
+            <label class="tool-toggle"><input id="autoFormatToggle" type="checkbox" /> Auto format</label>
+            <label class="tool-toggle"><input id="commentToggle" type="checkbox" checked /> Preserve comments</label>
+            <label class="tool-toggle"><input id="blankLineToggle" type="checkbox" checked /> Preserve blank lines</label>
+        </div>
+        <div class="sql-toolbar-row">
+            <label class="tool-toggle" for="dialectSelect">Dialect
+                <select id="dialectSelect" class="tool-select" aria-label="SQL dialect">
+                    <option value="ansi">ANSI SQL</option>
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="sqlserver">SQL Server</option>
+                    <option value="sqlite">SQLite</option>
+                </select>
+            </label>
+            <label class="tool-toggle" for="keywordCaseSelect">Keyword case
+                <select id="keywordCaseSelect" class="tool-select" aria-label="Keyword case">
+                    <option value="upper">UPPER</option>
+                    <option value="lower">lower</option>
+                    <option value="preserve">Preserve</option>
+                </select>
+            </label>
+            <label class="tool-toggle" for="indentSizeSelect">Indent size
+                <select id="indentSizeSelect" class="tool-select" aria-label="Indent size">
+                    <option value="2">2 spaces</option>
+                    <option value="4" selected>4 spaces</option>
+                </select>
+            </label>
+            <label class="tool-toggle" for="indentTypeSelect">Indent style
+                <select id="indentTypeSelect" class="tool-select" aria-label="Indent style">
+                    <option value="spaces" selected>Spaces</option>
+                    <option value="tabs">Tabs</option>
+                </select>
+            </label>
+            <label class="tool-toggle" for="commaStyleSelect">Comma style
+                <select id="commaStyleSelect" class="tool-select" aria-label="Comma style">
+                    <option value="trailing" selected>Trailing</option>
+                    <option value="leading">Leading</option>
+                </select>
+            </label>
+            <label class="tool-toggle" for="modeSelect">Mode
+                <select id="modeSelect" class="tool-select" aria-label="Formatting mode">
+                    <option value="pretty" selected>Pretty</option>
+                    <option value="compact">Compact</option>
+                </select>
+            </label>
+        </div>
+    </section>
+
+    <section id="errorBox" class="tool-error" role="alert" aria-live="assertive" hidden>
+        <h2 id="errorTitle" class="tool-error-title"></h2>
+        <p id="errorDetail" class="tool-error-detail"></p>
+        <p id="errorLocation" class="tool-error-location" hidden></p>
+    </section>
+
+    <section class="sql-workspace">
+        <section class="sql-panel">
+            <div class="panel-header">
+                <h2>Raw SQL input</h2>
+                <p>Ctrl+Enter to format · Ctrl+L to clear</p>
+            </div>
+            <textarea id="sqlInput" class="sql-editor" spellcheck="false" aria-label="SQL input"></textarea>
+        </section>
+
+        <section class="sql-panel">
+            <div class="panel-header">
+                <h2>Formatted SQL output</h2>
+                <p id="resultStatus">Ready for formatting.</p>
+            </div>
+            <textarea id="sqlOutput" class="sql-editor" readonly spellcheck="false" aria-label="SQL output"></textarea>
+        </section>
+    </section>
+
+    <section class="sql-metrics" aria-live="polite">
+        <p><span>Input</span><strong id="inputStats">0 chars / 0 lines</strong></p>
+        <p><span>Output</span><strong id="outputStats">0 chars / 0 lines</strong></p>
+        <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
+        <p><span>Length</span><strong id="charCount">0 chars</strong></p>
+    </section>
+
+    <section id="processingIndicator" class="tool-warning" hidden>Formatting large SQL payload…</section>
+    <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
+</article>
+

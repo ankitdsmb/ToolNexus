@@ -1,0 +1,80 @@
+<article class="tool-page tool base64-tool" data-tool="base64-encode" data-slug="@Model.Tool.Slug">
+    <header class="base64-tool__header">
+        <div>
+            <h1>@Model.Tool.Title</h1>
+            <p class="tool-page__description">Encode text or files into Base64 with full UTF-8 and binary support.</p>
+        </div>
+        <span class="base64-badge" aria-label="Execution scope">Client-side only</span>
+    </header>
+
+    <section class="base64-workspace" aria-label="Base64 workspace">
+        <section class="tool-panel base64-panel" aria-labelledby="inputHeading">
+            <div class="base64-panel__header">
+                <h2 id="inputHeading">Input</h2>
+                <p id="inputMeta" class="base64-meta">Text mode · 0 B</p>
+            </div>
+
+            <div class="base64-mode-toggle" role="radiogroup" aria-label="Input mode">
+                <button id="textModeBtn" class="tool-btn tool-btn--outline is-active" type="button" role="radio" aria-checked="true">Text</button>
+                <button id="fileModeBtn" class="tool-btn tool-btn--outline" type="button" role="radio" aria-checked="false">File</button>
+            </div>
+
+            <div id="dropZone" class="base64-dropzone" tabindex="0" role="button" aria-label="Drop a file or click to select" hidden>
+                <p><strong>Drop file here</strong> or click to upload</p>
+                <p class="base64-dropzone__hint">Supports binary files. File stays in your browser.</p>
+                <input id="fileInput" type="file" hidden />
+            </div>
+
+            <label for="inputEditor" class="base64-label">Text input</label>
+            <textarea id="inputEditor" class="tool-textarea tool-textarea--mono" rows="14" placeholder="Paste or type content to encode"></textarea>
+
+            <div class="base64-options">
+                <label><input id="urlSafeToggle" type="checkbox" /> URL-safe mode (- and _)</label>
+                <label><input id="removePaddingToggle" type="checkbox" /> Remove padding (=)</label>
+                <label><input id="autoEncodeToggle" type="checkbox" checked /> Auto encode on input</label>
+            </div>
+
+            <p id="warningBanner" class="base64-warning" hidden></p>
+
+            <div class="base64-actions">
+                <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
+                <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
+            </div>
+            <p class="base64-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Encode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
+        </section>
+
+        <section class="tool-panel base64-panel" aria-labelledby="outputHeading">
+            <div class="base64-panel__header">
+                <h2 id="outputHeading">Encoded output</h2>
+                <p id="statusText" class="base64-meta">Ready</p>
+            </div>
+
+            <div id="loadingState" class="base64-loading" hidden>Encoding…</div>
+
+            <div id="errorBox" class="base64-error" role="alert" hidden>
+                <h3 id="errorTitle"></h3>
+                <p id="errorMessage"></p>
+                <p id="errorAction" class="base64-error__action"></p>
+            </div>
+
+            <label for="outputEditor" class="base64-label">Base64 result</label>
+            <textarea id="outputEditor" class="tool-textarea tool-textarea--mono" rows="14" readonly placeholder="Encoded output appears here"></textarea>
+
+            <div class="base64-actions">
+                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
+                <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download .txt</button>
+            </div>
+        </section>
+    </section>
+
+    @if (Model.Content is not null)
+    {
+        <section class="tool-panel tool-content">
+            <h2 class="tool-content__title">How It Works</h2>
+            <div class="tool-content__body">
+                @Html.Raw(Model.Content.LongArticle)
+            </div>
+        </section>
+    }
+</article>
+

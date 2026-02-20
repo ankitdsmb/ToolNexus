@@ -1,0 +1,63 @@
+<article class="text-diff-page tool-page" data-slug="@Model.Tool.Slug" data-tool="text-diff">
+    <header class="text-diff-page__header">
+        <div>
+            <h1>@Model.Tool.Title</h1>
+            <p>@Model.Tool.SeoDescription</p>
+        </div>
+        <span class="text-diff-page__badge">Client-side processing</span>
+    </header>
+
+    <section class="text-diff-controls" aria-label="Diff options">
+        <button id="compareBtn" class="tool-btn tool-btn--primary" type="button">Compare</button>
+        <button id="swapBtn" class="tool-btn tool-btn--outline" type="button">Swap</button>
+        <button id="clearBtn" class="tool-btn tool-btn--ghost" type="button">Clear</button>
+        <button id="copyDiffBtn" class="tool-btn tool-btn--ghost" type="button">Copy Diff</button>
+        <button id="downloadDiffBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
+
+        <label>View
+            <select id="viewModeSelect">
+                <option value="side-by-side">Side by side</option>
+                <option value="inline">Unified</option>
+            </select>
+        </label>
+
+        <label>Detail
+            <select id="detailModeSelect">
+                <option value="line">Line</option>
+                <option value="word">Word</option>
+                <option value="char">Character</option>
+            </select>
+        </label>
+
+        <label><input type="checkbox" id="autoCompareToggle" /> Auto compare</label>
+        <label><input type="checkbox" id="scrollSyncToggle" checked /> Sync scrolling</label>
+        <label><input type="checkbox" id="trimTrailingToggle" /> Trim trailing spaces</label>
+        <label><input type="checkbox" id="ignoreWhitespaceToggle" /> Ignore whitespace</label>
+        <label><input type="checkbox" id="ignoreCaseToggle" /> Ignore case</label>
+    </section>
+
+    <section class="text-diff-editors" aria-label="Text inputs">
+        <div class="text-diff-panel">
+            <label for="leftInput">Original text</label>
+            <textarea id="leftInput" class="tool-textarea tool-textarea--mono" spellcheck="false">@Model.Tool.ExampleInput</textarea>
+        </div>
+        <div class="text-diff-panel">
+            <label for="rightInput">Modified text</label>
+            <textarea id="rightInput" class="tool-textarea tool-textarea--mono" spellcheck="false"></textarea>
+        </div>
+    </section>
+
+    <section class="text-diff-result" aria-live="polite">
+        <div class="text-diff-result__header">
+            <strong>Diff Result</strong>
+            <p id="diffSummary">Added: 0 · Removed: 0 · Changed: 0</p>
+            <p id="processingState" hidden>Processing diff…</p>
+        </div>
+
+        <div id="diffError" class="tool-error" hidden></div>
+        <div id="diffOutput" class="text-diff-output"></div>
+    </section>
+
+    <p class="text-diff-shortcuts">Shortcuts: Ctrl/Cmd + Enter compare, Ctrl/Cmd + L clear.</p>
+</article>
+

@@ -31,6 +31,7 @@ describe('runtime observability', () => {
 
     const runtime = createToolRuntime({
       observer,
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
       loadManifest: async () => ({ modulePath: '/mock/module.js' }),
       importModule: async () => ({ mount: async () => {} }),
       dependencyLoader: createDependencyLoader({ observer, loadScript: async () => {} })
@@ -55,6 +56,7 @@ describe('runtime observability', () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="beta"></div>';
     const importFailureRuntime = createToolRuntime({
       observer,
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
       loadManifest: async () => ({ modulePath: '/mock/module.js', dependencies: ['dep.js'] }),
       importModule: async () => {
         throw new Error('import failed');
@@ -72,6 +74,7 @@ describe('runtime observability', () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="gamma"></div>';
     const mountFailureRuntime = createToolRuntime({
       observer,
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
       loadManifest: async () => ({ modulePath: '/mock/module.js' }),
       importModule: async () => ({ mount: async () => { throw new Error('mount failed'); } }),
       healRuntime: async () => false
@@ -96,6 +99,7 @@ describe('runtime observability', () => {
 
     const buildRuntime = (slug) => createToolRuntime({
       observer,
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
       getRoot: () => {
         const root = document.createElement('div');
         root.id = 'tool-root';
@@ -118,6 +122,7 @@ describe('runtime observability', () => {
   test('observability failures never break runtime', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="safe"></div>';
     const runtime = createToolRuntime({
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
       observer: {
         emit: () => { throw new Error('observer failed'); },
         subscribe: () => () => {},
@@ -138,6 +143,7 @@ describe('runtime observability', () => {
 
     const runtime = createToolRuntime({
       observer,
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
       loadManifest: async () => ({ modulePath: '/heal.js' }),
       importModule: async () => ({ mount: async () => { throw new Error('mount explode'); } }),
       healRuntime: async () => true
