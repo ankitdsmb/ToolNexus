@@ -83,8 +83,8 @@ public sealed class ToolsController(
         var canonicalUrl = $"{Request.Scheme}://{Request.Host}/tools/{Uri.EscapeDataString(tool.Slug)}";
         var seo = new ToolSeoMetadata
         {
-            Title = content?.MetaTitle ?? tool.SeoTitle,
-            Description = content?.MetaDescription ?? tool.SeoDescription,
+            Title = content?.SeoTitle ?? tool.SeoTitle,
+            Description = content?.SeoDescription ?? tool.SeoDescription,
             CanonicalUrl = canonicalUrl,
             Keywords = content?.Keywords ?? tool.Title,
             JsonLd = BuildJsonLd(tool, content, canonicalUrl)
@@ -102,6 +102,20 @@ public sealed class ToolsController(
             .DistinctBy(related => related.Slug)
             .ToArray();
 
+        var sameCategoryTools = toolCatalogService.GetByCategory(tool.Category)
+            .Where(candidate => !string.Equals(candidate.Slug, tool.Slug, StringComparison.OrdinalIgnoreCase))
+            .Take(6)
+            .Select(candidate => new RelatedToolViewModel { Slug = candidate.Slug, Title = candidate.Title })
+            .ToArray();
+
+        var sortedTools = toolCatalogService.GetAllTools().OrderBy(candidate => candidate.Title, StringComparer.OrdinalIgnoreCase).ToArray();
+        var toolIndex = Array.FindIndex(sortedTools, candidate => string.Equals(candidate.Slug, tool.Slug, StringComparison.OrdinalIgnoreCase));
+        var nextTools = sortedTools
+            .Skip(Math.Max(toolIndex + 1, 0))
+            .Take(3)
+            .Select(candidate => new RelatedToolViewModel { Slug = candidate.Slug, Title = candidate.Title })
+            .ToArray();
+
         var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
         var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
         var viewModel = new ToolPageViewModel
@@ -112,6 +126,8 @@ public sealed class ToolsController(
             Seo = seo,
             Content = content,
             RelatedTools = relatedTools,
+            SameCategoryTools = sameCategoryTools,
+            NextTools = nextTools,
             RuntimeModulePath = descriptor?.ModulePath,
             RuntimeCssPath = descriptor?.CssPath
         };
@@ -155,42 +171,42 @@ public sealed class ToolsController(
 
     private static string BuildJsonLd(Application.Models.ToolDescriptor tool, Application.Models.ToolContent? content, string canonicalUrl)
     {
-        var graph = new List<object>
+        var graph = new List<Dictionary<string, object?>>
         {
-            new
+            new()
             {
-                @context = "https://schema.org",
-                @type = "WebApplication",
-                name = tool.Title,
-                description = content?.MetaDescription ?? tool.SeoDescription,
-                applicationCategory = $"{tool.Category} Developer Tool",
-                operatingSystem = "Any",
-                url = canonicalUrl
+                ["@context"] = "https://schema.org",
+                ["@type"] = "SoftwareApplication",
+                ["name"] = tool.Title,
+                ["description"] = content?.SeoDescription ?? tool.SeoDescription,
+                ["applicationCategory"] = $"{tool.Category} Developer Tool",
+                ["operatingSystem"] = "Any",
+                ["url"] = canonicalUrl
             },
-            new
+            new()
             {
-                @context = "https://schema.org",
-                @type = "BreadcrumbList",
-                itemListElement = new object[]
+                ["@context"] = "https://schema.org",
+                ["@type"] = "BreadcrumbList",
+                ["itemListElement"] = new object[]
                 {
-                    new { @type = "ListItem", position = 1, name = "Tools", item = "/tools" },
-                    new { @type = "ListItem", position = 2, name = tool.Title, item = canonicalUrl }
+                    new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 1, ["name"] = "Tools", ["item"] = "/tools" },
+                    new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 2, ["name"] = tool.Title, ["item"] = canonicalUrl }
                 }
             }
         };
 
-        if (content?.Faqs?.Any() == true)
+        if (content?.Faq?.Any() == true)
         {
-            graph.Add(new
+            graph.Add(new Dictionary<string, object?>
             {
-                @context = "https://schema.org",
-                @type = "FAQPage",
-                mainEntity = content.Faqs.Select(faq => new
+                ["@context"] = "https://schema.org",
+                ["@type"] = "FAQPage",
+                ["mainEntity"] = content.Faq.Select(faq => new Dictionary<string, object?>
                 {
-                    @type = "Question",
-                    name = faq.Question,
-                    acceptedAnswer = new { @type = "Answer", text = faq.Answer }
-                })
+                    ["@type"] = "Question",
+                    ["name"] = faq.Question,
+                    ["acceptedAnswer"] = new Dictionary<string, object?> { ["@type"] = "Answer", ["text"] = faq.Answer }
+                }).ToArray()
             });
         }
 

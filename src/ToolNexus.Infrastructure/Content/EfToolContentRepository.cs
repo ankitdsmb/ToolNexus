@@ -14,8 +14,11 @@ public sealed class EfToolContentRepository(ToolNexusContentDbContext dbContext)
         var entity = await dbContext.ToolContents
             .AsNoTracking()
             .Include(x => x.Features)
-            .Include(x => x.Faqs)
+            .Include(x => x.Steps)
+            .Include(x => x.Examples)
+            .Include(x => x.Faq)
             .Include(x => x.RelatedTools)
+            .Include(x => x.UseCases)
             .Where(x => x.Slug == normalizedSlug)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -29,13 +32,30 @@ public sealed class EfToolContentRepository(ToolNexusContentDbContext dbContext)
             Id = entity.Id,
             Slug = entity.Slug,
             Title = entity.Title,
-            ShortDescription = entity.ShortDescription,
-            LongArticle = entity.LongArticle,
-            MetaTitle = entity.MetaTitle,
-            MetaDescription = entity.MetaDescription,
+            SeoTitle = entity.SeoTitle,
+            SeoDescription = entity.SeoDescription,
+            Intro = entity.Intro,
+            LongDescription = entity.LongDescription,
             Keywords = entity.Keywords,
             Features = entity.Features.OrderBy(f => f.SortOrder).Select(f => f.Value).ToArray(),
-            Faqs = entity.Faqs.OrderBy(f => f.SortOrder).Select(f => new ToolFaq
+            Steps = entity.Steps.OrderBy(s => s.SortOrder).Select(s => new ToolStep
+            {
+                Id = s.Id,
+                Slug = entity.Slug,
+                Title = s.Title,
+                Description = s.Description,
+                SortOrder = s.SortOrder
+            }).ToArray(),
+            Examples = entity.Examples.OrderBy(example => example.SortOrder).Select(example => new ToolExample
+            {
+                Id = example.Id,
+                Slug = entity.Slug,
+                Title = example.Title,
+                Input = example.Input,
+                Output = example.Output,
+                SortOrder = example.SortOrder
+            }).ToArray(),
+            Faq = entity.Faq.OrderBy(f => f.SortOrder).Select(f => new ToolFaq
             {
                 Id = f.Id,
                 Slug = entity.Slug,
@@ -49,7 +69,8 @@ public sealed class EfToolContentRepository(ToolNexusContentDbContext dbContext)
                 Slug = entity.Slug,
                 RelatedSlug = r.RelatedSlug,
                 SortOrder = r.SortOrder
-            }).ToArray()
+            }).ToArray(),
+            UseCases = entity.UseCases.OrderBy(uc => uc.SortOrder).Select(uc => uc.Value).ToArray()
         };
     }
 

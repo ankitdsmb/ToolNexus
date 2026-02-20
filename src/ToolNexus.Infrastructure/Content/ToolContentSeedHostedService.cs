@@ -21,6 +21,7 @@ public sealed class ToolContentSeedHostedService(
         }
         else
         {
+            await dbContext.Database.EnsureDeletedAsync(cancellationToken);
             await dbContext.Database.EnsureCreatedAsync(cancellationToken);
         }
 
@@ -36,13 +37,29 @@ public sealed class ToolContentSeedHostedService(
             {
                 Slug = tool.Slug,
                 Title = tool.Title,
-                ShortDescription = tool.SeoDescription,
-                LongArticle = $"{tool.Title} helps developers transform and validate content quickly. This content can be expanded in the CMS.",
-                MetaTitle = tool.SeoTitle,
-                MetaDescription = tool.SeoDescription,
+                SeoTitle = tool.SeoTitle,
+                SeoDescription = tool.SeoDescription,
+                Intro = tool.SeoDescription,
+                LongDescription = $"{tool.Title} is designed for fast, no-surprise transformations directly in the browser. It keeps source data local, provides clear output, and supports repeatable developer workflows without requiring a separate desktop utility.",
                 Keywords = $"{tool.Title}, {tool.Category}, developer tools",
                 Features = tool.Actions.Select((action, index) => new ToolFeatureEntity { Value = action, SortOrder = index }).ToList(),
-                Faqs =
+                Steps =
+                [
+                    new ToolStepEntity { Title = "Paste or upload source input", Description = "Add the payload you want to process and keep sensitive data redacted when sharing.", SortOrder = 0 },
+                    new ToolStepEntity { Title = "Select execution options", Description = "Choose formatting, validation, or conversion options relevant to your stack.", SortOrder = 1 },
+                    new ToolStepEntity { Title = "Run and verify output", Description = "Inspect generated output, copy results, and run again with small adjustments.", SortOrder = 2 }
+                ],
+                Examples =
+                [
+                    new ToolExampleEntity
+                    {
+                        Title = "Fix payload before shipping",
+                        Input = tool.ExampleInput,
+                        Output = "Clean, validated output that can be pasted into production workflows.",
+                        SortOrder = 0
+                    }
+                ],
+                Faq =
                 [
                     new ToolFaqEntity
                     {
@@ -50,6 +67,11 @@ public sealed class ToolContentSeedHostedService(
                         Answer = tool.SeoDescription,
                         SortOrder = 0
                     }
+                ],
+                UseCases =
+                [
+                    new ToolUseCaseEntity { Value = "Debug malformed payloads during API integration.", SortOrder = 0 },
+                    new ToolUseCaseEntity { Value = "Normalize test fixtures before adding them to CI regression suites.", SortOrder = 1 }
                 ],
                 RelatedTools = tools.Where(x => x.Category.Equals(tool.Category, StringComparison.OrdinalIgnoreCase) && x.Slug != tool.Slug)
                     .Take(3)
