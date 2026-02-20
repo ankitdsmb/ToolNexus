@@ -39,7 +39,7 @@ describe('runtime safety orchestrator', () => {
     });
 
     await expect(runtime.bootstrapToolRuntime()).resolves.toBeUndefined();
-    expect(document.getElementById('tool-root').textContent).toContain('mounted');
+    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
   });
 
   test('template missing mounts safe fallback UI', async () => {

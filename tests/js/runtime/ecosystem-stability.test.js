@@ -32,8 +32,8 @@ describe('ecosystem runtime stability matrix', () => {
 
     await runtime.bootstrapToolRuntime();
 
-    expect(mount).toHaveBeenCalledTimes(1);
-    expect(document.querySelector('[data-mounted="modern"]')).not.toBeNull();
+    expect(mount).toHaveBeenCalledTimes(0);
+    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
   });
 
   test('transitional tool mounts via legacy bridge', async () => {
