@@ -5,7 +5,10 @@
   "scripts": {
     "test:js": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
     "check:platform": "node scripts/platform-guard.mjs",
-    "check:design-system": "node scripts/design-system-guard.mjs"
+    "check:design-system": "node scripts/design-system-guard.mjs",
+    "check:tool-ecosystem": "node scripts/tool-ecosystem-validate.mjs",
+    "check:seo-a11y": "node scripts/seo-a11y-guard.mjs",
+    "check:release": "node scripts/release-readiness-check.mjs"
   },
   "devDependencies": {
     "jest": "^30.0.5",
