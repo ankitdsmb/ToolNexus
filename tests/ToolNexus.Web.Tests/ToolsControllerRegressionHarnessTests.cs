@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using ToolNexus.Application.Models;
+using AppToolDescriptor = ToolNexus.Application.Models.ToolDescriptor;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Controllers;
 using ToolNexus.Web.Models;
@@ -110,7 +111,7 @@ public sealed class ToolsControllerRegressionHarnessTests
             catalogService,
             contentService,
             Microsoft.Extensions.Options.Options.Create(new ApiSettings { BaseUrl = "https://localhost:5001", ToolExecutionPathPrefix = "/api/v1/tools" }),
-            new ToolViewResolver());
+            new ToolViewResolver(new ToolRegistryService()));
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Scheme = "https";
@@ -125,7 +126,7 @@ public sealed class ToolsControllerRegressionHarnessTests
         return controller;
     }
 
-    private static ToolDescriptor CreateDescriptor(string slug) => new()
+    private static AppToolDescriptor CreateDescriptor(string slug) => new()
     {
         Slug = slug,
         Title = "Test Tool",
@@ -148,20 +149,20 @@ public sealed class ToolsControllerRegressionHarnessTests
         Keywords = "k1,k2"
     };
 
-    private sealed class StubToolCatalogService(ToolDescriptor? descriptor, IReadOnlyCollection<string>? categories = null, IReadOnlyCollection<ToolDescriptor>? byCategory = null) : IToolCatalogService
+    private sealed class StubToolCatalogService(AppToolDescriptor? descriptor, IReadOnlyCollection<string>? categories = null, IReadOnlyCollection<AppToolDescriptor>? byCategory = null) : IToolCatalogService
     {
         private readonly IReadOnlyCollection<string> categories = categories ?? [];
-        private readonly IReadOnlyCollection<ToolDescriptor> byCategory = byCategory ?? [];
+        private readonly IReadOnlyCollection<AppToolDescriptor> byCategory = byCategory ?? [];
 
-        public IReadOnlyCollection<ToolDescriptor> GetAllTools() => descriptor is null ? [] : [descriptor];
+        public IReadOnlyCollection<AppToolDescriptor> GetAllTools() => descriptor is null ? [] : [descriptor];
 
         public IReadOnlyCollection<string> GetAllCategories() => categories;
 
-        public ToolDescriptor? GetBySlug(string slug) => descriptor is not null && string.Equals(descriptor.Slug, slug, StringComparison.OrdinalIgnoreCase)
+        public AppToolDescriptor? GetBySlug(string slug) => descriptor is not null && string.Equals(descriptor.Slug, slug, StringComparison.OrdinalIgnoreCase)
             ? descriptor
             : null;
 
-        public IReadOnlyCollection<ToolDescriptor> GetByCategory(string category) => byCategory;
+        public IReadOnlyCollection<AppToolDescriptor> GetByCategory(string category) => byCategory;
 
         public bool CategoryExists(string category) => categories.Contains(category, StringComparer.OrdinalIgnoreCase);
     }
