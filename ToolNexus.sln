@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -16,7 +16,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Tools.Json.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Api.IntegrationTests", "tests\ToolNexus.Api.IntegrationTests\ToolNexus.Api.IntegrationTests.csproj", "{CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Application.Tests", "tests/ToolNexus.Application.Tests/ToolNexus.Application.Tests.csproj", "{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Application.Tests", "tests\ToolNexus.Application.Tests\ToolNexus.Application.Tests.csproj", "{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D2D6874F-8898-43B2-9BEB-7A0F1709A64A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Web.Tests", "tests\ToolNexus.Web.Tests\ToolNexus.Web.Tests.csproj", "{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,11 +60,18 @@ Global
 		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19487236-8B9C-4125-B7E0-40B142B11B05}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA} = {D2D6874F-8898-43B2-9BEB-7A0F1709A64A}
 	EndGlobalSection
 EndGlobal
