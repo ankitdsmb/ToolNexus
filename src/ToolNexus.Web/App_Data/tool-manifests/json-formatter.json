@@ -3,5 +3,9 @@
   "viewName": "JsonFormatter",
   "category": "",
   "modulePath": "/js/tools/json-formatter.js",
-  "cssPath": "/css/pages/json-formatter.css"
+  "cssPath": "/css/pages/json-formatter.css",
+  "templatePath": "/tool-templates/json-formatter.html",
+  "dependencies": [
+    "/lib/monaco/vs/loader.js"
+  ]
 }

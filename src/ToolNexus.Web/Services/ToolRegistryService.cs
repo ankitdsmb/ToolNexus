@@ -13,6 +13,8 @@ public sealed class ToolRegistryService : IToolRegistryService
                 Slug = manifest.Slug,
                 ViewName = manifest.ViewName,
                 ModulePath = string.IsNullOrWhiteSpace(manifest.ModulePath) ? $"/js/tools/{manifest.Slug}.js" : manifest.ModulePath,
+                TemplatePath = string.IsNullOrWhiteSpace(manifest.TemplatePath) ? $"/tool-templates/{manifest.Slug}.html" : manifest.TemplatePath,
+                Dependencies = manifest.Dependencies ?? [],
                 CssPath = manifest.CssPath,
                 Category = manifest.Category
             })

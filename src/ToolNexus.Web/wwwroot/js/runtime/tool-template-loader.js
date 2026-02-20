@@ -1,6 +1,6 @@
 const templateCache = new Map();
 
-export async function loadToolTemplate(slug, root, { fetchImpl = fetch } = {}) {
+export async function loadToolTemplate(slug, root, { fetchImpl = fetch, templatePath } = {}) {
   if (!slug) {
     throw new Error('tool-template-loader: missing tool slug.');
   }
@@ -15,7 +15,9 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch } = {}) {
     return cached;
   }
 
-  const response = await fetchImpl(`/tool-templates/${encodeURIComponent(slug)}.html`, {
+  const resolvedTemplatePath = templatePath || `/tool-templates/${encodeURIComponent(slug)}.html`
+
+  const response = await fetchImpl(resolvedTemplatePath, {
     headers: { Accept: 'text/html' }
   });
 

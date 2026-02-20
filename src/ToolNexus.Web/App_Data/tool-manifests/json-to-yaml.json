@@ -3,5 +3,7 @@
   "viewName": "jsonToYaml",
   "category": "",
   "modulePath": "/js/tools/json-to-yaml.js",
-  "cssPath": "/css/pages/json-to-yaml.css"
+  "cssPath": "/css/pages/json-to-yaml.css",
+  "templatePath": "/tool-templates/json-to-yaml.html",
+  "dependencies": []
 }

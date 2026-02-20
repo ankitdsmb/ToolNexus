@@ -3,5 +3,7 @@
   "viewName": "json2csv",
   "category": "",
   "modulePath": "/js/tools/json-to-csv.js",
-  "cssPath": "/css/pages/json-to-csv.css"
+  "cssPath": "/css/pages/json-to-csv.css",
+  "templatePath": "/tool-templates/json-to-csv.html",
+  "dependencies": []
 }
