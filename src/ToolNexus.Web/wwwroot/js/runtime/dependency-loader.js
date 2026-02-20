@@ -1,6 +1,8 @@
 import { runtimeObserver } from './runtime-observer.js';
+import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
 
 export function createDependencyLoader({ observer = runtimeObserver, loadScript, loadCss } = {}) {
+  const logger = createRuntimeMigrationLogger({ channel: 'dependency' });
   const cache = new Map();
 
   const scriptLoader = typeof loadScript === 'function'
@@ -62,6 +64,7 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript,
   async function loadDependency(src, toolSlug) {
     if (cache.has(src)) {
       emit('cache_hit', { toolSlug, metadata: { dependency: src } });
+      logger.debug(`Cache hit for dependency "${src}".`, { toolSlug });
       return cache.get(src);
     }
 
@@ -70,6 +73,7 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript,
 
     const pending = (src.endsWith('.css') ? cssLoader(src) : scriptLoader(src))
       .then(() => {
+        logger.info(`Loaded dependency "${src}".`, { toolSlug });
         emit('dependency_script_load_complete', {
           toolSlug,
           duration: (globalThis.performance?.now?.() ?? Date.now()) - startedAt,
@@ -78,6 +82,7 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript,
       })
       .catch((error) => {
         cache.delete(src);
+        logger.warn(`Failed to load dependency "${src}".`, { toolSlug, error: error?.message ?? String(error) });
         emit('dependency_script_load_failure', {
           toolSlug,
           duration: (globalThis.performance?.now?.() ?? Date.now()) - startedAt,

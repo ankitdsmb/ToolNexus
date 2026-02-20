@@ -1,3 +1,5 @@
+import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
+
 function toCandidates(module) {
   return [
     module,
@@ -111,10 +113,12 @@ async function tryLegacyFallback({ slug, root, manifest }) {
 }
 
 export async function mountToolLifecycle({ module, slug, root, manifest }) {
+  const logger = createRuntimeMigrationLogger({ channel: 'lifecycle' });
   const moduleCandidates = toCandidates(module);
 
   const lifecycleContractResult = await invokeLifecycleContract(moduleCandidates, slug, root, manifest);
   if (lifecycleContractResult) {
+    logger.info(`Mounted with lifecycle contract for "${slug}".`);
     return lifecycleContractResult;
   }
 
@@ -139,6 +143,7 @@ export async function mountToolLifecycle({ module, slug, root, manifest }) {
 
   const legacyInitResult = await invokeFirst(moduleCandidates, ['init', 'runTool'], root, manifest);
   if (legacyInitResult.invoked) {
+    logger.info(`Mounted with legacy module init/runTool for "${slug}".`);
     return {
       mounted: true,
       cleanup: buildCleanup(legacyInitResult.candidate, legacyInitResult.value, root, manifest),
@@ -147,6 +152,7 @@ export async function mountToolLifecycle({ module, slug, root, manifest }) {
   }
 
   if (typeof window.ToolNexusKernel?.create === 'function') {
+    logger.info(`Using ToolNexusKernel.create fallback for "${slug}".`);
     const kernelContext = await window.ToolNexusKernel.create({ slug, root, manifest, module });
     if (typeof window.ToolNexusKernel?.init === 'function') {
       await window.ToolNexusKernel.init(kernelContext ?? { slug, root, manifest, module });
@@ -156,10 +162,12 @@ export async function mountToolLifecycle({ module, slug, root, manifest }) {
   }
 
   if (typeof window.ToolNexusKernel?.initialize === 'function') {
+    logger.info(`Using ToolNexusKernel.initialize fallback for "${slug}".`);
     await window.ToolNexusKernel.initialize({ slug, root, manifest, module });
     return { mounted: true, cleanup: undefined, mode: 'kernel.initialize' };
   }
 
+  logger.warn(`No modern lifecycle found for "${slug}". Switching to legacy fallback.`);
   return tryLegacyFallback({ slug, root, manifest });
 }
 

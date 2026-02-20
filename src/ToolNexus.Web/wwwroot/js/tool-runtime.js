@@ -5,6 +5,7 @@ import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaul
 import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
 import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
 import { validateToolDomContract as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
+import { createRuntimeMigrationLogger } from './runtime/runtime-migration-logger.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 
@@ -38,6 +39,8 @@ export function createToolRuntime({
   healRuntime = async () => false,
   now = () => (globalThis.performance?.now?.() ?? Date.now())
 } = {}) {
+  const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
+
   function renderContractError(root, errors) {
     if (!root) {
       return;
@@ -132,9 +135,11 @@ export function createToolRuntime({
 
     const slug = (root.dataset.toolSlug || '').trim();
     if (!slug) {
-      console.error('tool-runtime: missing tool slug on #tool-root.');
+      logger.error('Missing tool slug on #tool-root.');
       return;
     }
+
+    logger.info(`Bootstrapping tool runtime for "${slug}".`);
 
     const runtimeStartedAt = now();
     emit('bootstrap_start', { toolSlug: slug });
@@ -151,7 +156,7 @@ export function createToolRuntime({
       manifest = await (loadManifestOverride ?? loadManifest)(slug);
     } catch (error) {
       emit('manifest_failure', { toolSlug: slug, error: error?.message ?? String(error) });
-      console.warn(`tool-runtime: manifest unavailable for "${slug}". Falling back to legacy runtime.`, error);
+      logger.warn(`Manifest unavailable for "${slug}". Falling back to legacy runtime.`, error);
     }
 
     const styles = Array.isArray(manifest?.styles)
@@ -171,7 +176,7 @@ export function createToolRuntime({
       emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
     } catch (error) {
       emit('template_load_failure', { toolSlug: slug, error: error?.message ?? String(error) });
-      console.warn(`tool-runtime: template load failed for "${slug}"; continuing with legacy fallback.`, error);
+      logger.warn(`Template load failed for "${slug}"; continuing with legacy fallback.`, error);
     }
 
     templateBinder(root, window.ToolNexusConfig ?? {});
@@ -179,7 +184,7 @@ export function createToolRuntime({
     const validation = ensureDomContract(root, slug);
     if (!validation.valid) {
       const message = `tool-runtime: DOM contract invalid for "${slug}"`;
-      console.error(message, validation.errors);
+      logger.error(message, validation.errors);
       emit('dom_contract_failure', { toolSlug: slug, metadata: { errors: validation.errors } });
       renderContractError(root, validation.errors);
       return;
@@ -196,7 +201,7 @@ export function createToolRuntime({
         duration: now() - dependencyStartedAt,
         error: error?.message ?? String(error)
       });
-      console.warn(`tool-runtime: dependency loading failed for "${slug}"; continuing with fallback lifecycle.`, error);
+      logger.warn(`Dependency loading failed for "${slug}"; continuing with fallback lifecycle.`, error);
     }
 
     const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
@@ -215,7 +220,7 @@ export function createToolRuntime({
         });
 
         if (!lifecycleContract.compliant) {
-          console.info(`tool-runtime: non-standard lifecycle for "${slug}", using compatibility adapter.`);
+          logger.info(`Non-standard lifecycle for "${slug}", using compatibility adapter.`);
         }
 
         emit('module_import_complete', {
@@ -230,7 +235,7 @@ export function createToolRuntime({
           error: error?.message ?? String(error),
           metadata: { modulePath }
         });
-        console.warn(`tool-runtime: module import failed for "${slug}"; trying legacy lifecycle.`, error);
+        logger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
     }
 
@@ -280,6 +285,7 @@ export function createToolRuntime({
       }
 
       emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
+      logger.info(`Tool runtime mounted successfully for "${slug}".`);
     } catch (error) {
       emit('mount_failure', {
         toolSlug: slug,
@@ -297,6 +303,7 @@ export function createToolRuntime({
           emit('healing_success', { toolSlug: slug });
           emit('tool_self_heal_success', { toolSlug: slug });
           ensureRootFallback(root, slug);
+          logger.info(`Runtime self-healed for "${slug}".`);
           return;
         }
 
@@ -307,6 +314,8 @@ export function createToolRuntime({
         emit('healing_failure', { toolSlug: slug });
         emit('tool_unrecoverable_failure', { toolSlug: slug });
       }
+
+      logger.warn(`Tool runtime entered fallback recovery path for "${slug}".`, error);
     }
 
     if (ensureRootFallback(root, slug)) {
@@ -314,6 +323,7 @@ export function createToolRuntime({
     }
 
     emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
+    logger.info(`Bootstrap completed for "${slug}".`);
   }
 
   return {
