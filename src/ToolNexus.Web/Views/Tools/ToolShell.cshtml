@@ -70,9 +70,16 @@
 </section>
 
 <div id="tool-root" data-tool-slug="@Model.Tool.Slug">
-    <section class="tool-runtime-fallback" data-ssr-fallback="true">
-        <h2>@Model.Tool.Title</h2>
-        <p>@Model.Tool.SeoDescription</p>
+    <section class="tool-runtime-fallback tn-tool-shell" data-ssr-fallback="true">
+        <header class="tn-tool-header">
+            <h2>@Model.Tool.Title</h2>
+            <p>@Model.Tool.SeoDescription</p>
+        </header>
+        <div class="tn-tool-body">
+            <section class="tn-tool-panel" aria-label="Input panel"></section>
+            <section class="tn-tool-panel" aria-label="Output panel"></section>
+        </div>
+        <footer class="tn-tool-footer">Server-rendered fallback is active while runtime initializes.</footer>
     </section>
 </div>
 

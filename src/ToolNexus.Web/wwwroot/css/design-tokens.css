@@ -5,17 +5,17 @@ TOKENS
   --font-sans: "Inter", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
 
-  --text-2xs: 11px;
+  --text-2xs: 12px;
   --text-xs: 12px;
   --text-sm: 14px;
   --text-md: 16px;
   --text-lg: 20px;
-  --text-xl: 22px;
+  --text-xl: 24px;
   --text-2xl: clamp(32px, 4vw, 48px);
 
   --type-micro: var(--text-2xs);
-  --type-caption: var(--text-xs);
-  --type-body: var(--text-sm);
+  --type-caption: 14px;
+  --type-body: var(--text-md);
   --type-body-lg: var(--text-md);
   --type-h3: 18px;
   --type-h2: var(--text-lg);
@@ -27,14 +27,21 @@ TOKENS
   --line-base: 1.6;
   --line-relaxed: 1.72;
 
-  --space-1: 4px;
+  --space-1: 8px;
   --space-2: 8px;
-  --space-3: 12px;
+  --space-3: 16px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
   --space-7: 48px;
   --space-8: 64px;
+
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 40px;
+  --space-2xl: 48px;
 
   --radius-sm: 8px;
   --radius-md: 10px;

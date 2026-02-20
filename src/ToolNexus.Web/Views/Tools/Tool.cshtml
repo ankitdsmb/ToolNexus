@@ -22,16 +22,16 @@
     <link rel="stylesheet" href="~/css/pages/xml-formatter.css" asp-append-version="true" />
 }
 
-<article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
-  <header class="tool-page__heading">
+<article class="tool-page tn-tool-shell" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
+  <header class="tool-page__heading tn-tool-header">
     <div>
       <h1>@Model.Tool.Title</h1>
       <p>@Model.Tool.SeoDescription</p>
     </div>
   </header>
 
-  <section class="tool-layout tool-layout--elite" aria-label="Tool workspace">
-    <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
+  <section class="tool-layout tool-layout--elite tn-tool-body" aria-label="Tool workspace">
+    <section class="tool-layout__panel tool-panel tn-tool-panel" aria-labelledby="toolInputHeading">
       <div class="panel-header">
         <h2 id="toolInputHeading">Input</h2>
       </div>
@@ -70,7 +70,7 @@
       </div>
     </section>
 
-    <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading">
+    <section class="tool-layout__panel tool-panel tool-panel--output tn-tool-panel" aria-labelledby="toolOutputHeading">
       <div class="panel-header">
         <h2 id="toolOutputHeading">Output</h2>
         <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">Ready</p>
