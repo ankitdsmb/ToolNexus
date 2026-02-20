@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/pages/json-formatter.css" asp-append-version="true" />
 }
 
-<article class="json-formatter-page tool-page" data-slug="@Model.Tool.Slug">
+<article class="json-formatter-page tool-page tool" data-slug="@Model.Tool.Slug" data-tool="json-formatter">
     <header class="json-formatter-header">
         <div>
             <h1>@Model.Tool.Title</h1>
@@ -84,5 +84,5 @@
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js" crossorigin="anonymous"></script>
-    <script type="module" src="~/js/tools/json-formatter/index.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/tools/json-formatter.js" asp-append-version="true"></script>
 }
