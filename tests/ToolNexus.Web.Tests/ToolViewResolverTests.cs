@@ -27,7 +27,7 @@ public sealed class ToolViewResolverTests
     [MemberData(nameof(SlugViewMappings))]
     public void ResolveViewName_KnownSlug_ReturnsMappedView(string slug, string expected)
     {
-        var resolver = new ToolViewResolver();
+        var resolver = new ToolViewResolver(new ToolRegistryService());
 
         var result = resolver.ResolveViewName(slug);
 
@@ -37,7 +37,7 @@ public sealed class ToolViewResolverTests
     [Fact]
     public void ResolveViewName_IsCaseInsensitive()
     {
-        var resolver = new ToolViewResolver();
+        var resolver = new ToolViewResolver(new ToolRegistryService());
 
         var result = resolver.ResolveViewName("JSON-FORMATTER");
 
@@ -47,10 +47,37 @@ public sealed class ToolViewResolverTests
     [Fact]
     public void ResolveViewName_UnknownSlug_ReturnsFallbackToolView()
     {
-        var resolver = new ToolViewResolver();
+        var resolver = new ToolViewResolver(new ToolRegistryService());
 
         var result = resolver.ResolveViewName("not-mapped");
 
         Assert.Equal("Tool", result);
     }
+
+    [Fact]
+    public void ResolveViewName_UsesRegistryMetadataForNewTool()
+    {
+        var resolver = new ToolViewResolver(new StubToolRegistryService(new ToolNexus.Web.Services.ToolDescriptor
+        {
+            Slug = "new-tool",
+            ViewName = "NewToolView",
+            Category = "custom"
+        }));
+
+        var result = resolver.ResolveViewName("new-tool");
+
+        Assert.Equal("NewToolView", result);
+    }
+
+    private sealed class StubToolRegistryService(params ToolNexus.Web.Services.ToolDescriptor[] descriptors) : IToolRegistryService
+    {
+        private readonly IReadOnlyDictionary<string, ToolNexus.Web.Services.ToolDescriptor> bySlug =
+            descriptors.ToDictionary(x => x.Slug, StringComparer.OrdinalIgnoreCase);
+
+        public ToolNexus.Web.Services.ToolDescriptor? GetBySlug(string slug) =>
+            bySlug.TryGetValue(slug, out var descriptor) ? descriptor : null;
+
+        public IReadOnlyCollection<ToolNexus.Web.Services.ToolDescriptor> GetAll() => bySlug.Values.ToArray();
+    }
+
 }
