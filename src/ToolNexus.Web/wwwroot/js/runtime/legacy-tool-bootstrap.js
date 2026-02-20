@@ -1,3 +1,5 @@
+import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
+
 function toCandidates(module) {
   return [
     module,
@@ -60,7 +62,7 @@ export async function bootstrapLegacyTool({
   manifest,
   modulePath,
   importModule = (path) => import(path),
-  logger = console
+  logger = createRuntimeMigrationLogger({ channel: 'legacy' })
 } = {}) {
   let workingModule = module;
 
@@ -68,13 +70,14 @@ export async function bootstrapLegacyTool({
     try {
       workingModule = await importModule(modulePath);
     } catch (error) {
-      logger?.warn?.(`legacy-tool-bootstrap: failed to import module for "${slug}".`, error);
+      logger?.warn?.(`Failed to import legacy module for "${slug}".`, error);
     }
   }
 
   const candidates = toCandidates(workingModule);
 
   const lifecycleMethod = await invokeFirst(candidates, ['create'], { slug, root, manifest });
+  logger.info(`Starting legacy bootstrap flow for "${slug}".`);
   if (lifecycleMethod) {
     await invokeFirst(candidates, ['init'], root, manifest);
     return { mounted: Boolean(root?.firstElementChild), mode: `module.${lifecycleMethod}-init` };
