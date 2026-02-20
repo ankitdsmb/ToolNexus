@@ -111,7 +111,7 @@ public sealed class ToolsControllerRegressionHarnessTests
             catalogService,
             contentService,
             Microsoft.Extensions.Options.Options.Create(new ApiSettings { BaseUrl = "https://localhost:5001", ToolExecutionPathPrefix = "/api/v1/tools" }),
-            new ToolViewResolver(new ToolRegistryService()));
+            new ToolViewResolver(CreateRegistry()));
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Scheme = "https";
@@ -124,6 +124,33 @@ public sealed class ToolsControllerRegressionHarnessTests
         };
 
         return controller;
+    }
+
+
+    private static readonly ToolNexus.Web.Services.ToolManifest[] BaselineManifests =
+    [
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-formatter", ViewName = "JsonFormatter", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "base64-decode", ViewName = "base64Decode", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "base64-encode", ViewName = "base64Encode", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-to-csv", ViewName = "json2csv", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-to-yaml", ViewName = "jsonToYaml", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "yaml-to-json", ViewName = "yamlToJson", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "csv-to-json", ViewName = "CsvToJson", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-validator", ViewName = "JsonValidator", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "sql-formatter", ViewName = "SqlFormatter", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "file-merge", ViewName = "fileMerge", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "html-entities", ViewName = "htmlEntities", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "uuid-generator", ViewName = "uuidGenerator", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "url-encode", ViewName = "urlEncode", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "url-decode", ViewName = "urlDecode", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "text-diff", ViewName = "TextDiff", Category = string.Empty }
+    ];
+
+    private static ToolRegistryService CreateRegistry() => new(new StubManifestLoader(BaselineManifests));
+
+    private sealed class StubManifestLoader(params ToolNexus.Web.Services.ToolManifest[] manifests) : IToolManifestLoader
+    {
+        public IReadOnlyCollection<ToolNexus.Web.Services.ToolManifest> LoadAll() => manifests;
     }
 
     private static AppToolDescriptor CreateDescriptor(string slug) => new()

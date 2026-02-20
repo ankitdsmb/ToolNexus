@@ -27,7 +27,7 @@ public sealed class ToolViewResolverTests
     [MemberData(nameof(SlugViewMappings))]
     public void ResolveViewName_KnownSlug_ReturnsMappedView(string slug, string expected)
     {
-        var resolver = new ToolViewResolver(new ToolRegistryService());
+        var resolver = new ToolViewResolver(CreateRegistry());
 
         var result = resolver.ResolveViewName(slug);
 
@@ -37,7 +37,7 @@ public sealed class ToolViewResolverTests
     [Fact]
     public void ResolveViewName_IsCaseInsensitive()
     {
-        var resolver = new ToolViewResolver(new ToolRegistryService());
+        var resolver = new ToolViewResolver(CreateRegistry());
 
         var result = resolver.ResolveViewName("JSON-FORMATTER");
 
@@ -47,7 +47,7 @@ public sealed class ToolViewResolverTests
     [Fact]
     public void ResolveViewName_UnknownSlug_ReturnsFallbackToolView()
     {
-        var resolver = new ToolViewResolver(new ToolRegistryService());
+        var resolver = new ToolViewResolver(CreateRegistry());
 
         var result = resolver.ResolveViewName("not-mapped");
 
@@ -69,6 +69,32 @@ public sealed class ToolViewResolverTests
         Assert.Equal("NewToolView", result);
     }
 
+
+    private static readonly ToolManifest[] BaselineManifests =
+    [
+        new() { Slug = "json-formatter", ViewName = "JsonFormatter", Category = string.Empty },
+        new() { Slug = "base64-decode", ViewName = "base64Decode", Category = string.Empty },
+        new() { Slug = "base64-encode", ViewName = "base64Encode", Category = string.Empty },
+        new() { Slug = "json-to-csv", ViewName = "json2csv", Category = string.Empty },
+        new() { Slug = "json-to-yaml", ViewName = "jsonToYaml", Category = string.Empty },
+        new() { Slug = "yaml-to-json", ViewName = "yamlToJson", Category = string.Empty },
+        new() { Slug = "csv-to-json", ViewName = "CsvToJson", Category = string.Empty },
+        new() { Slug = "json-validator", ViewName = "JsonValidator", Category = string.Empty },
+        new() { Slug = "sql-formatter", ViewName = "SqlFormatter", Category = string.Empty },
+        new() { Slug = "file-merge", ViewName = "fileMerge", Category = string.Empty },
+        new() { Slug = "html-entities", ViewName = "htmlEntities", Category = string.Empty },
+        new() { Slug = "uuid-generator", ViewName = "uuidGenerator", Category = string.Empty },
+        new() { Slug = "url-encode", ViewName = "urlEncode", Category = string.Empty },
+        new() { Slug = "url-decode", ViewName = "urlDecode", Category = string.Empty },
+        new() { Slug = "text-diff", ViewName = "TextDiff", Category = string.Empty }
+    ];
+
+    private static ToolRegistryService CreateRegistry() => new(new StubManifestLoader(BaselineManifests));
+
+    private sealed class StubManifestLoader(params ToolManifest[] manifests) : IToolManifestLoader
+    {
+        public IReadOnlyCollection<ToolManifest> LoadAll() => manifests;
+    }
     private sealed class StubToolRegistryService(params ToolNexus.Web.Services.ToolDescriptor[] descriptors) : IToolRegistryService
     {
         private readonly IReadOnlyDictionary<string, ToolNexus.Web.Services.ToolDescriptor> bySlug =

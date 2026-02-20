@@ -50,6 +50,7 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
 builder.Services.AddSingleton<IInternalUserPrincipalFactory, InternalUserPrincipalFactory>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
+builder.Services.AddSingleton<IToolManifestLoader, ToolManifestLoader>();
 builder.Services.AddSingleton<IToolRegistryService, ToolRegistryService>();
 builder.Services.AddSingleton<IToolViewResolver, ToolViewResolver>();
 
