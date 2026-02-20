@@ -89,6 +89,11 @@ TOKENS
   --accent-strong: var(--color-accent-strong);
   --accent-soft: var(--color-accent-soft);
 
+
+  --primary: var(--color-accent);
+  --secondary: var(--color-accent-soft);
+  --surface: var(--color-bg-secondary);
+  --border: var(--color-border-default);
   --success: var(--color-success);
   --success-soft: var(--color-success-soft);
   --danger: var(--color-danger);

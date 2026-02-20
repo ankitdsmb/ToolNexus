@@ -91,14 +91,12 @@ export function createToolRuntime({
     }
 
     const layout = document.createElement('div');
-    layout.className = 'tool-layout';
+    layout.className = 'tool-layout tn-tool-body';
     layout.innerHTML = `
-      <section class="tool-layout__panel">
+      <section class="tool-layout__panel tn-tool-panel" aria-label="Tool input panel">
         <textarea id="inputEditor"></textarea>
       </section>
-      <section class="tool-panel--output">
-        <textarea id="outputField"></textarea>
-      </section>
+      <section class="tool-layout__panel tool-panel--output tn-tool-panel" id="outputField" aria-label="Tool output panel"></section>
     `;
 
     toolPage.appendChild(layout);
@@ -140,7 +138,7 @@ export function createToolRuntime({
       return false;
     }
 
-    root.innerHTML = `<section class="tool-runtime-fallback" data-tool-runtime-fallback="true"><h2>${slug}</h2><p>Tool failed to initialize safely.</p><p>SSR content still available.</p><p class="tool-runtime-fallback__warning">Non-blocking warning: runtime entered compatibility mode.</p></section>`;
+    root.innerHTML = `<section class="tool-runtime-fallback tn-tool-shell" data-tool-runtime-fallback="true"><header class="tn-tool-header"><h2>${slug}</h2><p>Tool failed to initialize safely.</p></header><div class="tn-tool-body"><section class="tn-tool-panel" aria-label="Input panel unavailable"></section><section class="tn-tool-panel" aria-label="Output panel unavailable"></section></div><footer class="tn-tool-footer"><p>SSR content still available.</p><p class="tool-runtime-fallback__warning">Non-blocking warning: runtime entered compatibility mode.</p></footer></section>`;
     return true;
   }
 
