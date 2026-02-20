@@ -6,6 +6,10 @@ import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-templa
 import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
 import { validateToolDomContract as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
 import { createRuntimeMigrationLogger } from './runtime/runtime-migration-logger.js';
+import { detectToolCapabilities as defaultDetectToolCapabilities } from './runtime/tool-capability-matrix.js';
+import { safeDomMount as defaultSafeDomMount } from './runtime/safe-dom-mount.js';
+import { createToolExecutionContext as defaultCreateToolExecutionContext } from './runtime/tool-execution-context.js';
+import { legacyExecuteTool as defaultLegacyExecuteTool, releaseLegacyInitialization as defaultReleaseLegacyInitialization } from './runtime/legacy-execution-bridge.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 
@@ -33,6 +37,11 @@ export function createToolRuntime({
   legacyBootstrap = defaultLegacyBootstrap,
   templateBinder = defaultTemplateBinder,
   validateDomContract = defaultDomContractValidator,
+  detectToolCapabilities = defaultDetectToolCapabilities,
+  safeDomMount = defaultSafeDomMount,
+  createToolExecutionContext = defaultCreateToolExecutionContext,
+  legacyExecuteTool = defaultLegacyExecuteTool,
+  releaseLegacyInitialization = defaultReleaseLegacyInitialization,
   getRoot = () => document.getElementById('tool-root'),
   loadManifest: loadManifestOverride,
   importModule = (modulePath) => import(modulePath),
@@ -122,13 +131,72 @@ export function createToolRuntime({
     };
   }
 
-  function ensureRootFallback(root, slug) {
-    if (!root || root.firstElementChild) {
+  function ensureRootFallback(root, slug, { force = false } = {}) {
+    if (!root) {
       return false;
     }
 
-    root.innerHTML = `<section class="tool-runtime-fallback" data-tool-runtime-fallback="true"><h2>${slug}</h2><p>Tool UI is loading in compatibility mode.</p></section>`;
+    if (!force && root.firstElementChild) {
+      return false;
+    }
+
+    root.innerHTML = `<section class="tool-runtime-fallback" data-tool-runtime-fallback="true"><h2>${slug}</h2><p>Tool failed to initialize safely.</p><p>SSR content still available.</p><p class="tool-runtime-fallback__warning">Non-blocking warning: runtime entered compatibility mode.</p></section>`;
     return true;
+  }
+
+  function restoreSsrSnapshot(root, mountPlan) {
+    if (!root || mountPlan?.mode !== 'enhance' || !mountPlan?.hadSsrMarkup) {
+      return;
+    }
+
+    const hasSnapshotContent = Array.isArray(mountPlan.ssrSnapshot) && mountPlan.ssrSnapshot.length > 0;
+    if (!hasSnapshotContent) {
+      return;
+    }
+
+    const hasOriginalSsr = mountPlan.ssrSnapshot.some((node) => {
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return false;
+      }
+
+      return node.id && !document.getElementById(node.id);
+    });
+
+    if (!hasOriginalSsr) {
+      return;
+    }
+
+    const preserved = document.createElement('section');
+    preserved.hidden = true;
+    preserved.dataset.ssrPreserved = 'true';
+    for (const node of mountPlan.ssrSnapshot) {
+      preserved.appendChild(node.cloneNode(true));
+    }
+    root.appendChild(preserved);
+  }
+
+  function assertPostMount({ root, context, slug }) {
+    if (!root) {
+      throw new Error(`runtime assertion failed: root missing for "${slug}"`);
+    }
+
+    if (!root.firstElementChild) {
+      throw new Error(`runtime assertion failed: root is empty for "${slug}"`);
+    }
+
+    if (!context) {
+      throw new Error(`runtime assertion failed: execution context missing for "${slug}"`);
+    }
+  }
+
+  function assertPostDestroy(context, slug) {
+    if (!context) {
+      return;
+    }
+
+    if (context.listeners.length > 0 || context.cleanupCallbacks.length > 0) {
+      throw new Error(`runtime assertion failed: cleanup incomplete for "${slug}"`);
+    }
   }
 
   function emit(event, payload = {}) {
@@ -189,6 +257,11 @@ export function createToolRuntime({
 
     const { manifest, hasManifest } = await safeLoadManifest();
 
+    const executionContext = createToolExecutionContext({ slug, root, manifest });
+
+    const capabilitiesAtStart = detectToolCapabilities({ slug, manifest, root });
+    const mountPlan = safeDomMount(root, capabilitiesAtStart.mountMode);
+
     const styles = Array.isArray(manifest?.styles)
       ? manifest.styles.filter(Boolean)
       : [manifest?.cssPath].filter(Boolean);
@@ -213,6 +286,7 @@ export function createToolRuntime({
     };
 
     const templateLoaded = await safeLoadTemplate();
+    restoreSsrSnapshot(root, mountPlan);
 
     templateBinder(root, window.ToolNexusConfig ?? {});
 
@@ -295,16 +369,20 @@ export function createToolRuntime({
 
       let legacyBridgeUsed = false;
       try {
-        const result = await lifecycleAdapter({ module, slug, root, manifest });
+        const capabilities = detectToolCapabilities({ slug, module, manifest, root });
+        const result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
         const mounted = Boolean(result?.mounted ?? true);
-        if (typeof result?.cleanup === 'function') {
-          root[RUNTIME_CLEANUP_KEY] = result.cleanup;
-        }
+        executionContext.addCleanup(result?.cleanup);
         const shouldForceLegacyBootstrap = !mounted || !root.firstElementChild;
 
         if (shouldForceLegacyBootstrap) {
           legacyBridgeUsed = true;
-          const legacyResult = await legacyBootstrap({
+          const legacyExecution = await legacyExecuteTool({ slug, root, module, context: executionContext });
+          executionContext.addCleanup(legacyExecution.cleanup);
+          if (legacyExecution.mounted) {
+            executionContext.addCleanup(() => releaseLegacyInitialization(root, slug));
+          }
+          const legacyResult = legacyExecution.mounted ? legacyExecution : await legacyBootstrap({
             module,
             slug,
             root,
@@ -324,7 +402,8 @@ export function createToolRuntime({
             });
 
             if (!retryLegacyResult?.mounted && !root.firstElementChild) {
-              await legacyAutoInit({ slug, root, manifest });
+              const legacyAutoResult = await legacyAutoInit({ slug, root, manifest });
+              executionContext.addCleanup(legacyAutoResult.cleanup);
             }
           }
 
@@ -347,6 +426,7 @@ export function createToolRuntime({
         });
         logger.info(`Runtime classification for "${slug}": ${classification}.`, {
           classification,
+          mountPlan,
           templateLoaded,
           hasManifest,
           hasModulePath: Boolean(modulePath),
@@ -355,6 +435,11 @@ export function createToolRuntime({
         });
 
         emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
+        assertPostMount({ root, context: executionContext, slug });
+        root[RUNTIME_CLEANUP_KEY] = async () => {
+          await executionContext.destroy();
+          assertPostDestroy(executionContext, slug);
+        };
         logger.info(`Tool runtime mounted successfully for "${slug}".`);
       } catch (error) {
         const lifecycleContract = inspectLifecycleContract(module);
@@ -395,6 +480,7 @@ export function createToolRuntime({
         }
 
         logger.warn(`Tool runtime entered fallback recovery path for "${slug}".`, error);
+        ensureRootFallback(root, slug, { force: true });
       }
     };
 

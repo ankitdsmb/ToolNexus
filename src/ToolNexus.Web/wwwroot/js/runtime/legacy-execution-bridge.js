@@ -1,0 +1,101 @@
+let initializedRoots = new WeakMap();
+
+function isInitialized(root, slug) {
+  return initializedRoots.get(root)?.has(slug) === true;
+}
+
+function markInitialized(root, slug) {
+  const slugs = initializedRoots.get(root) ?? new Set();
+  slugs.add(slug);
+  initializedRoots.set(root, slugs);
+}
+
+function unmarkInitialized(root, slug) {
+  const slugs = initializedRoots.get(root);
+  if (!slugs) {
+    return;
+  }
+
+  slugs.delete(slug);
+  if (slugs.size === 0) {
+    initializedRoots.delete(root);
+  }
+}
+
+function callLegacyMethod(candidate, method, root, context) {
+  if (typeof candidate?.[method] !== 'function') {
+    return { invoked: false, value: undefined };
+  }
+
+  const fn = candidate[method];
+  const value = fn.length > 1 ? fn(root, context) : fn(root);
+  return { invoked: true, value };
+}
+
+function invokeLegacy(candidate, root, context) {
+  if (!candidate) {
+    return { invoked: false, cleanup: undefined, mode: 'none' };
+  }
+
+  const runToolResult = callLegacyMethod(candidate, 'runTool', root, context);
+  if (runToolResult.invoked) {
+    return {
+      invoked: true,
+      cleanup: typeof candidate.destroy === 'function' ? () => candidate.destroy(runToolResult.value, root, context) : undefined,
+      mode: 'runTool'
+    };
+  }
+
+  const initResult = callLegacyMethod(candidate, 'init', root, context);
+  if (initResult.invoked) {
+    return {
+      invoked: true,
+      cleanup: typeof candidate.destroy === 'function' ? () => candidate.destroy(initResult.value, root, context) : undefined,
+      mode: 'init'
+    };
+  }
+
+  return { invoked: false, cleanup: undefined, mode: 'none' };
+}
+
+export async function legacyExecuteTool({ slug, root, module, context } = {}) {
+  if (!root || !slug) {
+    return { mounted: false, mode: 'invalid-context', cleanup: undefined, alreadyInitialized: false };
+  }
+
+  if (isInitialized(root, slug)) {
+    return { mounted: true, mode: 'locked', cleanup: undefined, alreadyInitialized: true };
+  }
+
+  const candidates = [module, module?.default, module?.lifecycle, module?.default?.lifecycle].filter(Boolean);
+  for (const candidate of candidates) {
+    const result = invokeLegacy(candidate, root, context);
+    if (result.invoked) {
+      markInitialized(root, slug);
+      return { mounted: true, mode: `module.${result.mode}`, cleanup: result.cleanup, alreadyInitialized: false };
+    }
+  }
+
+  const globalResult = invokeLegacy(window, root, context);
+  if (globalResult.invoked) {
+    markInitialized(root, slug);
+    return { mounted: true, mode: `window.${globalResult.mode}`, cleanup: globalResult.cleanup, alreadyInitialized: false };
+  }
+
+  const registryCandidate = window.ToolNexusModules?.[slug];
+  const registryResult = invokeLegacy(registryCandidate, root, context);
+  if (registryResult.invoked) {
+    markInitialized(root, slug);
+    return { mounted: true, mode: `registry.${registryResult.mode}`, cleanup: registryResult.cleanup, alreadyInitialized: false };
+  }
+
+  return { mounted: false, mode: 'none', cleanup: undefined, alreadyInitialized: false };
+}
+
+export function releaseLegacyInitialization(root, slug) {
+  unmarkInitialized(root, slug);
+}
+
+export function resetLegacyBridgeForTesting() {
+  initializedRoots = new WeakMap();
+}
