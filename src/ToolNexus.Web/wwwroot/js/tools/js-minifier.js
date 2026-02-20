@@ -3,6 +3,7 @@ import { toUserError } from './js-minifier-errors.js';
 import { normalizeInput } from './js-minifier-normalizer.js';
 import {
   clearError,
+  destroyJsMinifierUi,
   ensureUi,
   getUiOptions,
   renderError,
@@ -15,6 +16,39 @@ import {
   updateStatus
 } from './js-minifier-ui.js';
 import { byteSize } from './js-minifier-utils.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
+
+const TOOL_ID = 'js-minifier';
+
+function resolveRoot() {
+  return document.querySelector('.tool-page[data-slug="js-minifier"]');
+}
+
+export function create(root = resolveRoot()) {
+  if (!root) return null;
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => {
+      ensureUi();
+      return { destroy: destroyJsMinifierUi };
+    },
+    destroy: () => destroyJsMinifierUi()
+  });
+}
+
+export function init(root = resolveRoot()) {
+  const handle = create(root);
+  if (!handle) return null;
+  handle.init();
+  return handle;
+}
+
+export function destroy(root = resolveRoot()) {
+  if (!root) return;
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+}
 
 export async function runTool(action, input) {
   ensureUi();
@@ -53,15 +87,9 @@ export async function runTool(action, input) {
   }
 }
 
-function boot() {
-  ensureUi();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot, { once: true });
-} else {
-  boot();
-}
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+});
 
 window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['js-minifier'] = { runTool };
+window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };

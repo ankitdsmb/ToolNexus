@@ -1,9 +1,11 @@
+import { getKeyboardEventManager } from '../keyboard-event-manager.js';
 import { normalizeInput } from './normalization.js';
 import { encodeHtmlEntities } from './encoder.js';
 import { decodeHtmlEntities } from './decoder.js';
 import { ConversionError, toUiError } from './errors.js';
 
 const LARGE_INPUT_THRESHOLD = 200000;
+const APP_INSTANCES = new WeakMap();
 
 export function runConversion(mode, input, options) {
   const normalized = normalizeInput(input, {
@@ -22,15 +24,16 @@ export function runConversion(mode, input, options) {
   return encodeHtmlEntities(normalized, options);
 }
 
-export function mountHtmlEntitiesTool() {
-  const root = document.querySelector('.html-entities-tool');
-  if (!root) return;
+export function mountHtmlEntitiesTool(root = document.querySelector('.html-entities-tool')) {
+  if (!root) return null;
+  if (APP_INSTANCES.has(root)) return APP_INSTANCES.get(root);
 
   const state = {
     mode: 'encode',
     busy: false
   };
 
+  const disposers = [];
   const input = root.querySelector('#inputEditor');
   const output = root.querySelector('#outputEditor');
   const convertBtn = root.querySelector('#convertBtn');
@@ -57,6 +60,12 @@ export function mountHtmlEntitiesTool() {
 
   const modeEncodeBtn = root.querySelector('#modeEncodeBtn');
   const modeDecodeBtn = root.querySelector('#modeDecodeBtn');
+
+  function on(el, ev, fn) {
+    if (!el) return;
+    el.addEventListener(ev, fn);
+    disposers.push(() => el.removeEventListener(ev, fn));
+  }
 
   function getOptions() {
     return {
@@ -153,33 +162,47 @@ export function mountHtmlEntitiesTool() {
 
   function maybeAutoConvert() {
     if (controls.autoConvert?.checked && input.value.length) {
-      convert();
+      void convert();
     }
   }
 
-  modeEncodeBtn.addEventListener('click', () => setMode('encode'));
-  modeDecodeBtn.addEventListener('click', () => setMode('decode'));
-  convertBtn.addEventListener('click', convert);
-  clearBtn.addEventListener('click', clearInput);
-  copyBtn.addEventListener('click', () => copyOutput().catch(() => showError(new ConversionError('Copy failed', 'Could not access clipboard.', 'Copy manually from output field.'))));
+  on(modeEncodeBtn, 'click', () => setMode('encode'));
+  on(modeDecodeBtn, 'click', () => setMode('decode'));
+  on(convertBtn, 'click', () => { void convert(); });
+  on(clearBtn, 'click', clearInput);
+  on(copyBtn, 'click', () => copyOutput().catch(() => showError(new ConversionError('Copy failed', 'Could not access clipboard.', 'Copy manually from output field.'))));
 
-  input.addEventListener('input', () => {
+  on(input, 'input', () => {
     updateStats();
     maybeAutoConvert();
   });
 
-  root.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      event.preventDefault();
-      convert();
-    }
+  const disposeKeyboard = getKeyboardEventManager().register({
+    root,
+    onKeydown: (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        void convert();
+      }
 
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
-      event.preventDefault();
-      clearInput();
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        clearInput();
+      }
     }
   });
 
   setMode(/&(?:#\d+|#x[\da-fA-F]+|[a-zA-Z]+);/.test(input.value) ? 'decode' : 'encode');
   updateStats();
+
+  const app = {
+    destroy() {
+      disposeKeyboard?.();
+      while (disposers.length) disposers.pop()?.();
+      APP_INSTANCES.delete(root);
+    }
+  };
+
+  APP_INSTANCES.set(root, app);
+  return app;
 }

@@ -1,4 +1,3 @@
-import { initializeUuidGeneratorUi } from './ui.js';
 import { generateUuidByVersion } from './engine.js';
 import { formatUuid } from './format.js';
 
@@ -20,8 +19,3 @@ export async function runTool(action, input) {
 
   return results.join('\n');
 }
-
-document.addEventListener('DOMContentLoaded', initializeUuidGeneratorUi);
-
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['uuid-generator'] = { runTool };
