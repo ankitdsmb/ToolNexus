@@ -13,9 +13,19 @@ TOKENS
   --text-xl: 22px;
   --text-2xl: clamp(32px, 4vw, 48px);
 
+  --type-micro: var(--text-2xs);
+  --type-caption: var(--text-xs);
+  --type-body: var(--text-sm);
+  --type-body-lg: var(--text-md);
+  --type-h3: 18px;
+  --type-h2: var(--text-lg);
+  --type-h1: 28px;
+  --type-display: var(--text-2xl);
+
   --line-tight: 1.15;
   --line-snug: 1.35;
   --line-base: 1.6;
+  --line-relaxed: 1.72;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -37,8 +47,8 @@ TOKENS
   --shadow-lg: 0 16px 34px rgba(15, 23, 42, 0.14);
 
   --motion-fast: 160ms;
-  --motion-base: 190ms;
-  --motion-slow: 220ms;
+  --motion-base: 170ms;
+  --motion-slow: 180ms;
   --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   --container-max: 1280px;
