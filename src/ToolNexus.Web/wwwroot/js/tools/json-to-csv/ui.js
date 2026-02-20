@@ -1,3 +1,4 @@
+import { getKeyboardEventManager } from '../keyboard-event-manager.js';
 import { parseJsonInput } from './parser.js';
 import { normalizeRows } from './normalizer.js';
 import { buildCsv } from './csv-engine.js';
@@ -11,29 +12,30 @@ const DELIMITER_MAP = {
 };
 
 const PREVIEW_ROW_LIMIT = 5000;
+const APP_INSTANCES = new WeakMap();
 
-function getElements() {
+function getElements(root = document) {
   return {
-    jsonInput: document.getElementById('jsonInput'),
-    csvOutput: document.getElementById('csvOutput'),
-    convertBtn: document.getElementById('convertBtn'),
-    clearBtn: document.getElementById('clearBtn'),
-    copyBtn: document.getElementById('copyBtn'),
-    downloadBtn: document.getElementById('downloadBtn'),
-    autoConvert: document.getElementById('autoConvertToggle'),
-    flattenToggle: document.getElementById('flattenToggle'),
-    includeNullToggle: document.getElementById('includeNullToggle'),
-    sanitizeToggle: document.getElementById('sanitizeToggle'),
-    prettyToggle: document.getElementById('prettyToggle'),
-    delimiterSelect: document.getElementById('delimiterSelect'),
-    arrayModeSelect: document.getElementById('arrayModeSelect'),
-    arraySeparatorInput: document.getElementById('arraySeparatorInput'),
-    statusText: document.getElementById('statusText'),
-    outputStats: document.getElementById('outputStats'),
-    errorBox: document.getElementById('errorBox'),
-    errorTitle: document.getElementById('errorTitle'),
-    errorDetail: document.getElementById('errorDetail'),
-    errorSuggestion: document.getElementById('errorSuggestion')
+    jsonInput: root.querySelector('#jsonInput'),
+    csvOutput: root.querySelector('#csvOutput'),
+    convertBtn: root.querySelector('#convertBtn'),
+    clearBtn: root.querySelector('#clearBtn'),
+    copyBtn: root.querySelector('#copyBtn'),
+    downloadBtn: root.querySelector('#downloadBtn'),
+    autoConvert: root.querySelector('#autoConvertToggle'),
+    flattenToggle: root.querySelector('#flattenToggle'),
+    includeNullToggle: root.querySelector('#includeNullToggle'),
+    sanitizeToggle: root.querySelector('#sanitizeToggle'),
+    prettyToggle: root.querySelector('#prettyToggle'),
+    delimiterSelect: root.querySelector('#delimiterSelect'),
+    arrayModeSelect: root.querySelector('#arrayModeSelect'),
+    arraySeparatorInput: root.querySelector('#arraySeparatorInput'),
+    statusText: root.querySelector('#statusText'),
+    outputStats: root.querySelector('#outputStats'),
+    errorBox: root.querySelector('#errorBox'),
+    errorTitle: root.querySelector('#errorTitle'),
+    errorDetail: root.querySelector('#errorDetail'),
+    errorSuggestion: root.querySelector('#errorSuggestion')
   };
 }
 
@@ -77,20 +79,29 @@ function getOptions(els) {
   };
 }
 
-export function mountJsonToCsvTool() {
-  const els = getElements();
+export function mountJsonToCsvTool(root = document) {
+  const els = getElements(root);
   if (!els.jsonInput || !els.csvOutput) {
-    return;
+    return null;
   }
 
-  if (els.convertBtn.dataset.jsonToCsvInitialized === 'true') {
-    return;
+  const ownerRoot = root instanceof Document
+    ? (els.jsonInput.closest('[data-tool="json-to-csv"], .tool-page, main, form, article, section') ?? els.jsonInput.parentElement ?? document.body)
+    : root;
+  if (APP_INSTANCES.has(ownerRoot)) {
+    return APP_INSTANCES.get(ownerRoot);
   }
-  els.convertBtn.dataset.jsonToCsvInitialized = 'true';
 
+  const disposers = [];
   let latestCsv = '';
   let converting = false;
   let autoConvertTimer = null;
+
+  const on = (el, ev, fn) => {
+    if (!el) return;
+    el.addEventListener(ev, fn);
+    disposers.push(() => el.removeEventListener(ev, fn));
+  };
 
   const syncActionState = () => {
     const hasInput = els.jsonInput.value.trim().length > 0;
@@ -102,7 +113,7 @@ export function mountJsonToCsvTool() {
     els.downloadBtn.disabled = converting || !hasOutput;
   };
 
-  const setProcessing = isProcessing => {
+  const setProcessing = (isProcessing) => {
     converting = isProcessing;
     els.convertBtn.textContent = isProcessing ? 'Converting…' : 'Convert';
     setStatus(els, isProcessing ? 'Processing JSON input…' : 'Ready');
@@ -170,13 +181,13 @@ export function mountJsonToCsvTool() {
 
     window.clearTimeout(autoConvertTimer);
     autoConvertTimer = window.setTimeout(() => {
-      runConversion();
+      void runConversion();
     }, 250);
   };
 
-  els.convertBtn.addEventListener('click', runConversion);
+  on(els.convertBtn, 'click', () => { void runConversion(); });
 
-  els.clearBtn.addEventListener('click', () => {
+  on(els.clearBtn, 'click', () => {
     els.jsonInput.value = '';
     els.csvOutput.value = '';
     latestCsv = '';
@@ -186,7 +197,7 @@ export function mountJsonToCsvTool() {
     syncActionState();
   });
 
-  els.copyBtn.addEventListener('click', async () => {
+  on(els.copyBtn, 'click', async () => {
     if (!latestCsv) {
       return;
     }
@@ -204,7 +215,7 @@ export function mountJsonToCsvTool() {
     }
   });
 
-  els.downloadBtn.addEventListener('click', () => {
+  on(els.downloadBtn, 'click', () => {
     if (!latestCsv) {
       return;
     }
@@ -213,7 +224,7 @@ export function mountJsonToCsvTool() {
     setStatus(els, 'CSV downloaded', 'success');
   });
 
-  els.jsonInput.addEventListener('input', () => {
+  on(els.jsonInput, 'input', () => {
     syncActionState();
     scheduleAutoConvert();
   });
@@ -226,22 +237,54 @@ export function mountJsonToCsvTool() {
     els.delimiterSelect,
     els.arrayModeSelect,
     els.arraySeparatorInput
-  ].forEach(control => {
-    control.addEventListener('change', scheduleAutoConvert);
+  ].forEach((control) => {
+    on(control, 'change', scheduleAutoConvert);
   });
 
-  window.addEventListener('keydown', event => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+  const disposeKeyboard = getKeyboardEventManager().register({
+    root: ownerRoot,
+    onKeydown: (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        void runConversion();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        els.clearBtn.click();
+      }
+    }
+  });
+
+
+  const onWindowKeydown = (event) => {
+    if (!(event.ctrlKey || event.metaKey)) return;
+
+    if (event.key === 'Enter') {
       event.preventDefault();
-      runConversion();
+      void runConversion();
     }
 
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+    if (event.key.toLowerCase() === 'l') {
       event.preventDefault();
       els.clearBtn.click();
     }
-  });
+  };
+  window.addEventListener('keydown', onWindowKeydown);
 
   updateOutputStats(els, 0, 0, false);
   syncActionState();
+
+  const app = {
+    destroy() {
+      disposeKeyboard?.();
+      window.removeEventListener('keydown', onWindowKeydown);
+      window.clearTimeout(autoConvertTimer);
+      while (disposers.length) disposers.pop()?.();
+      APP_INSTANCES.delete(ownerRoot);
+    }
+  };
+
+  APP_INSTANCES.set(ownerRoot, app);
+  return app;
 }

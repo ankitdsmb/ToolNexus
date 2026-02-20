@@ -1,3 +1,4 @@
+import { getKeyboardEventManager } from '../keyboard-event-manager.js';
 import { toUserError } from './errors.js';
 import { generateUuidByVersion } from './engine.js';
 import { formatUuid } from './format.js';
@@ -5,38 +6,47 @@ import { clampQuantity, downloadTextFile, nowIso, UUID_LIMITS } from './helpers.
 import { createInitialState } from './state.js';
 
 const CHUNK_SIZE = 200;
+const APP_INSTANCES = new WeakMap();
 
-function byId(id) {
-  return document.getElementById(id);
+function byId(id, root = document) {
+  return root.querySelector(`#${id}`);
 }
 
-export function initializeUuidGeneratorUi() {
-  const root = byId('uuidGeneratorApp');
-  if (!root) return;
+export function initializeUuidGeneratorUi(root = byId('uuidGeneratorApp')?.closest('#uuidGeneratorApp')) {
+  root = root || byId('uuidGeneratorApp');
+  if (!root) return null;
+  if (APP_INSTANCES.has(root)) return APP_INSTANCES.get(root);
 
   const state = createInitialState();
+  const disposers = [];
   const dom = {
-    version: byId('uuidVersion'),
-    quantity: byId('uuidQuantity'),
-    caseMode: byId('uuidCase'),
-    removeHyphens: byId('uuidNoHyphen'),
-    wrapper: byId('uuidWrapper'),
-    customTemplate: byId('uuidTemplate'),
-    enforceUnique: byId('uuidUnique'),
-    autoGenerate: byId('uuidAutoGenerate'),
-    generate: byId('uuidGenerateBtn'),
-    clear: byId('uuidClearBtn'),
-    copyOne: byId('uuidCopyBtn'),
-    copyAll: byId('uuidCopyAllBtn'),
-    download: byId('uuidDownloadBtn'),
-    output: byId('uuidOutput'),
-    status: byId('uuidStatus'),
-    indicator: byId('uuidIndicator'),
-    metrics: byId('uuidMetrics'),
-    errorPanel: byId('uuidErrorPanel'),
-    errorTitle: byId('uuidErrorTitle'),
-    errorText: byId('uuidErrorText')
+    version: byId('uuidVersion', root),
+    quantity: byId('uuidQuantity', root),
+    caseMode: byId('uuidCase', root),
+    removeHyphens: byId('uuidNoHyphen', root),
+    wrapper: byId('uuidWrapper', root),
+    customTemplate: byId('uuidTemplate', root),
+    enforceUnique: byId('uuidUnique', root),
+    autoGenerate: byId('uuidAutoGenerate', root),
+    generate: byId('uuidGenerateBtn', root),
+    clear: byId('uuidClearBtn', root),
+    copyOne: byId('uuidCopyBtn', root),
+    copyAll: byId('uuidCopyAllBtn', root),
+    download: byId('uuidDownloadBtn', root),
+    output: byId('uuidOutput', root),
+    status: byId('uuidStatus', root),
+    indicator: byId('uuidIndicator', root),
+    metrics: byId('uuidMetrics', root),
+    errorPanel: byId('uuidErrorPanel', root),
+    errorTitle: byId('uuidErrorTitle', root),
+    errorText: byId('uuidErrorText', root)
   };
+
+  function on(el, ev, fn) {
+    if (!el) return;
+    el.addEventListener(ev, fn);
+    disposers.push(() => el.removeEventListener(ev, fn));
+  }
 
   function syncState() {
     state.version = dom.version.value;
@@ -142,47 +152,61 @@ export function initializeUuidGeneratorUi() {
     clearError();
   }
 
-  dom.generate.addEventListener('click', generateBatch);
-  dom.clear.addEventListener('click', clearAll);
-  dom.copyOne.addEventListener('click', () => {
-    if (state.generated[0]) writeClipboard(state.generated[0], 'Copied first UUID.');
+  on(dom.generate, 'click', () => { void generateBatch(); });
+  on(dom.clear, 'click', clearAll);
+  on(dom.copyOne, 'click', () => {
+    if (state.generated[0]) void writeClipboard(state.generated[0], 'Copied first UUID.');
   });
-  dom.copyAll.addEventListener('click', () => {
-    if (state.generated.length > 0) writeClipboard(state.generated.join('\n'), 'Copied all UUIDs.');
+  on(dom.copyAll, 'click', () => {
+    if (state.generated.length > 0) void writeClipboard(state.generated.join('\n'), 'Copied all UUIDs.');
   });
-  dom.download.addEventListener('click', () => {
+  on(dom.download, 'click', () => {
     if (state.generated.length > 0) {
       downloadTextFile(`uuids-${Date.now()}.txt`, state.generated.join('\n'));
       dom.status.textContent = 'Downloaded UUID list.';
     }
   });
 
-  root.addEventListener('change', (event) => {
+  on(root, 'change', (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
     syncState();
     if (state.autoGenerate && !state.generating) {
-      generateBatch();
+      void generateBatch();
     }
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (!event.ctrlKey) return;
+  const disposeKeyboard = getKeyboardEventManager().register({
+    root,
+    onKeydown: (event) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
 
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      if (!state.generating) {
-        generateBatch();
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (!state.generating) {
+          void generateBatch();
+        }
       }
-    }
 
-    if (event.key.toLowerCase() === 'l') {
-      event.preventDefault();
-      clearAll();
+      if (event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        clearAll();
+      }
     }
   });
 
   dom.quantity.min = String(UUID_LIMITS.minQuantity);
   dom.quantity.max = String(UUID_LIMITS.maxQuantity);
   renderOutput();
+
+  const app = {
+    destroy() {
+      disposeKeyboard?.();
+      while (disposers.length) disposers.pop()?.();
+      APP_INSTANCES.delete(root);
+    }
+  };
+
+  APP_INSTANCES.set(root, app);
+  return app;
 }

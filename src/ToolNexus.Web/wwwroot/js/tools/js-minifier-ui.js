@@ -1,4 +1,5 @@
 import { JS_MINIFIER_CONFIG, COMPRESSION_MODES } from './js-minifier-config.js';
+import { getKeyboardEventManager } from './keyboard-event-manager.js';
 import { byteSize, computeReduction, debounce, downloadTextFile, escapeHtml, formatBytes } from './js-minifier-utils.js';
 
 const state = {
@@ -6,7 +7,8 @@ const state = {
   preserveLicenseComments: true,
   compressionMode: COMPRESSION_MODES.basic,
   isProcessing: false,
-  lastOutput: ''
+  lastOutput: '',
+  disposeKeyboard: null
 };
 
 function dom() {
@@ -178,14 +180,19 @@ function bindUiEvents() {
     triggerAutoRun();
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (!(event.ctrlKey || event.metaKey)) return;
+  if (!state.disposeKeyboard) {
+    state.disposeKeyboard = getKeyboardEventManager().register({
+      root: dom()?.page,
+      onKeydown: (event) => {
+        if (!(event.ctrlKey || event.metaKey)) return;
 
-    if (event.key.toLowerCase() === 'l') {
-      event.preventDefault();
-      document.getElementById('jsMinifierClearBtn')?.click();
-    }
-  });
+        if (event.key.toLowerCase() === 'l') {
+          event.preventDefault();
+          document.getElementById('jsMinifierClearBtn')?.click();
+        }
+      }
+    });
+  }
 }
 
 export function setButtonsEnabled() {
@@ -273,4 +280,10 @@ export function renderLargeFileHint(input) {
   const bytes = byteSize(input);
   if (bytes < JS_MINIFIER_CONFIG.largeFileThresholdBytes) return;
   updateStatus(`Large input detected (${formatBytes(bytes)}). Optimized processing enabled.`, 'info');
+}
+
+
+export function destroyJsMinifierUi() {
+  state.disposeKeyboard?.();
+  state.disposeKeyboard = null;
 }

@@ -1,8 +1,11 @@
+import { getKeyboardEventManager } from '../keyboard-event-manager.js';
 import { decodeUrlInput } from './decoder.js';
 import { toUiError } from './errors.js';
 import { createInitialState } from './state.js';
 import { COPY_RESET_MS, LARGE_INPUT_THRESHOLD, PROCESSING_YIELD_MS, STATUS } from './constants.js';
 import { formatCharCount } from './utils.js';
+
+const APP_INSTANCES = new WeakMap();
 
 function setError(elements, error) {
   const uiError = toUiError(error);
@@ -27,14 +30,19 @@ function readOptions(elements) {
   };
 }
 
-export function mountUrlDecodeTool() {
-  const root = document.querySelector('.url-decode-tool');
+export function mountUrlDecodeTool(root = document.querySelector('.url-decode-tool')) {
   if (!root) {
-    return;
+    return null;
+  }
+
+  if (APP_INSTANCES.has(root)) {
+    return APP_INSTANCES.get(root);
   }
 
   const state = createInitialState();
+  const disposers = [];
   const elements = {
+    root,
     input: root.querySelector('#urlDecodeInput'),
     output: root.querySelector('#urlDecodeOutput'),
     status: root.querySelector('#urlDecodeStatus'),
@@ -53,6 +61,12 @@ export function mountUrlDecodeTool() {
     plusAsSpaceToggle: root.querySelector('#plusAsSpaceToggle'),
     strictModeToggle: root.querySelector('#strictModeToggle')
   };
+
+  function on(el, ev, handler) {
+    if (!el) return;
+    el.addEventListener(ev, handler);
+    disposers.push(() => el.removeEventListener(ev, handler));
+  }
 
   function syncUi() {
     elements.inputCount.textContent = formatCharCount(elements.input.value);
@@ -128,38 +142,55 @@ export function mountUrlDecodeTool() {
   function onInputChanged() {
     syncUi();
     if (elements.autoDecodeToggle.checked && elements.input.value.length) {
-      decode();
+      void decode();
     }
   }
 
-  elements.decodeBtn.addEventListener('click', decode);
-  elements.clearBtn.addEventListener('click', clearAll);
-  elements.copyBtn.addEventListener('click', () => {
+  on(elements.decodeBtn, 'click', () => { void decode(); });
+  on(elements.clearBtn, 'click', clearAll);
+  on(elements.copyBtn, 'click', () => {
     copyOutput().catch(() => {
       elements.status.textContent = STATUS.ERROR;
       setError(elements, new Error('Clipboard unavailable'));
     });
   });
 
-  elements.input.addEventListener('input', onInputChanged);
-  elements.autoDecodeToggle.addEventListener('change', () => {
+  on(elements.input, 'input', onInputChanged);
+  on(elements.autoDecodeToggle, 'change', () => {
     if (elements.autoDecodeToggle.checked && elements.input.value.length) {
-      decode();
+      void decode();
     }
   });
 
-  root.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      event.preventDefault();
-      decode();
-    }
+  const disposeKeyboard = getKeyboardEventManager().register({
+    root,
+    onKeydown: (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        void decode();
+      }
 
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
-      event.preventDefault();
-      clearAll();
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        clearAll();
+      }
     }
   });
 
   elements.status.textContent = STATUS.READY;
   syncUi();
+
+  const app = {
+    destroy() {
+      disposeKeyboard?.();
+      while (disposers.length) {
+        disposers.pop()?.();
+      }
+      clearTimeout(state.lastCopyTimer);
+      APP_INSTANCES.delete(root);
+    }
+  };
+
+  APP_INSTANCES.set(root, app);
+  return app;
 }

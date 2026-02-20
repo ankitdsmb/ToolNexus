@@ -1,23 +1,43 @@
-import { normalizeSqlInput } from './sql-formatter/normalizer.js';
-import { tokenizeSql } from './sql-formatter/tokenizer.js';
-import { formatSqlTokens } from './sql-formatter/formatter.js';
+import { createSqlFormatterApp } from './sql-formatter.app.js';
+import { runSqlFormatter } from './sql-formatter.api.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
 
-export async function runTool(action, input) {
-  const normalized = normalizeSqlInput(input);
-  if (action === 'minify') {
-    return normalized.replace(/\s+/g, ' ').trim();
-  }
+const TOOL_ID = 'sql-formatter';
 
-  return formatSqlTokens(tokenizeSql(normalized), {
-    keywordCase: 'upper',
-    indentSize: 4,
-    useTabs: false,
-    commaStyle: 'trailing',
-    pretty: true,
-    preserveComments: true,
-    preserveBlankLines: true
+function resolveRoot() {
+  return document.querySelector('.tool-page[data-slug="sql-formatter"]');
+}
+
+export function create(root = resolveRoot()) {
+  if (!root) return null;
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => createSqlFormatterApp(root),
+    destroy: (app) => app?.destroy?.()
   });
 }
 
+export function init(root = resolveRoot()) {
+  const handle = create(root);
+  if (!handle) return null;
+  handle.init();
+  return handle;
+}
+
+export function destroy(root = resolveRoot()) {
+  if (!root) return;
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+}
+
+export async function runTool(action, input, options = {}) {
+  return runSqlFormatter(action, input, options);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+});
+
 window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['sql-formatter'] = { runTool };
+window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };
