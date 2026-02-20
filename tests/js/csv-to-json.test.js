@@ -3,6 +3,7 @@ import {
   CsvParseError,
   coerceValue,
   convertCsvToJson,
+  destroyCsvToJsonApp,
   formatError,
   initCsvToJsonApp,
   normalizeHeaders,
@@ -11,9 +12,11 @@ import {
   runTool,
   transformRowsToObjects
 } from '../../src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js';
+import { getKeyboardEventManager, resetKeyboardEventManagerForTesting } from '../../src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js';
+import { getToolPlatformKernel, resetToolPlatformKernelForTesting } from '../../src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js';
 
 const buildDom = (autoConvert = false) => {
-  document.body.innerHTML = `<div class="csv-json-page">
+  document.body.innerHTML = `<div class="tool csv-json-page" data-tool="csv-to-json">
     <button id="convertBtn"></button><button id="clearBtn"></button><button id="copyBtn"></button><button id="downloadBtn"></button>
     <select id="delimiterSelect"><option value="," selected>,</option><option value="\t">tab</option></select>
     <input id="useHeaderToggle" type="checkbox" checked />
@@ -28,6 +31,11 @@ const buildDom = (autoConvert = false) => {
   global.URL.createObjectURL = jest.fn(() => 'blob:abc');
   global.URL.revokeObjectURL = jest.fn();
 };
+
+beforeEach(() => {
+  resetToolPlatformKernelForTesting();
+  resetKeyboardEventManagerForTesting();
+});
 
 describe('csv-to-json core logic', () => {
   test('normalization and parser edge cases', () => {
@@ -69,14 +77,15 @@ describe('csv-to-json core logic', () => {
   });
 });
 
-describe('csv-to-json dom behavior', () => {
+describe('csv-to-json lifecycle behavior', () => {
   test('idempotent init, convert, copy, download, clear and shortcuts', async () => {
     buildDom();
-    initCsvToJsonApp(document, window);
-    initCsvToJsonApp(document, window);
+    initCsvToJsonApp(document);
+    initCsvToJsonApp(document);
 
     const csvInput = document.getElementById('csvInput');
     csvInput.value = 'a,b\n1,2';
+    csvInput.focus();
     csvInput.dispatchEvent(new Event('input', { bubbles: true }));
     await new Promise((r) => setTimeout(r, 200));
 
@@ -92,15 +101,29 @@ describe('csv-to-json dom behavior', () => {
     expect(clickSpy).toHaveBeenCalled();
     clickSpy.mockRestore();
 
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true, bubbles: true }));
     expect(csvInput.value).toBe('');
+  });
+
+  test('remount stress x50 and cleanup', () => {
+    buildDom();
+    const root = document.querySelector('[data-tool="csv-to-json"]');
+
+    for (let index = 0; index < 50; index += 1) {
+      initCsvToJsonApp(document);
+      destroyCsvToJsonApp(document);
+    }
+
+    expect(getToolPlatformKernel().getLifecycleState('csv-to-json', root)).toBe('missing');
+    expect(getKeyboardEventManager().getRegisteredHandlerCount()).toBe(0);
   });
 
   test('error, auto-convert, empty-input and guard branches', async () => {
     buildDom(true);
-    initCsvToJsonApp(document, window);
+    initCsvToJsonApp(document);
 
     const csvInput = document.getElementById('csvInput');
+    csvInput.focus();
     csvInput.value = 'a,b\n"oops';
     csvInput.dispatchEvent(new Event('input', { bubbles: true }));
     await new Promise((r) => setTimeout(r, 200));
@@ -108,26 +131,23 @@ describe('csv-to-json dom behavior', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(document.getElementById('errorBox').hidden).toBe(false);
 
-    // hit branch 307/320 by dispatching even when result is empty
     document.getElementById('copyBtn').dispatchEvent(new Event('click', { bubbles: true }));
     document.getElementById('downloadBtn').dispatchEvent(new Event('click', { bubbles: true }));
 
-    // hit line 298 auto convert via useHeader change
     csvInput.value = 'a\n1';
     document.getElementById('useHeaderToggle').checked = false;
     document.getElementById('useHeaderToggle').dispatchEvent(new Event('change', { bubbles: true }));
     await new Promise((r) => setTimeout(r, 0));
     expect(document.getElementById('customHeadersField').hidden).toBe(false);
 
-    // empty input branch via keyboard shortcut conversion
     csvInput.value = '';
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true }));
     await new Promise((r) => setTimeout(r, 0));
     expect(document.getElementById('statusText').textContent).toBe('Input is empty.');
   });
 
   test('safe no-op without root', () => {
     document.body.innerHTML = '<div></div>';
-    expect(() => initCsvToJsonApp(document, window)).not.toThrow();
+    expect(() => initCsvToJsonApp(document)).not.toThrow();
   });
 });
