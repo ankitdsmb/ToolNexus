@@ -47,8 +47,8 @@ public sealed class ToolsControllerRegressionHarnessTests
         var model = Assert.IsType<ToolPageViewModel>(view.Model);
         Assert.Same(descriptor, model.Tool);
         Assert.Equal("https://localhost:5001/tools/" + slug, model.Seo.CanonicalUrl);
-        Assert.Equal(content.MetaTitle, model.Seo.Title);
-        Assert.Equal(content.MetaDescription, model.Seo.Description);
+        Assert.Equal(content.SeoTitle, model.Seo.Title);
+        Assert.Equal(content.SeoDescription, model.Seo.Description);
     }
 
     [Fact]
@@ -169,11 +169,15 @@ public sealed class ToolsControllerRegressionHarnessTests
         Id = 1,
         Slug = slug,
         Title = "Content title",
-        ShortDescription = "short",
-        LongArticle = "long",
-        MetaTitle = "Content Seo Title",
-        MetaDescription = "Content Seo Description",
-        Keywords = "k1,k2"
+        SeoTitle = "Content Seo Title",
+        SeoDescription = "Content Seo Description",
+        Intro = "short",
+        LongDescription = "long",
+        Keywords = "k1,k2",
+        Steps = [new ToolStep { Id = 1, Slug = slug, Title = "Step", Description = "Do this", SortOrder = 0 }],
+        Examples = [new ToolExample { Id = 1, Slug = slug, Title = "Example", Input = "in", Output = "out", SortOrder = 0 }],
+        Faq = [new ToolFaq { Id = 1, Slug = slug, Question = "Q", Answer = "A", SortOrder = 0 }],
+        UseCases = ["Use case"]
     };
 
     private sealed class StubToolCatalogService(AppToolDescriptor? descriptor, IReadOnlyCollection<string>? categories = null, IReadOnlyCollection<AppToolDescriptor>? byCategory = null) : IToolCatalogService
