@@ -1,3 +1,6 @@
+import { getKeyboardEventManager } from './keyboard-event-manager.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
+
 const VIEWER_STATE = {
   parsed: null,
   filteredRows: [],
@@ -13,7 +16,8 @@ const VIEWER_STATE = {
     sanitizeCells: false,
     detectTypes: true
   },
-  rawInput: ''
+  rawInput: '',
+  keyboardDispose: null
 };
 
 const DELIMITER_OPTIONS = {
@@ -219,23 +223,28 @@ function bindUiEvents() {
     await processAndRender(text);
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (!event.ctrlKey && !event.metaKey) return;
+  if (!VIEWER_STATE.keyboardDispose) {
+    VIEWER_STATE.keyboardDispose = getKeyboardEventManager().register({
+      root: document.querySelector('.tool-page[data-slug="csv-viewer"]'),
+      onKeydown: (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
 
-    if (event.key.toLowerCase() === 'l') {
-      event.preventDefault();
-      clearViewer(true);
-      return;
-    }
+        if (event.key.toLowerCase() === 'l') {
+          event.preventDefault();
+          clearViewer(true);
+          return;
+        }
 
-    if (event.key.toLowerCase() === 'f') {
-      const target = document.getElementById('csvSearchInput');
-      if (!target) return;
-      event.preventDefault();
-      target.focus();
-      target.select();
-    }
-  });
+        if (event.key.toLowerCase() === 'f') {
+          const target = document.getElementById('csvSearchInput');
+          if (!target) return;
+          event.preventDefault();
+          target.focus();
+          target.select();
+        }
+      }
+    });
+  }
 }
 
 function clearViewer(clearInput) {
@@ -784,5 +793,46 @@ if (document.readyState === 'loading') {
   initializeIfCsvViewerPage();
 }
 
+
+
+const TOOL_ID = 'csv-viewer';
+
+function resolveRoot() {
+  return document.querySelector('.tool-page[data-slug="csv-viewer"]');
+}
+
+export function create(root = resolveRoot()) {
+  if (!root) return null;
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => {
+      ensureViewerUi();
+      return { destroy };
+    },
+    destroy: () => {
+      VIEWER_STATE.keyboardDispose?.();
+      VIEWER_STATE.keyboardDispose = null;
+    }
+  });
+}
+
+export function init(root = resolveRoot()) {
+  const handle = create(root);
+  if (!handle) return null;
+  handle.init();
+  return handle;
+}
+
+export function destroy(root = resolveRoot()) {
+  if (!root) return;
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+});
+
 window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['csv-viewer'] = { runTool };
+window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };
