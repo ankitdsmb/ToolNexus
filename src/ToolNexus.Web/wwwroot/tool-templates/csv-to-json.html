@@ -1,8 +1,8 @@
-<article class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="@Model.Tool.Slug">
+<article class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="">
     <header class="csv-json-page__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
-            <p>@Model.Tool.SeoDescription</p>
+            <h1><span data-bind="tool.title"></span></h1>
+            <p><span data-bind="tool.seoDescription"></span></p>
         </div>
         <span class="csv-json-page__badge">Client-side processing only</span>
     </header>
@@ -76,7 +76,7 @@
         <section class="csv-json-panel">
             <h2>CSV Input</h2>
             <p class="csv-json-panel__hint">Ctrl/Cmd + Enter to convert. Ctrl/Cmd + L to clear.</p>
-            <textarea id="csvInput" class="csv-json-editor" spellcheck="false">@Model.Tool.ExampleInput</textarea>
+            <textarea id="csvInput" class="csv-json-editor" spellcheck="false" data-bind="tool.exampleInput"></textarea>
         </section>
 
         <section class="csv-json-panel">

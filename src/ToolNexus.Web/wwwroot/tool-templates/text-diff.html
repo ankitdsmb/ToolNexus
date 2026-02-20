@@ -1,8 +1,8 @@
-<article class="text-diff-page tool-page" data-slug="@Model.Tool.Slug" data-tool="text-diff">
+<article class="text-diff-page tool-page" data-slug="" data-tool="text-diff">
     <header class="text-diff-page__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
-            <p>@Model.Tool.SeoDescription</p>
+            <h1><span data-bind="tool.title"></span></h1>
+            <p><span data-bind="tool.seoDescription"></span></p>
         </div>
         <span class="text-diff-page__badge">Client-side processing</span>
     </header>
@@ -39,7 +39,7 @@
     <section class="text-diff-editors" aria-label="Text inputs">
         <div class="text-diff-panel">
             <label for="leftInput">Original text</label>
-            <textarea id="leftInput" class="tool-textarea tool-textarea--mono" spellcheck="false">@Model.Tool.ExampleInput</textarea>
+            <textarea id="leftInput" class="tool-textarea tool-textarea--mono" spellcheck="false" data-bind="tool.exampleInput"></textarea>
         </div>
         <div class="text-diff-panel">
             <label for="rightInput">Modified text</label>
