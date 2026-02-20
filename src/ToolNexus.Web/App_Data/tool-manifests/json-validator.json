@@ -1,5 +1,7 @@
 {
   "slug": "json-validator",
   "viewName": "JsonValidator",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/json-validator.js",
+  "cssPath": "/css/pages/json-validator.css"
 }

@@ -1,5 +1,7 @@
 {
   "slug": "json-formatter",
   "viewName": "JsonFormatter",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/json-formatter.js",
+  "cssPath": "/css/pages/json-formatter.css"
 }

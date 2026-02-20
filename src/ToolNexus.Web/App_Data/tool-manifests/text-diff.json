@@ -1,5 +1,7 @@
 {
   "slug": "text-diff",
   "viewName": "TextDiff",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/text-diff.js",
+  "cssPath": "/css/tools/text-diff.css"
 }

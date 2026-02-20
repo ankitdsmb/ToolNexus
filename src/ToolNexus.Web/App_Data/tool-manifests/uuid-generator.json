@@ -1,5 +1,7 @@
 {
   "slug": "uuid-generator",
   "viewName": "uuidGenerator",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/uuid-generator.js",
+  "cssPath": "/css/tools/uuid-generator.css"
 }

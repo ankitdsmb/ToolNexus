@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Models;
 using ToolNexus.Web.Options;
+using ToolNexus.Web.Services;
 
 namespace ToolNexus.Web.Controllers;
 
@@ -12,7 +13,7 @@ public sealed class ToolsController(
     IToolCatalogService toolCatalogService,
     IToolContentService toolContentService,
     IOptions<ApiSettings> apiSettings,
-    Services.IToolViewResolver toolViewResolver) : Controller
+    IToolRegistryService toolRegistryService) : Controller
 {
     [HttpGet("")]
     [OutputCache(Duration = 300)]
@@ -38,6 +39,25 @@ public sealed class ToolsController(
             });
 
         return Json(tools);
+    }
+
+    [HttpGet("manifest/{slug}")]
+    [OutputCache(Duration = 300, VaryByRouteValueNames = ["slug"])]
+    public IActionResult Manifest(string slug)
+    {
+        var descriptor = toolRegistryService.GetBySlug(slug);
+        if (descriptor is null)
+        {
+            return NotFound();
+        }
+
+        return Json(new
+        {
+            slug = descriptor.Slug,
+            viewName = descriptor.ViewName,
+            modulePath = descriptor.ModulePath,
+            cssPath = descriptor.CssPath
+        });
     }
 
     [HttpGet("{segment}")]
@@ -67,6 +87,7 @@ public sealed class ToolsController(
             JsonLd = BuildJsonLd(tool, content, canonicalUrl)
         };
 
+        var descriptor = toolRegistryService.GetBySlug(tool.Slug);
         var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
         var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
         var viewModel = new ToolPageViewModel
@@ -75,11 +96,12 @@ public sealed class ToolsController(
             ApiBaseUrl = apiBaseUrl,
             ToolExecutionPathPrefix = apiPathPrefix,
             Seo = seo,
-            Content = content
+            Content = content,
+            RuntimeModulePath = descriptor?.ModulePath,
+            RuntimeCssPath = descriptor?.CssPath
         };
 
-        var viewName = toolViewResolver.ResolveViewName(tool.Slug);
-        return View(viewName, viewModel);
+        return View("ToolShell", viewModel);
     }
 
     private static string ResolveApiBaseUrl(string? configuredApiBaseUrl)

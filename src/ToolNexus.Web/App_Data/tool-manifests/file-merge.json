@@ -1,5 +1,7 @@
 {
   "slug": "file-merge",
   "viewName": "fileMerge",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/file-merge/main.js",
+  "cssPath": "/css/tools/file-merge.css"
 }
