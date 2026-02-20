@@ -1,0 +1,10 @@
+{
+  "Slug": "regex-tester",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/regex-tester.js",
+  "TemplatePath": "/tool-templates/regex-tester.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": ""
+}

@@ -1,0 +1,10 @@
+{
+  "Slug": "html-formatter",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/html-formatter.js",
+  "TemplatePath": "/tool-templates/html-formatter.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": ""
+}

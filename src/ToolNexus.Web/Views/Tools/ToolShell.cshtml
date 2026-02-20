@@ -55,7 +55,12 @@
     }
 </section>
 
-<div id="tool-root" data-tool-slug="@Model.Tool.Slug"></div>
+<div id="tool-root" data-tool-slug="@Model.Tool.Slug">
+    <section class="tool-runtime-fallback" data-ssr-fallback="true">
+        <h2>@Model.Tool.Title</h2>
+        <p>@Model.Tool.SeoDescription</p>
+    </section>
+</div>
 
 @section Scripts {
     <script>

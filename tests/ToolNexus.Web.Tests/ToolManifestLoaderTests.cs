@@ -31,6 +31,30 @@ public sealed class ToolManifestLoaderTests
 
 
 
+
+    [Fact]
+    public void LoadAll_GeneratesMissingManifestFromPlatformRegistry()
+    {
+        using var fixture = new ManifestFixture();
+        fixture.WritePlatformManifest("""
+        {
+          "tools": [
+            { "slug": "regex-tester" }
+          ]
+        }
+        """);
+        fixture.WriteWebFile("js/tools/regex-tester.js", "console.log('regex');");
+
+        var loader = fixture.CreateLoader();
+
+        var manifests = loader.LoadAll();
+
+        var generated = Assert.Single(manifests);
+        Assert.Equal("regex-tester", generated.Slug);
+        Assert.Equal("ToolShell", generated.ViewName);
+        Assert.Equal("/js/tools/regex-tester.js", generated.ModulePath);
+    }
+
     [Fact]
     public void LoadAll_RemovesMissingDependenciesAndStyles()
     {
@@ -149,6 +173,11 @@ public sealed class ToolManifestLoaderTests
         }
 
         private string ManifestDirectory => Path.Combine(rootPath, "App_Data", "tool-manifests");
+
+        public void WritePlatformManifest(string content)
+        {
+            File.WriteAllText(Path.Combine(rootPath, "tools.manifest.json"), content);
+        }
 
         public void WriteManifest(string name, string content)
         {

@@ -24,6 +24,7 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
     private readonly string manifestDirectory = Path.Combine(hostEnvironment.ContentRootPath, "App_Data", "tool-manifests");
     private readonly string viewDirectory = Path.Combine(hostEnvironment.ContentRootPath, "Views", "Tools");
     private readonly string templateDirectory = Path.Combine(string.IsNullOrWhiteSpace(hostEnvironment.WebRootPath) ? Path.Combine(hostEnvironment.ContentRootPath, "wwwroot") : hostEnvironment.WebRootPath, "tool-templates");
+    private readonly string? platformManifestPath = ResolvePlatformManifestPath(hostEnvironment.ContentRootPath);
 
     public IReadOnlyCollection<ToolManifest> LoadAll()
     {
@@ -82,6 +83,21 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             manifests.Add(generated);
             seenSlugs.Add(generated.Slug);
             logger.LogInformation("Generated missing manifest for tool slug '{ToolSlug}'.", generated.Slug);
+        }
+
+        foreach (var discovered in DiscoverPlatformManifestTools())
+        {
+            if (seenSlugs.Contains(discovered.Slug))
+            {
+                continue;
+            }
+
+            var generated = BuildGeneratedManifest(discovered);
+            PersistManifest(generated);
+            EnsureTemplate(generated);
+            manifests.Add(generated);
+            seenSlugs.Add(generated.Slug);
+            logger.LogInformation("Generated missing platform manifest for tool slug '{ToolSlug}'.", generated.Slug);
         }
 
         return manifests.OrderBy(x => x.Slug, StringComparer.OrdinalIgnoreCase).ToArray();
@@ -222,12 +238,7 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
 
     private ToolManifest BuildGeneratedManifest((string ViewName, string Slug, string ViewPath) toolView)
     {
-        var modulePath = $"/js/tools/{toolView.Slug}.js";
-        var nestedModulePath = $"/js/tools/{toolView.Slug}/main.js";
-        if (File.Exists(Path.Combine(contentRootPath, "wwwroot", nestedModulePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar))))
-        {
-            modulePath = nestedModulePath;
-        }
+        var modulePath = ResolveModulePath(toolView.Slug);
 
         var styles = new[]
         {
@@ -258,6 +269,40 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         File.WriteAllText(manifestPath, json + Environment.NewLine);
     }
 
+    private IEnumerable<(string ViewName, string Slug, string ViewPath)> DiscoverPlatformManifestTools()
+    {
+        if (string.IsNullOrWhiteSpace(platformManifestPath) || !File.Exists(platformManifestPath))
+        {
+            yield break;
+        }
+
+        PlatformManifest? parsedManifest;
+        try
+        {
+            parsedManifest = JsonSerializer.Deserialize<PlatformManifest>(File.ReadAllText(platformManifestPath), SerializerOptions);
+        }
+        catch (JsonException ex)
+        {
+            logger.LogWarning(ex, "Skipping invalid platform manifest JSON file: {PlatformManifestPath}", platformManifestPath);
+            yield break;
+        }
+
+        if (parsedManifest?.Tools is not { Count: > 0 })
+        {
+            yield break;
+        }
+
+        foreach (var tool in parsedManifest.Tools)
+        {
+            if (string.IsNullOrWhiteSpace(tool.Slug))
+            {
+                continue;
+            }
+
+            yield return ("ToolShell", tool.Slug.Trim(), string.Empty);
+        }
+    }
+
     private void EnsureTemplate(ToolManifest manifest)
     {
         var templatePath = Path.Combine(templateDirectory, $"{manifest.Slug}.html");
@@ -266,10 +311,17 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             return;
         }
 
+        if (string.Equals(manifest.ViewName, "ToolShell", StringComparison.OrdinalIgnoreCase))
+        {
+            File.WriteAllText(templatePath, BuildGenericTemplate(manifest.Slug) + Environment.NewLine, Encoding.UTF8);
+            logger.LogInformation("Generated generic runtime template for slug '{ToolSlug}'.", manifest.Slug);
+            return;
+        }
+
         var viewPath = Path.Combine(viewDirectory, $"{manifest.ViewName}.cshtml");
         if (!File.Exists(viewPath))
         {
-            logger.LogWarning("Missing source view for tool template generation: {ViewPath}", viewPath);
+            logger.LogWarning("Missing source view for tool template generation: {ViewPath}. Runtime will use lifecycle fallback for '{ToolSlug}'.", viewPath, manifest.Slug);
             return;
         }
 
@@ -305,6 +357,11 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         return string.Join('\n', lines).Trim();
     }
 
+    private static string BuildGenericTemplate(string slug)
+    {
+        return $"<section class=\"tool-generic-template\" data-tool-slug=\"{slug}\"><div class=\"tool-generic-template__body\">Loading {slug}...</div></section>";
+    }
+
     private static string ToSlug(string viewName)
     {
         var value = viewName
@@ -315,5 +372,53 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         value = value.Replace("_", "-");
 
         return value.ToLowerInvariant();
+    }
+
+    private string ResolveModulePath(string slug)
+    {
+        foreach (var candidate in GetModuleCandidates(slug))
+        {
+            if (IsExistingWebAssetPath(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return NormalizeWebPath($"/js/tools/{slug}.js");
+    }
+
+    private static IEnumerable<string> GetModuleCandidates(string slug)
+    {
+        yield return NormalizeWebPath($"/js/tools/{slug}.js");
+        yield return NormalizeWebPath($"/js/tools/{slug}/main.js");
+        yield return NormalizeWebPath($"/js/tools/{slug}/index.js");
+        yield return NormalizeWebPath($"/js/tools/{slug}.app.js");
+    }
+
+    private static string? ResolvePlatformManifestPath(string contentRoot)
+    {
+        var directory = new DirectoryInfo(contentRoot);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "tools.manifest.json");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return null;
+    }
+
+    private sealed class PlatformManifest
+    {
+        public List<PlatformManifestTool> Tools { get; set; } = [];
+    }
+
+    private sealed class PlatformManifestTool
+    {
+        public string Slug { get; set; } = string.Empty;
     }
 }
