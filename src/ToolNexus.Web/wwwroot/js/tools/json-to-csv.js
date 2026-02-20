@@ -2,12 +2,20 @@ import { parseJsonInput } from './json-to-csv/parser.js';
 import { normalizeRows } from './json-to-csv/normalizer.js';
 import { buildCsv } from './json-to-csv/csv-engine.js';
 import { toUserError } from './json-to-csv/errors.js';
+import { mountJsonToCsvTool } from './json-to-csv/ui.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
+
+const TOOL_ID = 'json-to-csv';
 
 const DELIMITER_MAP = {
   comma: ',',
   semicolon: ';',
   tab: '\t'
 };
+
+function resolveRoot() {
+  return document.querySelector('.tool-page[data-slug="json-to-csv"]') ?? document.querySelector('[data-tool="json-to-csv"]') ?? document;
+}
 
 function resolveOptions(options = {}) {
   return {
@@ -18,6 +26,29 @@ function resolveOptions(options = {}) {
     arrayMode: options.arrayMode ?? 'stringify',
     arraySeparator: options.arraySeparator ?? ', '
   };
+}
+
+export function create(root = resolveRoot()) {
+  if (!root) return null;
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => mountJsonToCsvTool(root),
+    destroy: (app) => app?.destroy?.()
+  });
+}
+
+export function init(root = resolveRoot()) {
+  const handle = create(root);
+  if (!handle) return null;
+  handle.init();
+  return handle;
+}
+
+export function destroy(root = resolveRoot()) {
+  if (!root) return;
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
 export async function runTool(action, input, options = {}) {
@@ -71,3 +102,10 @@ export async function runTool(action, input, options = {}) {
 }
 
 runTool.configure = (defaults = {}) => (action, input, options = {}) => runTool(action, input, { ...defaults, ...options });
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+});
+
+window.ToolNexusModules = window.ToolNexusModules || {};
+window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };
