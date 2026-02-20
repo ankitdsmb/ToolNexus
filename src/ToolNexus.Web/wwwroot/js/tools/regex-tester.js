@@ -21,6 +21,25 @@ export {
   validateRegexInputs
 };
 
+export function create(root) {
+  return { root, handle: null };
+}
+
+export function init(context) {
+  if (!context?.root) {
+    return context ?? null;
+  }
+
+  return {
+    ...context,
+    handle: mountRegexTester(context.root)
+  };
+}
+
+export function destroy(context) {
+  context?.handle?.destroy?.();
+}
+
 export function mountRegexTester(root) {
   if (!root) {
     return null;
@@ -52,4 +71,4 @@ if (typeof document !== 'undefined') {
 }
 
 window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[MODULE_KEY] = { runTool, initRegexTesterApp };
+window.ToolNexusModules[MODULE_KEY] = { create, init, runTool, destroy, initRegexTesterApp };
