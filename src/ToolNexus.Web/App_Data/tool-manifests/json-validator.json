@@ -3,5 +3,7 @@
   "viewName": "JsonValidator",
   "category": "",
   "modulePath": "/js/tools/json-validator.js",
-  "cssPath": "/css/pages/json-validator.css"
+  "cssPath": "/css/pages/json-validator.css",
+  "templatePath": "/tool-templates/json-validator.html",
+  "dependencies": []
 }

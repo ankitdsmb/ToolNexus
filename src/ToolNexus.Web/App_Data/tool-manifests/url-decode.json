@@ -3,5 +3,7 @@
   "viewName": "urlDecode",
   "category": "",
   "modulePath": "/js/tools/url-decode.js",
-  "cssPath": "/css/tools/url-decode.css"
+  "cssPath": "/css/tools/url-decode.css",
+  "templatePath": "/tool-templates/url-decode.html",
+  "dependencies": []
 }

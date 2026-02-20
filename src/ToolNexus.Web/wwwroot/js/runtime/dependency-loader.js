@@ -1,6 +1,6 @@
 import { runtimeObserver } from './runtime-observer.js';
 
-export function createDependencyLoader({ observer = runtimeObserver, loadScript } = {}) {
+export function createDependencyLoader({ observer = runtimeObserver, loadScript, loadCss } = {}) {
   const cache = new Map();
 
   const scriptLoader = typeof loadScript === 'function'
@@ -24,10 +24,31 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript 
       script.dataset.runtimeDependency = src;
       script.addEventListener('load', () => {
         script.dataset.runtimeDependencyReady = 'true';
+        if (src.endsWith('/lib/monaco/vs/loader.js') && typeof window.require === 'function') {
+          window.require.config({ paths: { vs: '/lib/monaco/vs' } });
+        }
         resolve();
       }, { once: true });
       script.addEventListener('error', () => reject(new Error(`Failed to load dependency script: ${src}`)), { once: true });
       document.head.appendChild(script);
+    });
+
+  const cssLoader = typeof loadCss === 'function'
+    ? loadCss
+    : (href) => new Promise((resolve, reject) => {
+      const existing = document.querySelector(`link[data-runtime-dependency-css="${href}"]`);
+      if (existing) {
+        resolve();
+        return;
+      }
+
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.dataset.runtimeDependencyCss = href;
+      link.addEventListener('load', () => resolve(), { once: true });
+      link.addEventListener('error', () => reject(new Error(`Failed to load dependency stylesheet: ${href}`)), { once: true });
+      document.head.appendChild(link);
     });
 
   function emit(event, payload) {
@@ -47,7 +68,7 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript 
     const startedAt = globalThis.performance?.now?.() ?? Date.now();
     emit('dependency_script_load_start', { toolSlug, metadata: { dependency: src } });
 
-    const pending = scriptLoader(src)
+    const pending = (src.endsWith('.css') ? cssLoader(src) : scriptLoader(src))
       .then(() => {
         emit('dependency_script_load_complete', {
           toolSlug,

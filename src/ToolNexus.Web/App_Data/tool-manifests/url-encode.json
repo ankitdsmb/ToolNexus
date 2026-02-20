@@ -3,5 +3,7 @@
   "viewName": "urlEncode",
   "category": "",
   "modulePath": "/js/tools/url-encode.js",
-  "cssPath": "/css/tools/url-encode.css"
+  "cssPath": "/css/tools/url-encode.css",
+  "templatePath": "/tool-templates/url-encode.html",
+  "dependencies": []
 }

@@ -1,0 +1,65 @@
+<article class="html-entities-tool" data-slug="" aria-label="HTML entities tool">
+    <header class="html-entities-tool__header">
+        <div>
+            <h1></h1>
+            <p class="html-entities-tool__description">Encode or decode HTML entities safely with deterministic UTF-8 handling.</p>
+        </div>
+        <span class="html-entities-badge">Client-side processing</span>
+    </header>
+
+    <section class="html-entities-workspace" aria-label="HTML entities workspace">
+        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesInputHeading">
+            <div class="html-entities-panel__header">
+                <h2 id="htmlEntitiesInputHeading">Input</h2>
+                <p id="inputStats" class="html-entities-meta">0 chars</p>
+            </div>
+
+            <div class="html-entities-mode" role="group" aria-label="Conversion mode">
+                <button id="modeEncodeBtn" class="tool-btn tool-btn--outline is-active" type="button" data-mode="encode" aria-pressed="true">Encode mode</button>
+                <button id="modeDecodeBtn" class="tool-btn tool-btn--outline" type="button" data-mode="decode" aria-pressed="false">Decode mode</button>
+            </div>
+
+            <label for="inputEditor" class="html-entities-label">Source text</label>
+            <textarea id="inputEditor" class="tool-textarea tool-textarea--mono" rows="16" placeholder="Paste text or HTML entities here"></textarea>
+
+            <div class="html-entities-options" aria-label="Encoding options">
+                <label><input id="autoConvertToggle" type="checkbox" /> Auto convert</label>
+                <label><input id="encodeAllToggle" type="checkbox" /> Encode all characters</label>
+                <label><input id="unsafeOnlyToggle" type="checkbox" checked /> Encode unsafe characters only</label>
+                <label><input id="preferNamedToggle" type="checkbox" checked /> Prefer named entities</label>
+                <label><input id="numericToggle" type="checkbox" /> Use numeric entities</label>
+                <label><input id="hexToggle" type="checkbox" /> Use hex entities</label>
+                <label><input id="preserveFormattingToggle" type="checkbox" checked /> Preserve spaces/newlines</label>
+            </div>
+
+            <div class="html-entities-actions">
+                <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
+                <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
+            </div>
+            <p class="html-entities-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Convert · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
+        </section>
+
+        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesOutputHeading">
+            <div class="html-entities-panel__header">
+                <h2 id="htmlEntitiesOutputHeading">Output</h2>
+                <p id="statusText" class="html-entities-meta">Ready</p>
+            </div>
+
+            <div id="processingIndicator" class="html-entities-processing" hidden>Processing…</div>
+
+            <div id="errorBox" class="html-entities-error" role="alert" hidden>
+                <h3 id="errorTitle"></h3>
+                <p id="errorMessage"></p>
+                <p id="errorAction"></p>
+            </div>
+
+            <label for="outputEditor" class="html-entities-label">Converted text (safe plain text)</label>
+            <textarea id="outputEditor" class="tool-textarea tool-textarea--mono" rows="16" readonly placeholder="Output appears here"></textarea>
+
+            <div class="html-entities-actions">
+                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
+            </div>
+            <p id="outputStats" class="html-entities-meta">0 chars</p>
+        </section>
+    </section>
+</article>

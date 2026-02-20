@@ -71,6 +71,19 @@ describe('runtime observability', () => {
 
     await importFailureRuntime.bootstrapToolRuntime();
 
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="beta-import"></div>';
+    const dependencyPassImportFailureRuntime = createToolRuntime({
+      observer,
+      templateLoader: async (_slug, root) => { root.innerHTML = '<div class="runtime-template"></div>'; },
+      loadManifest: async () => ({ modulePath: '/mock/module.js', dependencies: ['dep-ok.js'] }),
+      importModule: async () => {
+        throw new Error('import failed');
+      },
+      dependencyLoader: createDependencyLoader({ observer, loadScript: async () => {} })
+    });
+
+    await dependencyPassImportFailureRuntime.bootstrapToolRuntime();
+
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="gamma"></div>';
     const mountFailureRuntime = createToolRuntime({
       observer,

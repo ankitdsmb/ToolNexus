@@ -47,7 +47,7 @@ export function createToolRuntime({
 
       const templateStartedAt = now();
       emit('template_load_start', { toolSlug: slug });
-      await templateLoader(slug, root);
+      await templateLoader(slug, root, { templatePath: manifest.templatePath });
       emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
 
       templateBinder(root, window.ToolNexusConfig ?? {});
@@ -63,6 +63,7 @@ export function createToolRuntime({
           duration: now() - dependencyStartedAt,
           error: error?.message ?? String(error)
         });
+        throw error;
       }
 
       const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
