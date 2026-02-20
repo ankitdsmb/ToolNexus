@@ -6,36 +6,25 @@ function isGenericLoadingTemplate(template, slug) {
   return normalized.includes('tool-generic-template') && normalized.includes(expected);
 }
 
-function buildLegacyScaffoldTemplate(slug) {
+function buildGenericContractTemplate(slug) {
   return `
-    <article class="tool-page" data-slug="${slug}" data-tool="${slug}">
-      <header class="tool-page__heading">
-        <div>
-          <h1>${slug}</h1>
-          <p>Compatibility scaffold loaded by ToolShell runtime.</p>
-        </div>
-      </header>
-      <section class="tool-toolbar">
-        <div class="tool-toolbar__actions">
-          <button id="runBtn" class="tool-btn tool-btn--primary" type="button"><span class="tool-btn__label">Run</span></button>
-        </div>
-        <div class="tool-page__action-selector"></div>
-      </section>
-      <section id="errorMessage" class="tool-error" hidden></section>
-      <section class="tool-workspace">
-        <div class="tool-workspace__pane">
-          <h2>Input</h2>
-          <textarea id="inputEditor" rows="14" spellcheck="false"></textarea>
-        </div>
-        <div class="tool-workspace__pane">
-          <h2>Output</h2>
-          <textarea id="outputEditor" rows="14" spellcheck="false"></textarea>
-        </div>
-      </section>
-      <p id="editorShortcutHint" class="tool-shortcut-hint">Ctrl/Cmd + Enter to run.</p>
-      <p id="resultStatus" class="tool-result-status">Ready.</p>
-    </article>
+    <section class="tool-page" data-slug="${slug}" data-template-contract="generic">
+      <div class="tool-layout">
+        <section class="tool-layout__panel">
+          <textarea id="inputEditor" class="tool-editor"></textarea>
+        </section>
+        <section class="tool-panel--output">
+          <textarea id="outputField" class="tool-editor"></textarea>
+        </section>
+      </div>
+    </section>
   `;
+}
+
+function validateGenericTemplateContract(root) {
+  if (!root.querySelector('.tool-layout__panel')) {
+    throw new Error('Template contract violation.');
+  }
 }
 
 export async function loadToolTemplate(slug, root, { fetchImpl = fetch, templatePath } = {}) {
@@ -68,12 +57,18 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
     throw new Error(`tool-template-loader: template for "${slug}" is empty.`);
   }
 
-  const template = isGenericLoadingTemplate(rawTemplate, slug)
-    ? buildLegacyScaffoldTemplate(slug)
+  const usedLegacyFallback = isGenericLoadingTemplate(rawTemplate, slug);
+  const template = usedLegacyFallback
+    ? buildGenericContractTemplate(slug)
     : rawTemplate;
 
   templateCache.set(slug, template);
   root.innerHTML = template;
+
+  if (usedLegacyFallback || root.querySelector('[data-template-contract="generic"]')) {
+    validateGenericTemplateContract(root);
+  }
+
   return template;
 }
 
