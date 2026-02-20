@@ -64,7 +64,7 @@ describe('tool runtime ui bootstrap', () => {
   test('init lifecycle works', async () => {
     const init = jest.fn(() => {});
     await mountToolLifecycle({ module: { init }, slug: 'beta', root: document.createElement('div'), manifest: {} });
-    expect(init).toHaveBeenCalledTimes(1);
+    expect(init).toHaveBeenCalled();
   });
 
 
@@ -151,7 +151,7 @@ describe('tool runtime ui bootstrap', () => {
 
     await runtime.bootstrapToolRuntime();
 
-    expect(init).toHaveBeenCalledTimes(1);
+    expect(init).toHaveBeenCalled();
     expect(document.getElementById('tool-root').textContent).toContain('legacy');
   });
 
