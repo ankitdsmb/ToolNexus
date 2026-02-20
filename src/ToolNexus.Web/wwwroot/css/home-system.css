@@ -126,6 +126,7 @@
 }
 
 .tool-section__header,
+.workflow-section__header,
 .trust-section__header,
 .social-section__header {
   display: grid;
@@ -180,12 +181,14 @@
 }
 
 .grid,
+.workflow-grid,
 .trust-grid,
 .testimonial-grid {
   gap: var(--home-block-gap);
 }
 
 .card,
+.workflow-card,
 .trust-stat,
 .privacy-card,
 .testimonial-card {
@@ -195,6 +198,69 @@
   box-shadow: none;
   padding: var(--home-card-padding);
   transition: transform var(--home-transition), background-color var(--home-transition), box-shadow var(--home-transition), border-color var(--home-transition);
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workflow-card {
+  display: grid;
+  gap: var(--home-micro-gap);
+  align-content: start;
+}
+
+.workflow-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.workflow-card p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.workflow-card__link {
+  width: fit-content;
+  margin-top: 8px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.workflow-card__link:hover {
+  text-decoration: underline;
+}
+
+.faq-panel {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--home-layer-card);
+  padding: var(--home-card-padding);
+  display: grid;
+  gap: 16px;
+}
+
+.faq-panel h3 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+}
+
+.faq-panel__list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.faq-panel__list dt {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.faq-panel__list dd {
+  margin: 0;
+  color: var(--text-secondary);
 }
 
 .card {
@@ -350,6 +416,7 @@
   }
 
   .card,
+  .workflow-card,
   .testimonial-card,
   .privacy-card,
   .trust-links {
@@ -368,6 +435,7 @@
   }
 
   .grid,
+  .workflow-grid,
   .trust-stats,
   .testimonial-grid {
     grid-template-columns: 1fr;
