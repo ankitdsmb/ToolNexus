@@ -5,14 +5,51 @@ import { createState } from './state.js';
 import { formatBytes, lineCount } from './utils.js';
 import { validateWithSchema } from './schema.js';
 import { buildTreeView } from './tree.js';
+import { getKeyboardEventManager } from '../keyboard-event-manager.js';
 
-export function initializeJsonValidator(root) {
-  const state = createState();
-  const dom = selectDom(root);
+const APP_INSTANCES = new WeakMap();
 
-  bindEvents(dom, state);
-  refreshMetrics(dom, '');
-  updateActionAvailability(dom);
+class JsonValidatorApp {
+  constructor(root) {
+    this.root = root;
+    this.state = createState();
+    this.dom = selectDom(root);
+    this.abortController = new AbortController();
+    this.disposeKeyboardHandler = null;
+
+    bindEvents(this.dom, this.state, {
+      signal: this.abortController.signal,
+      root,
+      registerKeyboardHandler: (config) => getKeyboardEventManager().register(config),
+      setKeyboardDisposer: (dispose) => {
+        this.disposeKeyboardHandler = dispose;
+      }
+    });
+    refreshMetrics(this.dom, '');
+    updateActionAvailability(this.dom);
+  }
+
+  destroy() {
+    window.clearTimeout(this.state.autoValidateTimer);
+    this.disposeKeyboardHandler?.();
+    this.disposeKeyboardHandler = null;
+    this.abortController.abort();
+    APP_INSTANCES.delete(this.root);
+  }
+}
+
+export function createJsonValidatorApp(root) {
+  if (!root) {
+    return null;
+  }
+
+  if (APP_INSTANCES.has(root)) {
+    return APP_INSTANCES.get(root);
+  }
+
+  const app = new JsonValidatorApp(root);
+  APP_INSTANCES.set(root, app);
+  return app;
 }
 
 function selectDom(root) {
@@ -49,33 +86,35 @@ function selectDom(root) {
   };
 }
 
-function bindEvents(dom, state) {
-  dom.validateBtn?.addEventListener('click', () => runValidation(dom, state));
-  dom.formatBtn?.addEventListener('click', () => handleFormat(dom, state));
-  dom.copyBtn?.addEventListener('click', () => navigator.clipboard.writeText(dom.input.value ?? ''));
-  dom.downloadBtn?.addEventListener('click', () => downloadValidatedJson(state.lastValidJson));
-  dom.clearBtn?.addEventListener('click', () => clearAll(dom, state));
+function bindEvents(dom, state, runtime) {
+  const listenerOptions = { signal: runtime.signal };
+
+  dom.validateBtn?.addEventListener('click', () => runValidation(dom, state), listenerOptions);
+  dom.formatBtn?.addEventListener('click', () => handleFormat(dom, state), listenerOptions);
+  dom.copyBtn?.addEventListener('click', () => navigator.clipboard.writeText(dom.input.value ?? ''), listenerOptions);
+  dom.downloadBtn?.addEventListener('click', () => downloadValidatedJson(state.lastValidJson), listenerOptions);
+  dom.clearBtn?.addEventListener('click', () => clearAll(dom, state), listenerOptions);
 
   dom.autoValidateToggle?.addEventListener('change', () => {
     state.autoValidateEnabled = dom.autoValidateToggle.checked;
-  });
+  }, listenerOptions);
 
   dom.strictModeToggle?.addEventListener('change', () => {
     state.strictModeEnabled = dom.strictModeToggle.checked;
-  });
+  }, listenerOptions);
 
   dom.schemaModeToggle?.addEventListener('change', () => {
     state.schemaModeEnabled = dom.schemaModeToggle.checked;
     dom.schemaInput.hidden = !state.schemaModeEnabled;
     dom.schemaLabel.hidden = !state.schemaModeEnabled;
-  });
+  }, listenerOptions);
 
   dom.treeViewToggle?.addEventListener('change', () => {
     state.treeViewEnabled = dom.treeViewToggle.checked;
     if (!state.treeViewEnabled) {
       dom.treeViewPanel.hidden = true;
     }
-  });
+  }, listenerOptions);
 
   dom.input?.addEventListener('input', () => {
     const rawInput = dom.input.value ?? '';
@@ -88,16 +127,18 @@ function bindEvents(dom, state) {
 
     window.clearTimeout(state.autoValidateTimer);
     state.autoValidateTimer = window.setTimeout(() => runValidation(dom, state), AUTO_VALIDATE_DEBOUNCE_MS);
-  });
+  }, listenerOptions);
 
   dom.schemaInput?.addEventListener('input', () => {
     if (state.autoValidateEnabled && state.schemaModeEnabled) {
       window.clearTimeout(state.autoValidateTimer);
       state.autoValidateTimer = window.setTimeout(() => runValidation(dom, state), AUTO_VALIDATE_DEBOUNCE_MS);
     }
-  });
+  }, listenerOptions);
 
-  window.addEventListener('keydown', (event) => {
+  const disposeKeyboardHandler = runtime.registerKeyboardHandler({
+    root: runtime.root,
+    onKeydown: (event) => {
     if (!(event.ctrlKey || event.metaKey)) {
       return;
     }
@@ -112,7 +153,10 @@ function bindEvents(dom, state) {
       event.preventDefault();
       clearAll(dom, state);
     }
+    }
   });
+
+  runtime.setKeyboardDisposer(disposeKeyboardHandler);
 }
 
 async function runValidation(dom, state) {
