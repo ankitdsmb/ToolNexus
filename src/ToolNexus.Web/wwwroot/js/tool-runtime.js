@@ -12,6 +12,8 @@ import { safeDomMount as defaultSafeDomMount } from './runtime/safe-dom-mount.js
 import { createToolExecutionContext as defaultCreateToolExecutionContext } from './runtime/tool-execution-context.js';
 import { legacyExecuteTool as defaultLegacyExecuteTool, releaseLegacyInitialization as defaultReleaseLegacyInitialization } from './runtime/legacy-execution-bridge.js';
 import { createToolStateRegistry as defaultCreateToolStateRegistry } from './runtime/tool-state-registry.js';
+import { createRuntimeObservability as defaultCreateRuntimeObservability } from './runtime/runtime-observability.js';
+import { classifyRuntimeError } from './runtime/error-classification-engine.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -66,7 +68,8 @@ export function createToolRuntime({
   importModule = (modulePath) => import(modulePath),
   healRuntime = async () => false,
   now = () => (globalThis.performance?.now?.() ?? Date.now()),
-  createToolStateRegistry = defaultCreateToolStateRegistry
+  createToolStateRegistry = defaultCreateToolStateRegistry,
+  createRuntimeObservability = defaultCreateRuntimeObservability
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -75,6 +78,7 @@ export function createToolRuntime({
   const fallbackLogger = createRuntimeMigrationLogger({ channel: 'fallback' });
   let lastError = null;
   const stateRegistry = createToolStateRegistry();
+  const observability = createRuntimeObservability({ now });
   const runtimeMetrics = {
     toolsMountedSuccessfully: 0,
     legacyAdapterUsage: 0,
@@ -287,6 +291,7 @@ export function createToolRuntime({
   }
 
   function emit(event, payload = {}) {
+    observability.record(event, payload);
     try {
       observer?.emit?.(event, payload);
     } catch {
@@ -303,9 +308,13 @@ export function createToolRuntime({
     const runtimeApi = (toolNexus.runtime ??= {});
     runtimeApi.getDiagnostics = () => ({
       ...runtimeMetrics,
-      registry: stateRegistry.summary()
+      registry: stateRegistry.summary(),
+      observability: observability.getSnapshot().metrics
     });
     runtimeApi.getLastError = () => lastError;
+    runtimeApi.getObservabilitySnapshot = () => observability.getSnapshot();
+    runtimeApi.getMigrationInsights = () => observability.getMigrationInsights();
+    runtimeApi.getDashboardContract = () => observability.getDashboardContract();
   }
 
   function detectToolClassification({ hasManifest, lifecycleContract, modulePath, legacyBridgeUsed, mountError }) {
@@ -428,7 +437,8 @@ export function createToolRuntime({
         emit('dependency_failure', {
           toolSlug: slug,
           duration: now() - dependencyStartedAt,
-          error: error?.message ?? String(error)
+          error: error?.message ?? String(error),
+          errorCategory: classifyRuntimeError({ stage: 'dependency', message: error?.message, eventName: 'dependency_failure' })
         });
         dependencyLogger.warn(`Dependency loading failed for "${slug}"; continuing execution.`, error);
       }
@@ -496,6 +506,7 @@ export function createToolRuntime({
         } catch (error) {
           stateRegistry.incrementRetry(stateKey);
           runtimeMetrics.initRetriesPerformed += 1;
+          emit('init_retry', { toolSlug: slug, metadata: { phase: 'lifecycle-init' } });
 
           const preRetryValidation = normalizeDomValidation(validateDomContract(root));
           if (!preRetryValidation.isValid) {
@@ -514,6 +525,7 @@ export function createToolRuntime({
 
         if (result?.normalized) {
           runtimeMetrics.legacyAdapterUsage += 1;
+          emit('compatibility_mode_used', { toolSlug: slug, modeUsed: 'legacy' });
         }
         if (result?.autoDestroyGenerated) {
           runtimeMetrics.autoDestroyGenerated += 1;
@@ -527,6 +539,7 @@ export function createToolRuntime({
 
         if (shouldForceLegacyBootstrap) {
           legacyBridgeUsed = true;
+          emit('compatibility_mode_used', { toolSlug: slug, modeUsed: 'fallback' });
           const legacyExecution = await legacyExecuteTool({ slug, root, module, context: executionContext });
           executionContext.addCleanup(legacyExecution.cleanup);
           if (legacyExecution.mounted) {
@@ -584,7 +597,11 @@ export function createToolRuntime({
           lifecycle: lifecycleContract
         });
 
-        emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
+        emit('mount_success', {
+          toolSlug: slug,
+          duration: now() - mountStartedAt,
+          modeUsed: legacyBridgeUsed ? 'legacy' : 'modern'
+        });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
         stateRegistry.setPhase(stateKey, 'mounted');
         runtimeMetrics.toolsMountedSuccessfully += 1;
@@ -610,7 +627,9 @@ export function createToolRuntime({
         emit('mount_failure', {
           toolSlug: slug,
           duration: now() - mountStartedAt,
-          error: error?.message ?? String(error)
+          error: error?.message ?? String(error),
+          modeUsed: legacyBridgeUsed ? 'legacy' : 'fallback',
+          errorCategory: classifyRuntimeError({ stage: 'mount', message: error?.message, eventName: 'mount_failure' })
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
 
@@ -637,6 +656,7 @@ export function createToolRuntime({
           await new Promise((resolve) => setTimeout(resolve, 0));
           stateRegistry.incrementRetry(stateKey);
           runtimeMetrics.initRetriesPerformed += 1;
+          emit('init_retry', { toolSlug: slug, metadata: { phase: 'healing-loop' } });
         }
 
         if (healedByCompatibilityFlow) {
@@ -727,7 +747,8 @@ export function createToolRuntime({
     getLastError: () => lastError,
     getDiagnostics: () => ({
       ...runtimeMetrics,
-      registry: stateRegistry.summary()
+      registry: stateRegistry.summary(),
+      observability: observability.getSnapshot().metrics
     })
   };
 }

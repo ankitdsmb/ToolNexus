@@ -205,6 +205,31 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseOutputCache();
 
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/internal/runtime-diagnostics-contract", () => Results.Json(new
+    {
+        schemaVersion = "v1",
+        dashboardContract = new[]
+        {
+            new
+            {
+                toolSlug = "string",
+                mountStatus = "success|failed|fallback",
+                modeUsed = "modern|legacy|fallback",
+                timingData = new
+                {
+                    mountDurationMs = "number",
+                    initializationDurationMs = "number",
+                    dependencyLoadMs = "number"
+                },
+                errorCategory = "dom_contract_issue|lifecycle_error|dependency_failure|manifest_missing|unknown_runtime_exception"
+            }
+        },
+        source = "window.ToolNexus.runtime.getObservabilitySnapshot()"
+    }));
+}
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
