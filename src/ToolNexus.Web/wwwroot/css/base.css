@@ -14,7 +14,8 @@ body {
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font: 400 var(--text-md)/var(--line-base) var(--font-sans);
+  font: 400 var(--type-body-lg)/var(--line-relaxed) var(--font-sans);
+  letter-spacing: -0.01em;
   text-rendering: optimizeLegibility;
 }
 
@@ -36,10 +37,13 @@ button {
 
 input, textarea, select {
   width: 100%;
+  min-height: var(--control-md);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--bg-tertiary);
   padding: var(--space-3) var(--space-4);
+  font-size: var(--type-body);
+  line-height: var(--line-base);
   transition: border-color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
@@ -90,26 +94,38 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: var(--text-2xl);
-  line-height: 1.05;
-  font-weight: 760;
+  font-size: var(--type-display);
+  line-height: 1.08;
+  font-weight: 750;
 }
 
 h2 {
-  font-size: var(--text-xl);
+  font-size: var(--type-h1);
   line-height: 1.15;
   font-weight: 700;
 }
 
 h3 {
-  font-size: var(--text-lg);
+  font-size: var(--type-h2);
   line-height: 1.2;
-  font-weight: 660;
+  font-weight: 680;
 }
 
 p {
   margin: 0;
+  font-size: var(--type-body);
+  line-height: var(--line-base);
   color: var(--text-secondary);
+}
+
+small { font-size: var(--type-caption); }
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
 }
 
 /* ==========================

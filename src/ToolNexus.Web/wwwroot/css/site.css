@@ -9,6 +9,8 @@ TOKENS
 :root {
   --panel-bg: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary)), color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-secondary)));
   --surface-hover-shift: translateY(-1px);
+  --panel-padding: clamp(var(--space-4), 1.6vw, var(--space-5));
+  --section-gap: clamp(var(--space-5), 2.2vw, var(--space-6));
 }
 
 /* ==========================
@@ -89,7 +91,7 @@ LAYOUT SYSTEM
 .static-page__section,
 .tool-page__heading {
   display: grid;
-  gap: clamp(var(--space-4), 1.8vw, var(--space-5));
+  gap: var(--section-gap);
 }
 
 .tool-grid,
@@ -345,7 +347,7 @@ details,
 .json-panel,
 .json-formatter-hero,
 .tool-card {
-  padding: clamp(var(--space-4), 2vw, var(--space-5));
+  padding: var(--panel-padding);
 }
 
 .hero {
@@ -605,6 +607,96 @@ details {
 
 summary { cursor: pointer; font-weight: 600; }
 
+
+
+.tool-page__heading h1 {
+  font-size: clamp(var(--type-h1), 2.4vw, 34px);
+  line-height: 1.14;
+}
+
+.tool-page__heading p {
+  max-width: 72ch;
+  font-size: var(--type-body-lg);
+}
+
+.tool-layout--elite {
+  align-items: start;
+}
+
+.tool-panel {
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+
+.tool-panel:hover {
+  border-color: var(--border-default);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.tool-panel--output {
+  min-height: 100%;
+}
+
+.tool-toolbar__actions {
+  gap: var(--space-3);
+}
+
+.tool-btn,
+.contact-form__submit {
+  min-height: var(--control-md);
+  border-radius: var(--radius-md);
+}
+
+.tool-btn:active,
+.contact-form__submit:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.tool-btn[aria-busy="true"] {
+  pointer-events: none;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  border: 2px solid color-mix(in srgb, var(--text-inverse) 35%, transparent);
+  border-top-color: color-mix(in srgb, var(--text-inverse) 92%, transparent);
+  display: none;
+  animation: tool-spin 700ms linear infinite;
+}
+
+.tool-btn[aria-busy="true"] .spinner {
+  display: inline-block;
+}
+
+.result-indicator {
+  min-height: var(--control-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--type-caption);
+}
+
+.result-indicator--idle {
+  background: color-mix(in srgb, var(--bg-tertiary) 65%, transparent);
+  color: var(--text-secondary);
+}
+
+.tool-empty-state {
+  min-height: 280px;
+  place-content: center;
+  text-align: center;
+}
+
+.tool-empty-state__icon {
+  font-size: var(--type-h2);
+  color: var(--accent);
+}
+
+@keyframes tool-spin {
+  to { transform: rotate(360deg); }
+}
 
 .topbar__explore:focus-visible,
 .theme-toggle:focus-visible,
