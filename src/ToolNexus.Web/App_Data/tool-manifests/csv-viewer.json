@@ -1,0 +1,10 @@
+{
+  "Slug": "csv-viewer",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/csv-viewer.js",
+  "TemplatePath": "/tool-templates/csv-viewer.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": ""
+}

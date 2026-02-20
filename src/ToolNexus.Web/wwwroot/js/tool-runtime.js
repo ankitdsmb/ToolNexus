@@ -17,6 +17,15 @@ export function createToolRuntime({
   healRuntime = async () => false,
   now = () => (globalThis.performance?.now?.() ?? Date.now())
 } = {}) {
+  function ensureRootFallback(root, slug) {
+    if (!root || root.firstElementChild) {
+      return false;
+    }
+
+    root.innerHTML = `<section class="tool-runtime-fallback" data-tool-runtime-fallback="true"><h2>${slug}</h2><p>Tool UI is loading in compatibility mode.</p></section>`;
+    return true;
+  }
+
   function emit(event, payload = {}) {
     try {
       observer?.emit?.(event, payload);
@@ -128,6 +137,10 @@ export function createToolRuntime({
         }
       }
 
+      if (ensureRootFallback(root, slug)) {
+        emit('mount_fallback_content', { toolSlug: slug });
+      }
+
       emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
     } catch (error) {
       emit('mount_failure', {
@@ -145,6 +158,7 @@ export function createToolRuntime({
         if (healed) {
           emit('healing_success', { toolSlug: slug });
           emit('tool_self_heal_success', { toolSlug: slug });
+          ensureRootFallback(root, slug);
           return;
         }
 
@@ -155,6 +169,10 @@ export function createToolRuntime({
         emit('healing_failure', { toolSlug: slug });
         emit('tool_unrecoverable_failure', { toolSlug: slug });
       }
+    }
+
+    if (ensureRootFallback(root, slug)) {
+      emit('mount_fallback_content', { toolSlug: slug, metadata: { phase: 'post-bootstrap' } });
     }
 
     emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });

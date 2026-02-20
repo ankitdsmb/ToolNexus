@@ -1,0 +1,12 @@
+{
+  "Slug": "xml-to-json",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/xml-to-json.js",
+  "TemplatePath": "/tool-templates/xml-to-json.html",
+  "Dependencies": [],
+  "CssPath": "/css/pages/xml-to-json.css",
+  "Styles": [
+    "/css/pages/xml-to-json.css"
+  ],
+  "Category": ""
+}

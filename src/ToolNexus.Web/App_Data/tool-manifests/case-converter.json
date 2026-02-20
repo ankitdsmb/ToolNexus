@@ -1,0 +1,10 @@
+{
+  "Slug": "case-converter",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/case-converter.js",
+  "TemplatePath": "/tool-templates/case-converter.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": ""
+}

@@ -1,0 +1,10 @@
+{
+  "Slug": "html-to-markdown",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/html-to-markdown.js",
+  "TemplatePath": "/tool-templates/html-to-markdown.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": ""
+}

@@ -3,7 +3,9 @@ function toCandidates(module) {
     module,
     module?.default,
     module?.lifecycle,
-    module?.default?.lifecycle
+    module?.default?.lifecycle,
+    typeof module === 'function' ? { mount: module } : null,
+    typeof module?.default === 'function' ? { mount: module.default } : null
   ].filter(Boolean);
 }
 
@@ -21,6 +23,10 @@ async function invokeFirst(candidates, methods, ...args) {
 }
 
 async function tryLegacyFallback({ slug, root, manifest }) {
+  if (await invokeFirst([window], ['runTool', 'init'], root, manifest)) {
+    return true;
+  }
+
   const legacyModule = window.ToolNexusModules?.[slug];
   if (!legacyModule) {
     return false;
@@ -52,6 +58,15 @@ export async function mountToolLifecycle({ module, slug, root, manifest }) {
 
   if (await invokeFirst(moduleCandidates, ['init', 'runTool'], root, manifest)) {
     return { mounted: true, mode: 'module.legacy-init' };
+  }
+
+  if (typeof window.ToolNexusKernel?.create === 'function') {
+    const kernelContext = await window.ToolNexusKernel.create({ slug, root, manifest, module });
+    if (typeof window.ToolNexusKernel?.init === 'function') {
+      await window.ToolNexusKernel.init(kernelContext ?? { slug, root, manifest, module });
+    }
+
+    return { mounted: true, mode: 'kernel.create-init' };
   }
 
   if (typeof window.ToolNexusKernel?.initialize === 'function') {

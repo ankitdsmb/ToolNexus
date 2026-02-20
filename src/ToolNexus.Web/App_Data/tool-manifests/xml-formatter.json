@@ -1,0 +1,12 @@
+{
+  "Slug": "xml-formatter",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/xml-formatter.js",
+  "TemplatePath": "/tool-templates/xml-formatter.html",
+  "Dependencies": [],
+  "CssPath": "/css/pages/xml-formatter.css",
+  "Styles": [
+    "/css/pages/xml-formatter.css"
+  ],
+  "Category": ""
+}

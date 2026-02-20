@@ -1,0 +1,12 @@
+{
+  "Slug": "js-minifier",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/js-minifier.js",
+  "TemplatePath": "/tool-templates/js-minifier.html",
+  "Dependencies": [],
+  "CssPath": "/css/pages/js-minifier.css",
+  "Styles": [
+    "/css/pages/js-minifier.css"
+  ],
+  "Category": ""
+}
