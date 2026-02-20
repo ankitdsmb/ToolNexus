@@ -4,7 +4,8 @@ import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-templa
 import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit, inspectLifecycleContract } from './runtime/tool-lifecycle-adapter.js';
 import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
 import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
-import { validateToolDomContract as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
+import { validateToolDom as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
+import { adaptToolDom as defaultDomAdapter } from './runtime/tool-dom-adapter.js';
 import { createRuntimeMigrationLogger } from './runtime/runtime-migration-logger.js';
 import { detectToolCapabilities as defaultDetectToolCapabilities } from './runtime/tool-capability-matrix.js';
 import { safeDomMount as defaultSafeDomMount } from './runtime/safe-dom-mount.js';
@@ -37,6 +38,7 @@ export function createToolRuntime({
   legacyBootstrap = defaultLegacyBootstrap,
   templateBinder = defaultTemplateBinder,
   validateDomContract = defaultDomContractValidator,
+  adaptDomContract = defaultDomAdapter,
   detectToolCapabilities = defaultDetectToolCapabilities,
   safeDomMount = defaultSafeDomMount,
   createToolExecutionContext = defaultCreateToolExecutionContext,
@@ -105,15 +107,58 @@ export function createToolRuntime({
     }
   }
 
-  function ensureDomContract(root, slug) {
-    let validation = validateDomContract(root, slug);
 
-    if (validation.valid) {
+  function normalizeDomValidation(validation) {
+    if (validation && typeof validation.isValid === 'boolean') {
       return validation;
     }
 
-    injectContractFallbackLayout(root, slug);
-    validation = validateDomContract(root, slug);
+    if (validation && typeof validation.valid === 'boolean') {
+      const missingNodes = Array.isArray(validation.errors)
+        ? validation.errors
+          .filter((entry) => typeof entry === 'string' && entry.startsWith('Missing '))
+          .map((entry) => entry.replace(/^Missing (selector: |node: )/, ''))
+        : [];
+
+      return {
+        isValid: validation.valid,
+        missingNodes,
+        detectedLayoutType: validation.detectedLayoutType ?? 'UNKNOWN_LAYOUT',
+        mountSafe: true
+      };
+    }
+
+    return {
+      isValid: false,
+      missingNodes: [],
+      detectedLayoutType: 'UNKNOWN_LAYOUT',
+      mountSafe: false
+    };
+  }
+
+  function ensureDomContract(root, slug, capability = {}) {
+    logger.info('[DomContract] validating layout', { slug });
+    let validation = normalizeDomValidation(validateDomContract(root));
+
+    if (validation.isValid) {
+      return validation;
+    }
+
+    logger.info('[DomAdapter] legacy layout detected', {
+      slug,
+      detectedLayoutType: validation.detectedLayoutType,
+      missingNodes: validation.missingNodes
+    });
+
+    const adapted = adaptDomContract(root, capability);
+    logger.info('[DomAdapter] adapter applied', { slug, ...adapted });
+
+    validation = normalizeDomValidation(validateDomContract(root));
+    if (!validation.isValid) {
+      injectContractFallbackLayout(root, slug);
+      validation = normalizeDomValidation(validateDomContract(root));
+    }
+
     return validation;
   }
 
@@ -123,7 +168,7 @@ export function createToolRuntime({
     globalDebug.debug.validateDom = () => {
       const currentRoot = rootProvider();
       const currentSlug = (currentRoot?.dataset?.toolSlug || '').trim();
-      const report = validateDomContract(currentRoot, currentSlug);
+      const report = normalizeDomValidation(validateDomContract(currentRoot));
       console.info('ToolNexus DOM contract report', report);
       return report;
     };
@@ -288,12 +333,13 @@ export function createToolRuntime({
 
     templateBinder(root, window.ToolNexusConfig ?? {});
 
-    const validation = ensureDomContract(root, slug);
-    if (!validation.valid) {
+    const validation = ensureDomContract(root, slug, capabilitiesAtStart);
+    if (!validation.isValid) {
       const message = `tool-runtime: DOM contract invalid for "${slug}"`;
-      logger.error(message, validation.errors);
-      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors: validation.errors } });
-      renderContractError(root, validation.errors);
+      const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
+      logger.error(message, errors);
+      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
+      renderContractError(root, errors);
       return;
     }
 
@@ -368,7 +414,24 @@ export function createToolRuntime({
       let legacyBridgeUsed = false;
       try {
         const capabilities = detectToolCapabilities({ slug, module, manifest, root });
-        const result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+        let result;
+        try {
+          result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+        } catch (error) {
+          const preRetryValidation = normalizeDomValidation(validateDomContract(root));
+          if (!preRetryValidation.isValid) {
+            adaptDomContract(root, capabilities);
+            const retryValidation = normalizeDomValidation(validateDomContract(root));
+            if (retryValidation.isValid) {
+              result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+              logger.info('[DomAdapter] init retry success', { slug });
+            } else {
+              throw error;
+            }
+          } else {
+            throw error;
+          }
+        }
         const mounted = Boolean(result?.mounted ?? true);
         executionContext.addCleanup(result?.cleanup);
         const shouldForceLegacyBootstrap = !mounted || !root.firstElementChild;

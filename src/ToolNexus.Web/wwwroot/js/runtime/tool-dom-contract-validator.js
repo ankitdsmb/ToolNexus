@@ -1,4 +1,4 @@
-import { TOOL_DOM_CONTRACT } from './tool-dom-contract.js';
+import { LAYOUT_TYPES, TOOL_DOM_CONTRACT } from './tool-dom-contract.js';
 
 function normalizeRoot(root) {
   if (root?.nodeType === Node.ELEMENT_NODE || root?.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -8,40 +8,74 @@ function normalizeRoot(root) {
   return null;
 }
 
-export function validateToolDomContract(root, slug = '') {
-  const scope = normalizeRoot(root);
-  const errors = [];
+function hasSelector(scope, selector) {
+  return Boolean(scope?.querySelector?.(selector));
+}
 
+function detectLayoutType(scope) {
+  if (!scope) {
+    return LAYOUT_TYPES.UNKNOWN_LAYOUT;
+  }
+
+  const hasCanonicalNodes = TOOL_DOM_CONTRACT.requiredNodes.every((nodeName) =>
+    hasSelector(scope, TOOL_DOM_CONTRACT.nodeSelectors[nodeName]));
+
+  if (hasCanonicalNodes) {
+    return LAYOUT_TYPES.MODERN_LAYOUT;
+  }
+
+  const hasLegacyStructure = hasSelector(scope, '.tool-page')
+    || hasSelector(scope, '.tool-layout')
+    || hasSelector(scope, '.tool-controls')
+    || hasSelector(scope, '.tool-result')
+    || hasSelector(scope, '#inputEditor')
+    || hasSelector(scope, '#outputField');
+
+  if (hasLegacyStructure) {
+    return LAYOUT_TYPES.LEGACY_LAYOUT;
+  }
+
+  const hasMinimalStructure = hasSelector(scope, 'textarea')
+    || hasSelector(scope, 'input')
+    || hasSelector(scope, 'pre')
+    || hasSelector(scope, 'output');
+
+  if (hasMinimalStructure) {
+    return LAYOUT_TYPES.MINIMAL_LAYOUT;
+  }
+
+  return LAYOUT_TYPES.UNKNOWN_LAYOUT;
+}
+
+export function validateToolDom(root) {
+  const scope = normalizeRoot(root);
   if (!scope) {
     return {
-      valid: false,
-      errors: ['[DOM CONTRACT ERROR]', 'Missing root element for DOM contract validation.']
+      isValid: false,
+      missingNodes: [...TOOL_DOM_CONTRACT.requiredNodes],
+      detectedLayoutType: LAYOUT_TYPES.UNKNOWN_LAYOUT,
+      mountSafe: false
     };
   }
 
-  for (const selector of TOOL_DOM_CONTRACT.requiredSelectors) {
-    if (!scope.querySelector(selector)) {
-      errors.push(`Missing selector: ${selector}`);
-    }
-  }
-
-  for (const requirement of TOOL_DOM_CONTRACT.requiredAttributes) {
-    const element = scope.querySelector(requirement.selector);
-    if (!element || !element.hasAttribute(requirement.attribute) || !element.getAttribute(requirement.attribute)?.trim()) {
-      errors.push(`Missing attribute ${requirement.attribute} on ${requirement.selector}`);
-      continue;
-    }
-
-    if (requirement.selector === '.tool-page' && requirement.attribute === 'data-slug' && slug) {
-      const currentSlug = element.getAttribute('data-slug')?.trim();
-      if (currentSlug && currentSlug !== slug) {
-        errors.push(`Mismatched data-slug on .tool-page. Expected "${slug}" but found "${currentSlug}".`);
-      }
-    }
-  }
+  const missingNodes = TOOL_DOM_CONTRACT.requiredNodes.filter((nodeName) =>
+    !scope.querySelector(TOOL_DOM_CONTRACT.nodeSelectors[nodeName]));
 
   return {
-    valid: errors.length === 0,
-    errors: errors.length > 0 ? ['[DOM CONTRACT ERROR]', ...errors] : []
+    isValid: missingNodes.length === 0,
+    missingNodes,
+    detectedLayoutType: detectLayoutType(scope),
+    mountSafe: Boolean(scope)
+  };
+}
+
+export function validateToolDomContract(root, slug = '') {
+  const report = validateToolDom(root);
+
+  return {
+    valid: report.isValid,
+    errors: report.isValid
+      ? []
+      : ['[DOM CONTRACT ERROR]', ...report.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)]
   };
 }

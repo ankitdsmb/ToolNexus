@@ -54,7 +54,7 @@ describe('runtime safety orchestrator', () => {
 
     await runtime.bootstrapToolRuntime();
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
-    expect(document.querySelector('#inputEditor')).not.toBeNull();
+    expect(document.querySelector('[data-tool-input]')).not.toBeNull();
   });
 
   test('lifecycle missing uses legacy runTool bridge flow', async () => {
