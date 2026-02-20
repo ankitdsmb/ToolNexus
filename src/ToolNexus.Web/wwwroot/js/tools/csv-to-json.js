@@ -26,6 +26,25 @@ export {
   transformRowsToObjects
 };
 
+export function create(root) {
+  return { root, handle: null };
+}
+
+export function init(context) {
+  if (!context?.root) {
+    return context ?? null;
+  }
+
+  return {
+    ...context,
+    handle: mountCsvToJson(context.root)
+  };
+}
+
+export function destroy(context) {
+  context?.handle?.destroy?.();
+}
+
 export function mountCsvToJson(root) {
   if (!root) {
     return null;
@@ -67,5 +86,5 @@ if (typeof document !== 'undefined') {
 
 if (typeof window !== 'undefined') {
   window.ToolNexusModules = window.ToolNexusModules || {};
-  window.ToolNexusModules[MODULE_KEY] = { runTool, initCsvToJsonApp, destroyCsvToJsonApp };
+  window.ToolNexusModules[MODULE_KEY] = { create, init, runTool, destroy, initCsvToJsonApp, destroyCsvToJsonApp };
 }

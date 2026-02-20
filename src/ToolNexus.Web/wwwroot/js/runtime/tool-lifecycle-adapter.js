@@ -22,6 +22,31 @@ async function invokeFirst(candidates, methods, ...args) {
   return { invoked: false, candidate: null, method: null, value: undefined };
 }
 
+async function invokeLifecycleContract(candidates, slug, root, manifest) {
+  for (const candidate of candidates) {
+    const hasFullContract = ['create', 'init', 'destroy', 'runTool'].every((method) =>
+      typeof candidate?.[method] === 'function');
+
+    if (!hasFullContract) {
+      continue;
+    }
+
+    const context = await candidate.create(root, manifest, { slug });
+    await candidate.init(context, root, manifest, { slug });
+    await candidate.runTool(context, root, manifest, { slug });
+
+    return {
+      mounted: true,
+      cleanup: async () => {
+        await candidate.destroy(context, root, manifest, { slug });
+      },
+      mode: 'module.lifecycle-contract'
+    };
+  }
+
+  return null;
+}
+
 function buildCleanup(candidate, context, root, manifest) {
   if (!candidate) {
     return undefined;
@@ -87,6 +112,11 @@ async function tryLegacyFallback({ slug, root, manifest }) {
 
 export async function mountToolLifecycle({ module, slug, root, manifest }) {
   const moduleCandidates = toCandidates(module);
+
+  const lifecycleContractResult = await invokeLifecycleContract(moduleCandidates, slug, root, manifest);
+  if (lifecycleContractResult) {
+    return lifecycleContractResult;
+  }
 
   const mountResult = await invokeFirst(moduleCandidates, ['mount'], root, manifest);
   if (mountResult.invoked) {
