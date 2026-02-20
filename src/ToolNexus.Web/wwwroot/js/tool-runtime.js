@@ -4,6 +4,7 @@ import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-templa
 import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit } from './runtime/tool-lifecycle-adapter.js';
 import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
 import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
+import { validateToolDomContract as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
 
 export function createToolRuntime({
   observer = runtimeObserver,
@@ -13,12 +14,79 @@ export function createToolRuntime({
   legacyAutoInit = defaultLegacyAutoInit,
   legacyBootstrap = defaultLegacyBootstrap,
   templateBinder = defaultTemplateBinder,
+  validateDomContract = defaultDomContractValidator,
   getRoot = () => document.getElementById('tool-root'),
   loadManifest: loadManifestOverride,
   importModule = (modulePath) => import(modulePath),
   healRuntime = async () => false,
   now = () => (globalThis.performance?.now?.() ?? Date.now())
 } = {}) {
+  function renderContractError(root, errors) {
+    if (!root) {
+      return;
+    }
+
+    const errorPanel = document.createElement('div');
+    errorPanel.className = 'tool-contract-error';
+    errorPanel.innerHTML = `<h3>Tool Template Contract Failed</h3><pre>${errors.join('\n')}</pre>`;
+    root.replaceChildren(errorPanel);
+  }
+
+  function injectContractFallbackLayout(root, slug) {
+    if (!root) {
+      return;
+    }
+
+    const toolPage = root.querySelector('.tool-page') ?? document.createElement('section');
+    if (!toolPage.classList.contains('tool-page')) {
+      toolPage.classList.add('tool-page');
+    }
+
+    if (!toolPage.getAttribute('data-slug')) {
+      toolPage.setAttribute('data-slug', slug);
+    }
+
+    const layout = document.createElement('div');
+    layout.className = 'tool-layout';
+    layout.innerHTML = `
+      <section class="tool-layout__panel">
+        <textarea id="inputEditor"></textarea>
+      </section>
+      <section class="tool-panel--output">
+        <textarea id="outputField"></textarea>
+      </section>
+    `;
+
+    toolPage.appendChild(layout);
+    if (!toolPage.parentElement) {
+      root.appendChild(toolPage);
+    }
+  }
+
+  function ensureDomContract(root, slug) {
+    let validation = validateDomContract(root, slug);
+
+    if (validation.valid) {
+      return validation;
+    }
+
+    injectContractFallbackLayout(root, slug);
+    validation = validateDomContract(root, slug);
+    return validation;
+  }
+
+  function registerDebugValidation(rootProvider) {
+    const globalDebug = (window.ToolNexus ??= {});
+    globalDebug.debug ??= {};
+    globalDebug.debug.validateDom = () => {
+      const currentRoot = rootProvider();
+      const currentSlug = (currentRoot?.dataset?.toolSlug || '').trim();
+      const report = validateDomContract(currentRoot, currentSlug);
+      console.info('ToolNexus DOM contract report', report);
+      return report;
+    };
+  }
+
   function ensureRootFallback(root, slug) {
     if (!root || root.firstElementChild) {
       return false;
@@ -38,6 +106,7 @@ export function createToolRuntime({
 
   async function bootstrapToolRuntime() {
     const root = getRoot();
+    registerDebugValidation(getRoot);
     if (!root) {
       return;
     }
@@ -87,6 +156,15 @@ export function createToolRuntime({
     }
 
     templateBinder(root, window.ToolNexusConfig ?? {});
+
+    const validation = ensureDomContract(root, slug);
+    if (!validation.valid) {
+      const message = `tool-runtime: DOM contract invalid for "${slug}"`;
+      console.error(message, validation.errors);
+      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors: validation.errors } });
+      renderContractError(root, validation.errors);
+      return;
+    }
 
     const dependencyStartedAt = now();
     emit('dependency_start', { toolSlug: slug });

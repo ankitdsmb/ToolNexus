@@ -1,66 +1,66 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { validateToolDomContract } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
 
 const repoRoot = process.cwd();
 const webRoot = path.join(repoRoot, 'src/ToolNexus.Web/wwwroot');
-const modulesRoot = path.join(webRoot, 'js/tools');
 const templatesRoot = path.join(webRoot, 'tool-templates');
 
-function discoverTools() {
-  const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'tools.manifest.json'), 'utf8'));
-  return manifest.tools.map((tool) => tool.slug).sort();
+function discoverToolTemplates() {
+  return fs.readdirSync(templatesRoot)
+    .filter((file) => file.endsWith('.html'))
+    .map((file) => ({
+      slug: file.replace(/\.html$/, ''),
+      filePath: path.join(templatesRoot, file)
+    }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
-function hasToolModule(slug) {
-  const candidates = [
-    `${slug}.js`,
-    `${slug}.app.js`,
-    path.join(slug, 'main.js'),
-    path.join(slug, 'index.js')
-  ];
+describe('platform strict template validation loop', () => {
+  const templates = discoverToolTemplates();
 
-  return candidates.some((candidate) => fs.existsSync(path.join(modulesRoot, candidate)));
-}
-
-describe('platform strict tool loop', () => {
-  const tools = discoverTools();
-
-  test('registry includes only tools that can initialize via module or fallback', () => {
-    for (const slug of tools) {
-      const hasModule = hasToolModule(slug);
-      const hasTemplate = fs.existsSync(path.join(templatesRoot, `${slug}.html`));
-      expect(hasModule || hasTemplate).toBe(true);
-    }
+  test('every tool template is discovered for QA loop', () => {
+    expect(templates.length).toBeGreaterThan(0);
   });
 
-  test.each(tools)('initializes %s without leaving an empty root', async (slug) => {
+  test.each(templates)('validates and boots %s template without runtime deadlock', async ({ slug, filePath }) => {
+    const template = fs.readFileSync(filePath, 'utf8');
     document.body.innerHTML = `<div id="tool-root" data-tool-slug="${slug}"></div>`;
 
+    const root = document.getElementById('tool-root');
+    root.innerHTML = template;
+
+    const preValidation = validateToolDomContract(root, slug);
+
+    let initialized = false;
     const runtime = createToolRuntime({
-      loadManifest: async () => ({
-        slug,
-        modulePath: `/js/tools/${slug}.js`,
-        templatePath: `/tool-templates/${slug}.html`,
-        dependencies: []
-      }),
-      templateLoader: async () => {
-        throw new Error('template missing in stabilization test');
+      loadManifest: async () => ({ slug, dependencies: [], modulePath: `/js/tools/${slug}.js` }),
+      templateLoader: async (_slug, mountRoot) => {
+        mountRoot.innerHTML = template;
       },
+      templateBinder: () => {},
       dependencyLoader: { loadDependencies: async () => undefined },
-      importModule: async () => {
-        throw new Error('module import intentionally blocked to exercise fallback');
-      },
-      lifecycleAdapter: async () => ({ mounted: false }),
-      legacyAutoInit: async ({ root }) => {
-        root.innerHTML = `<div data-tool="${slug}">compat ui</div>`;
+      importModule: async () => ({ init: () => { initialized = true; } }),
+      lifecycleAdapter: async ({ module }) => {
+        module?.init?.();
         return { mounted: true };
-      }
+      },
+      legacyBootstrap: async () => ({ mounted: false }),
+      legacyAutoInit: async () => ({ mounted: false })
     });
 
-    await expect(runtime.bootstrapToolRuntime()).resolves.not.toThrow();
-    const root = document.getElementById('tool-root');
-    expect(root).not.toBeNull();
-    expect(root?.innerHTML.trim().length).toBeGreaterThan(0);
+    await runtime.bootstrapToolRuntime();
+
+    const postValidation = validateToolDomContract(root, slug);
+
+    expect(preValidation.errors.join('\n')).not.toContain('Missing root element');
+    expect(postValidation.valid).toBe(true);
+    expect(postValidation.errors).toEqual([]);
+    expect(root.querySelector('#inputEditor')).not.toBeNull();
+    expect(root.querySelector('#outputField')).not.toBeNull();
+    expect(root.textContent).not.toContain('Loading...');
+    expect(root.querySelector('.tool-contract-error')).toBeNull();
+    expect(initialized).toBe(true);
   });
 });

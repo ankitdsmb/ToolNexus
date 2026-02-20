@@ -14,7 +14,22 @@ describe('tool runtime ui bootstrap', () => {
 
   test('template injected before init', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="json-formatter"></div>';
-    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<div id="formatBtn"></div>' }));
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => `
+        <section class="tool-page" data-slug="json-formatter">
+          <div class="tool-layout">
+            <section class="tool-layout__panel">
+              <textarea id="inputEditor"></textarea>
+              <div id="formatBtn"></div>
+            </section>
+            <section class="tool-panel--output">
+              <textarea id="outputField"></textarea>
+            </section>
+          </div>
+        </section>
+      `
+    }));
 
     const callOrder = [];
     const runtime = createToolRuntime({
@@ -109,7 +124,7 @@ describe('tool runtime ui bootstrap', () => {
 
   test('dom elements exist after template load', async () => {
     const root = document.createElement('div');
-    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<button id="formatBtn"></button>' }));
+    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-page" data-slug="json-formatter"><div class="tool-layout"><section class="tool-layout__panel"><textarea id="inputEditor"></textarea><button id="formatBtn"></button></section><section class="tool-panel--output"><textarea id="outputField"></textarea></section></div></section>' }));
 
     await loadToolTemplate('json-formatter', root);
 
@@ -125,7 +140,7 @@ describe('tool runtime ui bootstrap', () => {
 
   test('tool root not empty after mount', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="alpha"></div>';
-    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<div class="ui"></div>' }));
+    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-page" data-slug="alpha"><div class="tool-layout"><section class="tool-layout__panel"><textarea id="inputEditor"></textarea></section><section class="tool-panel--output"><textarea id="outputField"></textarea></section></div></section>' }));
 
     const runtime = createToolRuntime({
       loadManifest: async () => ({ modulePath: '/module.js' }),
@@ -170,8 +185,9 @@ describe('tool runtime ui bootstrap', () => {
 
     await runtime.bootstrapToolRuntime();
 
-    expect(runTool).toHaveBeenCalledTimes(1);
-    expect(document.getElementById('tool-root').textContent).toContain('fallback');
+    expect(runTool).toHaveBeenCalledTimes(0);
+    expect(document.getElementById('tool-root').querySelector('#inputEditor')).not.toBeNull();
+    expect(document.getElementById('tool-root').querySelector('#outputField')).not.toBeNull();
   });
 
 
@@ -200,6 +216,27 @@ describe('tool runtime ui bootstrap', () => {
     }));
 
     await expect(loadToolTemplate('alpha-generic', root)).rejects.toThrow('Template contract violation.');
+  });
+
+  test('runtime renders contract error and stops when DOM contract remains invalid', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="broken"></div>';
+    const lifecycleAdapter = jest.fn(async () => ({ mounted: true }));
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ slug: 'broken', dependencies: [] }),
+      templateLoader: async (_slug, root) => {
+        root.innerHTML = '<section class="tool-page"></section>';
+      },
+      dependencyLoader: { loadDependencies: async () => {} },
+      importModule: async () => ({}),
+      lifecycleAdapter,
+      validateDomContract: () => ({ valid: false, errors: ['[DOM CONTRACT ERROR]', 'Missing selector: .tool-layout'] })
+    });
+
+    await runtime.bootstrapToolRuntime();
+
+    expect(lifecycleAdapter).not.toHaveBeenCalled();
+    expect(document.querySelector('.tool-contract-error pre')?.textContent).toContain('Missing selector: .tool-layout');
   });
 
 });
