@@ -1,8 +1,10 @@
 const PREFIXES = {
-  runtime: '[ToolRuntime]',
+  runtime: '[Runtime]',
+  manifest: '[ManifestLoader]',
   dependency: '[DependencyLoader]',
-  lifecycle: '[LifecycleAdapter]',
-  legacy: '[LegacyFallback]'
+  lifecycle: '[LifecycleResolver]',
+  legacy: '[LegacyAdapter]',
+  fallback: '[FallbackMode]'
 };
 
 function normalizePrefix(channel) {
