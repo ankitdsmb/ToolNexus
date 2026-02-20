@@ -3,6 +3,7 @@ import { dependencyLoader as defaultDependencyLoader } from './runtime/dependenc
 import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-template-loader.js';
 import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit } from './runtime/tool-lifecycle-adapter.js';
 import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
+import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
 
 export function createToolRuntime({
   observer = runtimeObserver,
@@ -10,6 +11,7 @@ export function createToolRuntime({
   templateLoader = defaultTemplateLoader,
   lifecycleAdapter = defaultLifecycleAdapter,
   legacyAutoInit = defaultLegacyAutoInit,
+  legacyBootstrap = defaultLegacyBootstrap,
   templateBinder = defaultTemplateBinder,
   getRoot = () => document.getElementById('tool-root'),
   loadManifest: loadManifestOverride,
@@ -72,10 +74,12 @@ export function createToolRuntime({
       ensureStylesheet(style);
     }
 
+    let templateLoaded = false;
     const templateStartedAt = now();
     emit('template_load_start', { toolSlug: slug });
     try {
       await templateLoader(slug, root, { templatePath: manifest.templatePath });
+      templateLoaded = true;
       emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
     } catch (error) {
       emit('template_load_failure', { toolSlug: slug, error: error?.message ?? String(error) });
@@ -129,10 +133,34 @@ export function createToolRuntime({
     try {
       const result = await lifecycleAdapter({ module, slug, root, manifest });
       const mounted = Boolean(result?.mounted ?? true);
+      const shouldForceLegacyBootstrap = !templateLoaded || !mounted;
 
-      if (!mounted || !root.firstElementChild) {
-        const legacyResult = await legacyAutoInit({ slug, root, manifest });
+      if (shouldForceLegacyBootstrap || !root.firstElementChild) {
+        const legacyResult = await legacyBootstrap({
+          module,
+          slug,
+          root,
+          manifest,
+          modulePath,
+          importModule
+        });
+
         if (!legacyResult?.mounted && !root.firstElementChild) {
+          const retryLegacyResult = await legacyBootstrap({
+            module,
+            slug,
+            root,
+            manifest,
+            modulePath,
+            importModule
+          });
+
+          if (!retryLegacyResult?.mounted && !root.firstElementChild) {
+            await legacyAutoInit({ slug, root, manifest });
+          }
+        }
+
+        if (!root.firstElementChild) {
           throw new Error(`tool-runtime: no lifecycle rendered UI for "${slug}".`);
         }
       }
