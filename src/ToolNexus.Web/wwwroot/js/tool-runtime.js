@@ -139,23 +139,27 @@ export function createToolRuntime({
     }
   }
 
-  async function bootstrapToolRuntime() {
-    const root = getRoot();
-    registerDebugValidation(getRoot);
-    if (!root) {
-      return;
+  function detectToolClassification({ hasManifest, lifecycleContract, modulePath, legacyBridgeUsed, mountError }) {
+    if (!hasManifest || legacyBridgeUsed) {
+      return 'legacy';
     }
 
-    await runPreviousCleanup(root);
-
-    const slug = (root.dataset.toolSlug || '').trim();
-    if (!slug) {
-      logger.error('Missing tool slug on #tool-root.');
-      return;
+    if (lifecycleContract?.compliant) {
+      return 'modern';
     }
 
-    logger.info(`Bootstrapping tool runtime for "${slug}".`);
+    if (modulePath) {
+      return 'transitional';
+    }
 
+    if (mountError) {
+      return 'broken';
+    }
+
+    return 'transitional';
+  }
+
+  async function safeMountTool({ root, slug }) {
     const runtimeStartedAt = now();
     emit('bootstrap_start', { toolSlug: slug });
 
@@ -166,19 +170,24 @@ export function createToolRuntime({
       modulePath: window.ToolNexusConfig?.runtimeModulePath,
       templatePath: `/tool-templates/${slug}.html`
     };
+
     const safeLoadManifest = async () => {
       try {
         const loadedManifest = await (loadManifestOverride ?? loadManifest)(slug);
-        return { manifest: { ...fallbackManifest, ...(loadedManifest ?? {}) }, source: 'manifest' };
+        return {
+          manifest: { ...fallbackManifest, ...(loadedManifest ?? {}) },
+          source: 'manifest',
+          hasManifest: true
+        };
       } catch (error) {
         setLastError('manifest', error, slug);
         emit('manifest_failure', { toolSlug: slug, error: error?.message ?? String(error) });
         manifestLogger.warn(`Manifest unavailable for "${slug}". Falling back to legacy runtime.`, error);
-        return { manifest: fallbackManifest, source: 'fallback' };
+        return { manifest: fallbackManifest, source: 'fallback', hasManifest: false };
       }
     };
 
-    const { manifest, source: manifestSource } = await safeLoadManifest();
+    const { manifest, hasManifest } = await safeLoadManifest();
 
     const styles = Array.isArray(manifest?.styles)
       ? manifest.styles.filter(Boolean)
@@ -239,12 +248,13 @@ export function createToolRuntime({
     const safeResolveLifecycle = async () => {
       let module = {};
       if (!modulePath) {
-        return module;
+        return { module, importFailed: false };
       }
 
       const moduleImportStartedAt = now();
       emit('module_import_start', { toolSlug: slug, metadata: { modulePath } });
 
+      let importFailed = false;
       try {
         module = await importModule(modulePath);
         const lifecycleContract = inspectLifecycleContract(module);
@@ -263,6 +273,7 @@ export function createToolRuntime({
           metadata: { modulePath }
         });
       } catch (error) {
+        importFailed = true;
         setLastError('module-import', error, slug, { modulePath });
         emit('module_import_failure', {
           toolSlug: slug,
@@ -273,30 +284,16 @@ export function createToolRuntime({
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
-      return module;
+      return { module, importFailed };
     };
 
-    const module = await safeResolveLifecycle();
-
-    const lifecycleContract = inspectLifecycleContract(module);
-    const classification = manifestSource === 'fallback'
-      ? 'legacy'
-      : lifecycleContract.compliant
-        ? 'modern'
-        : modulePath
-          ? 'transitional'
-          : 'broken';
-    logger.info(`Runtime classification for "${slug}": ${classification}.`, {
-      classification,
-      templateLoaded,
-      hasModulePath: Boolean(modulePath),
-      lifecycle: lifecycleContract
-    });
+    const { module, importFailed } = await safeResolveLifecycle();
 
     const safeMount = async () => {
       const mountStartedAt = now();
       emit('mount_start', { toolSlug: slug });
 
+      let legacyBridgeUsed = false;
       try {
         const result = await lifecycleAdapter({ module, slug, root, manifest });
         const mounted = Boolean(result?.mounted ?? true);
@@ -306,6 +303,7 @@ export function createToolRuntime({
         const shouldForceLegacyBootstrap = !mounted || !root.firstElementChild;
 
         if (shouldForceLegacyBootstrap) {
+          legacyBridgeUsed = true;
           const legacyResult = await legacyBootstrap({
             module,
             slug,
@@ -339,9 +337,34 @@ export function createToolRuntime({
           emit('mount_fallback_content', { toolSlug: slug });
         }
 
+        const lifecycleContract = inspectLifecycleContract(module);
+        const classification = detectToolClassification({
+          hasManifest,
+          lifecycleContract,
+          modulePath,
+          legacyBridgeUsed,
+          mountError: importFailed
+        });
+        logger.info(`Runtime classification for "${slug}": ${classification}.`, {
+          classification,
+          templateLoaded,
+          hasManifest,
+          hasModulePath: Boolean(modulePath),
+          legacyBridgeUsed,
+          lifecycle: lifecycleContract
+        });
+
         emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
         logger.info(`Tool runtime mounted successfully for "${slug}".`);
       } catch (error) {
+        const lifecycleContract = inspectLifecycleContract(module);
+        const classification = detectToolClassification({
+          hasManifest,
+          lifecycleContract,
+          modulePath,
+          legacyBridgeUsed,
+          mountError: true
+        });
         setLastError('mount', error, slug, { classification });
         emit('mount_failure', {
           toolSlug: slug,
@@ -383,6 +406,32 @@ export function createToolRuntime({
 
     emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
     logger.info(`Bootstrap completed for "${slug}".`);
+  }
+
+  async function bootstrapToolRuntime() {
+    const root = getRoot();
+    registerDebugValidation(getRoot);
+    if (!root) {
+      return;
+    }
+
+    await runPreviousCleanup(root);
+
+    const slug = (root.dataset.toolSlug || '').trim();
+    if (!slug) {
+      logger.error('Missing tool slug on #tool-root.');
+      return;
+    }
+
+    logger.info(`Bootstrapping tool runtime for "${slug}".`);
+
+    try {
+      await safeMountTool({ root, slug });
+    } catch (error) {
+      setLastError('runtime', error, slug);
+      fallbackLogger.warn(`Unexpected runtime failure for "${slug}"; using fallback container.`, error);
+      ensureRootFallback(root, slug);
+    }
   }
 
   return {

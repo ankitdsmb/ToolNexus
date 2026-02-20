@@ -218,6 +218,78 @@ describe('tool runtime ui bootstrap', () => {
     await expect(loadToolTemplate('alpha-generic', root)).rejects.toThrow('Template contract violation.');
   });
 
+  test('dependency missing only logs warning and runtime continues mounting', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="dep-missing"></div>';
+    const lifecycleAdapter = jest.fn(async ({ root }) => {
+      root.innerHTML = '<section>mounted</section>';
+      return { mounted: true };
+    });
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ slug: 'dep-missing', dependencies: ['/missing.js'], modulePath: '/module.js' }),
+      templateLoader: async () => {},
+      importModule: async () => ({ init: jest.fn() }),
+      dependencyLoader: { loadDependencies: async () => { throw new Error('dep-missing'); } },
+      lifecycleAdapter
+    });
+
+    await expect(runtime.bootstrapToolRuntime()).resolves.toBeUndefined();
+    expect(lifecycleAdapter).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
+  });
+
+  test('template missing renders non-empty fallback UI', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="template-missing"><div class="server-rendered">SSR content</div></div>';
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ slug: 'template-missing', dependencies: [] }),
+      templateLoader: async () => { throw new Error('template missing'); },
+      dependencyLoader: { loadDependencies: async () => {} },
+      importModule: async () => ({}),
+      lifecycleAdapter: async () => ({ mounted: false })
+    });
+
+    await runtime.bootstrapToolRuntime();
+
+    const root = document.getElementById('tool-root');
+    expect(root.children.length).toBeGreaterThan(0);
+  });
+
+  test('lifecycle missing uses legacy runTool bridge automatically', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="legacy-bridge"></div>';
+    const runTool = jest.fn((root) => {
+      root.innerHTML = '<div>legacy bridge mounted</div>';
+    });
+    window.ToolNexusModules = { 'legacy-bridge': { runTool } };
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ slug: 'legacy-bridge', dependencies: [] }),
+      templateLoader: async () => {},
+      dependencyLoader: { loadDependencies: async () => {} },
+      importModule: async () => ({})
+    });
+
+    await runtime.bootstrapToolRuntime();
+
+    expect(runTool).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('tool-root').textContent).toContain('legacy bridge mounted');
+  });
+
+  test('runtime mount stage never throws hard failures', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="no-throw"></div>';
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ slug: 'no-throw', dependencies: [] }),
+      templateLoader: async () => {},
+      dependencyLoader: { loadDependencies: async () => {} },
+      importModule: async () => ({}),
+      lifecycleAdapter: async () => { throw new Error('mount exploded'); }
+    });
+
+    await expect(runtime.bootstrapToolRuntime()).resolves.toBeUndefined();
+    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
+  });
+
   test('runtime renders contract error and stops when DOM contract remains invalid', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="broken"></div>';
     const lifecycleAdapter = jest.fn(async () => ({ mounted: true }));
