@@ -66,6 +66,11 @@ ENTERPRISE UI SYSTEM
   min-height: 100%;
 }
 
+:where(#tool-root[data-tool-root="true"]) {
+  min-height: 24rem;
+  contain: layout paint style;
+}
+
 :where(.tool-btn, .hero-btn, .contact-form__submit) {
   border-radius: var(--radius-control);
   min-height: var(--control-md);
@@ -98,6 +103,7 @@ ENTERPRISE UI SYSTEM
   border-radius: var(--radius-panel);
   padding: var(--space-sm);
   background: var(--panel-bg);
+  min-height: 24rem;
 }
 
 @media (max-width: 1024px) {

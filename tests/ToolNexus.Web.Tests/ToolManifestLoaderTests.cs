@@ -131,6 +131,35 @@ public sealed class ToolManifestLoaderTests
         Assert.Contains("Duplicate tool manifest slug detected", ex.Message);
     }
 
+
+    [Fact]
+    public void LoadAll_UsesCachedResults_AfterInitialMaterialization()
+    {
+        using var fixture = new ManifestFixture();
+        fixture.WriteManifest("first.json", """
+        {
+          "slug": "json-formatter",
+          "viewName": "JsonFormatter"
+        }
+        """);
+
+        var loader = fixture.CreateLoader();
+
+        var initial = loader.LoadAll();
+        fixture.WriteManifest("second.json", """
+        {
+          "slug": "url-encode",
+          "viewName": "urlEncode"
+        }
+        """);
+
+        var cached = loader.LoadAll();
+
+        Assert.Single(initial);
+        Assert.Single(cached);
+        Assert.Equal("json-formatter", cached.Single().Slug);
+    }
+
     [Fact]
     public void RegistryAndResolver_DiscoverTemporaryManifest_WithoutCodeChanges()
     {
