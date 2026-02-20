@@ -11,6 +11,7 @@ import { detectToolCapabilities as defaultDetectToolCapabilities } from './runti
 import { safeDomMount as defaultSafeDomMount } from './runtime/safe-dom-mount.js';
 import { createToolExecutionContext as defaultCreateToolExecutionContext } from './runtime/tool-execution-context.js';
 import { legacyExecuteTool as defaultLegacyExecuteTool, releaseLegacyInitialization as defaultReleaseLegacyInitialization } from './runtime/legacy-execution-bridge.js';
+import { createToolStateRegistry as defaultCreateToolStateRegistry } from './runtime/tool-state-registry.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 
@@ -48,7 +49,8 @@ export function createToolRuntime({
   loadManifest: loadManifestOverride,
   importModule = (modulePath) => import(modulePath),
   healRuntime = async () => false,
-  now = () => (globalThis.performance?.now?.() ?? Date.now())
+  now = () => (globalThis.performance?.now?.() ?? Date.now()),
+  createToolStateRegistry = defaultCreateToolStateRegistry
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -56,6 +58,13 @@ export function createToolRuntime({
   const lifecycleLogger = createRuntimeMigrationLogger({ channel: 'lifecycle' });
   const fallbackLogger = createRuntimeMigrationLogger({ channel: 'fallback' });
   let lastError = null;
+  const stateRegistry = createToolStateRegistry();
+  const runtimeMetrics = {
+    toolsMountedSuccessfully: 0,
+    legacyAdapterUsage: 0,
+    autoDestroyGenerated: 0,
+    initRetriesPerformed: 0
+  };
 
   function setLastError(stage, error, slug, metadata = {}) {
     lastError = {
@@ -218,7 +227,7 @@ export function createToolRuntime({
     root.appendChild(preserved);
   }
 
-  function assertPostMount({ root, context, slug }) {
+  function assertPostMount({ root, context, slug, state, lifecycleResult }) {
     if (!root) {
       throw new Error(`runtime assertion failed: root missing for "${slug}"`);
     }
@@ -230,15 +239,27 @@ export function createToolRuntime({
     if (!context) {
       throw new Error(`runtime assertion failed: execution context missing for "${slug}"`);
     }
+
+    if (!lifecycleResult || typeof lifecycleResult.cleanup !== 'function') {
+      throw new Error(`runtime assertion failed: cleanup unavailable for "${slug}"`);
+    }
+
+    if (!state || state.lifecyclePhase === 'created') {
+      throw new Error(`runtime assertion failed: state not registered for "${slug}"`);
+    }
   }
 
-  function assertPostDestroy(context, slug) {
+  function assertPostDestroy(context, slug, state) {
     if (!context) {
       return;
     }
 
     if (context.listeners.length > 0 || context.cleanupCallbacks.length > 0) {
       throw new Error(`runtime assertion failed: cleanup incomplete for "${slug}"`);
+    }
+
+    if (state) {
+      throw new Error(`runtime assertion failed: registry uncleared for "${slug}"`);
     }
   }
 
@@ -273,6 +294,15 @@ export function createToolRuntime({
   async function safeMountTool({ root, slug }) {
     const runtimeStartedAt = now();
     emit('bootstrap_start', { toolSlug: slug });
+
+    const registration = stateRegistry.register({ slug, root, compatibilityMode: 'normalizing' });
+    const stateKey = registration.key;
+    if (registration.duplicate && registration.state?.mounted) {
+      logger.warn(`Skipping duplicate mount attempt for "${slug}".`);
+      return;
+    }
+
+    stateRegistry.setPhase(stateKey, 'initializing');
 
     const fallbackManifest = {
       slug,
@@ -418,6 +448,9 @@ export function createToolRuntime({
         try {
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
         } catch (error) {
+          stateRegistry.incrementRetry(stateKey);
+          runtimeMetrics.initRetriesPerformed += 1;
+
           const preRetryValidation = normalizeDomValidation(validateDomContract(root));
           if (!preRetryValidation.isValid) {
             adaptDomContract(root, capabilities);
@@ -432,7 +465,17 @@ export function createToolRuntime({
             throw error;
           }
         }
+
+        if (result?.normalized) {
+          runtimeMetrics.legacyAdapterUsage += 1;
+        }
+        if (result?.autoDestroyGenerated) {
+          runtimeMetrics.autoDestroyGenerated += 1;
+        }
         const mounted = Boolean(result?.mounted ?? true);
+        if (typeof result?.cleanup !== 'function') {
+          result = { ...result, cleanup: executionContext.destroy.bind(executionContext) };
+        }
         executionContext.addCleanup(result?.cleanup);
         const shouldForceLegacyBootstrap = !mounted || !root.firstElementChild;
 
@@ -463,7 +506,7 @@ export function createToolRuntime({
             });
 
             if (!retryLegacyResult?.mounted && !root.firstElementChild) {
-              const legacyAutoResult = await legacyAutoInit({ slug, root, manifest });
+              const legacyAutoResult = await legacyAutoInit({ slug, root, manifest, context: executionContext, capabilities });
               executionContext.addCleanup(legacyAutoResult.cleanup);
             }
           }
@@ -496,10 +539,14 @@ export function createToolRuntime({
         });
 
         emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
-        assertPostMount({ root, context: executionContext, slug });
+        stateRegistry.setPhase(stateKey, 'mounted');
+        runtimeMetrics.toolsMountedSuccessfully += 1;
+        const currentState = stateRegistry.get(stateKey);
+        assertPostMount({ root, context: executionContext, slug, state: currentState, lifecycleResult: result });
         root[RUNTIME_CLEANUP_KEY] = async () => {
           await executionContext.destroy();
-          assertPostDestroy(executionContext, slug);
+          stateRegistry.clear(stateKey);
+          assertPostDestroy(executionContext, slug, stateRegistry.get(stateKey));
         };
         logger.info(`Tool runtime mounted successfully for "${slug}".`);
       } catch (error) {
@@ -512,6 +559,7 @@ export function createToolRuntime({
           mountError: true
         });
         setLastError('mount', error, slug, { classification });
+        stateRegistry.setFailure(stateKey, error?.message ?? String(error));
         emit('mount_failure', {
           toolSlug: slug,
           duration: now() - mountStartedAt,
@@ -520,6 +568,35 @@ export function createToolRuntime({
 
         emit('healing_attempt', { toolSlug: slug });
         emit('tool_self_heal_triggered', { toolSlug: slug });
+
+        let healedByCompatibilityFlow = false;
+        try {
+          adaptDomContract(root, detectToolCapabilities({ slug, module, manifest, root }));
+          const retried = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities: detectToolCapabilities({ slug, module, manifest, root }) });
+          if (retried?.mounted) {
+            healedByCompatibilityFlow = true;
+          }
+        } catch {}
+
+        if (!healedByCompatibilityFlow) {
+          try {
+            const bridged = await legacyExecuteTool({ slug, root, module, context: executionContext });
+            healedByCompatibilityFlow = Boolean(bridged?.mounted);
+          } catch {}
+        }
+
+        if (!healedByCompatibilityFlow) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          stateRegistry.incrementRetry(stateKey);
+          runtimeMetrics.initRetriesPerformed += 1;
+        }
+
+        if (healedByCompatibilityFlow) {
+          stateRegistry.setPhase(stateKey, 'mounted');
+          runtimeMetrics.toolsMountedSuccessfully += 1;
+          emit('healing_success', { toolSlug: slug });
+          return;
+        }
 
         try {
           const healed = await healRuntime({ slug, root, manifest, error });
@@ -583,7 +660,11 @@ export function createToolRuntime({
 
   return {
     bootstrapToolRuntime,
-    getLastError: () => lastError
+    getLastError: () => lastError,
+    getDiagnostics: () => ({
+      ...runtimeMetrics,
+      registry: stateRegistry.summary()
+    })
   };
 }
 
