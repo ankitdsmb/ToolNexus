@@ -31,4 +31,36 @@ describe('tool-platform-kernel', () => {
     expect(destroyMock).toHaveBeenCalledTimes(1);
     expect(kernel.getLifecycleState('sample', root)).toBe('missing');
   });
+
+  test('init failures are captured without hard-throwing runtime', () => {
+    const root = document.createElement('section');
+    document.body.appendChild(root);
+
+    const initMock = jest.fn(() => {
+      throw new Error('boom');
+    });
+
+    const kernel = getToolPlatformKernel();
+    const handle = kernel.registerTool({ id: 'broken-tool', root, init: initMock });
+
+    expect(() => handle.init()).not.toThrow();
+    expect(kernel.getLifecycleState('broken-tool', root)).toBe('failed');
+    expect(kernel.getLastError('broken-tool', root)?.message).toBe('boom');
+  });
+
+  test('destroy failures are captured and cleanup still completes', () => {
+    const root = document.createElement('section');
+    document.body.appendChild(root);
+
+    const destroyMock = jest.fn(() => {
+      throw new Error('destroy failed');
+    });
+
+    const kernel = getToolPlatformKernel();
+    const handle = kernel.registerTool({ id: 'destroy-broken', root, init: () => ({}), destroy: destroyMock });
+
+    handle.init();
+    expect(() => handle.destroy()).not.toThrow();
+    expect(kernel.getLifecycleState('destroy-broken', root)).toBe('missing');
+  });
 });

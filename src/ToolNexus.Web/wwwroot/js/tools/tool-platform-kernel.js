@@ -51,9 +51,17 @@ class ToolPlatformKernel {
       return registration?.instance;
     }
 
-    registration.state = 'initialized';
-    registration.instance = registration.init(registration.root) ?? null;
-    registration.error = null;
+    try {
+      registration.state = 'initialized';
+      registration.instance = registration.init(registration.root) ?? null;
+      registration.error = null;
+    } catch (error) {
+      registration.state = 'failed';
+      registration.instance = null;
+      registration.error = error;
+      console.warn(`tool-platform-kernel: init failed for "${registration.id}".`, error);
+    }
+
     return registration.instance;
   }
 
@@ -63,7 +71,6 @@ class ToolPlatformKernel {
 
   mountTool(toolRegistration) {
     const handle = this.registerTool(toolRegistration);
-    handle.create();
     handle.init();
     return handle;
   }
@@ -74,7 +81,13 @@ class ToolPlatformKernel {
       return;
     }
 
-    registration.destroy(registration.instance, registration.root);
+    try {
+      registration.destroy(registration.instance, registration.root);
+    } catch (error) {
+      registration.error = error;
+      console.warn(`tool-platform-kernel: destroy failed for "${registration.id}".`, error);
+    }
+
     registration.state = 'destroyed';
 
     const rootRegistry = registration.root?.[ROOT_TOOL_INSTANCE_KEY];
@@ -110,6 +123,10 @@ class ToolPlatformKernel {
 
   getRegisteredToolCount() {
     return this.tools.size;
+  }
+
+  getLastError(id, root) {
+    return this.tools.get(this.createToolKey(id, root))?.error ?? null;
   }
 
   resetForTesting() {
