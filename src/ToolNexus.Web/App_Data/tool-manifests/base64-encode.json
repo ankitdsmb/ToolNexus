@@ -3,7 +3,10 @@
   "viewName": "base64Encode",
   "category": "",
   "modulePath": "/js/tools/base64-encode.js",
-  "cssPath": "/css/tools/base64-encode.css",
   "templatePath": "/tool-templates/base64-encode.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/tools/base64-encode.css"
+  ],
+  "cssPath": "/css/tools/base64-encode.css"
 }

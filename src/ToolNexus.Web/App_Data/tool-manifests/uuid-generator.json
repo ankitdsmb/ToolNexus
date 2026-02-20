@@ -3,7 +3,10 @@
   "viewName": "uuidGenerator",
   "category": "",
   "modulePath": "/js/tools/uuid-generator.js",
-  "cssPath": "/css/tools/uuid-generator.css",
   "templatePath": "/tool-templates/uuid-generator.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/tools/uuid-generator.css"
+  ],
+  "cssPath": "/css/tools/uuid-generator.css"
 }

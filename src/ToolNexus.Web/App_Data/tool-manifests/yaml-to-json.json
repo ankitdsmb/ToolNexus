@@ -3,7 +3,10 @@
   "viewName": "yamlToJson",
   "category": "",
   "modulePath": "/js/tools/yaml-to-json.js",
-  "cssPath": "/css/pages/yaml-to-json.css",
   "templatePath": "/tool-templates/yaml-to-json.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/pages/yaml-to-json.css"
+  ],
+  "cssPath": "/css/pages/yaml-to-json.css"
 }

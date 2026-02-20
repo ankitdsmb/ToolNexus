@@ -26,6 +26,34 @@ public sealed class ToolManifestLoaderTests
         var manifest = Assert.Single(manifests);
         Assert.Equal("json-formatter", manifest.Slug);
         Assert.Equal("JsonFormatter", manifest.ViewName);
+        Assert.NotNull(manifest.Styles);
+    }
+
+
+
+    [Fact]
+    public void LoadAll_RemovesMissingDependenciesAndStyles()
+    {
+        using var fixture = new ManifestFixture();
+        fixture.WriteManifest("json-formatter.json", """
+        {
+          "slug": "json-formatter",
+          "viewName": "JsonFormatter",
+          "dependencies": ["/lib/monaco/vs/loader.js", "/js/exists.js"],
+          "styles": ["/css/tools/exists.css", "/css/tools/missing.css"]
+        }
+        """);
+        fixture.WriteWebFile("js/exists.js", "console.log('ok');");
+        fixture.WriteWebFile("css/tools/exists.css", ".ok{}");
+
+        var loader = fixture.CreateLoader();
+
+        var manifest = Assert.Single(loader.LoadAll());
+
+        Assert.Single(manifest.Dependencies);
+        Assert.Equal("/js/exists.js", manifest.Dependencies[0]);
+        Assert.Single(manifest.Styles);
+        Assert.Equal("/css/tools/exists.css", manifest.Styles[0]);
     }
 
     [Fact]
@@ -107,6 +135,17 @@ public sealed class ToolManifestLoaderTests
         public ManifestFixture()
         {
             Directory.CreateDirectory(ManifestDirectory);
+            Directory.CreateDirectory(WebRootDirectory);
+            Directory.CreateDirectory(Path.Combine(rootPath, "Views", "Tools"));
+        }
+
+        private string WebRootDirectory => Path.Combine(rootPath, "wwwroot");
+
+        public void WriteWebFile(string relativePath, string content)
+        {
+            var fullPath = Path.Combine(WebRootDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            File.WriteAllText(fullPath, content);
         }
 
         private string ManifestDirectory => Path.Combine(rootPath, "App_Data", "tool-manifests");
@@ -131,7 +170,7 @@ public sealed class ToolManifestLoaderTests
     {
         public string ApplicationName { get; set; } = "ToolNexus.Web.Tests";
         public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
-        public string WebRootPath { get; set; } = string.Empty;
+        public string WebRootPath { get; set; } = Path.Combine(contentRootPath, "wwwroot");
         public string EnvironmentName { get; set; } = "Development";
         public string ContentRootPath { get; set; } = contentRootPath;
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();

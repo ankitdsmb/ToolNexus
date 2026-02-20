@@ -7,6 +7,8 @@ namespace ToolNexus.Web.Services;
 
 public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebHostEnvironment hostEnvironment) : IToolManifestLoader
 {
+    private const string MonacoLoaderPath = "/lib/monaco/vs/loader.js";
+
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -16,9 +18,12 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
     private static readonly HashSet<string> ReservedViewNames = ["Index", "Category", "Tool", "ToolShell"];
 
     private readonly string contentRootPath = hostEnvironment.ContentRootPath;
+    private readonly string webRootPath = string.IsNullOrWhiteSpace(hostEnvironment.WebRootPath)
+        ? Path.Combine(hostEnvironment.ContentRootPath, "wwwroot")
+        : hostEnvironment.WebRootPath;
     private readonly string manifestDirectory = Path.Combine(hostEnvironment.ContentRootPath, "App_Data", "tool-manifests");
     private readonly string viewDirectory = Path.Combine(hostEnvironment.ContentRootPath, "Views", "Tools");
-    private readonly string templateDirectory = Path.Combine(hostEnvironment.WebRootPath, "tool-templates");
+    private readonly string templateDirectory = Path.Combine(string.IsNullOrWhiteSpace(hostEnvironment.WebRootPath) ? Path.Combine(hostEnvironment.ContentRootPath, "wwwroot") : hostEnvironment.WebRootPath, "tool-templates");
 
     public IReadOnlyCollection<ToolManifest> LoadAll()
     {
@@ -85,33 +90,115 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
     private ToolManifest NormalizeManifest(ToolManifest manifest)
     {
         var slug = manifest.Slug.Trim();
+        var normalizedDependencies = NormalizeDependencies(manifest.Dependencies, slug);
+        var normalizedStyles = NormalizeStyles(manifest.Styles, manifest.CssPath, slug);
+
         return new ToolManifest
         {
             Slug = slug,
             ViewName = manifest.ViewName,
-            ModulePath = string.IsNullOrWhiteSpace(manifest.ModulePath) ? $"/js/tools/{slug}.js" : manifest.ModulePath.Trim(),
-            TemplatePath = string.IsNullOrWhiteSpace(manifest.TemplatePath) ? $"/tool-templates/{slug}.html" : manifest.TemplatePath.Trim(),
-            Dependencies = NormalizeDependencies(manifest.Dependencies, slug),
-            CssPath = manifest.CssPath,
+            ModulePath = NormalizeWebPath(string.IsNullOrWhiteSpace(manifest.ModulePath) ? $"/js/tools/{slug}.js" : manifest.ModulePath.Trim()),
+            TemplatePath = NormalizeWebPath(string.IsNullOrWhiteSpace(manifest.TemplatePath) ? $"/tool-templates/{slug}.html" : manifest.TemplatePath.Trim()),
+            Dependencies = normalizedDependencies,
+            Styles = normalizedStyles,
+            CssPath = normalizedStyles.FirstOrDefault(),
             Category = manifest.Category
         };
     }
 
-    private static string[] NormalizeDependencies(string[]? dependencies, string slug)
+    private string[] NormalizeDependencies(string[]? dependencies, string slug)
     {
         var normalized = (dependencies ?? [])
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => x.Trim())
+            .Select(x => NormalizeWebPath(x.Trim()))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         if (slug.Contains("json-formatter", StringComparison.OrdinalIgnoreCase)
-            && normalized.All(x => !string.Equals(x, "/lib/monaco/vs/loader.js", StringComparison.OrdinalIgnoreCase)))
+            && normalized.All(x => !string.Equals(x, MonacoLoaderPath, StringComparison.OrdinalIgnoreCase))
+            && IsExistingWebAssetPath(MonacoLoaderPath))
         {
-            normalized.Add("/lib/monaco/vs/loader.js");
+            normalized.Add(MonacoLoaderPath);
         }
 
-        return normalized.ToArray();
+        var filtered = normalized
+            .Where(path =>
+            {
+                if (IsExistingWebAssetPath(path))
+                {
+                    return true;
+                }
+
+                logger.LogWarning("Removing missing dependency '{DependencyPath}' for tool '{ToolSlug}'.", path, slug);
+                return false;
+            })
+            .ToArray();
+
+        if (slug.Contains("json-formatter", StringComparison.OrdinalIgnoreCase)
+            && filtered.All(x => !string.Equals(x, MonacoLoaderPath, StringComparison.OrdinalIgnoreCase)))
+        {
+            logger.LogWarning("Monaco loader is unavailable for '{ToolSlug}'. Runtime will continue without Monaco dependency.", slug);
+        }
+
+        return filtered;
+    }
+
+    private string[] NormalizeStyles(string[]? styles, string? cssPath, string slug)
+    {
+        var merged = new List<string>();
+        if (styles is { Length: > 0 })
+        {
+            merged.AddRange(styles);
+        }
+
+        if (!string.IsNullOrWhiteSpace(cssPath))
+        {
+            merged.Add(cssPath);
+        }
+
+        return merged
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => NormalizeWebPath(x.Trim()))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(path =>
+            {
+                if (IsExistingWebAssetPath(path))
+                {
+                    return true;
+                }
+
+                logger.LogWarning("Removing missing stylesheet '{StylesheetPath}' for tool '{ToolSlug}'.", path, slug);
+                return false;
+            })
+            .ToArray();
+    }
+
+    private static string NormalizeWebPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return path;
+        }
+
+        var normalized = path.Trim();
+        if (!normalized.StartsWith('/'))
+        {
+            normalized = $"/{normalized}";
+        }
+
+        return normalized.Replace('\\', '/');
+    }
+
+    private bool IsExistingWebAssetPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        var normalized = NormalizeWebPath(path);
+        var localPath = Path.Combine(webRootPath, normalized.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(localPath);
     }
 
     private IEnumerable<(string ViewName, string Slug, string ViewPath)> DiscoverToolViews()
@@ -142,6 +229,15 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             modulePath = nestedModulePath;
         }
 
+        var styles = new[]
+        {
+            $"/css/tools/{toolView.Slug}.css",
+            $"/css/pages/{toolView.Slug}.css"
+        }
+        .Where(IsExistingWebAssetPath)
+        .Take(1)
+        .ToArray();
+
         return new ToolManifest
         {
             Slug = toolView.Slug,
@@ -149,6 +245,8 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             ModulePath = modulePath,
             TemplatePath = $"/tool-templates/{toolView.Slug}.html",
             Dependencies = NormalizeDependencies([], toolView.Slug),
+            Styles = styles,
+            CssPath = styles.FirstOrDefault(),
             Category = string.Empty
         };
     }

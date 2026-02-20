@@ -3,7 +3,10 @@
   "viewName": "htmlEntities",
   "category": "",
   "modulePath": "/js/tools/html-entities.js",
-  "cssPath": "/css/tools/html-entities.css",
   "templatePath": "/tool-templates/html-entities.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/tools/html-entities.css"
+  ],
+  "cssPath": "/css/tools/html-entities.css"
 }

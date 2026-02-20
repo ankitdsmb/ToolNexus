@@ -15,7 +15,9 @@ public sealed class ToolRegistryService : IToolRegistryService
                 ModulePath = string.IsNullOrWhiteSpace(manifest.ModulePath) ? $"/js/tools/{manifest.Slug}.js" : manifest.ModulePath,
                 TemplatePath = string.IsNullOrWhiteSpace(manifest.TemplatePath) ? $"/tool-templates/{manifest.Slug}.html" : manifest.TemplatePath,
                 Dependencies = manifest.Dependencies ?? [],
-                CssPath = manifest.CssPath,
+                Styles = manifest.Styles?.Length > 0
+                    ? manifest.Styles
+                    : (string.IsNullOrWhiteSpace(manifest.CssPath) ? [] : [manifest.CssPath]),
                 Category = manifest.Category
             })
             .ToArray();

@@ -3,7 +3,10 @@
   "viewName": "SqlFormatter",
   "category": "",
   "modulePath": "/js/tools/sql-formatter.js",
-  "cssPath": "/css/pages/sql-formatter.css",
   "templatePath": "/tool-templates/sql-formatter.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/pages/sql-formatter.css"
+  ],
+  "cssPath": "/css/pages/sql-formatter.css"
 }

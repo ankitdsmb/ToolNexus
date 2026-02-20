@@ -97,13 +97,13 @@ describe('tool runtime ui bootstrap', () => {
   });
 
 
-  test('throws descriptive error when lifecycle is missing', async () => {
+  test('returns non-throwing result when lifecycle is missing', async () => {
     await expect(mountToolLifecycle({
       module: {},
       slug: 'unknown',
       root: document.createElement('div'),
       manifest: {}
-    })).rejects.toThrow('tool-lifecycle-adapter: no supported lifecycle found for "unknown".');
+    })).resolves.toEqual({ mounted: false, mode: 'none' });
   });
 
   test('dom elements exist after template load', async () => {
@@ -136,4 +136,41 @@ describe('tool runtime ui bootstrap', () => {
 
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
   });
+
+  test('runtime falls back when manifest fetch fails', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="legacy"></div>';
+    const init = jest.fn((root) => { root.innerHTML = '<div>legacy</div>'; });
+    window.ToolNexusModules = { legacy: { init } };
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => { throw new Error('404'); },
+      templateLoader: async () => { throw new Error('missing template'); },
+      dependencyLoader: { loadDependencies: async () => { throw new Error('missing dep'); } },
+      importModule: async () => { throw new Error('missing module'); }
+    });
+
+    await runtime.bootstrapToolRuntime();
+
+    expect(init).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('tool-root').textContent).toContain('legacy');
+  });
+
+  test('empty root triggers legacy auto mount fallback', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="alpha"></div>';
+    const runTool = jest.fn((root) => { root.innerHTML = '<div>fallback</div>'; });
+    window.ToolNexusModules = { alpha: { runTool } };
+
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ modulePath: '/module.js', dependencies: [] }),
+      templateLoader: async () => {},
+      importModule: async () => ({ mount: async () => {} }),
+      dependencyLoader: { loadDependencies: async () => {} }
+    });
+
+    await runtime.bootstrapToolRuntime();
+
+    expect(runTool).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('tool-root').textContent).toContain('fallback');
+  });
+
 });

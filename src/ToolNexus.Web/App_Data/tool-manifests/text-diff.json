@@ -3,7 +3,10 @@
   "viewName": "TextDiff",
   "category": "",
   "modulePath": "/js/tools/text-diff.js",
-  "cssPath": "/css/tools/text-diff.css",
   "templatePath": "/tool-templates/text-diff.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/tools/text-diff.css"
+  ],
+  "cssPath": "/css/tools/text-diff.css"
 }
