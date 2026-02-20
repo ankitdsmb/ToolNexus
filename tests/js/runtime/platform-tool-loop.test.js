@@ -57,8 +57,8 @@ describe('platform strict template validation loop', () => {
     expect(preValidation.errors.join('\n')).not.toContain('Missing root element');
     expect(postValidation.valid).toBe(true);
     expect(postValidation.errors).toEqual([]);
-    expect(root.querySelector('#inputEditor')).not.toBeNull();
-    expect(root.querySelector('#outputField')).not.toBeNull();
+    expect(root.querySelector('[data-tool-input]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-output]')).not.toBeNull();
     expect(root.textContent).not.toContain('Loading...');
     expect(root.querySelector('.tool-contract-error')).toBeNull();
     expect(initialized).toBe(true);

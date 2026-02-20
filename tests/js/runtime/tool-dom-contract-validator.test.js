@@ -1,37 +1,35 @@
-import { validateToolDomContract } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
+import { validateToolDom } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
 
 describe('tool DOM contract validator', () => {
-  test('returns all missing selectors and attributes', () => {
+  test('returns missing canonical semantic nodes', () => {
     const root = document.createElement('div');
     root.innerHTML = '<section class="tool-page"></section>';
 
-    const result = validateToolDomContract(root, 'json-formatter');
+    const result = validateToolDom(root);
 
-    expect(result.valid).toBe(false);
-    expect(result.errors[0]).toBe('[DOM CONTRACT ERROR]');
-    expect(result.errors).toContain('Missing selector: .tool-layout');
-    expect(result.errors).toContain('Missing selector: #outputField');
-    expect(result.errors).toContain('Missing attribute data-slug on .tool-page');
+    expect(result.isValid).toBe(false);
+    expect(result.missingNodes).toContain('data-tool-root');
+    expect(result.missingNodes).toContain('data-tool-output');
+    expect(result.detectedLayoutType).toBe('LEGACY_LAYOUT');
   });
 
-  test('passes when all contracts are present', () => {
+  test('passes when canonical contract nodes are present', () => {
     const root = document.createElement('div');
     root.innerHTML = `
-      <section class="tool-page" data-slug="json-formatter">
-        <div class="tool-layout">
-          <section class="tool-layout__panel">
-            <textarea id="inputEditor"></textarea>
-          </section>
-          <section class="tool-panel--output">
-            <textarea id="outputField"></textarea>
-          </section>
+      <section data-tool-root="true">
+        <header data-tool-header="true"></header>
+        <div data-tool-body="true">
+          <section data-tool-input="true"></section>
+          <section data-tool-output="true"></section>
+          <div data-tool-actions="true"></div>
         </div>
       </section>
     `;
 
-    const result = validateToolDomContract(root, 'json-formatter');
+    const result = validateToolDom(root);
 
-    expect(result.valid).toBe(true);
-    expect(result.errors).toEqual([]);
+    expect(result.isValid).toBe(true);
+    expect(result.missingNodes).toEqual([]);
+    expect(result.detectedLayoutType).toBe('MODERN_LAYOUT');
   });
 });

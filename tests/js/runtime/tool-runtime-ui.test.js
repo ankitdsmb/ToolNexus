@@ -186,8 +186,8 @@ describe('tool runtime ui bootstrap', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(runTool).toHaveBeenCalledTimes(0);
-    expect(document.getElementById('tool-root').querySelector('#inputEditor')).not.toBeNull();
-    expect(document.getElementById('tool-root').querySelector('#outputField')).not.toBeNull();
+    expect(document.getElementById('tool-root').querySelector('[data-tool-input]')).not.toBeNull();
+    expect(document.getElementById('tool-root').querySelector('[data-tool-output]')).not.toBeNull();
   });
 
 
@@ -308,7 +308,7 @@ describe('tool runtime ui bootstrap', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(lifecycleAdapter).not.toHaveBeenCalled();
-    expect(document.querySelector('.tool-contract-error pre')?.textContent).toContain('Missing selector: .tool-layout');
+    expect(document.querySelector('.tool-contract-error pre')?.textContent).toContain('Missing');
   });
 
 });
