@@ -11,4 +11,12 @@ public sealed class ToolPageViewModel
     public string? RuntimeModulePath { get; init; }
     public string? RuntimeCssPath { get; init; }
     public ToolContent? Content { get; init; }
+    public IReadOnlyCollection<RelatedToolViewModel> RelatedTools { get; init; } = [];
 }
+
+public sealed class RelatedToolViewModel
+{
+    public required string Slug { get; init; }
+    public required string Title { get; init; }
+}
+

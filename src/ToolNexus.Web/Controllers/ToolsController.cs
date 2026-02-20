@@ -91,6 +91,17 @@ public sealed class ToolsController(
         };
 
         var descriptor = toolRegistryService.GetBySlug(tool.Slug);
+        var relatedTools = (content?.RelatedTools ?? [])
+            .Select(related => toolCatalogService.GetBySlug(related.RelatedSlug))
+            .Where(relatedTool => relatedTool is not null)
+            .Select(relatedTool => new RelatedToolViewModel
+            {
+                Slug = relatedTool!.Slug,
+                Title = relatedTool.Title
+            })
+            .DistinctBy(related => related.Slug)
+            .ToArray();
+
         var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
         var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
         var viewModel = new ToolPageViewModel
@@ -100,6 +111,7 @@ public sealed class ToolsController(
             ToolExecutionPathPrefix = apiPathPrefix,
             Seo = seo,
             Content = content,
+            RelatedTools = relatedTools,
             RuntimeModulePath = descriptor?.ModulePath,
             RuntimeCssPath = descriptor?.CssPath
         };

@@ -1,10 +1,27 @@
 import { runtimeObserver } from './runtime/runtime-observer.js';
 import { dependencyLoader as defaultDependencyLoader } from './runtime/dependency-loader.js';
 import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-template-loader.js';
-import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit } from './runtime/tool-lifecycle-adapter.js';
+import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit, inspectLifecycleContract } from './runtime/tool-lifecycle-adapter.js';
 import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
 import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
 import { validateToolDomContract as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
+
+const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
+
+async function runPreviousCleanup(root) {
+  const cleanup = root?.[RUNTIME_CLEANUP_KEY];
+  if (typeof cleanup !== 'function') {
+    return;
+  }
+
+  try {
+    await cleanup();
+  } catch (error) {
+    console.warn('tool-runtime: previous cleanup failed.', error);
+  } finally {
+    delete root[RUNTIME_CLEANUP_KEY];
+  }
+}
 
 export function createToolRuntime({
   observer = runtimeObserver,
@@ -111,6 +128,8 @@ export function createToolRuntime({
       return;
     }
 
+    await runPreviousCleanup(root);
+
     const slug = (root.dataset.toolSlug || '').trim();
     if (!slug) {
       console.error('tool-runtime: missing tool slug on #tool-root.');
@@ -189,6 +208,16 @@ export function createToolRuntime({
 
       try {
         module = await importModule(modulePath);
+        const lifecycleContract = inspectLifecycleContract(module);
+        emit('lifecycle_contract_evaluated', {
+          toolSlug: slug,
+          metadata: lifecycleContract
+        });
+
+        if (!lifecycleContract.compliant) {
+          console.info(`tool-runtime: non-standard lifecycle for "${slug}", using compatibility adapter.`);
+        }
+
         emit('module_import_complete', {
           toolSlug: slug,
           duration: now() - moduleImportStartedAt,
@@ -211,9 +240,12 @@ export function createToolRuntime({
     try {
       const result = await lifecycleAdapter({ module, slug, root, manifest });
       const mounted = Boolean(result?.mounted ?? true);
-      const shouldForceLegacyBootstrap = !templateLoaded || !mounted;
+      if (typeof result?.cleanup === 'function') {
+        root[RUNTIME_CLEANUP_KEY] = result.cleanup;
+      }
+      const shouldForceLegacyBootstrap = !mounted || !root.firstElementChild;
 
-      if (shouldForceLegacyBootstrap || !root.firstElementChild) {
+      if (shouldForceLegacyBootstrap) {
         const legacyResult = await legacyBootstrap({
           module,
           slug,
