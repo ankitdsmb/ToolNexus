@@ -1,9 +1,13 @@
 import { runtimeObserver } from './runtime/runtime-observer.js';
 import { dependencyLoader as defaultDependencyLoader } from './runtime/dependency-loader.js';
+import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-template-loader.js';
+import { mountToolLifecycle as defaultLifecycleAdapter } from './runtime/tool-lifecycle-adapter.js';
 
 export function createToolRuntime({
   observer = runtimeObserver,
   dependencyLoader = defaultDependencyLoader,
+  templateLoader = defaultTemplateLoader,
+  lifecycleAdapter = defaultLifecycleAdapter,
   getRoot = () => document.getElementById('tool-root'),
   loadManifest: loadManifestOverride,
   importModule = (modulePath) => import(modulePath),
@@ -39,6 +43,11 @@ export function createToolRuntime({
         ensureStylesheet(manifest.cssPath);
       }
 
+      const templateStartedAt = now();
+      emit('template_load_start', { toolSlug: slug });
+      await templateLoader(slug, root);
+      emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
+
       const dependencyStartedAt = now();
       emit('dependency_start', { toolSlug: slug });
       try {
@@ -54,8 +63,7 @@ export function createToolRuntime({
 
       const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
       if (!modulePath) {
-        console.warn(`tool-runtime: no module path found for "${slug}".`);
-        return;
+        throw new Error(`tool-runtime: no module path found for "${slug}".`);
       }
 
       const moduleImportStartedAt = now();
@@ -82,7 +90,12 @@ export function createToolRuntime({
       const mountStartedAt = now();
       emit('mount_start', { toolSlug: slug });
       try {
-        await mountToolModule({ module, slug, root, manifest });
+        await lifecycleAdapter({ module, slug, root, manifest });
+
+        if (!root.firstElementChild) {
+          throw new Error(`tool-runtime: mounted "${slug}" but #tool-root is empty.`);
+        }
+
         emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
       } catch (error) {
         emit('mount_failure', {
@@ -149,41 +162,7 @@ export function ensureStylesheet(cssPath) {
   document.head.appendChild(link);
 }
 
-export async function mountToolModule({ module, slug, root, manifest }) {
-  if (typeof module.mount === 'function') {
-    await module.mount(root, manifest);
-    return;
-  }
-
-  if (typeof module.default?.mount === 'function') {
-    await module.default.mount(root, manifest);
-    return;
-  }
-
-  if (typeof module.init === 'function') {
-    module.init(root, manifest);
-    return;
-  }
-
-  const legacyModule = window.ToolNexusModules?.[slug];
-  if (legacyModule?.mount) {
-    legacyModule.mount(root, manifest);
-    return;
-  }
-
-  if (legacyModule?.init) {
-    legacyModule.init(root, manifest);
-    return;
-  }
-
-  if (legacyModule?.create) {
-    const handle = legacyModule.create(root, manifest);
-    handle?.init?.();
-    return;
-  }
-
-  console.warn(`tool-runtime: module loaded for "${slug}" but no mount/init API found.`);
-}
+export { defaultLifecycleAdapter as mountToolModule };
 
 const runtime = createToolRuntime();
 runtime.bootstrapToolRuntime();

@@ -1,0 +1,80 @@
+<link rel="stylesheet" href="~/css/tools/uuid-generator.css" asp-append-version="true" />
+
+<article id="uuidGeneratorApp" class="uuid-tool" aria-label="UUID generator workspace">
+    <header class="tool-panel uuid-tool__header">
+        <h1>@Model.Tool.Title</h1>
+        <p>Generate RFC-compliant UUIDs using secure client-side randomness. No server calls. No telemetry.</p>
+        <span class="uuid-tool__badge" aria-label="Security badge">Secure client-side generation</span>
+    </header>
+
+    <section class="tool-panel uuid-tool__panel" aria-label="UUID controls">
+        <div class="uuid-tool__controls">
+            <div class="uuid-tool__field">
+                <label for="uuidVersion">UUID version</label>
+                <select id="uuidVersion">
+                    <option value="v4" selected>v4 (random, default)</option>
+                    <option value="v1">v1 (time-based)</option>
+                    <option value="v7">v7 (time-ordered)</option>
+                    <option value="nil">Nil UUID</option>
+                </select>
+            </div>
+            <div class="uuid-tool__field">
+                <label for="uuidQuantity">Quantity (1–1000)</label>
+                <input id="uuidQuantity" type="number" value="1" min="1" max="1000" />
+            </div>
+            <div class="uuid-tool__field">
+                <label for="uuidCase">Letter casing</label>
+                <select id="uuidCase">
+                    <option value="lower" selected>Lowercase</option>
+                    <option value="upper">Uppercase</option>
+                </select>
+            </div>
+            <div class="uuid-tool__field">
+                <label for="uuidWrapper">Wrapper format</label>
+                <select id="uuidWrapper">
+                    <option value="none" selected>None</option>
+                    <option value="braces">Braces {uuid}</option>
+                    <option value="urn">URN urn:uuid:</option>
+                </select>
+            </div>
+            <div class="uuid-tool__field">
+                <label for="uuidTemplate">Custom template ({uuid})</label>
+                <input id="uuidTemplate" type="text" placeholder="id:{uuid}" />
+            </div>
+        </div>
+
+        <div class="uuid-tool__toggles">
+            <label class="uuid-tool__toggle" for="uuidNoHyphen"><input id="uuidNoHyphen" type="checkbox" /> Remove hyphens</label>
+            <label class="uuid-tool__toggle" for="uuidUnique"><input id="uuidUnique" type="checkbox" /> Enforce uniqueness check</label>
+            <label class="uuid-tool__toggle" for="uuidAutoGenerate"><input id="uuidAutoGenerate" type="checkbox" /> Auto-generate on option changes</label>
+        </div>
+
+        <div class="uuid-tool__actions" role="toolbar" aria-label="UUID actions">
+            <button id="uuidGenerateBtn" class="tool-btn tool-btn--primary" type="button">Generate</button>
+            <button id="uuidClearBtn" class="tool-btn tool-btn--outline" type="button">Clear</button>
+            <button id="uuidCopyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy first</button>
+            <button id="uuidCopyAllBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy all</button>
+            <button id="uuidDownloadBtn" class="tool-btn tool-btn--ghost" type="button" disabled>Download TXT</button>
+        </div>
+
+        <p class="shortcut-hint">Shortcuts: Ctrl + Enter to generate, Ctrl + L to clear.</p>
+    </section>
+
+    <section class="tool-panel uuid-tool__panel" aria-label="UUID output">
+        <div id="uuidErrorPanel" class="tool-error" hidden>
+            <strong id="uuidErrorTitle"></strong>
+            <p id="uuidErrorText"></p>
+        </div>
+
+        <div class="uuid-tool__meta">
+            <span id="uuidStatus" class="uuid-tool__status">No UUIDs generated yet</span>
+            <span id="uuidIndicator" class="uuid-tool__indicator" data-state="idle">Ready</span>
+        </div>
+
+        <p id="uuidMetrics" class="shortcut-hint">Count: 0 • Generated: —</p>
+        <label class="editor-label" for="uuidOutput">Generated UUIDs (one per line)</label>
+        <textarea id="uuidOutput" readonly spellcheck="false"></textarea>
+    </section>
+</article>
+
+<script type="module" src="~/js/tools/uuid-generator/index.js" asp-append-version="true"></script>
