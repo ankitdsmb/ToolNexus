@@ -1,5 +1,7 @@
 {
   "slug": "url-encode",
   "viewName": "urlEncode",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/url-encode.js",
+  "cssPath": "/css/tools/url-encode.css"
 }

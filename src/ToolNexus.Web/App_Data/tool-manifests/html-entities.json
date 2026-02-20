@@ -1,5 +1,7 @@
 {
   "slug": "html-entities",
   "viewName": "htmlEntities",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/html-entities.js",
+  "cssPath": "/css/tools/html-entities.css"
 }

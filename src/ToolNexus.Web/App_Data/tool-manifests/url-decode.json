@@ -1,5 +1,7 @@
 {
   "slug": "url-decode",
   "viewName": "urlDecode",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/url-decode.js",
+  "cssPath": "/css/tools/url-decode.css"
 }

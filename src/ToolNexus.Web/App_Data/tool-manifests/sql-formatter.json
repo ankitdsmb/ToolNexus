@@ -1,5 +1,7 @@
 {
   "slug": "sql-formatter",
   "viewName": "SqlFormatter",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/sql-formatter.js",
+  "cssPath": "/css/pages/sql-formatter.css"
 }

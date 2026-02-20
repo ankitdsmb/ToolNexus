@@ -13,28 +13,28 @@ namespace ToolNexus.Web.Tests;
 
 public sealed class ToolsControllerRegressionHarnessTests
 {
-    public static TheoryData<string, string> SlugViewMappings => new()
+    public static TheoryData<string> SlugViewMappings => new()
     {
-        { "json-formatter", "JsonFormatter" },
-        { "base64-decode", "base64Decode" },
-        { "base64-encode", "base64Encode" },
-        { "json-to-csv", "json2csv" },
-        { "json-to-yaml", "jsonToYaml" },
-        { "yaml-to-json", "yamlToJson" },
-        { "csv-to-json", "CsvToJson" },
-        { "json-validator", "JsonValidator" },
-        { "sql-formatter", "SqlFormatter" },
-        { "file-merge", "fileMerge" },
-        { "html-entities", "htmlEntities" },
-        { "uuid-generator", "uuidGenerator" },
-        { "url-encode", "urlEncode" },
-        { "url-decode", "urlDecode" },
-        { "text-diff", "TextDiff" }
+        { "json-formatter" },
+        { "base64-decode" },
+        { "base64-encode" },
+        { "json-to-csv" },
+        { "json-to-yaml" },
+        { "yaml-to-json" },
+        { "csv-to-json" },
+        { "json-validator" },
+        { "sql-formatter" },
+        { "file-merge" },
+        { "html-entities" },
+        { "uuid-generator" },
+        { "url-encode" },
+        { "url-decode" },
+        { "text-diff" }
     };
 
     [Theory]
     [MemberData(nameof(SlugViewMappings))]
-    public async Task Segment_KnownSlug_ResolvesExpectedViewAndModel(string slug, string expectedView)
+    public async Task Segment_KnownSlug_ResolvesExpectedViewAndModel(string slug)
     {
         var descriptor = CreateDescriptor(slug);
         var content = CreateContent(slug);
@@ -43,7 +43,7 @@ public sealed class ToolsControllerRegressionHarnessTests
         var result = await controller.Segment(slug, CancellationToken.None);
 
         var view = Assert.IsType<ViewResult>(result);
-        Assert.Equal(expectedView, view.ViewName);
+        Assert.Equal("ToolShell", view.ViewName);
         var model = Assert.IsType<ToolPageViewModel>(view.Model);
         Assert.Same(descriptor, model.Tool);
         Assert.Equal("https://localhost:5001/tools/" + slug, model.Seo.CanonicalUrl);
@@ -52,7 +52,7 @@ public sealed class ToolsControllerRegressionHarnessTests
     }
 
     [Fact]
-    public async Task Segment_UnmappedKnownSlug_FallsBackToToolView()
+    public async Task Segment_UnmappedKnownSlug_UsesToolShell()
     {
         var descriptor = CreateDescriptor("no-custom-view");
         var controller = CreateController(new StubToolCatalogService(descriptor), new StubToolContentService(CreateContent(descriptor.Slug)));
@@ -60,7 +60,7 @@ public sealed class ToolsControllerRegressionHarnessTests
         var result = await controller.Segment(descriptor.Slug, CancellationToken.None);
 
         var view = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Tool", view.ViewName);
+        Assert.Equal("ToolShell", view.ViewName);
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public sealed class ToolsControllerRegressionHarnessTests
             catalogService,
             contentService,
             Microsoft.Extensions.Options.Options.Create(new ApiSettings { BaseUrl = "https://localhost:5001", ToolExecutionPathPrefix = "/api/v1/tools" }),
-            new ToolViewResolver(CreateRegistry()));
+            CreateRegistry());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Scheme = "https";
@@ -129,21 +129,21 @@ public sealed class ToolsControllerRegressionHarnessTests
 
     private static readonly ToolNexus.Web.Services.ToolManifest[] BaselineManifests =
     [
-        new ToolNexus.Web.Services.ToolManifest { Slug = "json-formatter", ViewName = "JsonFormatter", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "base64-decode", ViewName = "base64Decode", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "base64-encode", ViewName = "base64Encode", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "json-to-csv", ViewName = "json2csv", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "json-to-yaml", ViewName = "jsonToYaml", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "yaml-to-json", ViewName = "yamlToJson", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "csv-to-json", ViewName = "CsvToJson", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "json-validator", ViewName = "JsonValidator", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "sql-formatter", ViewName = "SqlFormatter", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "file-merge", ViewName = "fileMerge", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "html-entities", ViewName = "htmlEntities", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "uuid-generator", ViewName = "uuidGenerator", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "url-encode", ViewName = "urlEncode", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "url-decode", ViewName = "urlDecode", Category = string.Empty },
-        new ToolNexus.Web.Services.ToolManifest { Slug = "text-diff", ViewName = "TextDiff", Category = string.Empty }
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-formatter", ViewName = "JsonFormatter", ModulePath = "/js/tools/json-formatter.js", CssPath = "/css/pages/json-formatter.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "base64-decode", ViewName = "base64Decode", ModulePath = "/js/tools/base64-decode.js", CssPath = "/css/tools/base64-decode.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "base64-encode", ViewName = "base64Encode", ModulePath = "/js/tools/base64-encode.js", CssPath = "/css/tools/base64-encode.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-to-csv", ViewName = "json2csv", ModulePath = "/js/tools/json-to-csv.js", CssPath = "/css/pages/json-to-csv.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-to-yaml", ViewName = "jsonToYaml", ModulePath = "/js/tools/json-to-yaml.js", CssPath = "/css/pages/json-to-yaml.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "yaml-to-json", ViewName = "yamlToJson", ModulePath = "/js/tools/yaml-to-json.js", CssPath = "/css/pages/yaml-to-json.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "csv-to-json", ViewName = "CsvToJson", ModulePath = "/js/tools/csv-to-json.js", CssPath = "/css/tools/csv-to-json.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "json-validator", ViewName = "JsonValidator", ModulePath = "/js/tools/json-validator.js", CssPath = "/css/pages/json-validator.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "sql-formatter", ViewName = "SqlFormatter", ModulePath = "/js/tools/sql-formatter.js", CssPath = "/css/pages/sql-formatter.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "file-merge", ViewName = "fileMerge", ModulePath = "/js/tools/file-merge/main.js", CssPath = "/css/tools/file-merge.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "html-entities", ViewName = "htmlEntities", ModulePath = "/js/tools/html-entities.js", CssPath = "/css/tools/html-entities.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "uuid-generator", ViewName = "uuidGenerator", ModulePath = "/js/tools/uuid-generator.js", CssPath = "/css/tools/uuid-generator.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "url-encode", ViewName = "urlEncode", ModulePath = "/js/tools/url-encode.js", CssPath = "/css/tools/url-encode.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "url-decode", ViewName = "urlDecode", ModulePath = "/js/tools/url-decode.js", CssPath = "/css/tools/url-decode.css", Category = string.Empty },
+        new ToolNexus.Web.Services.ToolManifest { Slug = "text-diff", ViewName = "TextDiff", ModulePath = "/js/tools/text-diff.js", CssPath = "/css/tools/text-diff.css", Category = string.Empty }
     ];
 
     private static ToolRegistryService CreateRegistry() => new(new StubManifestLoader(BaselineManifests));

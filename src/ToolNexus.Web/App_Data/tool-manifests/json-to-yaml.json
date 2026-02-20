@@ -1,5 +1,7 @@
 {
   "slug": "json-to-yaml",
   "viewName": "jsonToYaml",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/json-to-yaml.js",
+  "cssPath": "/css/pages/json-to-yaml.css"
 }

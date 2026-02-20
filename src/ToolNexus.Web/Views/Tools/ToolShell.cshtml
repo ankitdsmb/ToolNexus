@@ -1,0 +1,30 @@
+@model ToolPageViewModel
+@{
+    ViewData["Title"] = Model.Seo.Title;
+    ViewData["Description"] = Model.Seo.Description;
+    ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
+    ViewData["JsonLd"] = Model.Seo.JsonLd;
+    ViewData["Keywords"] = Model.Seo.Keywords;
+}
+
+@section Head {
+    @if (!string.IsNullOrWhiteSpace(Model.RuntimeCssPath))
+    {
+        <link rel="stylesheet" href="@Model.RuntimeCssPath" asp-append-version="true" />
+    }
+}
+
+<div id="tool-root" data-tool-slug="@Model.Tool.Slug"></div>
+
+@section Scripts {
+    <script>
+        window.ToolNexusConfig = {
+            apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
+            toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
+            jsonExampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
+            sqlExampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
+            runtimeModulePath: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeModulePath))
+        };
+    </script>
+    <script type="module" src="~/js/tool-runtime.js" asp-append-version="true"></script>
+}

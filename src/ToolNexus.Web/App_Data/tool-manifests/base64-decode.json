@@ -1,5 +1,7 @@
 {
   "slug": "base64-decode",
   "viewName": "base64Decode",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/base64-decode.js",
+  "cssPath": "/css/tools/base64-decode.css"
 }

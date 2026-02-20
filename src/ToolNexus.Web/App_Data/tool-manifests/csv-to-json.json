@@ -1,5 +1,7 @@
 {
   "slug": "csv-to-json",
   "viewName": "CsvToJson",
-  "category": ""
+  "category": "",
+  "modulePath": "/js/tools/csv-to-json.js",
+  "cssPath": "/css/tools/csv-to-json.css"
 }
