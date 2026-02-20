@@ -3,7 +3,8 @@
   "viewName": "base64Decode",
   "category": "",
   "modulePath": "/js/tools/base64-decode.js",
-  "cssPath": "/css/tools/base64-decode.css",
   "templatePath": "/tool-templates/base64-decode.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [],
+  "cssPath": null
 }

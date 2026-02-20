@@ -3,7 +3,10 @@
   "viewName": "fileMerge",
   "category": "",
   "modulePath": "/js/tools/file-merge/main.js",
-  "cssPath": "/css/tools/file-merge.css",
   "templatePath": "/tool-templates/file-merge.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/tools/file-merge.css"
+  ],
+  "cssPath": "/css/tools/file-merge.css"
 }

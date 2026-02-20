@@ -1,39 +1,72 @@
+function toCandidates(module) {
+  return [
+    module,
+    module?.default,
+    module?.lifecycle,
+    module?.default?.lifecycle
+  ].filter(Boolean);
+}
+
+async function invokeFirst(candidates, methods, ...args) {
+  for (const candidate of candidates) {
+    for (const method of methods) {
+      if (typeof candidate?.[method] === 'function') {
+        await candidate[method](...args);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+async function tryLegacyFallback({ slug, root, manifest }) {
+  const legacyModule = window.ToolNexusModules?.[slug];
+  if (!legacyModule) {
+    return false;
+  }
+
+  if (await invokeFirst([legacyModule], ['mount', 'runTool', 'init'], root, manifest)) {
+    return true;
+  }
+
+  if (await invokeFirst([legacyModule], ['create'], { slug, root, manifest })) {
+    await invokeFirst([legacyModule], ['init'], root, manifest);
+    return true;
+  }
+
+  return false;
+}
+
 export async function mountToolLifecycle({ module, slug, root, manifest }) {
-  if (typeof module?.mount === 'function') {
-    await module.mount(root, manifest);
-    return;
+  const moduleCandidates = toCandidates(module);
+
+  if (await invokeFirst(moduleCandidates, ['mount'], root, manifest)) {
+    return { mounted: true, mode: 'module.mount' };
   }
 
-  if (typeof module?.default?.mount === 'function') {
-    await module.default.mount(root, manifest);
-    return;
+  if (await invokeFirst(moduleCandidates, ['create'], { slug, root, manifest })) {
+    await invokeFirst(moduleCandidates, ['init'], root, manifest);
+    return { mounted: true, mode: 'module.create-init' };
   }
 
-  if (typeof module?.init === 'function') {
-    await module.init(root, manifest);
-    return;
-  }
-
-  if (typeof module?.default?.init === 'function') {
-    await module.default.init(root, manifest);
-    return;
+  if (await invokeFirst(moduleCandidates, ['init', 'runTool'], root, manifest)) {
+    return { mounted: true, mode: 'module.legacy-init' };
   }
 
   if (typeof window.ToolNexusKernel?.initialize === 'function') {
     await window.ToolNexusKernel.initialize({ slug, root, manifest, module });
-    return;
+    return { mounted: true, mode: 'kernel.initialize' };
   }
 
-  const legacyModule = window.ToolNexusModules?.[slug];
-  if (typeof legacyModule?.mount === 'function') {
-    await legacyModule.mount(root, manifest);
-    return;
+  if (await tryLegacyFallback({ slug, root, manifest })) {
+    return { mounted: true, mode: 'window.ToolNexusModules' };
   }
 
-  if (typeof legacyModule?.init === 'function') {
-    await legacyModule.init(root, manifest);
-    return;
-  }
+  return { mounted: false, mode: 'none' };
+}
 
-  throw new Error(`tool-lifecycle-adapter: no supported lifecycle found for "${slug}".`);
+export async function legacyAutoInit({ slug, root, manifest }) {
+  const mounted = await tryLegacyFallback({ slug, root, manifest });
+  return { mounted, mode: mounted ? 'legacy.auto-init' : 'none' };
 }

@@ -3,7 +3,10 @@
   "viewName": "CsvToJson",
   "category": "",
   "modulePath": "/js/tools/csv-to-json.js",
-  "cssPath": "/css/tools/csv-to-json.css",
   "templatePath": "/tool-templates/csv-to-json.html",
-  "dependencies": []
+  "dependencies": [],
+  "styles": [
+    "/css/tools/csv-to-json.css"
+  ],
+  "cssPath": "/css/tools/csv-to-json.css"
 }

@@ -1,7 +1,7 @@
 import { runtimeObserver } from './runtime/runtime-observer.js';
 import { dependencyLoader as defaultDependencyLoader } from './runtime/dependency-loader.js';
 import { loadToolTemplate as defaultTemplateLoader } from './runtime/tool-template-loader.js';
-import { mountToolLifecycle as defaultLifecycleAdapter } from './runtime/tool-lifecycle-adapter.js';
+import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit } from './runtime/tool-lifecycle-adapter.js';
 import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-template-binder.js';
 
 export function createToolRuntime({
@@ -9,6 +9,7 @@ export function createToolRuntime({
   dependencyLoader = defaultDependencyLoader,
   templateLoader = defaultTemplateLoader,
   lifecycleAdapter = defaultLifecycleAdapter,
+  legacyAutoInit = defaultLegacyAutoInit,
   templateBinder = defaultTemplateBinder,
   getRoot = () => document.getElementById('tool-root'),
   loadManifest: loadManifestOverride,
@@ -39,42 +40,62 @@ export function createToolRuntime({
     const runtimeStartedAt = now();
     emit('bootstrap_start', { toolSlug: slug });
 
-    try {
-      const manifest = await (loadManifestOverride ?? loadManifest)(slug);
-      if (manifest.cssPath) {
-        ensureStylesheet(manifest.cssPath);
-      }
+    let manifest = {
+      slug,
+      dependencies: [],
+      styles: [],
+      modulePath: window.ToolNexusConfig?.runtimeModulePath,
+      templatePath: `/tool-templates/${slug}.html`
+    };
 
-      const templateStartedAt = now();
-      emit('template_load_start', { toolSlug: slug });
+    try {
+      manifest = await (loadManifestOverride ?? loadManifest)(slug);
+    } catch (error) {
+      emit('manifest_failure', { toolSlug: slug, error: error?.message ?? String(error) });
+      console.warn(`tool-runtime: manifest unavailable for "${slug}". Falling back to legacy runtime.`, error);
+    }
+
+    const styles = Array.isArray(manifest?.styles)
+      ? manifest.styles.filter(Boolean)
+      : [manifest?.cssPath].filter(Boolean);
+
+    for (const style of styles) {
+      ensureStylesheet(style);
+    }
+
+    const templateStartedAt = now();
+    emit('template_load_start', { toolSlug: slug });
+    try {
       await templateLoader(slug, root, { templatePath: manifest.templatePath });
       emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
+    } catch (error) {
+      emit('template_load_failure', { toolSlug: slug, error: error?.message ?? String(error) });
+      console.warn(`tool-runtime: template load failed for "${slug}"; continuing with legacy fallback.`, error);
+    }
 
-      templateBinder(root, window.ToolNexusConfig ?? {});
+    templateBinder(root, window.ToolNexusConfig ?? {});
 
-      const dependencyStartedAt = now();
-      emit('dependency_start', { toolSlug: slug });
-      try {
-        await dependencyLoader.loadDependencies({ dependencies: manifest.dependencies, toolSlug: slug });
-        emit('dependency_complete', { toolSlug: slug, duration: now() - dependencyStartedAt });
-      } catch (error) {
-        emit('dependency_failure', {
-          toolSlug: slug,
-          duration: now() - dependencyStartedAt,
-          error: error?.message ?? String(error)
-        });
-        throw error;
-      }
+    const dependencyStartedAt = now();
+    emit('dependency_start', { toolSlug: slug });
+    try {
+      await dependencyLoader.loadDependencies({ dependencies: manifest.dependencies, toolSlug: slug });
+      emit('dependency_complete', { toolSlug: slug, duration: now() - dependencyStartedAt });
+    } catch (error) {
+      emit('dependency_failure', {
+        toolSlug: slug,
+        duration: now() - dependencyStartedAt,
+        error: error?.message ?? String(error)
+      });
+      console.warn(`tool-runtime: dependency loading failed for "${slug}"; continuing with fallback lifecycle.`, error);
+    }
 
-      const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
-      if (!modulePath) {
-        throw new Error(`tool-runtime: no module path found for "${slug}".`);
-      }
+    const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
+    let module = {};
 
+    if (modulePath) {
       const moduleImportStartedAt = now();
       emit('module_import_start', { toolSlug: slug, metadata: { modulePath } });
 
-      let module;
       try {
         module = await importModule(modulePath);
         emit('module_import_complete', {
@@ -89,53 +110,54 @@ export function createToolRuntime({
           error: error?.message ?? String(error),
           metadata: { modulePath }
         });
-        throw error;
+        console.warn(`tool-runtime: module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
-
-      const mountStartedAt = now();
-      emit('mount_start', { toolSlug: slug });
-      try {
-        await lifecycleAdapter({ module, slug, root, manifest });
-
-        if (!root.firstElementChild) {
-          throw new Error(`tool-runtime: mounted "${slug}" but #tool-root is empty.`);
-        }
-
-        emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
-      } catch (error) {
-        emit('mount_failure', {
-          toolSlug: slug,
-          duration: now() - mountStartedAt,
-          error: error?.message ?? String(error)
-        });
-
-        emit('healing_attempt', { toolSlug: slug });
-        emit('tool_self_heal_triggered', { toolSlug: slug });
-
-        try {
-          const healed = await healRuntime({ slug, root, manifest, error });
-          emit('healing_result', { toolSlug: slug, metadata: { healed: Boolean(healed) } });
-          if (healed) {
-            emit('healing_success', { toolSlug: slug });
-            emit('tool_self_heal_success', { toolSlug: slug });
-            return;
-          }
-
-          emit('healing_failure', { toolSlug: slug });
-          emit('tool_unrecoverable_failure', { toolSlug: slug });
-          throw error;
-        } catch {
-          emit('healing_result', { toolSlug: slug, metadata: { healed: false } });
-          emit('healing_failure', { toolSlug: slug });
-          emit('tool_unrecoverable_failure', { toolSlug: slug });
-          throw error;
-        }
-      }
-
-      emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
-    } catch (error) {
-      console.error(`tool-runtime: failed to initialize "${slug}".`, error);
     }
+
+    const mountStartedAt = now();
+    emit('mount_start', { toolSlug: slug });
+
+    try {
+      const result = await lifecycleAdapter({ module, slug, root, manifest });
+      const mounted = Boolean(result?.mounted ?? true);
+
+      if (!mounted || !root.firstElementChild) {
+        const legacyResult = await legacyAutoInit({ slug, root, manifest });
+        if (!legacyResult?.mounted && !root.firstElementChild) {
+          throw new Error(`tool-runtime: no lifecycle rendered UI for "${slug}".`);
+        }
+      }
+
+      emit('mount_success', { toolSlug: slug, duration: now() - mountStartedAt });
+    } catch (error) {
+      emit('mount_failure', {
+        toolSlug: slug,
+        duration: now() - mountStartedAt,
+        error: error?.message ?? String(error)
+      });
+
+      emit('healing_attempt', { toolSlug: slug });
+      emit('tool_self_heal_triggered', { toolSlug: slug });
+
+      try {
+        const healed = await healRuntime({ slug, root, manifest, error });
+        emit('healing_result', { toolSlug: slug, metadata: { healed: Boolean(healed) } });
+        if (healed) {
+          emit('healing_success', { toolSlug: slug });
+          emit('tool_self_heal_success', { toolSlug: slug });
+          return;
+        }
+
+        emit('healing_failure', { toolSlug: slug });
+        emit('tool_unrecoverable_failure', { toolSlug: slug });
+      } catch {
+        emit('healing_result', { toolSlug: slug, metadata: { healed: false } });
+        emit('healing_failure', { toolSlug: slug });
+        emit('tool_unrecoverable_failure', { toolSlug: slug });
+      }
+    }
+
+    emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
   }
 
   return {
