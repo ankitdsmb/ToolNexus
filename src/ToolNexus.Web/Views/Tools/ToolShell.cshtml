@@ -52,6 +52,20 @@
                 }
             </section>
         }
+
+
+        @if (Model.RelatedTools.Any())
+        {
+            <section class="tool-seo__related" aria-label="Related tools">
+                <h2>Related tools</h2>
+                <ul>
+                    @foreach (var relatedTool in Model.RelatedTools)
+                    {
+                        <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
+                    }
+                </ul>
+            </section>
+        }
     }
 </section>
 
