@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -18,6 +19,9 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
     private static readonly HashSet<string> ReservedViewNames = ["Index", "Category", "Tool", "ToolShell"];
 
     private readonly string contentRootPath = hostEnvironment.ContentRootPath;
+    private readonly object loadLock = new();
+    private readonly ConcurrentDictionary<string, bool> webAssetPathCache = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyCollection<ToolManifest>? cachedManifests;
     private readonly string webRootPath = string.IsNullOrWhiteSpace(hostEnvironment.WebRootPath)
         ? Path.Combine(hostEnvironment.ContentRootPath, "wwwroot")
         : hostEnvironment.WebRootPath;
@@ -28,79 +32,93 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
 
     public IReadOnlyCollection<ToolManifest> LoadAll()
     {
-        Directory.CreateDirectory(manifestDirectory);
-        Directory.CreateDirectory(templateDirectory);
-
-        var manifests = new List<ToolManifest>();
-        var seenSlugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var filePath in Directory.EnumerateFiles(manifestDirectory, "*.json").OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+        if (cachedManifests is not null)
         {
-            ToolManifest? manifest;
-
-            try
-            {
-                var json = File.ReadAllText(filePath);
-                manifest = JsonSerializer.Deserialize<ToolManifest>(json, SerializerOptions);
-            }
-            catch (JsonException ex)
-            {
-                logger.LogWarning(ex, "Skipping invalid tool manifest JSON file: {ManifestFile}", filePath);
-                continue;
-            }
-            catch (IOException ex)
-            {
-                logger.LogWarning(ex, "Skipping unreadable tool manifest file: {ManifestFile}", filePath);
-                continue;
-            }
-
-            if (manifest is null || string.IsNullOrWhiteSpace(manifest.Slug) || string.IsNullOrWhiteSpace(manifest.ViewName))
-            {
-                logger.LogWarning("Skipping invalid tool manifest missing required fields: {ManifestFile}", filePath);
-                continue;
-            }
-
-            var normalized = NormalizeManifest(manifest);
-            if (!seenSlugs.Add(normalized.Slug))
-            {
-                throw new InvalidOperationException($"Duplicate tool manifest slug detected: '{normalized.Slug}'.");
-            }
-
-            EnsureTemplate(normalized);
-            manifests.Add(normalized);
+            return cachedManifests;
         }
 
-        foreach (var discovered in DiscoverToolViews())
+        lock (loadLock)
         {
-            if (seenSlugs.Contains(discovered.Slug))
+            if (cachedManifests is not null)
             {
-                continue;
+                return cachedManifests;
             }
 
-            var generated = BuildGeneratedManifest(discovered);
-            PersistManifest(generated);
-            EnsureTemplate(generated);
-            manifests.Add(generated);
-            seenSlugs.Add(generated.Slug);
-            logger.LogInformation("Generated missing manifest for tool slug '{ToolSlug}'.", generated.Slug);
-        }
+            Directory.CreateDirectory(manifestDirectory);
+            Directory.CreateDirectory(templateDirectory);
 
-        foreach (var discovered in DiscoverPlatformManifestTools())
-        {
-            if (seenSlugs.Contains(discovered.Slug))
+            var manifests = new List<ToolManifest>();
+            var seenSlugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var filePath in Directory.EnumerateFiles(manifestDirectory, "*.json").OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
             {
-                continue;
+                ToolManifest? manifest;
+
+                try
+                {
+                    var json = File.ReadAllText(filePath);
+                    manifest = JsonSerializer.Deserialize<ToolManifest>(json, SerializerOptions);
+                }
+                catch (JsonException ex)
+                {
+                    logger.LogWarning(ex, "Skipping invalid tool manifest JSON file: {ManifestFile}", filePath);
+                    continue;
+                }
+                catch (IOException ex)
+                {
+                    logger.LogWarning(ex, "Skipping unreadable tool manifest file: {ManifestFile}", filePath);
+                    continue;
+                }
+
+                if (manifest is null || string.IsNullOrWhiteSpace(manifest.Slug) || string.IsNullOrWhiteSpace(manifest.ViewName))
+                {
+                    logger.LogWarning("Skipping invalid tool manifest missing required fields: {ManifestFile}", filePath);
+                    continue;
+                }
+
+                var normalized = NormalizeManifest(manifest);
+                if (!seenSlugs.Add(normalized.Slug))
+                {
+                    throw new InvalidOperationException($"Duplicate tool manifest slug detected: '{normalized.Slug}'.");
+                }
+
+                EnsureTemplate(normalized);
+                manifests.Add(normalized);
             }
 
-            var generated = BuildGeneratedManifest(discovered);
-            PersistManifest(generated);
-            EnsureTemplate(generated);
-            manifests.Add(generated);
-            seenSlugs.Add(generated.Slug);
-            logger.LogInformation("Generated missing platform manifest for tool slug '{ToolSlug}'.", generated.Slug);
-        }
+            foreach (var discovered in DiscoverToolViews())
+            {
+                if (seenSlugs.Contains(discovered.Slug))
+                {
+                    continue;
+                }
 
-        return manifests.OrderBy(x => x.Slug, StringComparer.OrdinalIgnoreCase).ToArray();
+                var generated = BuildGeneratedManifest(discovered);
+                PersistManifest(generated);
+                EnsureTemplate(generated);
+                manifests.Add(generated);
+                seenSlugs.Add(generated.Slug);
+                logger.LogInformation("Generated missing manifest for tool slug '{ToolSlug}'.", generated.Slug);
+            }
+
+            foreach (var discovered in DiscoverPlatformManifestTools())
+            {
+                if (seenSlugs.Contains(discovered.Slug))
+                {
+                    continue;
+                }
+
+                var generated = BuildGeneratedManifest(discovered);
+                PersistManifest(generated);
+                EnsureTemplate(generated);
+                manifests.Add(generated);
+                seenSlugs.Add(generated.Slug);
+                logger.LogInformation("Generated missing platform manifest for tool slug '{ToolSlug}'.", generated.Slug);
+            }
+
+            cachedManifests = manifests.OrderBy(x => x.Slug, StringComparer.OrdinalIgnoreCase).ToArray();
+            return cachedManifests;
+        }
     }
 
     private ToolManifest NormalizeManifest(ToolManifest manifest)
@@ -213,8 +231,11 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         }
 
         var normalized = NormalizeWebPath(path);
-        var localPath = Path.Combine(webRootPath, normalized.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-        return File.Exists(localPath);
+        return webAssetPathCache.GetOrAdd(normalized, static (assetPath, root) =>
+        {
+            var localPath = Path.Combine(root, assetPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            return File.Exists(localPath);
+        }, webRootPath);
     }
 
     private IEnumerable<(string ViewName, string Slug, string ViewPath)> DiscoverToolViews()
