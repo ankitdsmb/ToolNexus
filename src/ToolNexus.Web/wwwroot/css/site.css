@@ -610,6 +610,77 @@ summary { cursor: pointer; font-weight: 600; }
 
 
 
+
+.tool-shell-page {
+  gap: var(--space-4);
+}
+
+.tool-shell-page__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.tool-shell-page__hero-main {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tool-shell-page__hero-main h1 {
+  font-size: clamp(1.6rem, 2.2vw, 2.1rem);
+  line-height: 1.1;
+}
+
+.tool-shell-page__hero-main p {
+  color: var(--text-secondary);
+  max-width: 72ch;
+}
+
+.tool-shell-page__hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.tool-shell-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.8fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.tool-shell-page__runtime {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  min-height: 640px;
+  padding: var(--space-3);
+}
+
+.tool-shell-page__docs,
+.tool-shell-page__docs section {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tool-shell-page__docs {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  padding: var(--space-3);
+  align-content: start;
+}
+
+.tool-shell-page__docs ul,
+.tool-shell-page__docs ol {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-4);
+}
+
+
 .tool-page__heading h1 {
   font-size: clamp(var(--type-h1), 2.4vw, 34px);
   line-height: 1.14;
@@ -618,6 +689,83 @@ summary { cursor: pointer; font-weight: 600; }
 .tool-page__heading p {
   max-width: 72ch;
   font-size: var(--type-body-lg);
+}
+
+
+.tool-page__heading {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.tool-page__intro {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tool-page__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.tool-page__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.45fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.tool-page__insights {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.tool-panel--support {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+}
+
+.sample-panel {
+  padding: var(--space-3);
+}
+
+.sample-panel pre {
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  font: 500 var(--text-xs)/1.55 var(--font-mono);
+}
+
+.tool-content {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.tool-content ul {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-4);
+}
+
+.tool-content details {
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+}
+
+.tool-page__action-selector {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.tool-page__action-selector select {
+  min-height: var(--control-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  background: var(--bg-secondary);
 }
 
 .tool-layout--elite {
@@ -754,6 +902,35 @@ RESPONSIVE
   .contact-grid,
   .tool-layout,
   .json-workspace { grid-template-columns: 1fr; }
+
+  .tool-shell-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-shell-page__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-shell-page__hero-meta {
+    justify-content: flex-start;
+  }
+
+  .tool-page__workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-page__insights {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-page__heading {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-page__stats {
+    justify-content: flex-start;
+  }
+
 
   .tool-card,
   .card,

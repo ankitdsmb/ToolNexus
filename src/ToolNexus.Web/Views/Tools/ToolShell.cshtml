@@ -14,131 +14,121 @@
     }
 }
 
-<div class="tool-page">
-<article class="tool-seo" data-nosnippet="false" aria-label="Tool documentation">
-    <header>
-        <h1>@Model.Tool.Title</h1>
-        <p>@(Model.Content?.Intro ?? Model.Tool.SeoDescription)</p>
+<div class="tool-shell-page tool-page">
+    <header class="tool-shell-page__hero tool-panel" aria-label="Tool introduction">
+        <div class="tool-shell-page__hero-main">
+            <h1>@Model.Tool.Title</h1>
+            <p>@(Model.Content?.Intro ?? Model.Tool.SeoDescription)</p>
+        </div>
+        <div class="tool-shell-page__hero-meta" aria-label="Tool metadata">
+            <span class="chip">@Model.Tool.Category</span>
+            <span class="chip">@Model.Tool.Actions.Count action@(Model.Tool.Actions.Count == 1 ? string.Empty : "s")</span>
+            <span class="chip">@(Model.Tool.IsDeterministic ? "Deterministic" : "Adaptive")</span>
+        </div>
     </header>
 
-    <section class="tool-seo__description" aria-label="Long description">
-        <h2>Overview</h2>
-        <p>@(Model.Content?.LongDescription ?? Model.Tool.SeoDescription)</p>
+    <section class="tool-shell-page__layout" aria-label="Interactive tool and documentation">
+        <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
+
+        <article class="tool-seo tool-shell-page__docs" data-nosnippet="false" aria-label="Tool documentation">
+            <section class="tool-seo__description" aria-label="Long description">
+                <h2>Overview</h2>
+                <p>@(Model.Content?.LongDescription ?? Model.Tool.SeoDescription)</p>
+            </section>
+
+            @if (Model.Content?.Features.Any() == true)
+            {
+                <section class="tool-seo__features" aria-label="Key features">
+                    <h2>Features</h2>
+                    <ul>
+                        @foreach (var feature in Model.Content.Features)
+                        {
+                            <li>@feature</li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            @if (Model.Content?.Steps.Any() == true)
+            {
+                <section class="tool-seo__usage" aria-label="How to use">
+                    <h2>How to use</h2>
+                    <ol>
+                        @foreach (var step in Model.Content.Steps)
+                        {
+                            <li>
+                                <h3>@step.Title</h3>
+                                <p>@step.Description</p>
+                            </li>
+                        }
+                    </ol>
+                </section>
+            }
+
+            @if (Model.Content?.Examples.Any() == true)
+            {
+                <section class="tool-seo__examples" aria-label="Examples">
+                    <h2>Examples</h2>
+                    @foreach (var example in Model.Content.Examples)
+                    {
+                        <article>
+                            <h3>@example.Title</h3>
+                            <p><strong>Input:</strong> @example.Input</p>
+                            <p><strong>Output:</strong> @example.Output</p>
+                        </article>
+                    }
+                </section>
+            }
+
+            @if (Model.Content?.Faq.Any() == true)
+            {
+                <section class="tool-seo__faq" aria-label="Frequently asked questions">
+                    <h2>FAQ</h2>
+                    @foreach (var faq in Model.Content.Faq)
+                    {
+                        <article>
+                            <h3>@faq.Question</h3>
+                            <p>@faq.Answer</p>
+                        </article>
+                    }
+                </section>
+            }
+
+            @if (Model.Content?.UseCases.Any() == true)
+            {
+                <section class="tool-seo__use-cases" aria-label="Use cases">
+                    <h2>Use cases</h2>
+                    <ul>
+                        @foreach (var useCase in Model.Content.UseCases)
+                        {
+                            <li>@useCase</li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            @if (Model.RelatedTools.Any() || Model.SameCategoryTools.Any() || Model.NextTools.Any())
+            {
+                <section class="tool-seo__related" aria-label="Related tools">
+                    <h2>Related tools</h2>
+                    <ul>
+                        @foreach (var relatedTool in Model.RelatedTools)
+                        {
+                            <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
+                        }
+                        @foreach (var relatedTool in Model.SameCategoryTools)
+                        {
+                            <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
+                        }
+                        @foreach (var relatedTool in Model.NextTools)
+                        {
+                            <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
+                        }
+                    </ul>
+                </section>
+            }
+        </article>
     </section>
-
-    @if (Model.Content?.Features.Any() == true)
-    {
-        <section class="tool-seo__features" aria-label="Key features">
-            <h2>Features</h2>
-            <ul>
-                @foreach (var feature in Model.Content.Features)
-                {
-                    <li>@feature</li>
-                }
-            </ul>
-        </section>
-    }
-
-    @if (Model.Content?.Steps.Any() == true)
-    {
-        <section class="tool-seo__usage" aria-label="How to use">
-            <h2>How to use</h2>
-            <ol>
-                @foreach (var step in Model.Content.Steps)
-                {
-                    <li>
-                        <h3>@step.Title</h3>
-                        <p>@step.Description</p>
-                    </li>
-                }
-            </ol>
-        </section>
-    }
-
-    @if (Model.Content?.Examples.Any() == true)
-    {
-        <section class="tool-seo__examples" aria-label="Examples">
-            <h2>Examples</h2>
-            @foreach (var example in Model.Content.Examples)
-            {
-                <article>
-                    <h3>@example.Title</h3>
-                    <p><strong>Input:</strong> @example.Input</p>
-                    <p><strong>Output:</strong> @example.Output</p>
-                </article>
-            }
-        </section>
-    }
-
-    @if (Model.Content?.Faq.Any() == true)
-    {
-        <section class="tool-seo__faq" aria-label="Frequently asked questions">
-            <h2>FAQ</h2>
-            @foreach (var faq in Model.Content.Faq)
-            {
-                <article>
-                    <h3>@faq.Question</h3>
-                    <p>@faq.Answer</p>
-                </article>
-            }
-        </section>
-    }
-
-    @if (Model.Content?.UseCases.Any() == true)
-    {
-        <section class="tool-seo__use-cases" aria-label="Use cases">
-            <h2>Use cases</h2>
-            <ul>
-                @foreach (var useCase in Model.Content.UseCases)
-                {
-                    <li>@useCase</li>
-                }
-            </ul>
-        </section>
-    }
-
-    @if (Model.RelatedTools.Any())
-    {
-        <section class="tool-seo__related" aria-label="Related tools">
-            <h2>Related tools</h2>
-            <ul>
-                @foreach (var relatedTool in Model.RelatedTools)
-                {
-                    <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
-                }
-            </ul>
-        </section>
-    }
-
-    @if (Model.SameCategoryTools.Any())
-    {
-        <section class="tool-seo__same-category" aria-label="Tools in this category">
-            <h2>Same category tools</h2>
-            <ul>
-                @foreach (var relatedTool in Model.SameCategoryTools)
-                {
-                    <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
-                }
-            </ul>
-        </section>
-    }
-
-    @if (Model.NextTools.Any())
-    {
-        <section class="tool-seo__next" aria-label="Next tools to try">
-            <h2>Next tools</h2>
-            <ul>
-                @foreach (var relatedTool in Model.NextTools)
-                {
-                    <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
-                }
-            </ul>
-        </section>
-    }
-</article>
-
-<div id="tool-root" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
-
 </div>
 
 @section Scripts {
