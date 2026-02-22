@@ -1,6 +1,6 @@
 @model ToolNexus.Web.Areas.Admin.Models.ToolAdminIndexViewModel
 @{
-    ViewData["Title"] = "Tool Management";
+    ViewData["Title"] = "Tool Workspace";
 }
 
 <div class="row g-3">
@@ -41,22 +41,152 @@
         <div class="card">
             <div class="card-header"><h3 class="card-title">@(Model.Form.Id.HasValue ? "Edit Tool" : "Add Tool")</h3></div>
             <div class="card-body">
-                <form asp-action="Save" method="post">
-                    @Html.AntiForgeryToken()
-                    <input asp-for="Form.Id" type="hidden" />
-                    <div class="mb-2"><label asp-for="Form.Name"></label><input class="form-control" asp-for="Form.Name" /></div>
-                    <div class="mb-2"><label asp-for="Form.Slug"></label><input class="form-control" asp-for="Form.Slug" /></div>
-                    <div class="mb-2"><label asp-for="Form.Description"></label><textarea class="form-control" asp-for="Form.Description"></textarea></div>
-                    <div class="mb-2"><label asp-for="Form.Category"></label><input class="form-control" asp-for="Form.Category" /></div>
-                    <div class="mb-2"><label asp-for="Form.Status"></label><select class="form-select" asp-for="Form.Status"><option>Enabled</option><option>Disabled</option></select></div>
-                    <div class="mb-2"><label asp-for="Form.Icon"></label><input class="form-control" asp-for="Form.Icon" /></div>
-                    <div class="mb-2"><label asp-for="Form.SortOrder"></label><input class="form-control" asp-for="Form.SortOrder" /></div>
-                    <div class="mb-2"><label asp-for="Form.InputSchema"></label><textarea class="form-control" asp-for="Form.InputSchema" rows="4"></textarea></div>
-                    <div class="mb-2"><label asp-for="Form.OutputSchema"></label><textarea class="form-control" asp-for="Form.OutputSchema" rows="4"></textarea></div>
-                    <div asp-validation-summary="All" class="text-danger"></div>
-                    <button class="btn btn-primary" type="submit">Save Tool</button>
-                </form>
+                <ul class="nav nav-tabs" id="tool-editor-tabs" role="tablist">
+                    <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-definition" type="button">Definition</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-content" type="button" @(Model.Form.Id.HasValue ? null : "disabled")>Content</button></li>
+                </ul>
+                <div class="tab-content pt-3">
+                    <div class="tab-pane fade show active" id="tab-definition">
+                        <form asp-action="Save" method="post">
+                            @Html.AntiForgeryToken()
+                            <input asp-for="Form.Id" type="hidden" />
+                            <div class="mb-2"><label asp-for="Form.Name"></label><input class="form-control" asp-for="Form.Name" /></div>
+                            <div class="mb-2"><label asp-for="Form.Slug"></label><input class="form-control" asp-for="Form.Slug" /></div>
+                            <div class="mb-2"><label asp-for="Form.Description"></label><textarea class="form-control" asp-for="Form.Description"></textarea></div>
+                            <div class="mb-2"><label asp-for="Form.Category"></label><input class="form-control" asp-for="Form.Category" /></div>
+                            <div class="mb-2"><label asp-for="Form.Status"></label><select class="form-select" asp-for="Form.Status"><option>Enabled</option><option>Disabled</option></select></div>
+                            <div class="mb-2"><label asp-for="Form.Icon"></label><input class="form-control" asp-for="Form.Icon" /></div>
+                            <div class="mb-2"><label asp-for="Form.SortOrder"></label><input class="form-control" asp-for="Form.SortOrder" /></div>
+                            <div class="mb-2"><label asp-for="Form.InputSchema"></label><textarea class="form-control" asp-for="Form.InputSchema" rows="4"></textarea></div>
+                            <div class="mb-2"><label asp-for="Form.OutputSchema"></label><textarea class="form-control" asp-for="Form.OutputSchema" rows="4"></textarea></div>
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                            <button class="btn btn-primary" type="submit">Save Tool</button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="tab-content" data-tool-id="@Model.Form.Id">
+                        <div id="content-editor-status" class="small text-muted mb-2">Open content tab to load.</div>
+                        <div id="content-editor-root"></div>
+                        <button id="save-content-btn" class="btn btn-primary btn-sm mt-2" type="button">Save Content</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+(() => {
+    const pane = document.getElementById('tab-content');
+    if (!pane) return;
+    const toolId = pane.dataset.toolId;
+    if (!toolId) return;
+
+    let graph = null;
+    const root = document.getElementById('content-editor-root');
+    const status = document.getElementById('content-editor-status');
+
+    const defs = [
+        { key: 'features', label: 'Features', type: 'value' },
+        { key: 'steps', label: 'Steps', type: 'step' },
+        { key: 'examples', label: 'Examples', type: 'example' },
+        { key: 'faqs', label: 'FAQs', type: 'faq' },
+        { key: 'useCases', label: 'Use Cases', type: 'value' },
+        { key: 'relatedTools', label: 'Related Tools', type: 'related' }
+    ];
+
+    document.querySelector('[data-bs-target="#tab-content"]').addEventListener('shown.bs.tab', async () => {
+        if (graph) return;
+        status.textContent = 'Loading content graph...';
+        const response = await fetch(`/api/admin/content/${toolId}`);
+        if (!response.ok) { status.textContent = 'Failed loading content.'; return; }
+        graph = await response.json();
+        render();
+        status.textContent = `Editing content for ${graph.toolName}.`;
+    });
+
+    document.getElementById('save-content-btn').addEventListener('click', async () => {
+        if (!graph) return;
+        status.textContent = 'Saving...';
+        const response = await fetch(`/api/admin/content/${toolId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(graph)
+        });
+        status.textContent = response.ok ? 'Saved.' : 'Save failed.';
+    });
+
+    function render() {
+        root.innerHTML = '';
+        defs.forEach(def => {
+            const wrap = document.createElement('div');
+            wrap.className = 'mb-3 border rounded p-2';
+            wrap.innerHTML = `<div class="d-flex justify-content-between"><strong>${def.label}</strong><button class="btn btn-outline-primary btn-sm" type="button">Add</button></div>`;
+            const list = document.createElement('div');
+            list.className = 'mt-2';
+            wrap.appendChild(list);
+            wrap.querySelector('button').addEventListener('click', () => { graph[def.key].push(newItem(def.type)); render(); });
+            graph[def.key].forEach((item, idx) => list.appendChild(itemEditor(def, item, idx)));
+            root.appendChild(wrap);
+        });
+    }
+
+    function itemEditor(def, item, idx) {
+        const row = document.createElement('div');
+        row.className = 'border rounded p-2 mb-2';
+        row.draggable = true;
+        row.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', idx));
+        row.addEventListener('dragover', e => e.preventDefault());
+        row.addEventListener('drop', e => {
+            e.preventDefault();
+            const from = Number(e.dataTransfer.getData('text/plain'));
+            const arr = graph[def.key];
+            const [m] = arr.splice(from, 1);
+            arr.splice(idx, 0, m);
+            arr.forEach((x, i) => x.sortOrder = i);
+            render();
+        });
+
+        row.innerHTML = editorHtml(def.type, item);
+        row.querySelectorAll('input,textarea,select').forEach(el => {
+            el.addEventListener('input', () => updateItem(def.type, item, row));
+        });
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn btn-outline-danger btn-sm mt-1';
+        remove.textContent = 'Remove';
+        remove.addEventListener('click', () => { graph[def.key].splice(idx, 1); render(); });
+        row.appendChild(remove);
+        return row;
+    }
+
+    function editorHtml(type, item) {
+        if (type === 'value') return `<input class='form-control form-control-sm' value='${escape(item.value ?? '')}'/>`;
+        if (type === 'step') return `<input class='form-control form-control-sm mb-1' placeholder='Title' value='${escape(item.title ?? '')}'/><textarea class='form-control form-control-sm' placeholder='Description'>${escape(item.description ?? '')}</textarea>`;
+        if (type === 'example') return `<input class='form-control form-control-sm mb-1' placeholder='Title' value='${escape(item.title ?? '')}'/><textarea class='form-control form-control-sm mb-1' placeholder='Input'>${escape(item.input ?? '')}</textarea><textarea class='form-control form-control-sm' placeholder='Output'>${escape(item.output ?? '')}</textarea>`;
+        if (type === 'faq') return `<input class='form-control form-control-sm mb-1' placeholder='Question' value='${escape(item.question ?? '')}'/><textarea class='form-control form-control-sm' placeholder='Answer'>${escape(item.answer ?? '')}</textarea>`;
+        if (type === 'related') return `<select class='form-select form-select-sm'>${graph.relatedToolOptions.map(o => `<option value='${o.slug}' ${o.slug===item.relatedSlug?'selected':''}>${o.name}</option>`).join('')}</select>`;
+        return '';
+    }
+
+    function updateItem(type, item, row) {
+        const els = row.querySelectorAll('input,textarea,select');
+        if (type === 'value') item.value = els[0].value;
+        if (type === 'step') { item.title = els[0].value; item.description = els[1].value; }
+        if (type === 'example') { item.title = els[0].value; item.input = els[1].value; item.output = els[2].value; }
+        if (type === 'faq') { item.question = els[0].value; item.answer = els[1].value; }
+        if (type === 'related') { item.relatedSlug = els[0].value; }
+    }
+
+    function newItem(type) {
+        if (type === 'value') return { id: 0, value: '', sortOrder: 0 };
+        if (type === 'step') return { id: 0, title: '', description: '', sortOrder: 0 };
+        if (type === 'example') return { id: 0, title: '', input: '', output: '', sortOrder: 0 };
+        if (type === 'faq') return { id: 0, question: '', answer: '', sortOrder: 0 };
+        return { id: 0, relatedSlug: graph.relatedToolOptions[0]?.slug ?? '', sortOrder: 0 };
+    }
+
+    function escape(v) { return (v || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;'); }
+})();
+</script>
+}
