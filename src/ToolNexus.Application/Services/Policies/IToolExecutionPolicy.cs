@@ -3,8 +3,11 @@ namespace ToolNexus.Application.Services.Policies;
 public interface IToolExecutionPolicy
 {
     string Slug { get; }
+    string ExecutionMode { get; }
+    bool IsExecutionEnabled { get; }
     int TimeoutSeconds { get; }
-    int MaxPayloadSizeBytes { get; }
+    int MaxInputSize { get; }
+    int MaxRequestsPerMinute { get; }
     int CacheTtlSeconds { get; }
     ToolHttpMethodPolicy AllowedHttpMethods { get; }
     bool AllowAnonymous { get; }

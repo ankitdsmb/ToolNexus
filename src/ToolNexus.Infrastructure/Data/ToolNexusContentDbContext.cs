@@ -14,6 +14,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<ToolExampleEntity> ToolExamples => Set<ToolExampleEntity>();
     public DbSet<ToolUseCaseEntity> ToolUseCases => Set<ToolUseCaseEntity>();
     public DbSet<ToolDefinitionEntity> ToolDefinitions => Set<ToolDefinitionEntity>();
+    public DbSet<ToolExecutionPolicyEntity> ToolExecutionPolicies => Set<ToolExecutionPolicyEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,6 +93,16 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Status).HasMaxLength(20);
             entity.Property(x => x.Icon).HasMaxLength(120);
             entity.Property(x => x.ActionsCsv).HasMaxLength(500);
+            entity.Property(x => x.UpdatedAt);
+        });
+
+        modelBuilder.Entity<ToolExecutionPolicyEntity>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => x.ToolDefinitionId).IsUnique();
+            entity.HasIndex(x => x.ToolSlug).IsUnique();
+            entity.Property(x => x.ToolSlug).HasMaxLength(120);
+            entity.Property(x => x.ExecutionMode).HasMaxLength(20);
             entity.Property(x => x.UpdatedAt);
         });
     }

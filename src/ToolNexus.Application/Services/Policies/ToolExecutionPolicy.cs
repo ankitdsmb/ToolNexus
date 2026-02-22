@@ -2,8 +2,11 @@ namespace ToolNexus.Application.Services.Policies;
 
 public sealed record ToolExecutionPolicy(
     string Slug,
+    string ExecutionMode,
+    bool IsExecutionEnabled,
     int TimeoutSeconds,
-    int MaxPayloadSizeBytes,
+    int MaxInputSize,
+    int MaxRequestsPerMinute,
     int CacheTtlSeconds,
     ToolHttpMethodPolicy AllowedHttpMethods,
     bool AllowAnonymous,

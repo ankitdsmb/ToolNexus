@@ -41,15 +41,16 @@
         <div class="card">
             <div class="card-header"><h3 class="card-title">@(Model.Form.Id.HasValue ? "Edit Tool" : "Add Tool")</h3></div>
             <div class="card-body">
+                <form asp-action="Save" method="post">
+                            @Html.AntiForgeryToken()
+                            <input asp-for="Form.Id" type="hidden" />
                 <ul class="nav nav-tabs" id="tool-editor-tabs" role="tablist">
                     <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-definition" type="button">Definition</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-execution" type="button">Execution</button></li>
                     <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-content" type="button" @(Model.Form.Id.HasValue ? null : "disabled")>Content</button></li>
                 </ul>
                 <div class="tab-content pt-3">
                     <div class="tab-pane fade show active" id="tab-definition">
-                        <form asp-action="Save" method="post">
-                            @Html.AntiForgeryToken()
-                            <input asp-for="Form.Id" type="hidden" />
                             <div class="mb-2"><label asp-for="Form.Name"></label><input class="form-control" asp-for="Form.Name" /></div>
                             <div class="mb-2"><label asp-for="Form.Slug"></label><input class="form-control" asp-for="Form.Slug" /></div>
                             <div class="mb-2"><label asp-for="Form.Description"></label><textarea class="form-control" asp-for="Form.Description"></textarea></div>
@@ -59,16 +60,23 @@
                             <div class="mb-2"><label asp-for="Form.SortOrder"></label><input class="form-control" asp-for="Form.SortOrder" /></div>
                             <div class="mb-2"><label asp-for="Form.InputSchema"></label><textarea class="form-control" asp-for="Form.InputSchema" rows="4"></textarea></div>
                             <div class="mb-2"><label asp-for="Form.OutputSchema"></label><textarea class="form-control" asp-for="Form.OutputSchema" rows="4"></textarea></div>
-                            <div asp-validation-summary="All" class="text-danger"></div>
-                            <button class="btn btn-primary" type="submit">Save Tool</button>
-                        </form>
                     </div>
-                    <div class="tab-pane fade" id="tab-content" data-tool-id="@Model.Form.Id">
+                    <div class="tab-pane fade" id="tab-execution">
+                            <div class="mb-2"><label asp-for="Form.ExecutionMode"></label><select class="form-select" asp-for="Form.ExecutionMode"><option>Local</option><option>Remote</option><option>Sandbox</option><option>Disabled</option></select></div>
+                            <div class="mb-2"><label asp-for="Form.TimeoutSeconds"></label><input class="form-control" asp-for="Form.TimeoutSeconds" /></div>
+                            <div class="mb-2"><label asp-for="Form.MaxRequestsPerMinute"></label><input class="form-control" asp-for="Form.MaxRequestsPerMinute" /></div>
+                            <div class="mb-2"><label asp-for="Form.MaxInputSize"></label><input class="form-control" asp-for="Form.MaxInputSize" /></div>
+                            <div class="form-check mb-2"><input class="form-check-input" asp-for="Form.IsExecutionEnabled" /><label class="form-check-label" asp-for="Form.IsExecutionEnabled"></label></div>
+                    </div>
+<div class="tab-pane fade" id="tab-content" data-tool-id="@Model.Form.Id">
                         <div id="content-editor-status" class="small text-muted mb-2">Open content tab to load.</div>
                         <div id="content-editor-root"></div>
                         <button id="save-content-btn" class="btn btn-primary btn-sm mt-2" type="button">Save Content</button>
                     </div>
                 </div>
+                            <div asp-validation-summary="All" class="text-danger mt-2"></div>
+                            <button class="btn btn-primary mt-2" type="submit">Save Tool</button>
+                        </form>
             </div>
         </div>
     </div>

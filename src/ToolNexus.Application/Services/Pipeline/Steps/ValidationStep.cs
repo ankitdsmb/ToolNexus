@@ -7,7 +7,7 @@ public sealed class ValidationStep(IToolManifestGovernance governance, IToolExec
 {
     public int Order => 100;
 
-    public Task<ToolExecutionResponse> InvokeAsync(ToolExecutionContext context, ToolExecutionDelegate next, CancellationToken cancellationToken)
+    public async Task<ToolExecutionResponse> InvokeAsync(ToolExecutionContext context, ToolExecutionDelegate next, CancellationToken cancellationToken)
     {
         var manifest = governance.FindBySlug(context.ToolId);
         if (manifest is null)
@@ -21,7 +21,7 @@ public sealed class ValidationStep(IToolManifestGovernance governance, IToolExec
         }
 
         context.Manifest = manifest;
-        context.Policy = policyRegistry.GetPolicy(context.ToolId);
-        return next(context, cancellationToken);
+        context.Policy = await policyRegistry.GetPolicyAsync(context.ToolId, cancellationToken);
+        return await next(context, cancellationToken);
     }
 }

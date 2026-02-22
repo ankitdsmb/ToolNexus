@@ -251,6 +251,52 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 });
 
 
+
+            modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolExecutionPolicyEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ExecutionMode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsExecutionEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxInputSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxRequestsPerMinute")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TimeoutSeconds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ToolDefinitionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ToolSlug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToolDefinitionId")
+                        .IsUnique();
+
+                    b.HasIndex("ToolSlug")
+                        .IsUnique();
+
+                    b.ToTable("ToolExecutionPolicies");
+                });
+
             modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolDefinitionEntity", b =>
                 {
                     b.Property<int>("Id")

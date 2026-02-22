@@ -6,7 +6,7 @@ using ToolNexus.Web.Areas.Admin.Models;
 namespace ToolNexus.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-public sealed class ToolsController(IToolDefinitionService service) : Controller
+public sealed class ToolsController(IToolDefinitionService service, IExecutionPolicyService executionPolicyService) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -21,7 +21,14 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        return View("Index", await BuildViewModelAsync(ToolAdminFormModel.FromDetail(detail), cancellationToken));
+        var form = ToolAdminFormModel.FromDetail(detail);
+        var policy = await executionPolicyService.GetBySlugAsync(detail.Slug, cancellationToken);
+        form.ExecutionMode = policy.ExecutionMode;
+        form.TimeoutSeconds = policy.TimeoutSeconds;
+        form.MaxRequestsPerMinute = policy.MaxRequestsPerMinute;
+        form.MaxInputSize = policy.MaxInputSize;
+        form.IsExecutionEnabled = policy.IsExecutionEnabled;
+        return View("Index", await BuildViewModelAsync(form, cancellationToken));
     }
 
     [HttpPost]
@@ -38,10 +45,18 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
             if (form.Id.HasValue)
             {
                 await service.UpdateAsync(form.Id.Value, form.ToUpdate(), cancellationToken);
+                await executionPolicyService.UpdateBySlugAsync(
+                    form.Slug,
+                    new(form.ExecutionMode, form.TimeoutSeconds, form.MaxRequestsPerMinute, form.MaxInputSize, form.IsExecutionEnabled),
+                    cancellationToken);
             }
             else
             {
-                await service.CreateAsync(form.ToCreate(), cancellationToken);
+                var created = await service.CreateAsync(form.ToCreate(), cancellationToken);
+                await executionPolicyService.UpdateBySlugAsync(
+                    created.Slug,
+                    new(form.ExecutionMode, form.TimeoutSeconds, form.MaxRequestsPerMinute, form.MaxInputSize, form.IsExecutionEnabled),
+                    cancellationToken);
             }
         }
         catch (ValidationException ex)
