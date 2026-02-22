@@ -28,7 +28,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolManifestRepository, DbToolManifestRepository>();
         services.AddScoped<IToolDefinitionRepository, EfToolDefinitionRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
-        services.AddScoped<IToolContentService, ToolContentService>();
+        services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
         services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
         services
             .AddOptions<ApiKeyOptions>()

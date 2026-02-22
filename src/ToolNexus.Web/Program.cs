@@ -230,6 +230,8 @@ if (app.Environment.IsDevelopment())
     }));
 }
 
+app.MapControllers();
+
 app.MapControllerRoute(
     name: "admin",
     pattern: "admin/{controller=Dashboard}/{action=Index}/{id?}",
