@@ -7,12 +7,10 @@ public sealed class ToolManifestGovernanceService(IToolManifestRepository reposi
 {
     private static readonly Regex SlugRegex = new("^[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.Compiled);
 
-    private readonly Lazy<IReadOnlyCollection<ToolManifest>> _manifests = new(() => ValidateAndBuild(repository.LoadTools()));
-
-    public IReadOnlyCollection<ToolManifest> GetAll() => _manifests.Value;
+    public IReadOnlyCollection<ToolManifest> GetAll() => ValidateAndBuild(repository.LoadTools());
 
     public ToolManifest? FindBySlug(string slug) =>
-        _manifests.Value.FirstOrDefault(x => x.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+        ValidateAndBuild(repository.LoadTools()).FirstOrDefault(x => x.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
 
     private static IReadOnlyCollection<ToolManifest> ValidateAndBuild(IReadOnlyCollection<ToolDescriptor> tools)
     {

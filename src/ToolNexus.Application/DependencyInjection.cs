@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightService, ToolInsightService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         services.AddSingleton<IToolCatalogService, ToolCatalogService>();
+        services.AddScoped<IToolDefinitionService, ToolDefinitionService>();
         services.AddScoped<ISitemapService, SitemapService>();
         services.AddSingleton<IToolManifestGovernance, ToolManifestGovernanceService>();
         services.AddScoped<IToolContentService, ToolContentService>();
