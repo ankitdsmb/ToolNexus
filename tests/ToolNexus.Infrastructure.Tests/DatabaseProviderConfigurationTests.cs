@@ -43,6 +43,30 @@ public sealed class DatabaseProviderConfigurationTests
         Assert.Contains(options.Extensions, extension => extension.GetType().Name.Contains("Npgsql", StringComparison.OrdinalIgnoreCase));
     }
 
+
+    [Theory]
+    [InlineData("PostgreSQL")]
+    [InlineData("postgres")]
+    [InlineData("Npgsql")]
+    public void AddInfrastructure_PostgreSqlAliases_UseNpgsqlProvider(string providerName)
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Database:Provider"] = providerName,
+                ["Database:ConnectionString"] = "Host=localhost;Port=5432;Database=toolnexus;Username=postgres;Password=postgres"
+            })
+            .Build();
+
+        services.AddInfrastructure(configuration);
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<DbContextOptions<ToolNexusContentDbContext>>();
+
+        Assert.Contains(options.Extensions, extension => extension.GetType().Name.Contains("Npgsql", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact]
     public void AddInfrastructure_UnsupportedProvider_Throws()
     {
