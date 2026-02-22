@@ -25,6 +25,16 @@ public static class DependencyInjection
         {
             services.AddDbContext<ToolNexusContentDbContext>(options => options.UseSqlite(connectionString));
         }
+        else if (provider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase)
+            || provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)
+            || provider.Equals("Npgsql", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddDbContext<ToolNexusContentDbContext>(options => options.UseNpgsql(connectionString));
+        }
+        else
+        {
+            throw new NotSupportedException($"Unsupported database provider '{provider}'. Supported providers: Sqlite, PostgreSQL.");
+        }
 
         services.AddSingleton<IToolManifestRepository, JsonFileToolManifestRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
