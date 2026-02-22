@@ -45,7 +45,9 @@
             <p class="tool-shell-page__workspace-label">INPUT → RUN → COPY</p>
             <p class="tool-shell-page__workspace-hint">Primary flow is interaction-first. Context rail content stays secondary.</p>
         </header>
-        <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
+        <div class="tool-shell-page__runtime-zone-shell" data-runtime-zone-shell="true">
+            <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
+        </div>
     </section>
 
     <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">

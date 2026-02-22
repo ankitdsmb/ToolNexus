@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cards = Array.from(page.querySelectorAll('[data-actionable-card="true"]'));
   const disclosures = Array.from(page.querySelectorAll('.readme-disclosure'));
   const runtime = page.querySelector('.tool-shell-page__runtime');
+  const runtimeShell = page.querySelector('[data-runtime-zone-shell="true"]');
 
   cards.forEach((card) => {
     card.addEventListener('mouseenter', () => card.classList.add('is-emphasized'));
@@ -34,15 +35,22 @@ document.addEventListener('DOMContentLoaded', () => {
     pendingFrame = 0;
     const bounds = runtime.getBoundingClientRect();
     const normalized = (nextPointerX - bounds.left) / Math.max(bounds.width, 1);
-    runtime.style.setProperty('--runtime-pointer-x', `${Math.min(Math.max(normalized, 0), 1).toFixed(3)}`);
+    const pointerX = `${Math.min(Math.max(normalized, 0), 1).toFixed(3)}`;
+    runtime.style.setProperty('--runtime-pointer-x', pointerX);
+    if (runtimeShell) {
+      runtimeShell.style.setProperty('--runtime-pointer-x', pointerX);
+    }
     page.classList.add('has-pointer-guidance');
   };
-
 
   runtime.addEventListener('pointerleave', () => {
     window.clearTimeout(pointerGuidanceTimeoutId);
     pointerGuidanceTimeoutId = window.setTimeout(() => {
       page.classList.remove('has-pointer-guidance');
+      runtime.style.setProperty('--runtime-pointer-x', '0.5');
+      if (runtimeShell) {
+        runtimeShell.style.setProperty('--runtime-pointer-x', '0.5');
+      }
     }, 140);
   });
 
