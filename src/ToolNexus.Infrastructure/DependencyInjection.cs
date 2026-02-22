@@ -18,23 +18,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var provider = configuration["Database:Provider"] ?? "Sqlite";
+        var provider = configuration["Database:Provider"];
         var connectionString = configuration["Database:ConnectionString"] ?? "Data Source=toolnexus.db";
 
-        if (provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
-        {
-            services.AddDbContext<ToolNexusContentDbContext>(options => options.UseSqlite(connectionString));
-        }
-        else if (provider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase)
-            || provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)
-            || provider.Equals("Npgsql", StringComparison.OrdinalIgnoreCase))
-        {
-            services.AddDbContext<ToolNexusContentDbContext>(options => options.UseNpgsql(connectionString));
-        }
-        else
-        {
-            throw new NotSupportedException($"Unsupported database provider '{provider}'. Supported providers: Sqlite, PostgreSQL.");
-        }
+        services.AddDbContext<ToolNexusContentDbContext>(options =>
+            DatabaseProviderConfiguration.Configure(options, provider, connectionString));
 
         services.AddSingleton<IToolManifestRepository, JsonFileToolManifestRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();

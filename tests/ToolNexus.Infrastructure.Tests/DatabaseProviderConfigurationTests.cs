@@ -44,6 +44,37 @@ public sealed class DatabaseProviderConfigurationTests
     }
 
     [Fact]
+    public void AddInfrastructure_UnsupportedProvider_Throws()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Database:Provider"] = "MySql",
+                ["Database:ConnectionString"] = "Server=localhost;Database=toolnexus"
+            })
+            .Build();
+
+        services.AddInfrastructure(configuration);
+
+        using var provider = services.BuildServiceProvider();
+        var error = Assert.Throws<NotSupportedException>(() =>
+            provider.GetRequiredService<DbContextOptions<ToolNexusContentDbContext>>());
+
+        Assert.Contains("Unsupported database provider", error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void DesignTimeFactory_DefaultArgs_ConfiguresSqliteProvider()
+    {
+        var factory = new ToolNexusContentDbContextFactory();
+
+        using var context = factory.CreateDbContext([]);
+
+        Assert.Equal("Microsoft.EntityFrameworkCore.Sqlite", context.Database.ProviderName);
+    }
+
+    [Fact]
     public void DesignTimeFactory_PostgreSqlArgs_ConfiguresNpgsqlProvider()
     {
         var factory = new ToolNexusContentDbContextFactory();
