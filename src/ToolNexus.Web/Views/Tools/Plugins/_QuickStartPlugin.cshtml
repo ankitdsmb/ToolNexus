@@ -1,0 +1,21 @@
+@model ToolPageViewModel
+@if (Model.Content?.Steps.Any() == true)
+{
+    <section class="readme-block quick-start-panel section-frame" aria-label="Quick start" data-context-plugin="quick-start">
+        <p class="tool-section__eyebrow">QuickStartPanel</p>
+        <h2>Quick start</h2>
+        <ol>
+            @foreach (var step in Model.Content.Steps)
+            {
+                <li>
+                    <h3>@step.Title</h3>
+                    <p>@step.Description</p>
+                </li>
+            }
+        </ol>
+        <aside class="tip-highlight-box" aria-label="Troubleshooting tip">
+            <h3>TipHighlightBox</h3>
+            <p>Run one small sample first. Confirm the output, then scale to full payloads.</p>
+        </aside>
+    </section>
+}

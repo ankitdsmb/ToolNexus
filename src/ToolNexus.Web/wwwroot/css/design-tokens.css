@@ -43,6 +43,12 @@ TOKENS
   --space-xl: 40px;
   --space-2xl: 48px;
 
+
+  --section-gap: 80px;
+  --subsection-gap: 48px;
+  --internal-gap: 24px;
+  --runtime-context-gap: 96px;
+
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -56,7 +62,8 @@ TOKENS
   --motion-fast: 160ms;
   --motion-base: 170ms;
   --motion-slow: 180ms;
-  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
 
   --container-max: 1280px;
   --container-gutter: clamp(16px, 2.5vw, 32px);

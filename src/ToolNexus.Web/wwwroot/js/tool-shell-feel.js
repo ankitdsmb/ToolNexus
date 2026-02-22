@@ -17,16 +17,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   disclosures.forEach((disclosure) => {
     disclosure.addEventListener('toggle', () => {
-      if (disclosure.open) {
-        disclosure.dataset.lastOpenedAt = String(Date.now());
-      }
+      disclosure.classList.add('is-transitioning');
+      window.setTimeout(() => disclosure.classList.remove('is-transitioning'), 180);
     });
   });
 
-  runtime?.addEventListener('pointermove', () => {
+  if (!runtime) {
+    return;
+  }
+
+  let pointerGuidanceTimeoutId = 0;
+  let pendingFrame = 0;
+  let nextPointerX = 0;
+
+  const applyPointerCue = () => {
+    pendingFrame = 0;
+    const bounds = runtime.getBoundingClientRect();
+    const normalized = (nextPointerX - bounds.left) / Math.max(bounds.width, 1);
+    runtime.style.setProperty('--runtime-pointer-x', `${Math.min(Math.max(normalized, 0), 1).toFixed(3)}`);
     page.classList.add('has-pointer-guidance');
-    window.clearTimeout(runtime.__pointerGuidanceTimeout);
-    runtime.__pointerGuidanceTimeout = window.setTimeout(() => {
+  };
+
+  runtime.addEventListener('pointermove', (event) => {
+    nextPointerX = event.clientX;
+    if (!pendingFrame) {
+      pendingFrame = window.requestAnimationFrame(applyPointerCue);
+    }
+
+    window.clearTimeout(pointerGuidanceTimeoutId);
+    pointerGuidanceTimeoutId = window.setTimeout(() => {
       page.classList.remove('has-pointer-guidance');
     }, 900);
   });

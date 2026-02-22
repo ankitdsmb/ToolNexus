@@ -1,0 +1,20 @@
+@model ToolPageViewModel
+@if (Model.Content?.Faq.Any() == true)
+{
+    <details class="readme-disclosure" data-context-plugin="faq">
+        <summary>FAQ</summary>
+        <section class="readme-block section-frame" aria-label="Frequently asked questions">
+            <p class="tool-section__eyebrow">FAQAccordion</p>
+            <h2>FAQ</h2>
+            <div class="faq-accordion" itemscope itemtype="https://schema.org/FAQPage">
+                @foreach (var faq in Model.Content.Faq)
+                {
+                    <details class="faq-accordion__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                        <summary itemprop="name">@faq.Question</summary>
+                        <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">@faq.Answer</span></p>
+                    </details>
+                }
+            </div>
+        </section>
+    </details>
+}

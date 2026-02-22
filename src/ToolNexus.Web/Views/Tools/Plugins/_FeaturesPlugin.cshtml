@@ -1,0 +1,13 @@
+@model ToolPageViewModel
+@if (Model.Content?.Features.Any() == true)
+{
+    <section class="readme-block section-frame" aria-label="Key features" data-context-plugin="features">
+        <h2>Features</h2>
+        <ul>
+            @foreach (var feature in Model.Content.Features)
+            {
+                <li>@feature</li>
+            }
+        </ul>
+    </section>
+}
