@@ -3,8 +3,7 @@
 {
     <details class="readme-disclosure" data-context-plugin="related-tools">
         <summary>Related tools</summary>
-        <section class="readme-block section-frame" aria-label="Related tools">
-            <p class="tool-section__eyebrow">RelatedToolsGrid</p>
+        <section class="section-frame" aria-label="Related tools">
             <h2>Related tools</h2>
             <div class="readme-card-grid readme-card-grid--related">
                 @foreach (var relatedTool in Model.RelatedTools.Concat(Model.SameCategoryTools).Concat(Model.NextTools).GroupBy(t => t.Slug).Select(g => g.First()))

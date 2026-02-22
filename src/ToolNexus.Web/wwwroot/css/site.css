@@ -650,96 +650,6 @@ summary { cursor: pointer; font-weight: 600; }
 
 
 
-.tool-shell-page {
-  gap: var(--space-4);
-}
-
-.tool-shell-page__hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-3);
-  align-items: end;
-}
-
-.tool-shell-page__hero-main {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.tool-shell-page__hero-main h1 {
-  font-size: clamp(1.6rem, 2.2vw, 2.1rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.tool-shell-page__hero-main p {
-  color: var(--text-secondary);
-  max-width: 72ch;
-  line-height: 1.62;
-}
-
-.tool-shell-page__hero-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-2);
-}
-
-.tool-shell-page__runtime {
-  --runtime-pointer-x: 0.5;
-  position: relative;
-}
-
-.tool-shell-page__runtime::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: radial-gradient(460px circle at calc(var(--runtime-pointer-x) * 100%) -24%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%);
-  opacity: 0;
-  transition: opacity var(--motion-fast) var(--ease-premium);
-}
-
-.tool-shell-page.has-pointer-guidance .tool-shell-page__runtime::after {
-  opacity: 1;
-}
-
-.tool-shell-page__runtime {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
-  box-shadow: var(--runtime-panel-elevation);
-  min-height: 640px;
-  padding: var(--space-3);
-}
-
-.tool-shell-page__docs,
-.tool-shell-page__docs section {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.tool-shell-page__docs {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
-  padding: var(--space-4);
-  align-content: start;
-}
-
-.tool-shell-page__docs section + section {
-  border-top: 1px solid var(--border-subtle);
-  padding-top: var(--space-3);
-}
-
-.tool-shell-page__docs ul,
-.tool-shell-page__docs ol {
-  display: grid;
-  gap: var(--space-2);
-  padding-left: var(--space-4);
-}
-
 .readme-card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -753,10 +663,6 @@ summary { cursor: pointer; font-weight: 600; }
   border-radius: var(--radius-md);
   padding: var(--space-3);
   background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
-}
-
-.quick-start-panel {
-  gap: var(--space-3);
 }
 
 .tip-highlight-box {
@@ -1150,6 +1056,8 @@ RESPONSIVE
 
 .csv-viewer-controls__actions {
   margin-top: var(--space-4);
+}
+
 .case-controls {
   margin-top: var(--space-3);
   display: flex;
@@ -1305,6 +1213,8 @@ RESPONSIVE
 
 .csv-viewer-output-hidden {
   display: none;
+}
+
 .case-preview-btn.is-active {
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
@@ -1383,6 +1293,8 @@ RESPONSIVE
   grid-column: 1 / -1;
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
 .html-formatter-badge {
   display: inline-flex;
   margin-top: var(--space-2);
@@ -1514,10 +1426,6 @@ RESPONSIVE
 .static-page__faq-item p {
   margin: 0;
 }
-
-  .readme-card-grid {
-    grid-template-columns: 1fr;
-  }
 
 /* Platform feel layer */
 .workspace-shell {
