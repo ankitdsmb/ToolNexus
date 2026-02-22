@@ -21,6 +21,11 @@ public sealed class ToolAdminFormModel
     public int SortOrder { get; set; }
     [Required] public string InputSchema { get; set; } = "{}";
     [Required] public string OutputSchema { get; set; } = "{}";
+    [Required] public string ExecutionMode { get; set; } = "Local";
+    [Range(1, 3600)] public int TimeoutSeconds { get; set; } = 30;
+    [Range(1, 100000)] public int MaxRequestsPerMinute { get; set; } = 120;
+    [Range(1, 10_000_000)] public int MaxInputSize { get; set; } = 1_000_000;
+    public bool IsExecutionEnabled { get; set; } = true;
 
     public CreateToolDefinitionRequest ToCreate() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema);
     public UpdateToolDefinitionRequest ToUpdate() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema);
@@ -36,6 +41,11 @@ public sealed class ToolAdminFormModel
         Icon = detail.Icon,
         SortOrder = detail.SortOrder,
         InputSchema = detail.InputSchema,
-        OutputSchema = detail.OutputSchema
+        OutputSchema = detail.OutputSchema,
+        ExecutionMode = "Local",
+        TimeoutSeconds = 30,
+        MaxRequestsPerMinute = 120,
+        MaxInputSize = 1_000_000,
+        IsExecutionEnabled = true
     };
 }

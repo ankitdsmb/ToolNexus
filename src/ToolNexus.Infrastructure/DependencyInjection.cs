@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IToolDefinitionRepository, EfToolDefinitionRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
+        services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
         services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
         services
             .AddOptions<ApiKeyOptions>()
@@ -36,6 +37,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
         services.AddMemoryCache();
+        services.AddSingleton<IToolExecutionRateGuard, InMemoryToolExecutionRateGuard>();
         services.AddDistributedMemoryCache();
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
         services.AddHostedService<ToolContentSeedHostedService>();

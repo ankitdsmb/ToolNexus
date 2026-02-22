@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolManifestGovernance, ToolManifestGovernanceService>();
         services.AddScoped<IToolContentService, ToolContentService>();
         services.AddScoped<IToolContentEditorService, ToolContentEditorService>();
+        services.AddScoped<IExecutionPolicyService, ExecutionPolicyService>();
         services.AddHostedService<ManifestStartupValidator>();
         services.AddHostedService<ManifestExecutorAlignmentValidator>();
         return services;
