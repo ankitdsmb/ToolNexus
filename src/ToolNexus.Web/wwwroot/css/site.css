@@ -1470,3 +1470,131 @@ RESPONSIVE
   .readme-card-grid {
     grid-template-columns: 1fr;
   }
+
+/* Platform feel layer */
+.tool-shell-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.tool-shell-page > .tool-shell-page__hero,
+.tool-shell-page > .tool-shell-page__workspace {
+  grid-column: 1;
+}
+
+.tool-shell-page > .tool-shell-page__docs {
+  grid-column: 2;
+  position: sticky;
+  top: calc(var(--space-6) + 52px);
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+}
+
+.tool-shell-page__workspace {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tool-shell-page__workspace-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.tool-shell-page__workspace-label {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tool-shell-page__runtime {
+  transition: box-shadow var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard);
+}
+
+.tool-shell-page__runtime:focus-within,
+.tool-shell-page__runtime:hover {
+  border-color: var(--border-default);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.readme-disclosure {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+}
+
+.readme-disclosure + .readme-disclosure {
+  margin-top: var(--space-2);
+}
+
+.readme-disclosure > summary {
+  font-weight: 650;
+  list-style: none;
+}
+
+.readme-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.readme-guidance__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.readme-guidance__action {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+
+.readme-guidance__action:hover,
+.readme-guidance__action:focus-visible {
+  border-color: var(--border-default);
+  transform: translateY(-1px);
+}
+
+.readme-card[data-actionable-card="true"] {
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+
+.readme-card[data-actionable-card="true"]:hover,
+.readme-card[data-actionable-card="true"].is-emphasized,
+.readme-card[data-actionable-card="true"]:focus-visible {
+  border-color: var(--border-default);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.tool-shell-page.has-pointer-guidance .readme-card[data-actionable-card="true"]:not(:hover):not(.is-emphasized) {
+  opacity: 0.9;
+}
+
+@media (max-width: 1100px) {
+  .tool-shell-page {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-shell-page > .tool-shell-page__docs,
+  .tool-shell-page > .tool-shell-page__hero,
+  .tool-shell-page > .tool-shell-page__workspace {
+    grid-column: auto;
+    position: static;
+    max-height: none;
+  }
+}
