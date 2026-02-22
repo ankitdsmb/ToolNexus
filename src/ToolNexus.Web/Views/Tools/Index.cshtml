@@ -27,6 +27,7 @@
     <header class="u-stack">
         <h1>All Tools</h1>
         <p class="u-muted">Choose a utility by category or jump directly into a tool.</p>
+        <p class="u-muted">If you are unsure where to start, scan by task: format data first, validate it second, and convert only after the structure is stable.</p>
     </header>
 
     <section class="tools-index__toolbar" aria-label="Tool filters">
@@ -63,6 +64,7 @@
                 <h2 class="tool-group__title">@title</h2>
                 <span class="tool-group__count" data-group-count>@group.Count() tools</span>
             </header>
+            <p class="u-muted">Use @title tools when you need repeatable, low-friction workflows for @group.Key transformations and checks.</p>
 
             <div class="tool-grid is-loading" id="toolGrid-@group.Key.Replace(" ", "-").ToLowerInvariant()" aria-live="polite">
                 @foreach (var tool in group)
@@ -72,4 +74,29 @@
             </div>
         </section>
     }
+    <section class="static-page__section" aria-labelledby="chooseToolHeading">
+        <h2 id="chooseToolHeading">How to choose the right tool</h2>
+        <ol>
+            <li>Start with formatters when input is hard to read.</li>
+            <li>Run validators before converting or sharing output.</li>
+            <li>Use encoders and decoders only when transport protocols require them.</li>
+            <li>Compare old and new output with Text Diff before merge.</li>
+        </ol>
+    </section>
+
+    <section class="static-page__section" aria-labelledby="workflowDiscoveryHeading">
+        <h2 id="workflowDiscoveryHeading">Workflow-based discovery</h2>
+        <p>For API debugging, start with <a href="/tools/json-formatter">JSON Formatter</a>, then <a href="/tools/json-validator">JSON Validator</a>, then <a href="/tools/text-diff">Text Diff</a>.</p>
+        <p>For data interchange tasks, pair <a href="/tools/json-to-csv">JSON to CSV</a> with <a href="/tools/csv-to-json">CSV to JSON</a> so teams can move between systems without hand-editing raw values.</p>
+    </section>
+
+    <section class="static-page__section" aria-labelledby="relatedCategoriesHeading">
+        <h2 id="relatedCategoriesHeading">Related categories</h2>
+        <ul class="static-page__link-list">
+            @foreach (var category in Model.Categories.OrderBy(c => c))
+            {
+                <li><a href="/tools/@Uri.EscapeDataString(category)">@CultureInfo.CurrentCulture.TextInfo.ToTitleCase(category)</a></li>
+            }
+        </ul>
+    </section>
 </article>

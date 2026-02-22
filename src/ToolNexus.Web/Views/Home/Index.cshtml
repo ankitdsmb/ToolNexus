@@ -229,6 +229,41 @@
     </div>
 </section>
 
+
+<section class="home-surface home-surface--base" data-reveal aria-labelledby="homeGuideHeading">
+    <header class="tool-section__header">
+        <p class="tool-section__eyebrow">Practical guidance</p>
+        <h2 id="homeGuideHeading" class="section-title">How engineers usually use ToolNexus in day-to-day work</h2>
+    </header>
+    <div class="workflow-grid" aria-label="Practical ToolNexus workflows">
+        <article class="workflow-card">
+            <h3>Debug APIs before a deploy</h3>
+            <p>Start with JSON Formatter to normalize payloads, then run JSON Validator to catch schema or syntax issues before opening a pull request.</p>
+        </article>
+        <article class="workflow-card">
+            <h3>Clean data during incident response</h3>
+            <p>Use Text Diff to compare failing and working payloads, then use Base64 Decode or URL Decode when logs contain encoded values.</p>
+        </article>
+        <article class="workflow-card">
+            <h3>Prepare handoff-ready snippets</h3>
+            <p>Format SQL, XML, or YAML so support and QA teams can reproduce issues without manually reformatting long blocks of text.</p>
+        </article>
+    </div>
+    <section class="static-page__section" aria-labelledby="homeFaqHeading">
+        <h3 id="homeFaqHeading">Homepage FAQ</h3>
+        <div class="static-page__faq-list" itemscope itemtype="https://schema.org/FAQPage">
+            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h4 itemprop="name">Which tools should I start with for API debugging?</h4>
+                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Most teams begin with JSON Formatter, JSON Validator, and Text Diff because they cover common request and response troubleshooting tasks.</span></p>
+            </article>
+            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h4 itemprop="name">Can I jump directly to a specific tool from this page?</h4>
+                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. Use the search box or open quick links like UUID Generator, Base64 Encode, and JSON Formatter to start immediately.</span></p>
+            </article>
+        </div>
+    </section>
+</section>
+
 </article>
 
 @section Scripts {
