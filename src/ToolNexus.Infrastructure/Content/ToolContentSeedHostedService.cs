@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ToolNexus.Application.Services;
@@ -9,13 +10,25 @@ namespace ToolNexus.Infrastructure.Content;
 
 public sealed class ToolContentSeedHostedService(
     IServiceProvider serviceProvider,
-    IToolManifestRepository manifestRepository) : IHostedService
+    IToolManifestRepository manifestRepository,
+    ILogger<ToolContentSeedHostedService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        var skipMigrations = await ShouldSkipSqliteMigrationAsync(dbContext, cancellationToken);
+
+        if (skipMigrations)
+        {
+            logger.LogWarning(
+                "Detected legacy SQLite schema without EF migrations history. Skipping automatic migration to prevent startup failure. " +
+                "Consider baselining this database before cutover.");
+        }
+        else
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
 
         if (await dbContext.ToolContents.AnyAsync(cancellationToken))
         {
@@ -86,4 +99,52 @@ public sealed class ToolContentSeedHostedService(
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private static async Task<bool> ShouldSkipSqliteMigrationAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
+    {
+        if (!dbContext.Database.IsSqlite())
+        {
+            return false;
+        }
+
+        await dbContext.Database.OpenConnectionAsync(cancellationToken);
+        try
+        {
+            var connection = dbContext.Database.GetDbConnection();
+
+            await using var schemaCheck = connection.CreateCommand();
+            schemaCheck.CommandText = """
+                SELECT COUNT(*)
+                FROM sqlite_master
+                WHERE type = 'table'
+                  AND name NOT LIKE 'sqlite_%'
+                  AND name <> '__EFMigrationsHistory';
+                """;
+
+            var schemaTableCount = Convert.ToInt32(await schemaCheck.ExecuteScalarAsync(cancellationToken));
+            if (schemaTableCount == 0)
+            {
+                return false;
+            }
+
+            await using var historyExists = connection.CreateCommand();
+            historyExists.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '__EFMigrationsHistory';";
+            var historyTableExists = Convert.ToInt32(await historyExists.ExecuteScalarAsync(cancellationToken)) > 0;
+
+            if (!historyTableExists)
+            {
+                return true;
+            }
+
+            await using var historyRows = connection.CreateCommand();
+            historyRows.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory;";
+            var appliedMigrationsCount = Convert.ToInt32(await historyRows.ExecuteScalarAsync(cancellationToken));
+
+            return appliedMigrationsCount == 0;
+        }
+        finally
+        {
+            await dbContext.Database.CloseConnectionAsync();
+        }
+    }
 }
