@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   disclosures.forEach((disclosure) => {
     disclosure.addEventListener('toggle', () => {
       disclosure.classList.add('is-transitioning');
-      window.setTimeout(() => disclosure.classList.remove('is-transitioning'), 180);
+      window.setTimeout(() => disclosure.classList.remove('is-transitioning'), 220);
     });
   });
 
@@ -37,6 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
     runtime.style.setProperty('--runtime-pointer-x', `${Math.min(Math.max(normalized, 0), 1).toFixed(3)}`);
     page.classList.add('has-pointer-guidance');
   };
+
+
+  runtime.addEventListener('pointerleave', () => {
+    window.clearTimeout(pointerGuidanceTimeoutId);
+    pointerGuidanceTimeoutId = window.setTimeout(() => {
+      page.classList.remove('has-pointer-guidance');
+    }, 140);
+  });
 
   runtime.addEventListener('pointermove', (event) => {
     nextPointerX = event.clientX;
