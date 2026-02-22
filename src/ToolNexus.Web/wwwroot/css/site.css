@@ -11,8 +11,6 @@ TOKENS
   --panel-bg: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary)), color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-secondary)));
   --surface-hover-shift: translateY(-1px);
   --panel-padding: clamp(var(--space-4), 1.6vw, var(--space-5));
-  --section-gap: clamp(var(--space-5), 2.2vw, var(--space-6));
-  --runtime-panel-elevation: 0 6px 20px rgba(15, 23, 42, 0.04);
 }
 
 /* ==========================
@@ -685,15 +683,6 @@ summary { cursor: pointer; font-weight: 600; }
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--space-2);
-}
-
-.tool-shell-page__runtime {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
-  box-shadow: var(--runtime-panel-elevation);
-  min-height: 640px;
-  padding: var(--space-3);
 }
 
 .tool-shell-page__docs,
@@ -1502,35 +1491,46 @@ RESPONSIVE
   }
 
 /* Platform feel layer */
-.tool-shell-page {
+.workspace-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+  column-gap: var(--runtime-context-gap);
+  row-gap: var(--section-gap);
   align-items: start;
+  max-width: var(--container-max);
+  margin-inline: auto;
 }
 
-.tool-shell-page > .tool-shell-page__hero,
-.tool-shell-page > .tool-shell-page__workspace {
+.workspace-shell__hero,
+.workspace-shell__runtime-zone {
   grid-column: 1;
 }
 
-.tool-shell-page > .tool-shell-page__docs {
+.workspace-shell__context-rail {
   grid-column: 2;
   position: sticky;
   top: calc(var(--space-6) + 52px);
-  max-height: calc(100vh - 140px);
+  max-height: calc(100vh - 120px);
   overflow: auto;
+  contain: content;
+}
+
+.tool-shell-page__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--internal-gap);
+  align-items: end;
 }
 
 .tool-shell-page__workspace {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--internal-gap);
 }
 
 .tool-shell-page__workspace-head {
   display: flex;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--internal-gap);
   align-items: center;
   color: var(--text-muted);
   font-size: var(--text-sm);
@@ -1542,41 +1542,81 @@ RESPONSIVE
 }
 
 .tool-shell-page__runtime {
-  transition: box-shadow var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard);
+  --runtime-pointer-x: 0.5;
+  position: relative;
+  min-height: 680px;
+  padding: var(--internal-gap);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  transition: box-shadow var(--motion-base) var(--ease-premium), border-color var(--motion-base) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
+  box-shadow: var(--elevation-level-2);
+}
+
+.tool-shell-page__runtime::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(460px circle at calc(var(--runtime-pointer-x) * 100%) -24%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%);
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-premium);
+}
+
+.tool-shell-page.has-pointer-guidance .tool-shell-page__runtime::after {
+  opacity: 1;
 }
 
 .tool-shell-page__runtime:focus-within,
 .tool-shell-page__runtime:hover {
-  border-color: var(--border-default);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border-default));
+  box-shadow: var(--elevation-level-2);
+  transform: translateY(-2px);
+}
+
+.tool-shell-page__docs {
+  display: grid;
+  gap: var(--subsection-gap);
+  padding: var(--internal-gap);
+  box-shadow: var(--elevation-level-1);
+}
+
+.section-frame {
+  display: grid;
+  gap: var(--internal-gap);
+  padding: var(--internal-gap);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
+  box-shadow: var(--elevation-level-1);
+  contain: content;
 }
 
 .readme-disclosure {
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
-  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--internal-gap);
+  background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+  transition: border-color var(--motion-fast) var(--ease-premium), box-shadow var(--motion-fast) var(--ease-premium);
 }
 
-.readme-disclosure + .readme-disclosure {
-  margin-top: var(--space-2);
+.readme-disclosure[open],
+.readme-disclosure.is-transitioning {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--border-default));
+  box-shadow: var(--elevation-level-1);
 }
 
 .readme-disclosure > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   font-weight: 650;
   list-style: none;
 }
 
 .readme-disclosure > summary::-webkit-details-marker {
   display: none;
-}
-
-.readme-guidance__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: var(--space-2);
 }
 
 .readme-guidance__action {
@@ -1586,46 +1626,54 @@ RESPONSIVE
   gap: var(--space-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--internal-gap);
   text-decoration: none;
   color: inherit;
-  transition: border-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+  transition: border-color var(--motion-fast) var(--ease-premium), transform var(--motion-fast) var(--ease-premium), box-shadow var(--motion-fast) var(--ease-premium);
 }
 
 .readme-guidance__action:hover,
 .readme-guidance__action:focus-visible {
-  border-color: var(--border-default);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border-default));
+  transform: translateY(-2px) translateX(2px);
+  box-shadow: var(--shadow-md);
 }
 
 .readme-card[data-actionable-card="true"] {
   cursor: pointer;
-  transition: border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+  transition: border-color var(--motion-fast) var(--ease-premium), box-shadow var(--motion-fast) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
+  border-left: 1px solid var(--border-subtle);
 }
 
 .readme-card[data-actionable-card="true"]:hover,
 .readme-card[data-actionable-card="true"].is-emphasized,
 .readme-card[data-actionable-card="true"]:focus-visible {
-  border-color: var(--border-default);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border-default));
+  border-left: 3px solid var(--accent);
+  transform: translateY(-3px);
+  box-shadow: var(--elevation-level-3);
 }
 
 .tool-shell-page.has-pointer-guidance .readme-card[data-actionable-card="true"]:not(:hover):not(.is-emphasized) {
-  opacity: 0.9;
+  opacity: 0.88;
 }
 
 @media (max-width: 1100px) {
-  .tool-shell-page {
+  .workspace-shell {
     grid-template-columns: 1fr;
+    row-gap: var(--subsection-gap);
   }
 
-  .tool-shell-page > .tool-shell-page__docs,
-  .tool-shell-page > .tool-shell-page__hero,
-  .tool-shell-page > .tool-shell-page__workspace {
+  .workspace-shell__context-rail,
+  .workspace-shell__hero,
+  .workspace-shell__runtime-zone {
     grid-column: auto;
     position: static;
     max-height: none;
+  }
+
+  .tool-shell-page__runtime {
+    min-height: 600px;
   }
 }
 

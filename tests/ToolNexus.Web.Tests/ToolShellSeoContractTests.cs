@@ -72,25 +72,48 @@ public sealed class ToolShellSeoContractTests
     }
 
     [Fact]
-    public void ToolShell_ViewContainsRequiredSsrSectionsAndSingleH1Contract()
+    public void ToolShell_ViewContainsRequiredRuntimeContractAndPluginReferences()
     {
-        var viewPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "ToolNexus.Web", "Views", "Tools", "ToolShell.cshtml");
-        var viewSource = File.ReadAllText(Path.GetFullPath(viewPath));
+        var viewsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "ToolNexus.Web", "Views", "Tools"));
+        var shellSource = File.ReadAllText(Path.Combine(viewsRoot, "ToolShell.cshtml"));
 
-        Assert.Equal(1, CountOccurrences(viewSource, "<h1>"));
-        Assert.Contains("<h2>Overview</h2>", viewSource);
-        Assert.Contains("<h2>Features</h2>", viewSource);
-        Assert.Contains("<h2>Quick start</h2>", viewSource);
-        Assert.Contains("<h2>Examples</h2>", viewSource);
-        Assert.Contains("<h2>FAQ</h2>", viewSource);
-        Assert.Contains("<h2>Related tools</h2>", viewSource);
-        Assert.Contains("<h2>Use cases</h2>", viewSource);
-        Assert.Contains("id=\"tool-root\"", viewSource);
+        Assert.Equal(1, CountOccurrences(shellSource, "<h1>"));
+        Assert.Contains("id=\"tool-root\"", shellSource);
+        Assert.Contains("data-tool-root=\"true\"", shellSource);
+        Assert.Contains("data-tool-slug=\"@Model.Tool.Slug\"", shellSource);
 
-        var runtimeRootIndex = viewSource.IndexOf("id=\"tool-root\"", StringComparison.Ordinal);
-        var seoIndex = viewSource.IndexOf("class=\"tool-seo", StringComparison.Ordinal);
+        var runtimeRootIndex = shellSource.IndexOf("id=\"tool-root\"", StringComparison.Ordinal);
+        var seoIndex = shellSource.IndexOf("class=\"tool-seo", StringComparison.Ordinal);
         Assert.True(runtimeRootIndex < seoIndex);
+
+        var plugins = new[]
+        {
+            (Key: "Overview", File: "_OverviewPlugin.cshtml"),
+            (Key: "Features", File: "_FeaturesPlugin.cshtml"),
+            (Key: "QuickStart", File: "_QuickStartPlugin.cshtml"),
+            (Key: "Guidance", File: "_GuidancePlugin.cshtml"),
+            (Key: "Examples", File: "_ExamplesPlugin.cshtml"),
+            (Key: "UseCases", File: "_UseCasesPlugin.cshtml"),
+            (Key: "Faq", File: "_FaqPlugin.cshtml"),
+            (Key: "RelatedTools", File: "_RelatedToolsPlugin.cshtml")
+        };
+
+        foreach (var plugin in plugins)
+        {
+            Assert.Contains($"\"{plugin.Key}\"", shellSource);
+            var pluginSource = File.ReadAllText(Path.Combine(viewsRoot, "Plugins", plugin.File));
+            Assert.Contains("section-frame", pluginSource);
+        }
+
+        Assert.Contains("<h2>Overview</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_OverviewPlugin.cshtml")));
+        Assert.Contains("<h2>Features</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_FeaturesPlugin.cshtml")));
+        Assert.Contains("<h2>Quick start</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_QuickStartPlugin.cshtml")));
+        Assert.Contains("<h2>Examples</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_ExamplesPlugin.cshtml")));
+        Assert.Contains("<h2>Use cases</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_UseCasesPlugin.cshtml")));
+        Assert.Contains("<h2>FAQ</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_FaqPlugin.cshtml")));
+        Assert.Contains("<h2>Related tools</h2>", File.ReadAllText(Path.Combine(viewsRoot, "Plugins", "_RelatedToolsPlugin.cshtml")));
     }
+
 
     private static int CountOccurrences(string source, string token)
     {

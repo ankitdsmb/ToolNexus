@@ -5,6 +5,18 @@
     ViewData["CanonicalUrl"] = Model.Seo.CanonicalUrl;
     ViewData["JsonLd"] = Model.Seo.JsonLd;
     ViewData["Keywords"] = Model.Seo.Keywords;
+
+    var contextPlugins = new[]
+    {
+        "Overview",
+        "Features",
+        "QuickStart",
+        "Guidance",
+        "Examples",
+        "UseCases",
+        "Faq",
+        "RelatedTools"
+    };
 }
 
 @section Head {
@@ -14,8 +26,8 @@
     }
 }
 
-<article class="tool-shell-page tool-page page-shell" aria-label="Tool runtime page">
-    <header class="tool-shell-page__hero tool-panel" aria-label="Tool introduction">
+<article class="tool-shell-page workspace-shell tool-page page-shell" aria-label="Tool runtime page">
+    <header class="tool-shell-page__hero workspace-shell__hero tool-panel" aria-label="Tool introduction">
         <p class="tool-section__eyebrow">Runtime workspace</p>
         <div class="tool-shell-page__hero-main">
             <h1>@Model.Tool.Title</h1>
@@ -28,156 +40,20 @@
         </div>
     </header>
 
-    <section class="tool-shell-page__workspace" aria-label="Runtime workspace">
+    <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace">
         <header class="tool-shell-page__workspace-head" aria-label="Runtime hints">
-            <p class="tool-shell-page__workspace-label">Active workspace</p>
-            <p class="tool-shell-page__workspace-hint">Focus input first, run once, then iterate output with companion tools.</p>
+            <p class="tool-shell-page__workspace-label">INPUT → RUN → COPY</p>
+            <p class="tool-shell-page__workspace-hint">Primary flow is interaction-first. Context rail content stays secondary.</p>
         </header>
         <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
     </section>
 
-    <article class="tool-seo tool-shell-page__docs" data-nosnippet="false" aria-label="Tool documentation">
-        <section class="readme-block readme-intro-block" aria-label="Overview">
-            <p class="tool-section__eyebrow">ReadmeIntroBlock</p>
-            <h2>Overview</h2>
-            <p>@(Model.Content?.LongDescription ?? Model.Tool.SeoDescription)</p>
-        </section>
-
-        @if (Model.Content?.Features.Any() == true)
+    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" aria-label="Tool documentation">
+        @foreach (var plugin in contextPlugins)
         {
-            <section class="readme-block" aria-label="Key features">
-                <h2>Features</h2>
-                <ul>
-                    @foreach (var feature in Model.Content.Features)
-                    {
-                        <li>@feature</li>
-                    }
-                </ul>
-            </section>
+            @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
         }
-
-        @if (Model.Content?.Steps.Any() == true)
-        {
-            <section class="readme-block quick-start-panel" aria-label="Quick start">
-                <p class="tool-section__eyebrow">QuickStartPanel</p>
-                <h2>Quick start</h2>
-                <ol>
-                    @foreach (var step in Model.Content.Steps)
-                    {
-                        <li>
-                            <h3>@step.Title</h3>
-                            <p>@step.Description</p>
-                        </li>
-                    }
-                </ol>
-                <aside class="tip-highlight-box" aria-label="Troubleshooting tip">
-                    <h3>TipHighlightBox</h3>
-                    <p>Run one small sample first. Confirm the output, then scale to full payloads.</p>
-                </aside>
-            </section>
-        }
-
-        @if (Model.RelatedTools.Any() || Model.SameCategoryTools.Any() || Model.NextTools.Any())
-        {
-            <section class="readme-block readme-guidance" aria-label="Workflow guidance">
-                <p class="tool-section__eyebrow">ContextualGuidance</p>
-                <h2>Next best actions</h2>
-                <ul class="readme-guidance__list">
-                    @foreach (var relatedTool in Model.RelatedTools.Concat(Model.SameCategoryTools).Concat(Model.NextTools).GroupBy(t => t.Slug).Select(g => g.First()).Take(3))
-                    {
-                        <li>
-                            <a class="readme-guidance__action" href="/tools/@relatedTool.Slug">
-                                <span>@relatedTool.Title</span>
-                                <small>Open companion workflow →</small>
-                            </a>
-                        </li>
-                    }
-                </ul>
-            </section>
-        }
-
-        @if (Model.Content?.Examples.Any() == true)
-        {
-            <details class="readme-disclosure" open>
-                <summary>Examples</summary>
-                <section class="readme-block" aria-label="Examples">
-                    <p class="tool-section__eyebrow">ExampleCardGrid</p>
-                    <h2>Examples</h2>
-                    <div class="readme-card-grid readme-card-grid--examples">
-                        @foreach (var example in Model.Content.Examples)
-                        {
-                            <article class="readme-card" data-actionable-card="true" tabindex="0">
-                                <h3>@example.Title</h3>
-                                <p><strong>Input:</strong> @example.Input</p>
-                                <p><strong>Output:</strong> @example.Output</p>
-                            </article>
-                        }
-                    </div>
-                </section>
-            </details>
-        }
-
-        @if (Model.Content?.UseCases.Any() == true)
-        {
-            <details class="readme-disclosure">
-                <summary>Use cases</summary>
-                <section class="readme-block" aria-label="Use cases">
-                    <p class="tool-section__eyebrow">UseCaseWorkflowGrid</p>
-                    <h2>Use cases</h2>
-                    <div class="readme-card-grid readme-card-grid--use-cases">
-                        @foreach (var useCase in Model.Content.UseCases)
-                        {
-                            <article class="readme-card readme-card--workflow" data-actionable-card="true" tabindex="0">
-                                <h3>Workflow</h3>
-                                <p>@useCase</p>
-                            </article>
-                        }
-                    </div>
-                </section>
-            </details>
-        }
-
-        @if (Model.Content?.Faq.Any() == true)
-        {
-            <details class="readme-disclosure">
-                <summary>FAQ</summary>
-                <section class="readme-block" aria-label="Frequently asked questions">
-                    <p class="tool-section__eyebrow">FAQAccordion</p>
-                    <h2>FAQ</h2>
-                    <div class="faq-accordion" itemscope itemtype="https://schema.org/FAQPage">
-                        @foreach (var faq in Model.Content.Faq)
-                        {
-                            <details class="faq-accordion__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                                <summary itemprop="name">@faq.Question</summary>
-                                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">@faq.Answer</span></p>
-                            </details>
-                        }
-                    </div>
-                </section>
-            </details>
-        }
-
-        @if (Model.RelatedTools.Any() || Model.SameCategoryTools.Any() || Model.NextTools.Any())
-        {
-            <details class="readme-disclosure">
-                <summary>Related tools</summary>
-                <section class="readme-block" aria-label="Related tools">
-                    <p class="tool-section__eyebrow">RelatedToolsGrid</p>
-                    <h2>Related tools</h2>
-                    <div class="readme-card-grid readme-card-grid--related">
-                        @foreach (var relatedTool in Model.RelatedTools.Concat(Model.SameCategoryTools).Concat(Model.NextTools).GroupBy(t => t.Slug).Select(g => g.First()))
-                        {
-                            <article class="readme-card" data-actionable-card="true" tabindex="0">
-                                <h3>@relatedTool.Title</h3>
-                                <p>Continue your workflow with a companion tool.</p>
-                                <a href="/tools/@relatedTool.Slug">Open tool</a>
-                            </article>
-                        }
-                    </div>
-                </section>
-            </details>
-        }
-    </article>
+    </aside>
 </article>
 
 @section Scripts {

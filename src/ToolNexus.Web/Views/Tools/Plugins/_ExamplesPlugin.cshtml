@@ -1,0 +1,21 @@
+@model ToolPageViewModel
+@if (Model.Content?.Examples.Any() == true)
+{
+    <details class="readme-disclosure" open data-context-plugin="examples">
+        <summary>Examples</summary>
+        <section class="readme-block section-frame" aria-label="Examples">
+            <p class="tool-section__eyebrow">ExampleCardGrid</p>
+            <h2>Examples</h2>
+            <div class="readme-card-grid readme-card-grid--examples">
+                @foreach (var example in Model.Content.Examples)
+                {
+                    <article class="readme-card" data-actionable-card="true" tabindex="0">
+                        <h3>@example.Title</h3>
+                        <p><strong>Input:</strong> @example.Input</p>
+                        <p><strong>Output:</strong> @example.Output</p>
+                    </article>
+                }
+            </div>
+        </section>
+    </details>
+}
