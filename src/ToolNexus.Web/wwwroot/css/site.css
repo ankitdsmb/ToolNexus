@@ -12,6 +12,7 @@ TOKENS
   --surface-hover-shift: translateY(-1px);
   --panel-padding: clamp(var(--space-4), 1.6vw, var(--space-5));
   --section-gap: clamp(var(--space-5), 2.2vw, var(--space-6));
+  --runtime-panel-elevation: 0 6px 20px rgba(15, 23, 42, 0.04);
 }
 
 /* ==========================
@@ -642,11 +643,13 @@ summary { cursor: pointer; font-weight: 600; }
 .tool-shell-page__hero-main h1 {
   font-size: clamp(1.6rem, 2.2vw, 2.1rem);
   line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .tool-shell-page__hero-main p {
   color: var(--text-secondary);
   max-width: 72ch;
+  line-height: 1.62;
 }
 
 .tool-shell-page__hero-meta {
@@ -659,7 +662,7 @@ summary { cursor: pointer; font-weight: 600; }
 .tool-shell-page__layout {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.8fr);
-  gap: var(--space-3);
+  gap: var(--space-4);
   align-items: start;
 }
 
@@ -667,6 +670,7 @@ summary { cursor: pointer; font-weight: 600; }
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--panel-bg);
+  box-shadow: var(--runtime-panel-elevation);
   min-height: 640px;
   padding: var(--space-3);
 }
@@ -681,8 +685,13 @@ summary { cursor: pointer; font-weight: 600; }
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--panel-bg);
-  padding: var(--space-3);
+  padding: var(--space-4);
   align-content: start;
+}
+
+.tool-shell-page__docs section + section {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
 }
 
 .tool-shell-page__docs ul,
@@ -802,10 +811,15 @@ summary { cursor: pointer; font-weight: 600; }
   gap: var(--space-3);
 }
 
+.tool-toolbar__actions > .tool-btn--primary {
+  min-width: 128px;
+}
+
 .tool-btn,
 .contact-form__submit {
   min-height: var(--control-md);
   border-radius: var(--radius-md);
+  font-weight: 600;
 }
 
 .tool-btn:active,
@@ -871,6 +885,15 @@ summary { cursor: pointer; font-weight: 600; }
 .discovery-search-shell:focus-within,
 .floating-field input:focus,
 .floating-field textarea:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-color: var(--accent);
+}
+
+.tool-seo a:focus-visible,
+.tool-discovery__chip:focus-visible,
+.card:focus-visible,
+.trust-link:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
   border-color: var(--accent);
