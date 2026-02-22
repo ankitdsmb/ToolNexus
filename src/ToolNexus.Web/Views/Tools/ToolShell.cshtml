@@ -43,11 +43,15 @@
     <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace" data-workspace-zone="runtime">
         <header class="tool-shell-page__workspace-head" aria-label="Runtime hints">
             <p class="tool-shell-page__workspace-label">INPUT → RUN → COPY</p>
-            <p class="tool-shell-page__workspace-hint">Primary flow is interaction-first. Context rail content stays secondary.</p>
+            <p class="tool-shell-page__workspace-hint">Run in the workspace first. Use context rail only when you need support.</p>
         </header>
         <div class="tool-shell-page__runtime-zone-shell" data-runtime-zone-shell="true">
             <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
         </div>
+        <aside class="tool-shell-page__momentum" aria-live="polite" hidden data-momentum-loop="true">
+            <p class="tool-shell-page__momentum-title">Next action unlocked</p>
+            <p class="tool-shell-page__momentum-copy">Output is ready. Copy it or open a companion tool to keep momentum.</p>
+        </aside>
     </section>
 
     <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">

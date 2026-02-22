@@ -3,14 +3,15 @@
 {
     <section class="readme-block readme-guidance section-frame" aria-label="Workflow guidance" data-context-plugin="guidance">
         <p class="tool-section__eyebrow">ContextualGuidance</p>
-        <h2>Next best actions</h2>
+        <h2>Next actions</h2>
+        <p class="readme-compressed-note">Open a companion tool only after your current output is validated.</p>
         <ul class="readme-guidance__list">
             @foreach (var relatedTool in Model.RelatedTools.Concat(Model.SameCategoryTools).Concat(Model.NextTools).GroupBy(t => t.Slug).Select(g => g.First()).Take(3))
             {
                 <li>
                     <a class="readme-guidance__action" href="/tools/@relatedTool.Slug">
                         <span>@relatedTool.Title</span>
-                        <small>Open companion workflow →</small>
+                        <small>Continue workflow →</small>
                     </a>
                 </li>
             }
