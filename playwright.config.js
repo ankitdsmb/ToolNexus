@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:5081';
+const readinessPath = process.env.PLAYWRIGHT_READINESS_PATH ?? '/';
+const readinessUrl = new URL(readinessPath, baseURL).toString();
 const webServerTimeout = Number(process.env.PLAYWRIGHT_WEBSERVER_TIMEOUT_MS ?? 120000);
 
 export default defineConfig({
@@ -12,7 +14,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'tests/playwright/report', open: 'never' }]],
   webServer: {
     command: 'PLAYWRIGHT_WEB_TIMEOUT_MS=90000 node ./scripts/playwright-webserver.mjs',
-    url: new URL('/health', baseURL).toString(),
+    url: readinessUrl,
     reuseExistingServer: true,
     timeout: webServerTimeout
   },
