@@ -77,7 +77,7 @@
                 seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.SeoDescription)),
                 exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
                 clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
-            }
+            };
         };
     </script>
     <script type="module" src="~/js/tool-runtime.js" asp-append-version="true"></script>
