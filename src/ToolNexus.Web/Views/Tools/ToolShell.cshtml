@@ -28,174 +28,122 @@
         </div>
     </header>
 
-    <section class="tool-shell-page__layout" aria-label="Interactive tool and documentation">
+    <section aria-label="Runtime workspace">
         <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
+    </section>
 
-        <article class="tool-seo tool-shell-page__docs" data-nosnippet="false" aria-label="Tool documentation">
-            <section class="tool-seo__description" aria-label="Long description">
-                <h2>Overview</h2>
-                <p>@(Model.Content?.LongDescription ?? Model.Tool.SeoDescription)</p>
+    <article class="tool-seo tool-shell-page__docs" data-nosnippet="false" aria-label="Tool documentation">
+        <section class="readme-block readme-intro-block" aria-label="Overview">
+            <p class="tool-section__eyebrow">ReadmeIntroBlock</p>
+            <h2>Overview</h2>
+            <p>@(Model.Content?.LongDescription ?? Model.Tool.SeoDescription)</p>
+        </section>
+
+
+        @if (Model.Content?.Features.Any() == true)
+        {
+            <section class="readme-block" aria-label="Key features">
+                <h2>Features</h2>
+                <ul>
+                    @foreach (var feature in Model.Content.Features)
+                    {
+                        <li>@feature</li>
+                    }
+                </ul>
             </section>
+        }
 
-            @if (Model.Content?.Features.Any() == true)
-            {
-                <section class="tool-seo__features" aria-label="Key features">
-                    <h2>Features</h2>
-                    <ul>
-                        @foreach (var feature in Model.Content.Features)
-                        {
-                            <li>@feature</li>
-                        }
-                    </ul>
-                </section>
-            }
+        @if (Model.Content?.Steps.Any() == true)
+        {
+            <section class="readme-block quick-start-panel" aria-label="Quick start">
+                <p class="tool-section__eyebrow">QuickStartPanel</p>
+                <h2>Quick start</h2>
+                <ol>
+                    @foreach (var step in Model.Content.Steps)
+                    {
+                        <li>
+                            <h3>@step.Title</h3>
+                            <p>@step.Description</p>
+                        </li>
+                    }
+                </ol>
+                <aside class="tip-highlight-box" aria-label="Troubleshooting tip">
+                    <h3>TipHighlightBox</h3>
+                    <p>Run one small sample first. Confirm the output, then scale to full payloads.</p>
+                </aside>
+            </section>
+        }
 
-            @if (Model.Content?.Steps.Any() == true)
-            {
-                <section class="tool-seo__usage" aria-label="How to use">
-                    <h2>How to use</h2>
-                    <ol>
-                        @foreach (var step in Model.Content.Steps)
-                        {
-                            <li>
-                                <h3>@step.Title</h3>
-                                <p>@step.Description</p>
-                            </li>
-                        }
-                    </ol>
-                </section>
-            }
-
-            @if (Model.Content?.Examples.Any() == true)
-            {
-                <section class="tool-seo__examples" aria-label="Examples">
-                    <h2>Examples</h2>
+        @if (Model.Content?.Examples.Any() == true)
+        {
+            <section class="readme-block" aria-label="Examples">
+                <p class="tool-section__eyebrow">ExampleCardGrid</p>
+                <h2>Examples</h2>
+                <div class="readme-card-grid readme-card-grid--examples">
                     @foreach (var example in Model.Content.Examples)
                     {
-                        <article>
+                        <article class="readme-card">
                             <h3>@example.Title</h3>
                             <p><strong>Input:</strong> @example.Input</p>
                             <p><strong>Output:</strong> @example.Output</p>
                         </article>
                     }
-                </section>
-            }
+                </div>
+            </section>
+        }
 
-            @if (Model.Content?.Faq.Any() == true)
-            {
-                <section class="tool-seo__faq" aria-label="Frequently asked questions">
-                    <h2>FAQ</h2>
-                    @foreach (var faq in Model.Content.Faq)
+        @if (Model.Content?.UseCases.Any() == true)
+        {
+            <section class="readme-block" aria-label="Use cases">
+                <p class="tool-section__eyebrow">UseCaseWorkflowGrid</p>
+                <h2>Use cases</h2>
+                <div class="readme-card-grid readme-card-grid--use-cases">
+                    @foreach (var useCase in Model.Content.UseCases)
                     {
-                        <article>
-                            <h3>@faq.Question</h3>
-                            <p>@faq.Answer</p>
+                        <article class="readme-card readme-card--workflow">
+                            <h3>Workflow</h3>
+                            <p>@useCase</p>
                         </article>
                     }
-                </section>
-            }
-
-            @if (Model.Content?.UseCases.Any() == true)
-            {
-                <section class="tool-seo__use-cases" aria-label="Use cases">
-                    <h2>Use cases</h2>
-                    <ul>
-                        @foreach (var useCase in Model.Content.UseCases)
-                        {
-                            <li>@useCase</li>
-                        }
-                    </ul>
-                </section>
-            }
-
-            @if (Model.RelatedTools.Any())
-            {
-                <section class="tool-seo__related" aria-label="Related tools">
-                    <h2>Related tools</h2>
-                    <ul>
-                        @foreach (var relatedTool in Model.RelatedTools)
-                        {
-                            <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
-                        }
-                    </ul>
-                </section>
-            }
-
-            @if (Model.SameCategoryTools.Any())
-            {
-                <section class="tool-seo__related" aria-label="Same category tools">
-                    <h2>Same category tools</h2>
-                    <ul>
-                        @foreach (var relatedTool in Model.SameCategoryTools)
-                        {
-                            <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
-                        }
-                    </ul>
-                </section>
-            }
-
-            @if (Model.NextTools.Any())
-            {
-                <section class="tool-seo__related" aria-label="Next tools">
-                    <h2>Next tools</h2>
-                    <ul>
-                        @foreach (var relatedTool in Model.NextTools)
-                        {
-                            <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
-                        }
-                    </ul>
-                </section>
-            }
-            <section class="tool-seo__guide" aria-label="Expanded guide">
-                <h2>Practical workflow guide</h2>
-                <p>Use @Model.Tool.Title when you need a fast, deterministic step in a broader engineering workflow. The typical pattern is to run a small sample first, verify the output, then process the full input.</p>
-                <h3>When this tool is most useful</h3>
-                <ul>
-                    <li>Code review prep where formatting or conversion clarity matters.</li>
-                    <li>Incident triage where logs or payloads need normalization.</li>
-                    <li>Cross-team handoff where consistent output reduces ambiguity.</li>
-                </ul>
-                <h3>Troubleshooting checklist</h3>
-                <ul>
-                    <li>Confirm the input format matches the expected action.</li>
-                    <li>Test with a minimal sample before pasting large payloads.</li>
-                    <li>If output looks wrong, compare source and result using Text Diff.</li>
-                </ul>
-                <h3>Common mistakes</h3>
-                <ul>
-                    <li>Running conversion before validating source data.</li>
-                    <li>Assuming output is production-ready without downstream checks.</li>
-                    <li>Pasting encoded values without decoding the transport layer first.</li>
-                </ul>
+                </div>
             </section>
+        }
 
-            <section class="tool-seo__examples" aria-label="Additional practical examples">
-                <h2>Additional practical examples</h2>
-                <article>
-                    <h3>Example workflow: review-ready output</h3>
-                    <p><strong>Input:</strong> Raw payload copied from logs.</p>
-                    <p><strong>Action:</strong> Format and validate before sharing in a ticket or pull request.</p>
-                    <p><strong>Outcome:</strong> Teammates can reproduce and debug without manual cleanup.</p>
-                </article>
-                <article>
-                    <h3>Example workflow: conversion with validation</h3>
-                    <p><strong>Input:</strong> Structured data from an upstream service.</p>
-                    <p><strong>Action:</strong> Validate structure first, then convert to target format for downstream systems.</p>
-                    <p><strong>Outcome:</strong> Fewer runtime errors caused by malformed intermediate data.</p>
-                </article>
+        @if (Model.Content?.Faq.Any() == true)
+        {
+            <section class="readme-block" aria-label="Frequently asked questions">
+                <p class="tool-section__eyebrow">FAQAccordion</p>
+                <h2>FAQ</h2>
+                <div class="faq-accordion" itemscope itemtype="https://schema.org/FAQPage">
+                    @foreach (var faq in Model.Content.Faq)
+                    {
+                        <details class="faq-accordion__item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                            <summary itemprop="name">@faq.Question</summary>
+                            <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">@faq.Answer</span></p>
+                        </details>
+                    }
+                </div>
             </section>
+        }
 
-            <section class="tool-seo__related" aria-label="Related workflows">
-                <h2>Related workflows</h2>
-                <ul>
-                    <li><a href="/tools">Browse all tools by category</a></li>
-                    <li><a href="/tools/json-formatter">Format payloads before validation</a></li>
-                    <li><a href="/tools/json-validator">Validate structured data before conversion</a></li>
-                    <li><a href="/tools/text-diff">Compare before and after outputs</a></li>
-                </ul>
+        @if (Model.RelatedTools.Any() || Model.SameCategoryTools.Any() || Model.NextTools.Any())
+        {
+            <section class="readme-block" aria-label="Related tools">
+                <p class="tool-section__eyebrow">RelatedToolsGrid</p>
+                <h2>Related tools</h2>
+                <div class="readme-card-grid readme-card-grid--related">
+                    @foreach (var relatedTool in Model.RelatedTools.Concat(Model.SameCategoryTools).Concat(Model.NextTools).GroupBy(t => t.Slug).Select(g => g.First()))
+                    {
+                        <article class="readme-card">
+                            <h3>@relatedTool.Title</h3>
+                            <p>Continue your workflow with a companion tool.</p>
+                            <a href="/tools/@relatedTool.Slug">Open tool</a>
+                        </article>
+                    }
+                </div>
             </section>
-        </article>
-    </section>
+        }
+    </article>
 </article>
 
 @section Scripts {
