@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process';
 
 const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:5081';
-const healthUrl = new URL('/health', baseUrl).toString();
+const readinessPath = process.env.PLAYWRIGHT_READINESS_PATH ?? '/';
+const readinessUrl = new URL(readinessPath, baseUrl).toString();
 const startupTimeoutMs = Number(process.env.PLAYWRIGHT_WEB_TIMEOUT_MS ?? 90000);
 const pollIntervalMs = 1000;
 
@@ -47,7 +48,7 @@ child.on('exit', (code, signal) => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function waitForHealth() {
+async function waitForReadiness() {
   const startedAt = Date.now();
   let lastStatus = 'no response';
 
@@ -57,11 +58,19 @@ async function waitForHealth() {
     }
 
     try {
-      const response = await fetch(healthUrl, { redirect: 'manual' });
-      lastStatus = String(response.status);
-      if (response.ok) {
-        console.log(`[playwright-webserver] Health endpoint ready at ${healthUrl}`);
-        return;
+      const response = await fetch(readinessUrl, { redirect: 'manual' });
+      lastStatus = `HTTP ${response.status}`;
+
+      if (response.status === 200) {
+        const body = await response.text();
+        const hasHtml = /<html[\s>]|<!doctype html/i.test(body);
+
+        if (hasHtml) {
+          console.log(`[playwright-webserver] Readiness endpoint ready at ${readinessUrl}`);
+          return;
+        }
+
+        lastStatus = 'HTTP 200 without HTML content';
       }
     } catch (error) {
       lastStatus = error instanceof Error ? error.message : String(error);
@@ -71,12 +80,12 @@ async function waitForHealth() {
   }
 
   throw new Error(
-    `Timed out waiting for ${healthUrl}. Last observed result: ${lastStatus}. ` +
-      'Ensure ToolNexus.Web exposes a /health endpoint for Playwright orchestration.'
+    `Timed out waiting for readiness URL ${readinessUrl}. Last observed result: ${lastStatus}. ` +
+      'Ensure ToolNexus.Web is serving a stable HTML page at the configured readiness path.'
   );
 }
 
-waitForHealth().catch((error) => {
+waitForReadiness().catch((error) => {
   console.error(`[playwright-webserver] ${error.message}`);
   stopChild('SIGTERM');
   process.exit(1);
