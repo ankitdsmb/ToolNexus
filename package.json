@@ -8,10 +8,16 @@
     "check:design-system": "node scripts/design-system-guard.mjs",
     "check:tool-ecosystem": "node scripts/tool-ecosystem-validate.mjs",
     "check:seo-a11y": "node scripts/seo-a11y-guard.mjs",
-    "check:release": "node scripts/release-readiness-check.mjs"
+    "check:release": "node scripts/release-readiness-check.mjs",
+    "test:playwright": "playwright test",
+    "test:playwright:contracts": "playwright test tests/playwright/contracts",
+    "test:playwright:runtime": "playwright test tests/playwright/runtime",
+    "test:playwright:smoke": "playwright test tests/playwright/smoke",
+    "test:playwright:visual": "playwright test tests/playwright/screenshots"
   },
   "devDependencies": {
     "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5"
+    "jest-environment-jsdom": "^30.0.5",
+    "@playwright/test": "^1.55.0"
   }
 }
