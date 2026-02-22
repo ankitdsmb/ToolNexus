@@ -1,6 +1,7 @@
 using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content;
@@ -47,7 +48,10 @@ public sealed class MigrationAndConcurrencySafetyTests
         services.AddScoped(_ => database.CreateContext());
 
         await using var providerRoot = services.BuildServiceProvider();
-        var hostedService = new ToolContentSeedHostedService(providerRoot, providerRoot.GetRequiredService<IToolManifestRepository>());
+        var hostedService = new ToolContentSeedHostedService(
+            providerRoot,
+            providerRoot.GetRequiredService<IToolManifestRepository>(),
+            NullLogger<ToolContentSeedHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StartAsync(CancellationToken.None);
@@ -68,7 +72,10 @@ public sealed class MigrationAndConcurrencySafetyTests
         services.AddScoped(_ => database.CreateContext());
 
         await using var providerRoot = services.BuildServiceProvider();
-        var hostedService = new ToolContentSeedHostedService(providerRoot, providerRoot.GetRequiredService<IToolManifestRepository>());
+        var hostedService = new ToolContentSeedHostedService(
+            providerRoot,
+            providerRoot.GetRequiredService<IToolManifestRepository>(),
+            NullLogger<ToolContentSeedHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
 
@@ -88,6 +95,29 @@ public sealed class MigrationAndConcurrencySafetyTests
         context.ToolContents.Add(CreateBasicTool("dup-slug"));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task StartupMigrationFlow_LegacySqliteWithoutMigrationHistory_DoesNotCrash()
+    {
+        await using var database = await TestDatabaseInstance.CreateLegacySqliteSchemaAsync();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IToolManifestRepository>(new FakeManifestRepository());
+        services.AddScoped(_ => database.CreateContext());
+
+        await using var providerRoot = services.BuildServiceProvider();
+        var hostedService = new ToolContentSeedHostedService(
+            providerRoot,
+            providerRoot.GetRequiredService<IToolManifestRepository>(),
+            NullLogger<ToolContentSeedHostedService>.Instance);
+
+        await hostedService.StartAsync(CancellationToken.None);
+
+        await using var context = database.CreateContext();
+        Assert.Equal(1, await context.ToolContents.CountAsync());
+        var applied = await context.Database.GetAppliedMigrationsAsync();
+        Assert.Empty(applied);
     }
 
     [Theory]

@@ -80,6 +80,14 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
     public static async Task<TestDatabaseInstance> CreateUnmigratedAsync(TestDatabaseProvider provider)
         => await CreateInternalAsync(provider, applyMigrations: false);
 
+    public static async Task<TestDatabaseInstance> CreateLegacySqliteSchemaAsync()
+    {
+        var instance = await CreateInternalAsync(TestDatabaseProvider.Sqlite, applyMigrations: false);
+        await using var context = instance.CreateContext();
+        await context.Database.EnsureCreatedAsync();
+        return instance;
+    }
+
     private static async Task<TestDatabaseInstance> CreateInternalAsync(TestDatabaseProvider provider, bool applyMigrations)
     {
         if (provider == TestDatabaseProvider.Sqlite)
