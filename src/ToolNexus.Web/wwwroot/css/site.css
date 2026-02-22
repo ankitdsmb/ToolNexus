@@ -129,6 +129,34 @@ LAYOUT SYSTEM
 }
 
 .tool-ux__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tool-workflow-intelligence__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.workflow-pathways {
+  display: grid;
+  gap: var(--space-3);
+  contain: content;
+}
+.workflow-pathway-card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: border-color var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+}
+.workflow-pathway-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.tool-smart-context {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: var(--line-base);
+}
 .footer__columns { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 /* ==========================
@@ -1015,6 +1043,7 @@ RESPONSIVE
   .topbar__actions { grid-area: actions; justify-self: end; }
 
   .tool-ux__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tool-workflow-intelligence__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
   .readme-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1027,6 +1056,7 @@ RESPONSIVE
   .tool-grid,
   .category-grid,
   .tool-ux__grid,
+  .tool-workflow-intelligence__grid,
   .footer__columns,
   .trust-stats,
   .contact-form__grid,
@@ -1596,5 +1626,12 @@ RESPONSIVE
     grid-column: auto;
     position: static;
     max-height: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workflow-pathway-card,
+  .tool-card {
+    transition: none;
   }
 }

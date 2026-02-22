@@ -47,6 +47,11 @@ const saveCollectionBtn = document.getElementById('saveCollectionBtn');
 const uxPinnedRecent = document.getElementById('uxPinnedRecent');
 const uxHistory = document.getElementById('uxHistory');
 const uxCollections = document.getElementById('uxCollections');
+const workflowRelatedTools = document.getElementById('workflowRelatedTools');
+const workflowPathways = document.getElementById('workflowPathways');
+const smartContextHint = document.getElementById('smartContextHint');
+const workflowContinueBtn = document.getElementById('workflowContinueBtn');
+const workflowCompletionSignal = document.getElementById('workflowCompletionSignal');
 
 const errorMessage = document.getElementById('errorMessage');
 const resultStatus = document.getElementById('resultStatus');
@@ -59,6 +64,17 @@ let isRunning = false;
 let inputEditor = null;
 let outputEditor = null;
 let currentEditorType = 'textarea';
+let persistTimer = 0;
+let pendingLayoutFrame = 0;
+
+const TOOL_INTELLIGENCE_GRAPH = {
+  json: ['json-validator', 'json-to-csv', 'json-to-yaml', 'yaml-to-json'],
+  csv: ['csv-to-json', 'json-to-csv', 'file-merge'],
+  format: ['json-validator', 'xml-formatter', 'sql-formatter'],
+  encode: ['url-decode', 'base64-decode', 'html-entities'],
+  decode: ['url-encode', 'base64-encode', 'html-entities'],
+  text: ['regex-tester', 'text-diff', 'case-converter']
+};
 
 init().catch((error) => {
   console.error('Tool page initialization failed', error);
@@ -77,6 +93,7 @@ async function init() {
   applyEditorTheme();
   bindEvents();
   renderUxLists();
+  renderWorkflowIntelligence();
 
   window.ToolNexusRun = run;
 }
@@ -292,16 +309,28 @@ function bindEvents() {
   shareBtn?.addEventListener('click', createShareLink);
   saveCollectionBtn?.addEventListener('click', saveToCollection);
 
-  actionSelect?.addEventListener('change', () => persistSession());
+  actionSelect?.addEventListener('change', () => {
+    scheduleSessionPersist();
+    renderSmartContextHint();
+  });
 
   if (currentEditorType === 'monaco') {
     inputEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, run);
-    inputEditor.onDidChangeModelContent(() => persistSession());
+    inputEditor.onDidChangeModelContent(() => {
+      scheduleSessionPersist();
+      renderSmartContextHint();
+    });
   } else if (currentEditorType === 'codemirror') {
     inputEditor.addKeyMap({ 'Ctrl-Enter': run, 'Cmd-Enter': run });
-    inputEditor.on('change', persistSession);
+    inputEditor.on('change', () => {
+      scheduleSessionPersist();
+      renderSmartContextHint();
+    });
   } else {
-    inputTextArea.addEventListener('input', persistSession);
+    inputTextArea.addEventListener('input', () => {
+      scheduleSessionPersist();
+      renderSmartContextHint();
+    });
     inputTextArea.addEventListener('keydown', (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
         event.preventDefault();
@@ -320,6 +349,11 @@ function bindEvents() {
   });
 
   window.addEventListener('toolnexus:themechange', applyEditorTheme);
+  workflowContinueBtn?.addEventListener('click', () => {
+    const recommendation = buildRecommendations(slug)[0];
+    if (!recommendation) return;
+    window.location.href = `/tools/${recommendation.slug}`;
+  });
 }
 
 
@@ -381,10 +415,11 @@ function setOutputState(hasOutput) {
   outputEmptyState.hidden = hasOutput;
 
   if (currentEditorType === 'monaco') {
-    setTimeout(() => {
+    cancelAnimationFrame(pendingLayoutFrame);
+    pendingLayoutFrame = requestAnimationFrame(() => {
       inputEditor?.layout?.();
       outputEditor?.layout?.();
-    }, 0);
+    });
   } else {
     outputEditor?.refresh?.();
   }
@@ -640,8 +675,10 @@ async function run() {
     setResultStatus('success', 'Output updated');
 
     addToolHistory({ slug, action: selectedAction, input: sanitizedInput, output: result });
-    persistSession();
+    scheduleSessionPersist();
     renderUxLists();
+    renderSmartContextHint(result);
+    updateCompletionSignal(result);
   } catch (error) {
     const message = error?.message || 'Unable to run tool due to a network error.';
 
@@ -706,6 +743,17 @@ function persistSession() {
     updatedAt: new Date().toISOString()
   };
   writeStorageJson(STORAGE_KEYS.session, payload);
+}
+
+function scheduleSessionPersist() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(() => persistSession(), { timeout: 400 });
+      return;
+    }
+    persistSession();
+  }, 120);
 }
 
 function hydrateSession() {
@@ -785,6 +833,74 @@ function renderUxLists() {
   renderPinnedRecent();
   renderHistory();
   renderCollections();
+}
+
+function deriveToolType(toolSlug) {
+  const normalized = (toolSlug || '').toLowerCase();
+  if (normalized.includes('json') || normalized.includes('yaml') || normalized.includes('xml')) return 'json';
+  if (normalized.includes('csv') || normalized.includes('file')) return 'csv';
+  if (normalized.includes('format') || normalized.includes('minifier')) return 'format';
+  if (normalized.includes('encode')) return 'encode';
+  if (normalized.includes('decode')) return 'decode';
+  return 'text';
+}
+
+function buildRecommendations(toolSlug) {
+  const type = deriveToolType(toolSlug);
+  const toolSlugs = TOOL_INTELLIGENCE_GRAPH[type] || TOOL_INTELLIGENCE_GRAPH.text;
+  return toolSlugs
+    .filter((item) => item !== toolSlug)
+    .slice(0, 3)
+    .map((item) => ({ slug: item, reason: `Common next step for ${type} workflows.` }));
+}
+
+function renderWorkflowIntelligence() {
+  const recommendations = buildRecommendations(slug);
+
+  if (workflowRelatedTools) {
+    workflowRelatedTools.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    recommendations.forEach((item) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="/tools/${item.slug}">${item.slug}</a><small>${item.reason}</small>`;
+      fragment.appendChild(li);
+    });
+    workflowRelatedTools.appendChild(fragment);
+  }
+
+  if (workflowPathways) {
+    workflowPathways.innerHTML = recommendations
+      .map((item, index) => `<a class="workflow-pathway-card" href="/tools/${item.slug}"><strong>Step ${index + 2}</strong><span>${item.slug}</span></a>`)
+      .join('');
+  }
+
+  renderSmartContextHint();
+}
+
+function renderSmartContextHint(latestOutput = '') {
+  if (!smartContextHint) return;
+  const inputLength = getInputValue().trim().length;
+  const selectedAction = actionSelect?.value ?? 'run';
+
+  if (!inputLength) {
+    smartContextHint.textContent = 'Start with sample data, then run once to unlock pathway suggestions.';
+    return;
+  }
+
+  if (inputLength > 6000) {
+    smartContextHint.textContent = 'Large payload detected: keep action focused and chain into formatter/validator for confidence.';
+  } else if (latestOutput && latestOutput.trim().startsWith('{')) {
+    smartContextHint.textContent = `JSON output generated via ${selectedAction}. Next suggested chain: validate → convert.`;
+  } else {
+    smartContextHint.textContent = `Action “${selectedAction}” is active. After completion, continue into a paired tool for momentum.`;
+  }
+}
+
+function updateCompletionSignal(result) {
+  if (!workflowCompletionSignal) return;
+  workflowCompletionSignal.className = 'result-indicator result-indicator--success';
+  workflowCompletionSignal.textContent = 'Completed. Suggested next step is ready.';
+  if (workflowContinueBtn) workflowContinueBtn.hidden = !result;
 }
 
 function renderPinnedRecent() {

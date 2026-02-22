@@ -118,6 +118,29 @@
     </div>
   </section>
 
+  <section class="tool-panel tool-workflow-intelligence" aria-labelledby="workflowIntelligenceHeading">
+    <div class="panel-header">
+      <h2 id="workflowIntelligenceHeading">Workflow Intelligence</h2>
+      <p id="workflowCompletionSignal" class="result-indicator result-indicator--idle" role="status" aria-live="polite">Ready for the next step</p>
+    </div>
+
+    <div class="tool-workflow-intelligence__grid">
+      <section>
+        <h3>Related Tool Intelligence</h3>
+        <ul id="workflowRelatedTools" class="ux-list"></ul>
+      </section>
+      <section>
+        <h3>Workflow Pathways</h3>
+        <div id="workflowPathways" class="workflow-pathways"></div>
+      </section>
+      <section>
+        <h3>Smart Context Panel</h3>
+        <p id="smartContextHint" class="tool-smart-context">Context hints load when you start typing.</p>
+        <button id="workflowContinueBtn" class="tool-btn tool-btn--outline" type="button" hidden>Continue workflow</button>
+      </section>
+    </div>
+  </section>
+
   <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true" aria-relevant="additions text"></section>
 
 @if (Model.Content is not null)
