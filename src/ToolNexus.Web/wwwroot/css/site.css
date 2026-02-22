@@ -685,6 +685,35 @@ summary { cursor: pointer; font-weight: 600; }
   gap: var(--space-2);
 }
 
+.tool-shell-page__runtime {
+  --runtime-pointer-x: 0.5;
+  position: relative;
+}
+
+.tool-shell-page__runtime::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(460px circle at calc(var(--runtime-pointer-x) * 100%) -24%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%);
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-premium);
+}
+
+.tool-shell-page.has-pointer-guidance .tool-shell-page__runtime::after {
+  opacity: 1;
+}
+
+.tool-shell-page__runtime {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--runtime-panel-elevation);
+  min-height: 640px;
+  padding: var(--space-3);
+}
+
 .tool-shell-page__docs,
 .tool-shell-page__docs section {
   display: grid;
@@ -1542,30 +1571,9 @@ RESPONSIVE
 }
 
 .tool-shell-page__runtime {
-  --runtime-pointer-x: 0.5;
-  position: relative;
   min-height: 680px;
-  padding: var(--internal-gap);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
   transition: box-shadow var(--motion-base) var(--ease-premium), border-color var(--motion-base) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
   box-shadow: var(--elevation-level-2);
-}
-
-.tool-shell-page__runtime::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: radial-gradient(460px circle at calc(var(--runtime-pointer-x) * 100%) -24%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%);
-  opacity: 0;
-  transition: opacity var(--motion-fast) var(--ease-premium);
-}
-
-.tool-shell-page.has-pointer-guidance .tool-shell-page__runtime::after {
-  opacity: 1;
 }
 
 .tool-shell-page__runtime:focus-within,
@@ -1579,7 +1587,6 @@ RESPONSIVE
   display: grid;
   gap: var(--subsection-gap);
   padding: var(--internal-gap);
-  box-shadow: var(--elevation-level-1);
 }
 
 .section-frame {
