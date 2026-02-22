@@ -11,8 +11,6 @@ TOKENS
   --panel-bg: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary)), color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-secondary)));
   --surface-hover-shift: translateY(-1px);
   --panel-padding: clamp(var(--space-4), 1.6vw, var(--space-5));
-  --section-gap: clamp(var(--space-5), 2.2vw, var(--space-6));
-  --runtime-panel-elevation: 0 6px 20px rgba(15, 23, 42, 0.04);
 }
 
 /* ==========================
