@@ -74,6 +74,18 @@ LAYOUT SYSTEM
   padding-block: var(--space-6) var(--space-7);
 }
 
+.page-shell {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.page-shell > section,
+.page-shell > article,
+.page-shell > nav,
+.page-shell > aside {
+  margin: 0;
+}
+
 .shell-layer--workspace {
   position: relative;
   z-index: var(--z-base);

@@ -17,17 +17,19 @@
     var index = 0;
 }
 
-<section class="u-stack">
-  <h1>@Model.Category tools</h1>
-  <p class="u-muted">Minimal workflows for @Model.Category-related tasks.</p>
-</section>
+<article class="tool-grid-shell page-shell" aria-label="Tool category results">
+  <header class="u-stack">
+    <h1>@Model.Category tools</h1>
+    <p class="u-muted">Minimal workflows for @Model.Category-related tasks.</p>
+  </header>
 
-<div class="tool-grid" id="toolGrid" aria-live="polite">
-  @foreach (var tool in Model.Tools)
-  {
-    @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
-  }
-</div>
+  <section class="tool-grid" id="toolGrid" aria-live="polite">
+    @foreach (var tool in Model.Tools)
+    {
+      @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
+    }
+  </section>
+</article>
 
 @section Scripts {
   <script type="module" src="~/js/tools-grid.js" asp-append-version="true"></script>

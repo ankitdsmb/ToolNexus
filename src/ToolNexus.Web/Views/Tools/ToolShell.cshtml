@@ -14,7 +14,7 @@
     }
 }
 
-<div class="tool-shell-page tool-page">
+<article class="tool-shell-page tool-page page-shell" aria-label="Tool runtime page">
     <header class="tool-shell-page__hero tool-panel" aria-label="Tool introduction">
         <div class="tool-shell-page__hero-main">
             <h1>@Model.Tool.Title</h1>
@@ -107,7 +107,7 @@
                 </section>
             }
 
-            @if (Model.RelatedTools.Any() || Model.SameCategoryTools.Any() || Model.NextTools.Any())
+            @if (Model.RelatedTools.Any())
             {
                 <section class="tool-seo__related" aria-label="Related tools">
                     <h2>Related tools</h2>
@@ -116,10 +116,28 @@
                         {
                             <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
                         }
+                    </ul>
+                </section>
+            }
+
+            @if (Model.SameCategoryTools.Any())
+            {
+                <section class="tool-seo__related" aria-label="Same category tools">
+                    <h2>Same category tools</h2>
+                    <ul>
                         @foreach (var relatedTool in Model.SameCategoryTools)
                         {
                             <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
                         }
+                    </ul>
+                </section>
+            }
+
+            @if (Model.NextTools.Any())
+            {
+                <section class="tool-seo__related" aria-label="Next tools">
+                    <h2>Next tools</h2>
+                    <ul>
                         @foreach (var relatedTool in Model.NextTools)
                         {
                             <li><a href="/tools/@relatedTool.Slug">@relatedTool.Title</a></li>
@@ -129,7 +147,7 @@
             }
         </article>
     </section>
-</div>
+</article>
 
 @section Scripts {
     <script>
