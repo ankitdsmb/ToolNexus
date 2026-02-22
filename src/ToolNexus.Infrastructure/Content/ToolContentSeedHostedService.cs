@@ -11,7 +11,7 @@ namespace ToolNexus.Infrastructure.Content;
 
 public sealed class ToolContentSeedHostedService(
     IServiceProvider serviceProvider,
-    IToolManifestRepository manifestRepository,
+    JsonFileToolManifestRepository manifestRepository,
     ILogger<ToolContentSeedHostedService> logger) : IHostedService
 {
     private static readonly TimeSpan[] MigrationRetryDelays =
@@ -40,12 +40,42 @@ public sealed class ToolContentSeedHostedService(
             await MigrateWithRetryAsync(dbContext, cancellationToken);
         }
 
+        var tools = manifestRepository.LoadTools();
+
+
+        var toolDefinitionsTableExists = await TableExistsAsync(dbContext, "ToolDefinitions", cancellationToken);
+        if (!toolDefinitionsTableExists)
+        {
+            logger.LogWarning("ToolDefinitions table is unavailable; skipping dynamic tool definition seeding for this startup.");
+        }
+        else if (!await dbContext.ToolDefinitions.AnyAsync(cancellationToken))
+        {
+            var now = DateTimeOffset.UtcNow;
+            foreach (var tool in tools)
+            {
+                dbContext.ToolDefinitions.Add(new ToolDefinitionEntity
+                {
+                    Name = tool.Title,
+                    Slug = tool.Slug,
+                    Description = tool.SeoDescription,
+                    Category = tool.Category,
+                    Status = "Enabled",
+                    Icon = "ti ti-tool",
+                    SortOrder = 0,
+                    ActionsCsv = string.Join(',', tool.Actions),
+                    InputSchema = tool.ExampleInput,
+                    OutputSchema = "{}",
+                    UpdatedAt = now
+                });
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
         if (await dbContext.ToolContents.AnyAsync(cancellationToken))
         {
             return;
         }
-
-        var tools = manifestRepository.LoadTools();
         foreach (var tool in tools)
         {
             dbContext.ToolContents.Add(new ToolContentEntity
@@ -132,6 +162,35 @@ public sealed class ToolContentSeedHostedService(
         }
 
         await dbContext.Database.MigrateAsync(cancellationToken);
+    }
+
+    private static async Task<bool> TableExistsAsync(ToolNexusContentDbContext dbContext, string tableName, CancellationToken cancellationToken)
+    {
+        await dbContext.Database.OpenConnectionAsync(cancellationToken);
+        try
+        {
+            var connection = dbContext.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+            if (dbContext.Database.IsSqlite())
+            {
+                command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = @tableName;";
+            }
+            else
+            {
+                command.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = @tableName;";
+            }
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "@tableName";
+            parameter.Value = tableName;
+            command.Parameters.Add(parameter);
+
+            return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+        }
+        finally
+        {
+            await dbContext.Database.CloseConnectionAsync();
+        }
     }
 
     private static bool IsTransientPostgresStartupException(Exception exception)

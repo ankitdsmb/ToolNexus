@@ -1,6 +1,62 @@
-@model ToolNexus.Web.Areas.Admin.Models.ListDetailWorkspaceViewModel
+@model ToolNexus.Web.Areas.Admin.Models.ToolAdminIndexViewModel
 @{
-    ViewData["Title"] = "Tools Workspace";
+    ViewData["Title"] = "Tool Management";
 }
 
-<partial name="~/Areas/Admin/Views/Shared/Workspaces/_ListDetailWorkspace.cshtml" model="Model" />
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Tools</h3></div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr><th>Name</th><th>Slug</th><th>Category</th><th>Status</th><th>Updated</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var tool in Model.Tools)
+                    {
+                        <tr>
+                            <td>@tool.Name</td>
+                            <td><code>@tool.Slug</code></td>
+                            <td>@tool.Category</td>
+                            <td>@tool.Status</td>
+                            <td>@tool.UpdatedAt.ToLocalTime().ToString("u")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@tool.Id">Edit</a>
+                                <form asp-action="ToggleStatus" asp-route-id="@tool.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="enabled" value="@(tool.Status == "Enabled" ? "false" : "true")" />
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit">@(tool.Status == "Enabled" ? "Disable" : "Enable")</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">@(Model.Form.Id.HasValue ? "Edit Tool" : "Add Tool")</h3></div>
+            <div class="card-body">
+                <form asp-action="Save" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Form.Id" type="hidden" />
+                    <div class="mb-2"><label asp-for="Form.Name"></label><input class="form-control" asp-for="Form.Name" /></div>
+                    <div class="mb-2"><label asp-for="Form.Slug"></label><input class="form-control" asp-for="Form.Slug" /></div>
+                    <div class="mb-2"><label asp-for="Form.Description"></label><textarea class="form-control" asp-for="Form.Description"></textarea></div>
+                    <div class="mb-2"><label asp-for="Form.Category"></label><input class="form-control" asp-for="Form.Category" /></div>
+                    <div class="mb-2"><label asp-for="Form.Status"></label><select class="form-select" asp-for="Form.Status"><option>Enabled</option><option>Disabled</option></select></div>
+                    <div class="mb-2"><label asp-for="Form.Icon"></label><input class="form-control" asp-for="Form.Icon" /></div>
+                    <div class="mb-2"><label asp-for="Form.SortOrder"></label><input class="form-control" asp-for="Form.SortOrder" /></div>
+                    <div class="mb-2"><label asp-for="Form.InputSchema"></label><textarea class="form-control" asp-for="Form.InputSchema" rows="4"></textarea></div>
+                    <div class="mb-2"><label asp-for="Form.OutputSchema"></label><textarea class="form-control" asp-for="Form.OutputSchema" rows="4"></textarea></div>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <button class="btn btn-primary" type="submit">Save Tool</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

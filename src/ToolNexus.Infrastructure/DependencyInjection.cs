@@ -24,7 +24,9 @@ public static class DependencyInjection
         services.AddDbContext<ToolNexusContentDbContext>(options =>
             DatabaseProviderConfiguration.Configure(options, provider, connectionString));
 
-        services.AddSingleton<IToolManifestRepository, JsonFileToolManifestRepository>();
+        services.AddSingleton<JsonFileToolManifestRepository>();
+        services.AddSingleton<IToolManifestRepository, DbToolManifestRepository>();
+        services.AddScoped<IToolDefinitionRepository, EfToolDefinitionRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentService, ToolContentService>();
         services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
