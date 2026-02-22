@@ -1498,6 +1498,11 @@ RESPONSIVE
   grid-column: 1;
 }
 
+.workspace-shell__runtime-zone {
+  position: sticky;
+  top: calc(var(--space-6) + 52px);
+}
+
 .workspace-shell__context-rail {
   grid-column: 2;
   position: sticky;
@@ -1524,6 +1529,23 @@ RESPONSIVE
   gap: var(--internal-gap);
 }
 
+.tool-shell-page__runtime-zone-shell {
+  position: relative;
+  border-radius: calc(var(--radius-xl) + 2px);
+  padding: 2px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 32%, transparent), color-mix(in srgb, var(--accent-soft) 70%, transparent));
+  box-shadow: var(--elevation-level-2);
+}
+
+.tool-shell-page__runtime-zone-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  pointer-events: none;
+}
+
 .tool-shell-page__workspace-head {
   display: flex;
   justify-content: space-between;
@@ -1540,7 +1562,7 @@ RESPONSIVE
 
 .tool-shell-page__runtime {
   min-height: clamp(680px, 72vh, 920px);
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border-default));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border-default));
   border-radius: var(--radius-xl);
   background:
     radial-gradient(140% 80% at calc(var(--runtime-pointer-x, 0.5) * 100%) 0%, color-mix(in srgb, var(--accent-soft) 55%, transparent), transparent 58%),
@@ -1554,8 +1576,8 @@ RESPONSIVE
 
 .tool-shell-page__runtime:focus-within,
 .tool-shell-page__runtime:hover {
-  border-color: color-mix(in srgb, var(--accent) 36%, var(--border-default));
-  box-shadow: var(--elevation-level-2);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border-default));
+  box-shadow: 0 28px 54px rgba(5, 10, 28, 0.26);
   transform: translateY(-2px);
 }
 
@@ -1572,11 +1594,16 @@ RESPONSIVE
 :root[data-theme="light"] .tool-shell-page__hero,
 :root[data-theme="light"] .tool-shell-page__docs {
   border-color: color-mix(in srgb, var(--accent) 10%, var(--border-subtle));
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .tool-shell-page__runtime-zone-shell {
+  box-shadow: 0 20px 48px rgba(30, 64, 175, 0.16);
 }
 
 :root[data-theme="light"] .tool-shell-page__runtime {
-  border-color: color-mix(in srgb, var(--accent) 26%, var(--border-default));
-  box-shadow: 0 24px 56px rgba(19, 58, 124, 0.16);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border-default));
+  box-shadow: 0 28px 62px rgba(19, 58, 124, 0.2);
 }
 
 .section-frame {
@@ -1619,8 +1646,19 @@ RESPONSIVE
   min-height: 44px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
   font-weight: 650;
   list-style: none;
+  position: relative;
+}
+
+.readme-disclosure > summary::after {
+  content: "→";
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  transform: translateX(0);
+  transition: transform var(--motion-fast) var(--ease-premium), color var(--motion-fast) var(--ease-premium);
 }
 
 .readme-disclosure > summary::-webkit-details-marker {
@@ -1652,6 +1690,14 @@ RESPONSIVE
   position: relative;
   transition: border-color var(--motion-fast) var(--ease-premium), box-shadow var(--motion-fast) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
   border-left: 1px solid var(--border-subtle);
+}
+
+.readme-disclosure:hover > summary::after,
+.readme-disclosure[open] > summary::after,
+.readme-guidance__action:hover small,
+.readme-guidance__action:focus-visible small {
+  color: var(--accent);
+  transform: translateX(3px);
 }
 
 .readme-card[data-actionable-card="true"]::after {
