@@ -659,13 +659,6 @@ summary { cursor: pointer; font-weight: 600; }
   gap: var(--space-2);
 }
 
-.tool-shell-page__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.8fr);
-  gap: var(--space-4);
-  align-items: start;
-}
-
 .tool-shell-page__runtime {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -699,6 +692,48 @@ summary { cursor: pointer; font-weight: 600; }
   display: grid;
   gap: var(--space-2);
   padding-left: var(--space-4);
+}
+
+.readme-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.readme-card {
+  display: grid;
+  gap: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+}
+
+.quick-start-panel {
+  gap: var(--space-3);
+}
+
+.tip-highlight-box {
+  border-left: 4px solid var(--brand-primary);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-secondary) 90%, var(--brand-primary));
+}
+
+.faq-accordion {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.faq-accordion__item {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--bg-secondary) 84%, transparent);
+}
+
+.faq-accordion__item summary {
+  font-weight: 600;
 }
 
 
@@ -938,10 +973,6 @@ RESPONSIVE
   .tool-layout,
   .json-workspace { grid-template-columns: 1fr; }
 
-  .tool-shell-page__layout {
-    grid-template-columns: 1fr;
-  }
-
   .tool-shell-page__hero {
     grid-template-columns: 1fr;
   }
@@ -984,6 +1015,10 @@ RESPONSIVE
   .topbar__actions { grid-area: actions; justify-self: end; }
 
   .tool-ux__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .readme-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
@@ -1006,6 +1041,8 @@ RESPONSIVE
   .topbar__search-shortcut,
   .brand__tagline,
   .footer__separator { display: none; }
+
+  .readme-card-grid { grid-template-columns: 1fr; }
 }
 
 .csv-viewer-controls {
@@ -1429,3 +1466,7 @@ RESPONSIVE
 .static-page__faq-item p {
   margin: 0;
 }
+
+  .readme-card-grid {
+    grid-template-columns: 1fr;
+  }

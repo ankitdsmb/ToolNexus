@@ -80,17 +80,16 @@ public sealed class ToolShellSeoContractTests
         Assert.Equal(1, CountOccurrences(viewSource, "<h1>"));
         Assert.Contains("<h2>Overview</h2>", viewSource);
         Assert.Contains("<h2>Features</h2>", viewSource);
-        Assert.Contains("<h2>How to use</h2>", viewSource);
+        Assert.Contains("<h2>Quick start</h2>", viewSource);
         Assert.Contains("<h2>Examples</h2>", viewSource);
         Assert.Contains("<h2>FAQ</h2>", viewSource);
         Assert.Contains("<h2>Related tools</h2>", viewSource);
-        Assert.Contains("<h2>Same category tools</h2>", viewSource);
-        Assert.Contains("<h2>Next tools</h2>", viewSource);
+        Assert.Contains("<h2>Use cases</h2>", viewSource);
         Assert.Contains("id=\"tool-root\"", viewSource);
 
         var runtimeRootIndex = viewSource.IndexOf("id=\"tool-root\"", StringComparison.Ordinal);
-        var seoIndex = viewSource.IndexOf("class=\"tool-seo\"", StringComparison.Ordinal);
-        Assert.True(runtimeRootIndex > seoIndex);
+        var seoIndex = viewSource.IndexOf("class=\"tool-seo", StringComparison.Ordinal);
+        Assert.True(runtimeRootIndex < seoIndex);
     }
 
     private static int CountOccurrences(string source, string token)
