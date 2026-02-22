@@ -245,5 +245,7 @@ Stop only when:
 - Rollback path confirmed.
 
 ====================================================
+
+All infrastructure migrations MUST follow phased architecture → QA → implementation workflow.
 END OF MIGRATION ANCHOR
 ====================================================
