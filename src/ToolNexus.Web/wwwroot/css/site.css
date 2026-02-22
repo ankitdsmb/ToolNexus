@@ -650,17 +650,6 @@ summary { cursor: pointer; font-weight: 600; }
 
 
 
-.tool-shell-page {
-  gap: var(--space-4);
-}
-
-.tool-shell-page__hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-3);
-  align-items: end;
-}
-
 .tool-shell-page__hero-main {
   display: grid;
   gap: var(--space-2);
@@ -703,34 +692,6 @@ summary { cursor: pointer; font-weight: 600; }
 
 .tool-shell-page.has-pointer-guidance .tool-shell-page__runtime::after {
   opacity: 1;
-}
-
-.tool-shell-page__runtime {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
-  box-shadow: var(--runtime-panel-elevation);
-  min-height: 640px;
-  padding: var(--space-3);
-}
-
-.tool-shell-page__docs,
-.tool-shell-page__docs section {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.tool-shell-page__docs {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
-  padding: var(--space-4);
-  align-content: start;
-}
-
-.tool-shell-page__docs section + section {
-  border-top: 1px solid var(--border-subtle);
-  padding-top: var(--space-3);
 }
 
 .tool-shell-page__docs ul,
@@ -1525,6 +1486,7 @@ RESPONSIVE
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
   column-gap: var(--runtime-context-gap);
   row-gap: var(--section-gap);
+  padding-block: var(--section-gap);
   align-items: start;
   max-width: var(--container-max);
   margin-inline: auto;
@@ -1577,7 +1539,7 @@ RESPONSIVE
 }
 
 .tool-shell-page__runtime {
-  min-height: 680px;
+  min-height: clamp(680px, 72vh, 920px);
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border-default));
   border-radius: var(--radius-xl);
   background:
@@ -1585,6 +1547,8 @@ RESPONSIVE
     var(--bg-secondary);
   transition: box-shadow var(--motion-base) var(--ease-premium), border-color var(--motion-base) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
   box-shadow: var(--elevation-level-2);
+  isolation: isolate;
+  will-change: transform;
   contain: content;
 }
 
@@ -1603,6 +1567,16 @@ RESPONSIVE
   border: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
   box-shadow: var(--elevation-level-1);
+}
+
+:root[data-theme="light"] .tool-shell-page__hero,
+:root[data-theme="light"] .tool-shell-page__docs {
+  border-color: color-mix(in srgb, var(--accent) 10%, var(--border-subtle));
+}
+
+:root[data-theme="light"] .tool-shell-page__runtime {
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--border-default));
+  box-shadow: 0 24px 56px rgba(19, 58, 124, 0.16);
 }
 
 .section-frame {
