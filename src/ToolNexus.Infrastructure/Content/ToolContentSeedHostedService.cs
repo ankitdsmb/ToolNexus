@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
@@ -13,6 +14,15 @@ public sealed class ToolContentSeedHostedService(
     IToolManifestRepository manifestRepository,
     ILogger<ToolContentSeedHostedService> logger) : IHostedService
 {
+    private static readonly TimeSpan[] MigrationRetryDelays =
+    [
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(4),
+        TimeSpan.FromSeconds(6),
+        TimeSpan.FromSeconds(8),
+        TimeSpan.FromSeconds(10)
+    ];
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
@@ -27,7 +37,7 @@ public sealed class ToolContentSeedHostedService(
         }
         else
         {
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await MigrateWithRetryAsync(dbContext, cancellationToken);
         }
 
         if (await dbContext.ToolContents.AnyAsync(cancellationToken))
@@ -99,6 +109,37 @@ public sealed class ToolContentSeedHostedService(
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private async Task MigrateWithRetryAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; attempt <= MigrationRetryDelays.Length; attempt++)
+        {
+            try
+            {
+                await dbContext.Database.MigrateAsync(cancellationToken);
+                return;
+            }
+            catch (Exception ex) when (IsTransientPostgresStartupException(ex) && attempt < MigrationRetryDelays.Length)
+            {
+                var retryDelay = MigrationRetryDelays[attempt];
+                logger.LogWarning(ex,
+                    "Database migration attempt {Attempt} failed while waiting for PostgreSQL readiness. Retrying in {DelaySeconds}s.",
+                    attempt + 1,
+                    retryDelay.TotalSeconds);
+
+                await Task.Delay(retryDelay, cancellationToken);
+            }
+        }
+
+        await dbContext.Database.MigrateAsync(cancellationToken);
+    }
+
+    private static bool IsTransientPostgresStartupException(Exception exception)
+    {
+        return exception is TimeoutException
+               || exception is NpgsqlException
+               || exception.InnerException is NpgsqlException;
+    }
 
     private static async Task<bool> ShouldSkipSqliteMigrationAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
     {

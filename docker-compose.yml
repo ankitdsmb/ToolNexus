@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: toolnexus-postgres
+    environment:
+      POSTGRES_DB: ToolNexus
+      POSTGRES_USER: toolnexus
+      POSTGRES_PASSWORD: toolnexus_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U toolnexus -d ToolNexus"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  toolnexus-api:
+    container_name: toolnexus-api
+    build:
+      context: .
+      dockerfile: dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  toolnexus-tests:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    environment:
+      TOOLNEXUS_TEST_PROVIDER: postgres
+      TOOLNEXUS_TEST_POSTGRES_CONNECTION: Host=postgres;Port=5432;Database=postgres;Username=toolnexus;Password=toolnexus_dev;SSL Mode=Disable;
+    command: ["dotnet", "test", "ToolNexus.sln"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ["tests"]
+
+volumes:
+  postgres_data:
