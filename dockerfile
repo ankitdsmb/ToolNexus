@@ -41,3 +41,16 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 USER appuser
 
 ENTRYPOINT ["dotnet", "ToolNexus.Api.dll"]
+
+
+FROM mcr.microsoft.com/playwright:v1.55.0-jammy AS playwright-ci
+WORKDIR /workspace
+
+# Keep web runtime image unchanged; provide a dedicated, reproducible Playwright runtime for CI.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY playwright.config.js ./
+COPY tests/playwright ./tests/playwright
+
+CMD ["npx", "playwright", "test", "--list"]
