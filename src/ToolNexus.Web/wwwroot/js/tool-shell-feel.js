@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   disclosures.forEach((disclosure) => {
     disclosure.addEventListener('toggle', () => {
       disclosure.classList.add('is-transitioning');
-      window.setTimeout(() => disclosure.classList.remove('is-transitioning'), 220);
+      window.requestAnimationFrame(() => disclosure.classList.remove('is-transitioning'));
     });
   });
 
@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
   monitorExecutionSuccess();
 
 
-  let pointerGuidanceTimeoutId = 0;
   let pendingFrame = 0;
   let nextPointerX = 0;
 
@@ -81,14 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   runtime.addEventListener('pointerleave', () => {
-    window.clearTimeout(pointerGuidanceTimeoutId);
-    pointerGuidanceTimeoutId = window.setTimeout(() => {
-      page.classList.remove('has-pointer-guidance');
-      runtime.style.setProperty('--runtime-pointer-x', '0.5');
-      if (runtimeShell) {
-        runtimeShell.style.setProperty('--runtime-pointer-x', '0.5');
-      }
-    }, 140);
+    page.classList.remove('has-pointer-guidance');
+    runtime.style.setProperty('--runtime-pointer-x', '0.5');
+    if (runtimeShell) {
+      runtimeShell.style.setProperty('--runtime-pointer-x', '0.5');
+    }
   });
 
   runtime.addEventListener('pointermove', (event) => {
@@ -97,9 +93,5 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingFrame = window.requestAnimationFrame(applyPointerCue);
     }
 
-    window.clearTimeout(pointerGuidanceTimeoutId);
-    pointerGuidanceTimeoutId = window.setTimeout(() => {
-      page.classList.remove('has-pointer-guidance');
-    }, 900);
   });
 });
