@@ -9,6 +9,45 @@ public sealed class ProviderParityIntegrationTests
 {
     [Theory]
     [ClassData(typeof(ProviderTheoryData))]
+    public async Task DbContextCrudParity_PersistsUpdateAndDeleteAcrossProviders(TestDatabaseProvider provider)
+    {
+        await using var database = await TestDatabaseInstance.CreateAsync(provider);
+
+        int createdId;
+        await using (var createContext = database.CreateContext())
+        {
+            var created = CreateTool("crud-parity");
+            createContext.ToolContents.Add(created);
+            await createContext.SaveChangesAsync();
+            createdId = created.Id;
+        }
+
+        await using (var updateContext = database.CreateContext())
+        {
+            var existing = await updateContext.ToolContents.SingleAsync(x => x.Id == createdId);
+            existing.Title = "updated-title";
+            await updateContext.SaveChangesAsync();
+        }
+
+        await using (var verification = database.CreateContext())
+        {
+            var updated = await verification.ToolContents.AsNoTracking().SingleAsync(x => x.Id == createdId);
+            Assert.Equal("updated-title", updated.Title);
+        }
+
+        await using (var deleteContext = database.CreateContext())
+        {
+            var toDelete = await deleteContext.ToolContents.SingleAsync(x => x.Id == createdId);
+            deleteContext.ToolContents.Remove(toDelete);
+            await deleteContext.SaveChangesAsync();
+        }
+
+        await using var finalVerification = database.CreateContext();
+        Assert.False(await finalVerification.ToolContents.AnyAsync(x => x.Id == createdId));
+    }
+
+    [Theory]
+    [ClassData(typeof(ProviderTheoryData))]
     public async Task CrudParityAndSlugNormalization_WorksAcrossProviders(TestDatabaseProvider provider)
     {
         await using var database = await TestDatabaseInstance.CreateAsync(provider);
