@@ -1,237 +1,173 @@
-# AGENTS.md — ToolNexus Engineering Governance
+# AGENTS.md — ToolNexus Admin Platform Governance
 
 ## PURPOSE
 
-This repository follows **architecture-driven, phase-based execution**.
+This repository is building:
 
-AI agents (Codex / assistants) MUST behave as senior engineers:
+ToolNexus Admin Platform
 
-* analyze first
-* plan before implementation
-* protect architecture
-* prioritize safety and reversibility
+Goal:
 
-No uncontrolled changes are allowed.
+* Production-grade admin panel
+* Built using lightweight proven admin template
+* NO custom UI framework reinventing
+* Focus on functionality, scalability, and operator efficiency.
 
 ---
 
 # CORE PRINCIPLES
 
-## 1. Architecture First
+1. Architecture First
 
-Before modifying code:
+* Analyze before implementation.
+* Avoid unnecessary rewrites.
 
-* understand existing architecture
-* identify impact radius
-* avoid unnecessary refactors
+2. Template-first Development
 
-Never rewrite systems when incremental change is possible.
+* Use a lightweight popular admin template.
+* Prefer:
 
----
+  * Tabler
+  * AdminLTE (modern minimal usage)
+  * CoreUI
+  * or similar lightweight Bootstrap-based system.
 
-## 2. Phased Execution Model
-
-All major work MUST follow phases:
-
-1. Architecture Analysis (no code changes)
-2. Engineering Planning
-3. QA Strategy
-4. Test Safety Net
-5. Developer Verification
-6. QA Execution
-7. Hardening
-8. Production Protocol
-
-Skipping phases is NOT allowed.
+DO NOT create custom design system from scratch.
 
 ---
 
-## 3. Provider Abstraction Rules (Database)
+# ADMIN DESIGN RULES
 
-ToolNexus supports multiple DB providers.
+* Clean dashboard layout.
+* Fast loading.
+* Keyboard-friendly workflows.
+* CRUD-heavy views optimized for productivity.
 
-Rules:
-
-* SQLite MUST remain supported.
-* PostgreSQL support must use provider switching.
-* No repository-level provider branching.
-* Provider choice belongs ONLY to configuration + DI.
-
-Allowed:
-
-```text
-Database.Provider = Sqlite | Postgres
-```
-
-Forbidden:
-
-* provider-specific logic inside repositories
-* runtime branching in business logic.
+Admin is for operators, not marketing.
 
 ---
 
-## 4. Migration Safety Rules
+# PHASED EXECUTION MODEL
 
-NEVER:
+Every task MUST follow:
 
-* use destructive EnsureDeleted outside development
-* assume schema state
-* modify migrations blindly
-
-ALWAYS:
-
-* use EF migrations
-* validate migration history
-* verify identity/sequence alignment after migration.
-
----
-
-## 5. Startup Behavior Rules
-
-Startup must be safe:
-
-* migration failures must be explicit
-* legacy SQLite scenarios must not crash startup
-* startup must remain deterministic.
+Phase 1 — Architecture Analysis (NO CODE)
+Phase 2 — Template Integration
+Phase 3 — Admin Shell Layout
+Phase 4 — Tool Management (Dynamic Core)
+Phase 5 — Content Management
+Phase 6 — Execution Control
+Phase 7 — Analytics + Logs
+Phase 8 — Security / Roles
+Phase 9 — Feature Flags
+Phase 10 — Hardening + QA
 
 ---
 
-## 6. Testing Requirements
+# DYNAMIC TOOL SYSTEM (MANDATORY)
 
-Changes affecting DB or infrastructure MUST include:
+Tools must be fully dynamic.
 
-### Unit tests
+Admin must support:
 
-* provider selection
-* configuration logic
-* migration behavior.
+* Add tool without code change.
+* Edit input schema.
+* Edit output schema.
+* Enable / disable.
+* Categorization.
+* Version-safe publishing.
 
-### Integration tests
-
-* SQLite parity
-* PostgreSQL parity
-* transaction safety
-* concurrency safety.
+NEVER hardcode tools in UI.
 
 ---
 
-## 7. Docker Rules
+# DATABASE RULES
 
-Local development must support:
-
-* docker compose up --build
-* automatic migrations
-* automatic seed data
-* no manual DB setup.
-
-Container networking rules:
-
-* NEVER use localhost inside containers.
-* Use service names (example: `Host=postgres`).
-
----
-
-## 8. Configuration Rules
-
-Environment strategy:
-
-* appsettings.json = safe defaults
-* appsettings.Development.json = dev overrides
-* appsettings.QA.json = QA overrides
-
-Secrets must NOT be hardcoded for production.
-
-Environment variables preferred:
-
-```text
-Database__ConnectionString
-```
-
----
-
-## 9. Change Safety
-
-Agents MUST:
-
-* minimize file changes
-* preserve runtime contracts
-* avoid breaking existing behavior.
-
-If unsure:
-
-* analyze and report
-* DO NOT guess.
-
----
-
-## 10. Reporting Format (MANDATORY)
-
-Every task must return:
-
-### IMPLEMENTATION REPORT
-
-* summary
-* files modified
-* architecture impact
-* tests executed
-* risks introduced
-* confidence score.
-
----
-
-## 11. Forbidden Behaviors
+Admin interacts with existing EF Core models.
 
 DO NOT:
 
-* rewrite architecture without request
-* delete fallback systems
-* introduce hidden breaking changes
-* skip testing.
+* create parallel storage
+* duplicate tool structures.
+
+Reuse ToolNexus entities.
 
 ---
 
-## 12. Preferred Workflow
+# API RULES
 
-Always follow:
+Admin uses same backend APIs.
+
+Add:
+
+/api/admin/*
+
+Only when needed.
+
+Avoid separate admin backend.
+
+---
+
+# SECURITY RULES
+
+RBAC Required:
+
+* Admin
+* Editor
+* Viewer
+* Developer
+
+No anonymous admin access.
+
+---
+
+# REQUIRED FEATURES
+
+1. Dashboard Overview
+2. Tool Management
+3. Tool Content Editor
+4. Categories Manager
+5. Tool Execution Config
+6. Feature Flags
+7. Analytics
+8. Logs Viewer
+9. User Roles
+10. Global Settings
+
+---
+
+# PERFORMANCE RULES
+
+Admin UI must:
+
+* avoid heavy JS frameworks unless required.
+* support server-rendered pages when possible.
+
+---
+
+# REPORTING FORMAT (MANDATORY)
+
+Each phase must output:
+
+* Architecture impact summary
+* Files modified
+* Testing done
+* Risks
+* Confidence score
+
+---
+
+# FORBIDDEN
+
+* Rebuilding admin UI framework.
+* Breaking existing frontend.
+* Hardcoding tool logic.
+* Skipping phases.
+
+---
+
+# EXECUTION ORDER
 
 ANALYZE → PLAN → IMPLEMENT → TEST → VERIFY → REPORT
 
----
-
-## 13. Migration Discipline (SQLite → PostgreSQL)
-
-Required order:
-
-1. Provider abstraction
-2. Migration baseline
-3. Testing safety net
-4. Developer verification
-5. QA verification
-6. Production cutover.
-
----
-
-## 14. Confidence Scoring
-
-Reports must include confidence:
-
-* 90–100: verified and safe
-* 70–89: partial verification
-* <70: blocked or risky.
-
----
-
-## 15. Agent Role Expectation
-
-Agents act as:
-
-* Architect
-* Senior Engineer
-* QA Analyst
-* Release Engineer
-
-NOT as rapid code generators.
-
----
-
-# END OF AGENTS.md
+END OF FILE
