@@ -54,6 +54,26 @@
         <p class="contact-form__security">Your draft stays in your browser. No server-side storage in this demo.</p>
         <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>
     </form>
+
+    <section class="static-page__section">
+        <h2>Before you send a support request</h2>
+        <p>Include the tool name, what you expected, and what happened instead. A short reproducible input example helps engineering teams isolate issues faster.</p>
+        <p>If the issue involves transformed data, include whether you used tools like <a href="/tools/json-formatter">JSON Formatter</a> or <a href="/tools/base64-decode">Base64 Decode</a> first.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Contact FAQ</h2>
+        <div class="static-page__faq-list" itemscope itemtype="https://schema.org/FAQPage">
+            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">What details make bug reports useful?</h3>
+                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Share tool slug, exact steps, expected output, and actual output. That usually provides enough signal for triage.</span></p>
+            </article>
+            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">Can I request a new utility?</h3>
+                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. Describe your workflow and input/output needs so we can evaluate whether it fits the current tool model.</span></p>
+            </article>
+        </div>
+    </section>
 </article>
 
 @section Scripts {

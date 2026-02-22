@@ -21,6 +21,7 @@
   <header class="u-stack">
     <h1>@Model.Category tools</h1>
     <p class="u-muted">Minimal workflows for @Model.Category-related tasks.</p>
+    <p class="u-muted">Choose a tool based on your next action: normalize, validate, compare, or convert.</p>
   </header>
 
   <section class="tool-grid" id="toolGrid" aria-live="polite">
@@ -28,6 +29,20 @@
     {
       @await Html.PartialAsync("_ToolCard", tool, new ViewDataDictionary(ViewData) { ["CardIndex"] = index++ })
     }
+  </section>
+
+  <section class="static-page__section" aria-labelledby="categoryGuideHeading">
+    <h2 id="categoryGuideHeading">How to choose a @Model.Category tool</h2>
+    <p>Pick the lightest tool that solves the immediate step in your workflow. If your input is unstructured, begin with formatting. If it is already structured, validate first and then transform.</p>
+  </section>
+
+  <section class="static-page__section" aria-labelledby="categoryRelatedHeading">
+    <h2 id="categoryRelatedHeading">Related categories and workflows</h2>
+    <ul class="static-page__link-list">
+      <li><a href="/tools">Browse all categories</a></li>
+      <li><a href="/tools/json-formatter">JSON Formatter for API payload workflows</a></li>
+      <li><a href="/tools/base64-encode">Base64 Encode for transport-safe values</a></li>
+    </ul>
   </section>
 </article>
 
