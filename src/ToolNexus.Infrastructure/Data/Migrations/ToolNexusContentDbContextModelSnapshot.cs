@@ -17,6 +17,47 @@ namespace ToolNexus.Infrastructure.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
+
+            modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.DailyToolMetricsEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("AvgDurationMs")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime>("DateUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("FailureCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("MaxDurationMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("SuccessCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TotalExecutions")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TotalPayloadSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ToolSlug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToolSlug", "DateUtc")
+                        .IsUnique();
+
+                    b.ToTable("DailyToolMetrics");
+                });
+
             modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolCategoryEntity", b =>
                 {
                     b.Property<int>("Id")

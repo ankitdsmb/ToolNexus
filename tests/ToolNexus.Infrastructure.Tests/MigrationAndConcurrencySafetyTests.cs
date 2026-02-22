@@ -1,9 +1,10 @@
 using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
-using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Content.Entities;
 
@@ -44,13 +45,13 @@ public sealed class MigrationAndConcurrencySafetyTests
         await using var database = await TestDatabaseInstance.CreateAsync(provider);
 
         var services = new ServiceCollection();
-        services.AddSingleton<IToolManifestRepository>(new FakeManifestRepository());
         services.AddScoped(_ => database.CreateContext());
 
+        var manifestRepository = CreateManifestRepository();
         await using var providerRoot = services.BuildServiceProvider();
         var hostedService = new ToolContentSeedHostedService(
             providerRoot,
-            providerRoot.GetRequiredService<IToolManifestRepository>(),
+            manifestRepository,
             NullLogger<ToolContentSeedHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
@@ -68,13 +69,13 @@ public sealed class MigrationAndConcurrencySafetyTests
         await using var database = await TestDatabaseInstance.CreateUnmigratedAsync(provider);
 
         var services = new ServiceCollection();
-        services.AddSingleton<IToolManifestRepository>(new FakeManifestRepository());
         services.AddScoped(_ => database.CreateContext());
 
+        var manifestRepository = CreateManifestRepository();
         await using var providerRoot = services.BuildServiceProvider();
         var hostedService = new ToolContentSeedHostedService(
             providerRoot,
-            providerRoot.GetRequiredService<IToolManifestRepository>(),
+            manifestRepository,
             NullLogger<ToolContentSeedHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
@@ -103,13 +104,13 @@ public sealed class MigrationAndConcurrencySafetyTests
         await using var database = await TestDatabaseInstance.CreateLegacySqliteSchemaAsync();
 
         var services = new ServiceCollection();
-        services.AddSingleton<IToolManifestRepository>(new FakeManifestRepository());
         services.AddScoped(_ => database.CreateContext());
 
+        var manifestRepository = CreateManifestRepository();
         await using var providerRoot = services.BuildServiceProvider();
         var hostedService = new ToolContentSeedHostedService(
             providerRoot,
-            providerRoot.GetRequiredService<IToolManifestRepository>(),
+            manifestRepository,
             NullLogger<ToolContentSeedHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
@@ -178,23 +179,44 @@ public sealed class MigrationAndConcurrencySafetyTests
         };
     }
 
-    private sealed class FakeManifestRepository : IToolManifestRepository
+    private static JsonFileToolManifestRepository CreateManifestRepository()
     {
-        public IReadOnlyCollection<ToolDescriptor> LoadTools()
-        {
-            return
-            [
-                new ToolDescriptor
+        var contentRoot = Path.Combine(Path.GetTempPath(), $"toolnexus-manifest-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(contentRoot);
+
+        var manifestPath = Path.Combine(contentRoot, "tools.manifest.json");
+        File.WriteAllText(manifestPath, """
+            {
+              "tools": [
                 {
-                    Slug = "seeded-tool",
-                    Title = "Seeded Tool",
-                    Category = "Utilities",
-                    SeoTitle = "Seeded Tool",
-                    SeoDescription = "Seeded tool description",
-                    ExampleInput = "{}",
-                    Actions = ["format"]
+                  "slug": "seeded-tool",
+                  "title": "Seeded Tool",
+                  "category": "Utilities",
+                  "seoTitle": "Seeded Tool",
+                  "seoDescription": "Seeded tool description",
+                  "exampleInput": "{}",
+                  "actions": ["format"]
                 }
-            ];
-        }
+              ]
+            }
+            """);
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ManifestPath"] = manifestPath
+            })
+            .Build();
+
+        return new JsonFileToolManifestRepository(new FakeHostEnvironment(contentRoot), configuration);
     }
+
+    private sealed class FakeHostEnvironment(string contentRootPath) : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Development;
+        public string ApplicationName { get; set; } = "ToolNexus.Tests";
+        public string ContentRootPath { get; set; } = contentRootPath;
+        public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; } = null!;
+    }
+
 }

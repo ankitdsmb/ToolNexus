@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, RegexInsightProvider>();
         services.AddSingleton<IToolInsightProvider, TextDiffInsightProvider>();
+        services.AddSingleton<ExecutionMetricsAggregator>();
         services.AddSingleton<ToolExecutionEventService>();
         services.AddSingleton<IToolExecutionEventService>(sp => sp.GetRequiredService<ToolExecutionEventService>());
         services.AddHostedService(sp => sp.GetRequiredService<ToolExecutionEventService>());

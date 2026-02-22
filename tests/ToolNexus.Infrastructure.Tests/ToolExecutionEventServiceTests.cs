@@ -17,6 +17,7 @@ public sealed class ToolExecutionEventServiceTests
         var services = new ServiceCollection();
         services.AddScoped(_ => db.CreateContext());
         services.AddSingleton<Microsoft.Extensions.Logging.ILogger<ToolExecutionEventService>>(NullLogger<ToolExecutionEventService>.Instance);
+        services.AddSingleton<ExecutionMetricsAggregator>();
         services.AddSingleton<ToolExecutionEventService>();
 
         var provider = services.BuildServiceProvider();
