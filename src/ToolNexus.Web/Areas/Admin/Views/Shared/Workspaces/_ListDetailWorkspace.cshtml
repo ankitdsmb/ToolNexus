@@ -1,0 +1,60 @@
+@model ToolNexus.Web.Areas.Admin.Models.ListDetailWorkspaceViewModel
+
+<section class="workspace-shell" aria-label="@Model.WorkspaceTitle">
+    <header class="workspace-header mb-3">
+        <h3 class="workspace-title mb-1">@Model.WorkspaceTitle</h3>
+        <p class="text-secondary mb-0">@Model.WorkspaceSubtitle</p>
+    </header>
+
+    <div class="workspace-grid">
+        <article class="workspace-panel workspace-panel-list card" aria-label="@Model.LeftPanelTitle">
+            <div class="card-header">
+                <h4 class="card-title mb-0">@Model.LeftPanelTitle</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary">@Model.LeftPanelDescription</p>
+                <div class="table-responsive">
+                    <table class="table table-vcenter workspace-placeholder-table mb-0">
+                        <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="3" class="text-secondary">Tools table placeholder (server-rendered shell only).</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </article>
+
+        <article class="workspace-panel workspace-panel-detail card" aria-label="@Model.RightPanelTitle">
+            <div class="card-header">
+                <h4 class="card-title mb-0">@Model.RightPanelTitle</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary">@Model.RightPanelDescription</p>
+
+                <ul class="nav nav-tabs" role="tablist" aria-label="Detail tabs">
+                    @for (var i = 0; i < Model.DetailTabs.Count; i++)
+                    {
+                        var tab = Model.DetailTabs[i];
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link @(i == 0 ? "active" : string.Empty)" role="tab" aria-selected="@(i == 0 ? "true" : "false")">@tab</button>
+                        </li>
+                    }
+                </ul>
+
+                <div class="workspace-detail-placeholder mt-3">
+                    <div class="alert alert-secondary mb-0" role="status">
+                        Detail panel placeholder. Select a tool row in a later phase to populate this workspace.
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</section>
