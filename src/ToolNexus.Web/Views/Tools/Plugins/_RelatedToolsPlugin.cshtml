@@ -1,0 +1,21 @@
+@model ToolPageViewModel
+@if (Model.RelatedTools.Any() || Model.SameCategoryTools.Any() || Model.NextTools.Any())
+{
+    <details class="readme-disclosure" data-context-plugin="related-tools">
+        <summary>Related tools</summary>
+        <section class="readme-block section-frame" aria-label="Related tools">
+            <p class="tool-section__eyebrow">RelatedToolsGrid</p>
+            <h2>Related tools</h2>
+            <div class="readme-card-grid readme-card-grid--related">
+                @foreach (var relatedTool in Model.RelatedTools.Concat(Model.SameCategoryTools).Concat(Model.NextTools).GroupBy(t => t.Slug).Select(g => g.First()))
+                {
+                    <article class="readme-card" data-actionable-card="true" tabindex="0">
+                        <h3>@relatedTool.Title</h3>
+                        <p>Continue your workflow with a companion tool.</p>
+                        <a href="/tools/@relatedTool.Slug">Open tool</a>
+                    </article>
+                }
+            </div>
+        </section>
+    </details>
+}

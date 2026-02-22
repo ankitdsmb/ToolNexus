@@ -1,0 +1,6 @@
+@model ToolPageViewModel
+<section class="readme-block readme-intro-block section-frame section-frame--intro" aria-label="Overview" data-context-plugin="overview">
+    <p class="tool-section__eyebrow">ReadmeIntroBlock</p>
+    <h2>Overview</h2>
+    <p>@(Model.Content?.LongDescription ?? Model.Tool.SeoDescription)</p>
+</section>
