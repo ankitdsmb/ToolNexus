@@ -28,11 +28,23 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
+      - name: Cache Playwright browser binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium runtime
+        run: npx playwright install --with-deps chromium
+
       - name: Frontend platform guard
         run: npm run check:platform
 
       - name: Frontend tests with coverage
         run: npm run test:js -- --runInBand
+
+      - name: Playwright contract tests
+        run: npx playwright test tests/playwright/contracts
 
       - name: Restore
         run: dotnet restore ToolNexus.sln
