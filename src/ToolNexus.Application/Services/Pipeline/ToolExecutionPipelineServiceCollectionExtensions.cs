@@ -20,6 +20,7 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddToolExecutionStep<RateLimitStep>();
         services.AddToolExecutionStep<CachingExecutionStep>();
         services.AddToolExecutionStep<ExecutionStep>();
+        services.AddToolExecutionStep<ExecutionTelemetryStep>();
         services.AddToolExecutionStep<MetricsStep>();
 
         return services;

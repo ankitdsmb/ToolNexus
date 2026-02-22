@@ -11,6 +11,7 @@ using ToolNexus.Infrastructure.Options;
 using ToolNexus.Infrastructure.Insights;
 using ToolNexus.Infrastructure.Security;
 using ToolNexus.Application.Services.Insights;
+using ToolNexus.Infrastructure.Observability;
 
 namespace ToolNexus.Infrastructure;
 
@@ -46,6 +47,9 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, RegexInsightProvider>();
         services.AddSingleton<IToolInsightProvider, TextDiffInsightProvider>();
+        services.AddSingleton<ToolExecutionEventService>();
+        services.AddSingleton<IToolExecutionEventService>(sp => sp.GetRequiredService<ToolExecutionEventService>());
+        services.AddHostedService(sp => sp.GetRequiredService<ToolExecutionEventService>());
         // Infrastructure owns concrete executor wiring.
         services.AddToolExecutors();
         return services;
