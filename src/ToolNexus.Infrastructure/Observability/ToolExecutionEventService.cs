@@ -9,7 +9,10 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Observability;
 
-public sealed class ToolExecutionEventService(IServiceScopeFactory scopeFactory, ILogger<ToolExecutionEventService> logger)
+public sealed class ToolExecutionEventService(
+    IServiceScopeFactory scopeFactory,
+    ExecutionMetricsAggregator metricsAggregator,
+    ILogger<ToolExecutionEventService> logger)
     : BackgroundService, IToolExecutionEventService
 {
     private readonly Channel<ToolExecutionEvent> _channel = Channel.CreateUnbounded<ToolExecutionEvent>(new UnboundedChannelOptions
@@ -38,6 +41,7 @@ public sealed class ToolExecutionEventService(IServiceScopeFactory scopeFactory,
                 using var scope = scopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
                 dbContext.ToolExecutionEvents.Add(Map(executionEvent));
+                await metricsAggregator.UpdateAsync(dbContext, executionEvent, stoppingToken);
                 await dbContext.SaveChangesAsync(stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
