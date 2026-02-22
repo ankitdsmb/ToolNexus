@@ -59,6 +59,26 @@ public sealed class MigrationAndConcurrencySafetyTests
 
     [Theory]
     [ClassData(typeof(ProviderTheoryData))]
+    public async Task StartupMigrationFlow_FromUnmigratedDatabase_AppliesMigrations(TestDatabaseProvider provider)
+    {
+        await using var database = await TestDatabaseInstance.CreateUnmigratedAsync(provider);
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IToolManifestRepository>(new FakeManifestRepository());
+        services.AddScoped(_ => database.CreateContext());
+
+        await using var providerRoot = services.BuildServiceProvider();
+        var hostedService = new ToolContentSeedHostedService(providerRoot, providerRoot.GetRequiredService<IToolManifestRepository>());
+
+        await hostedService.StartAsync(CancellationToken.None);
+
+        await using var context = database.CreateContext();
+        Assert.Equal(1, await context.ToolContents.CountAsync());
+        Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
+    [Theory]
+    [ClassData(typeof(ProviderTheoryData))]
     public async Task UniqueConstraint_DuplicateSlugThrows(TestDatabaseProvider provider)
     {
         await using var database = await TestDatabaseInstance.CreateAsync(provider);

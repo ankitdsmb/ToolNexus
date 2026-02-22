@@ -13,15 +13,33 @@ public enum TestDatabaseProvider
 
 public static class TestDatabaseProviderMatrix
 {
+    private const string ProviderSelectionVariable = "TOOLNEXUS_TEST_PROVIDER";
+
     public static IEnumerable<object[]> AllConfiguredProviders()
     {
-        yield return [TestDatabaseProvider.Sqlite];
+        var selectedProvider = Environment.GetEnvironmentVariable(ProviderSelectionVariable);
 
-        if (!string.IsNullOrWhiteSpace(PostgreSqlAdminConnectionString))
+        if (ShouldIncludeSqlite(selectedProvider))
+        {
+            yield return [TestDatabaseProvider.Sqlite];
+        }
+
+        if (ShouldIncludePostgres(selectedProvider) && !string.IsNullOrWhiteSpace(PostgreSqlAdminConnectionString))
         {
             yield return [TestDatabaseProvider.PostgreSql];
         }
     }
+
+    internal static bool ShouldIncludeSqlite(string? selectedProvider) =>
+        string.IsNullOrWhiteSpace(selectedProvider)
+        || selectedProvider.Equals("all", StringComparison.OrdinalIgnoreCase)
+        || selectedProvider.Equals("sqlite", StringComparison.OrdinalIgnoreCase);
+
+    internal static bool ShouldIncludePostgres(string? selectedProvider) =>
+        string.IsNullOrWhiteSpace(selectedProvider)
+        || selectedProvider.Equals("all", StringComparison.OrdinalIgnoreCase)
+        || selectedProvider.Equals("postgres", StringComparison.OrdinalIgnoreCase)
+        || selectedProvider.Equals("postgresql", StringComparison.OrdinalIgnoreCase);
 
     public static string? PostgreSqlAdminConnectionString =>
         Environment.GetEnvironmentVariable("TOOLNEXUS_TEST_POSTGRES_CONNECTION");
@@ -57,14 +75,25 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
     public TestDatabaseProvider Provider { get; }
 
     public static async Task<TestDatabaseInstance> CreateAsync(TestDatabaseProvider provider)
+        => await CreateInternalAsync(provider, applyMigrations: true);
+
+    public static async Task<TestDatabaseInstance> CreateUnmigratedAsync(TestDatabaseProvider provider)
+        => await CreateInternalAsync(provider, applyMigrations: false);
+
+    private static async Task<TestDatabaseInstance> CreateInternalAsync(TestDatabaseProvider provider, bool applyMigrations)
     {
         if (provider == TestDatabaseProvider.Sqlite)
         {
             var sqlitePath = Path.Combine(Path.GetTempPath(), $"toolnexus-tests-{Guid.NewGuid():N}.db");
             var connectionString = $"Data Source={sqlitePath}";
             var instance = new TestDatabaseInstance(provider, null, null, connectionString, sqlitePath);
-            await using var context = instance.CreateContext();
-            await context.Database.MigrateAsync();
+
+            if (applyMigrations)
+            {
+                await using var context = instance.CreateContext();
+                await context.Database.MigrateAsync();
+            }
+
             return instance;
         }
 
@@ -90,8 +119,13 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
         };
 
         var instancePostgres = new TestDatabaseInstance(provider, adminConnection, databaseName, builder.ConnectionString, null);
-        await using var db = instancePostgres.CreateContext();
-        await db.Database.MigrateAsync();
+
+        if (applyMigrations)
+        {
+            await using var db = instancePostgres.CreateContext();
+            await db.Database.MigrateAsync();
+        }
+
         return instancePostgres;
     }
 
