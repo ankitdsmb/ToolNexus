@@ -297,6 +297,47 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     b.ToTable("ToolExecutionPolicies");
                 });
 
+            modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolExecutionEventEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ErrorType")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExecutionMode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PayloadSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ToolSlug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TimestampUtc");
+
+                    b.HasIndex("ToolSlug");
+
+                    b.ToTable("ToolExecutionEvents");
+                });
+
             modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolDefinitionEntity", b =>
                 {
                     b.Property<int>("Id")

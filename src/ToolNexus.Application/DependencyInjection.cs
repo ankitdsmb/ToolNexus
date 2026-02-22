@@ -26,6 +26,7 @@ public static class DependencyInjection
 
         services.AddToolExecutionPipeline();
         services.AddHttpContextAccessor();
+        services.AddSingleton<IToolExecutionEventService, NoOpToolExecutionEventService>();
         services.AddScoped<IToolService, ToolService>();
         services.AddSingleton<IToolInsightService, ToolInsightService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();

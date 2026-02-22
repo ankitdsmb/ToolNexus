@@ -2,6 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 using ToolNexus.Application.Models;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Content.Entities;
+using Xunit;
 
 namespace ToolNexus.Infrastructure.Tests;
 

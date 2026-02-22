@@ -12,12 +12,12 @@ public sealed class ValidationStep(IToolManifestGovernance governance, IToolExec
         var manifest = governance.FindBySlug(context.ToolId);
         if (manifest is null)
         {
-            return Task.FromResult(new ToolExecutionResponse(false, string.Empty, $"Tool '{context.ToolId}' not found.", true));
+            return new ToolExecutionResponse(false, string.Empty, $"Tool '{context.ToolId}' not found.", true);
         }
 
         if (!manifest.SupportedActions.Contains(context.Action, StringComparer.OrdinalIgnoreCase))
         {
-            return Task.FromResult(new ToolExecutionResponse(false, string.Empty, "Action is not supported for this tool."));
+            return new ToolExecutionResponse(false, string.Empty, "Action is not supported for this tool.");
         }
 
         context.Manifest = manifest;
