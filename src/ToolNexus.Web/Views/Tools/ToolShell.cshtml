@@ -40,7 +40,7 @@
         </div>
     </header>
 
-    <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace">
+    <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace" data-workspace-zone="runtime">
         <header class="tool-shell-page__workspace-head" aria-label="Runtime hints">
             <p class="tool-shell-page__workspace-label">INPUT → RUN → COPY</p>
             <p class="tool-shell-page__workspace-hint">Primary flow is interaction-first. Context rail content stays secondary.</p>
@@ -48,7 +48,7 @@
         <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
     </section>
 
-    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" aria-label="Tool documentation">
+    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
         @foreach (var plugin in contextPlugins)
         {
             @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
