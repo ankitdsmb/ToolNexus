@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const disclosures = Array.from(page.querySelectorAll('.readme-disclosure'));
   const runtime = page.querySelector('.tool-shell-page__runtime');
   const runtimeShell = page.querySelector('[data-runtime-zone-shell="true"]');
+  const momentumLoop = page.querySelector('[data-momentum-loop="true"]');
 
   cards.forEach((card) => {
     card.addEventListener('mouseenter', () => card.classList.add('is-emphasized'));
@@ -26,6 +27,42 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!runtime) {
     return;
   }
+
+  const signalMomentum = () => {
+    if (!momentumLoop) {
+      return;
+    }
+
+    momentumLoop.hidden = false;
+    momentumLoop.classList.remove('is-active');
+    window.requestAnimationFrame(() => momentumLoop.classList.add('is-active'));
+  };
+
+  const monitorExecutionSuccess = () => {
+    const statusNode = runtime.querySelector('#resultStatus, .result-indicator');
+    if (!statusNode) {
+      return;
+    }
+
+    const isSuccessful = statusNode.classList.contains('result-indicator--success')
+      || /updated|completed|success|ready/i.test(statusNode.textContent || '');
+
+    if (isSuccessful) {
+      page.classList.add('has-runtime-success');
+      signalMomentum();
+      return;
+    }
+
+    page.classList.remove('has-runtime-success');
+  };
+
+  const observer = new MutationObserver(() => {
+    window.requestAnimationFrame(monitorExecutionSuccess);
+  });
+
+  observer.observe(runtime, { childList: true, subtree: true, attributes: true, characterData: true });
+  monitorExecutionSuccess();
+
 
   let pointerGuidanceTimeoutId = 0;
   let pendingFrame = 0;

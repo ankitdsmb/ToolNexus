@@ -1531,6 +1531,7 @@ RESPONSIVE
 
 .tool-shell-page__runtime-zone-shell {
   position: relative;
+  overflow: hidden;
   border-radius: calc(var(--radius-xl) + 2px);
   padding: 2px;
   background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 32%, transparent), color-mix(in srgb, var(--accent-soft) 70%, transparent));
@@ -1579,6 +1580,62 @@ RESPONSIVE
   border-color: color-mix(in srgb, var(--accent) 42%, var(--border-default));
   box-shadow: 0 28px 54px rgba(5, 10, 28, 0.26);
   transform: translateY(-2px);
+}
+
+
+.tool-shell-page__runtime-zone-shell::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(104deg, transparent 0%, color-mix(in srgb, var(--accent-soft) 16%, transparent) 46%, transparent 82%);
+  opacity: 0;
+  transform: translateX(-4%);
+  transition: opacity var(--motion-base) var(--ease-premium), transform var(--motion-base) var(--ease-premium);
+  pointer-events: none;
+}
+
+.tool-shell-page.has-runtime-success .tool-shell-page__runtime-zone-shell::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.tool-shell-page__momentum {
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border-default));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, var(--accent-soft));
+  box-shadow: var(--elevation-level-1);
+  padding: var(--space-3) var(--internal-gap);
+  display: grid;
+  gap: var(--space-1);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--motion-fast) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
+}
+
+.tool-shell-page__momentum.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tool-shell-page__momentum-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.tool-shell-page__momentum-copy {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.readme-compressed-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
 }
 
 .tool-shell-page__docs {
@@ -1666,6 +1723,7 @@ RESPONSIVE
 }
 
 .readme-guidance__action {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -1676,6 +1734,18 @@ RESPONSIVE
   text-decoration: none;
   color: inherit;
   transition: border-color var(--motion-fast) var(--ease-premium), transform var(--motion-fast) var(--ease-premium), box-shadow var(--motion-fast) var(--ease-premium);
+}
+
+.readme-guidance__action::after {
+  content: "→";
+  color: var(--text-muted);
+  transition: transform var(--motion-fast) var(--ease-premium), color var(--motion-fast) var(--ease-premium);
+}
+
+.readme-guidance__action:hover::after,
+.readme-guidance__action:focus-visible::after {
+  color: var(--accent);
+  transform: translateX(3px);
 }
 
 .readme-guidance__action:hover,
@@ -1700,6 +1770,17 @@ RESPONSIVE
   transform: translateX(3px);
 }
 
+.readme-card[data-actionable-card="true"]::before {
+  content: "→";
+  position: absolute;
+  right: var(--space-3);
+  top: var(--space-3);
+  color: var(--text-muted);
+  opacity: 0.7;
+  transform: translateX(0);
+  transition: transform var(--motion-fast) var(--ease-premium), color var(--motion-fast) var(--ease-premium);
+}
+
 .readme-card[data-actionable-card="true"]::after {
   content: "";
   position: absolute;
@@ -1715,8 +1796,15 @@ RESPONSIVE
 .readme-card[data-actionable-card="true"]:focus-visible {
   border-color: color-mix(in srgb, var(--accent) 28%, var(--border-default));
   border-left: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border-default));
-  transform: translateY(-3px);
+  transform: translateY(-3px) translateX(2px);
   box-shadow: var(--elevation-level-3);
+}
+
+.readme-card[data-actionable-card="true"]:hover::before,
+.readme-card[data-actionable-card="true"].is-emphasized::before,
+.readme-card[data-actionable-card="true"]:focus-visible::before {
+  color: var(--accent);
+  transform: translateX(3px);
 }
 
 .readme-card[data-actionable-card="true"]:hover::after,
