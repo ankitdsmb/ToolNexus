@@ -883,23 +883,23 @@ function renderSmartContextHint(latestOutput = '') {
   const selectedAction = actionSelect?.value ?? 'run';
 
   if (!inputLength) {
-    smartContextHint.textContent = 'Start with sample data, then run once to unlock pathway suggestions.';
+    smartContextHint.textContent = 'INPUT → RUN → COPY. Start with sample input, then execute once.';
     return;
   }
 
   if (inputLength > 6000) {
-    smartContextHint.textContent = 'Large payload detected: keep action focused and chain into formatter/validator for confidence.';
+    smartContextHint.textContent = 'Large payload detected. Run focused action, then chain validator/formatter.';
   } else if (latestOutput && latestOutput.trim().startsWith('{')) {
-    smartContextHint.textContent = `JSON output generated via ${selectedAction}. Next suggested chain: validate → convert.`;
+    smartContextHint.textContent = `JSON output ready from ${selectedAction}. Next chain: validate → convert.`;
   } else {
-    smartContextHint.textContent = `Action “${selectedAction}” is active. After completion, continue into a paired tool for momentum.`;
+    smartContextHint.textContent = `Action ${selectedAction} active. Complete run, then open next tool.`;
   }
 }
 
 function updateCompletionSignal(result) {
   if (!workflowCompletionSignal) return;
   workflowCompletionSignal.className = 'result-indicator result-indicator--success';
-  workflowCompletionSignal.textContent = 'Completed. Suggested next step is ready.';
+  workflowCompletionSignal.textContent = 'Completed. Next step ready.';
   if (workflowContinueBtn) workflowContinueBtn.hidden = !result;
 }
 
