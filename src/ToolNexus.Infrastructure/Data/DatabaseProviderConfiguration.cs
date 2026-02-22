@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace ToolNexus.Infrastructure.Data;
 
@@ -39,9 +40,51 @@ internal static class DatabaseProviderConfiguration
             return;
         }
 
-        builder.UseNpgsql(connectionString, options =>
+        builder.UseNpgsql(NormalizePostgreSqlConnectionString(connectionString), options =>
         {
             options.MigrationsHistoryTable("__EFMigrationsHistory");
         });
+    }
+
+    private static string NormalizePostgreSqlConnectionString(string connectionString)
+    {
+        if (!connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+            && !connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+        {
+            return connectionString;
+        }
+
+        var uri = new Uri(connectionString);
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.IsDefaultPort ? 5432 : uri.Port,
+            Database = uri.AbsolutePath.TrimStart('/'),
+            SslMode = SslMode.Require
+        };
+
+        if (!string.IsNullOrWhiteSpace(uri.UserInfo))
+        {
+            var userInfoParts = uri.UserInfo.Split(':', 2);
+            builder.Username = Uri.UnescapeDataString(userInfoParts[0]);
+
+            if (userInfoParts.Length > 1)
+            {
+                builder.Password = Uri.UnescapeDataString(userInfoParts[1]);
+            }
+        }
+
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        if (!string.IsNullOrWhiteSpace(query["sslmode"]) && Enum.TryParse<SslMode>(query["sslmode"], true, out var sslMode))
+        {
+            builder.SslMode = sslMode;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query["channel_binding"]) && Enum.TryParse<ChannelBinding>(query["channel_binding"], true, out var channelBinding))
+        {
+            builder.ChannelBinding = channelBinding;
+        }
+
+        return builder.ConnectionString;
     }
 }

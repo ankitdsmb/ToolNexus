@@ -110,4 +110,20 @@ public sealed class DatabaseProviderConfigurationTests
 
         Assert.Equal("Npgsql.EntityFrameworkCore.PostgreSQL", context.Database.ProviderName);
     }
+
+    [Fact]
+    public void DesignTimeFactory_PostgreSqlUriArgs_NormalizesToNpgsqlConnectionString()
+    {
+        var factory = new ToolNexusContentDbContextFactory();
+
+        using var context = factory.CreateDbContext([
+            "--provider=PostgreSQL",
+            "--connection=postgresql://postgres:postgres@localhost:5432/toolnexus?sslmode=require&channel_binding=require"
+        ]);
+
+        var connectionString = context.Database.GetDbConnection().ConnectionString;
+        Assert.Contains("Host=localhost", connectionString, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Database=toolnexus", connectionString, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Channel Binding=Require", connectionString, StringComparison.OrdinalIgnoreCase);
+    }
 }
