@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
@@ -8,12 +10,32 @@ namespace ToolNexus.Infrastructure.Observability;
 
 public sealed class TelemetryEventProcessor(
     IServiceScopeFactory scopeFactory,
-    ExecutionMetricsAggregator metricsAggregator) : ITelemetryEventProcessor
+    ExecutionMetricsAggregator metricsAggregator,
+    ILogger<TelemetryEventProcessor> logger) : ITelemetryEventProcessor
 {
     public async ValueTask ProcessAsync(ToolExecutionEvent executionEvent, CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
+
+        var alreadyProcessed = await dbContext.ToolExecutionEvents
+            .AsNoTracking()
+            .AnyAsync(x =>
+                x.ToolSlug == executionEvent.ToolSlug
+                && x.TimestampUtc == executionEvent.TimestampUtc
+                && x.DurationMs == executionEvent.DurationMs
+                && x.Success == executionEvent.Success
+                && x.ErrorType == executionEvent.ErrorType
+                && x.PayloadSize == executionEvent.PayloadSize
+                && x.ExecutionMode == executionEvent.ExecutionMode,
+                cancellationToken);
+
+        if (alreadyProcessed)
+        {
+            logger.LogInformation("Skipping duplicate telemetry event for {ToolSlug} at {TimestampUtc}.", executionEvent.ToolSlug, executionEvent.TimestampUtc);
+            return;
+        }
+
         dbContext.ToolExecutionEvents.Add(Map(executionEvent));
         await metricsAggregator.UpdateAsync(dbContext, executionEvent, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);

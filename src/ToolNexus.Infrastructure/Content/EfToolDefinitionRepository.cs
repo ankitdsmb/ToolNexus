@@ -8,7 +8,9 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Content;
 
-public sealed class EfToolDefinitionRepository(ToolNexusContentDbContext dbContext) : IToolDefinitionRepository
+public sealed class EfToolDefinitionRepository(
+    ToolNexusContentDbContext dbContext,
+    IAdminAuditLogger auditLogger) : IToolDefinitionRepository
 {
     public Task<IReadOnlyCollection<ToolDefinitionListItem>> GetListAsync(CancellationToken cancellationToken = default)
         => ExecuteWithSchemaRecoveryAsync(async () =>
@@ -61,6 +63,13 @@ public sealed class EfToolDefinitionRepository(ToolNexusContentDbContext dbConte
 
             dbContext.ToolDefinitions.Add(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
+            await auditLogger.TryLogAsync(
+                "ToolCreated",
+                "ToolDefinition",
+                entity.Id.ToString(),
+                before: null,
+                after: new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder },
+                cancellationToken);
             return MapDetail(entity);
         }, cancellationToken);
 
@@ -72,6 +81,10 @@ public sealed class EfToolDefinitionRepository(ToolNexusContentDbContext dbConte
             {
                 return null;
             }
+
+            var before = new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder };
+            var priorCategory = entity.Category;
+            var priorStatus = entity.Status;
 
             entity.Name = request.Name;
             entity.Slug = request.Slug;
@@ -85,6 +98,31 @@ public sealed class EfToolDefinitionRepository(ToolNexusContentDbContext dbConte
             entity.UpdatedAt = DateTimeOffset.UtcNow;
 
             await dbContext.SaveChangesAsync(cancellationToken);
+            var after = new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder };
+            await auditLogger.TryLogAsync("ToolUpdated", "ToolDefinition", entity.Id.ToString(), before, after, cancellationToken);
+
+            if (!string.Equals(priorCategory, entity.Category, StringComparison.Ordinal))
+            {
+                await auditLogger.TryLogAsync(
+                    "CategoryChanged",
+                    "ToolDefinition",
+                    entity.Id.ToString(),
+                    new { Category = priorCategory },
+                    new { Category = entity.Category },
+                    cancellationToken);
+            }
+
+            if (!string.Equals(priorStatus, entity.Status, StringComparison.Ordinal))
+            {
+                await auditLogger.TryLogAsync(
+                    "FeatureFlagChanged",
+                    "ToolDefinition",
+                    entity.Id.ToString(),
+                    new { Status = priorStatus },
+                    new { Status = entity.Status },
+                    cancellationToken);
+            }
+
             return MapDetail(entity);
         }, cancellationToken);
 
@@ -97,9 +135,17 @@ public sealed class EfToolDefinitionRepository(ToolNexusContentDbContext dbConte
                 return false;
             }
 
+            var beforeStatus = entity.Status;
             entity.Status = enabled ? "Enabled" : "Disabled";
             entity.UpdatedAt = DateTimeOffset.UtcNow;
             await dbContext.SaveChangesAsync(cancellationToken);
+            await auditLogger.TryLogAsync(
+                "FeatureFlagChanged",
+                "ToolDefinition",
+                entity.Id.ToString(),
+                new { Status = beforeStatus },
+                new { Status = entity.Status },
+                cancellationToken);
             return true;
         }, cancellationToken);
 

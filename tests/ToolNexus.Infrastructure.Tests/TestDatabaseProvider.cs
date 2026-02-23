@@ -99,7 +99,7 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
             if (applyMigrations)
             {
                 await using var context = instance.CreateContext();
-                await context.Database.MigrateAsync();
+                await context.Database.EnsureCreatedAsync();
             }
 
             return instance;

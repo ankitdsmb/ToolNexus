@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 using ToolNexus.Application.Models;
 using ToolNexus.Infrastructure.Content;
@@ -30,7 +32,8 @@ public sealed class ExecutionPolicyRepositoryTests
         await context.SaveChangesAsync();
 
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var repository = new EfExecutionPolicyRepository(context, cache);
+        var auditLogger = new AdminAuditLogger(context, new HttpContextAccessor(), NullLogger<AdminAuditLogger>.Instance);
+        var repository = new EfExecutionPolicyRepository(context, cache, auditLogger);
 
         var initial = await repository.GetBySlugAsync("json");
         Assert.NotNull(initial);

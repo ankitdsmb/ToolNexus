@@ -6,7 +6,7 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Content;
 
-public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbContext) : IToolContentEditorRepository
+public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbContext, IAdminAuditLogger auditLogger) : IToolContentEditorRepository
 {
     public async Task<ToolContentEditorGraph?> GetGraphByToolIdAsync(int toolId, CancellationToken cancellationToken = default)
     {
@@ -99,6 +99,13 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
             content.RelatedTools.Add(new ToolRelatedEntity { ToolContentId = content.Id, RelatedSlug = item.RelatedSlug, SortOrder = item.SortOrder });
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogger.TryLogAsync(
+            "FeatureFlagChanged",
+            "ToolContent",
+            content.Id.ToString(),
+            before: null,
+            after: new { FeatureCount = content.Features.Count, UseCaseCount = content.UseCases.Count },
+            cancellationToken);
         return true;
     }
 

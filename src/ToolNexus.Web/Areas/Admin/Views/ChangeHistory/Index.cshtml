@@ -1,0 +1,36 @@
+@model IReadOnlyList<ToolNexus.Application.Models.AdminAuditLogEntry>
+@{
+    ViewData["Title"] = "Change History";
+}
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+            <tr>
+                <th>Timestamp (UTC)</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>Entity Id</th>
+                <th>Before</th>
+                <th>After</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var entry in Model)
+            {
+                <tr>
+                    <td>@entry.TimestampUtc.ToString("u")</td>
+                    <td>@entry.UserId</td>
+                    <td>@entry.ActionType</td>
+                    <td>@entry.EntityType</td>
+                    <td>@entry.EntityId</td>
+                    <td><code>@entry.BeforeJson</code></td>
+                    <td><code>@entry.AfterJson</code></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
