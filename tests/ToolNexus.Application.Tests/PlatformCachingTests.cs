@@ -54,7 +54,7 @@ public sealed class PlatformCachingTests
     {
         var cache = new InMemoryTestPlatformCache();
         var repository = new AnalyticsRepoStub();
-        var inner = new AdminAnalyticsService(repository, new EmptyIntelligenceService());
+        var inner = new AdminAnalyticsService(repository);
         var service = new CachingAdminAnalyticsService(inner, cache, CacheOptions);
 
         await service.GetDashboardAsync(CancellationToken.None);
@@ -169,9 +169,4 @@ public sealed class PlatformCachingTests
             => Task.FromResult<IReadOnlyList<ToolAnomalySnapshot>>([]);
     }
 
-    private sealed class EmptyIntelligenceService : IToolIntelligenceService
-    {
-        public Task<IReadOnlyList<ToolAnomalySnapshot>> DetectAndPersistDailyAnomaliesAsync(DateOnly date, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<ToolAnomalySnapshot>>([]);
-    }
 }
