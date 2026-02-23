@@ -120,11 +120,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
-app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState) => Results.Ok(new
+app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics) => Results.Ok(new
 {
     queueSize = health.QueueSize,
     workerActive = health.IsWorkerActive,
     lastProcessedTimestampUtc = health.LastProcessedUtc,
+    audit = new
+    {
+        outboxBacklogDepth = auditMetrics.CurrentOutboxBacklogDepth,
+        deadLetterOpenCount = auditMetrics.CurrentDeadLetterOpenCount
+    },
     databaseInitialization = new
     {
         status = dbInitState.Status.ToString().ToLowerInvariant(),

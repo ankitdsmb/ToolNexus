@@ -13,6 +13,7 @@ using ToolNexus.Infrastructure.Security;
 using ToolNexus.Application.Services.Insights;
 using ToolNexus.Infrastructure.Observability;
 using ToolNexus.Infrastructure.HealthChecks;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace ToolNexus.Infrastructure;
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services
             .AddOptions<DatabaseInitializationOptions>()
             .Bind(configuration.GetSection(DatabaseInitializationOptions.SectionName));
+        services.AddOptions<AuditGuardrailsOptions>().Bind(configuration.GetSection(AuditGuardrailsOptions.SectionName));
 
         services.AddSingleton<JsonFileToolManifestRepository>();
         services.AddSingleton<IToolManifestRepository, DbToolManifestRepository>();
@@ -36,7 +38,11 @@ public static class DependencyInjection
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
         services.AddScoped<IAdminAuditLogRepository, EfAdminAuditLogRepository>();
+        services.AddSingleton<AuditGuardrailsMetrics>();
+        services.AddScoped<IAuditPayloadProcessor, AuditPayloadProcessor>();
         services.AddScoped<IAdminAuditLogger, AdminAuditLogger>();
+        services.AddScoped<IAuditDeadLetterReplayService, AuditDeadLetterReplayService>();
+        services.AddScoped<IAuditOutboxDestinationClient, NoopAuditOutboxDestinationClient>();
         services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
         services.AddScoped<EfAdminAnalyticsRepository>();
         services.AddScoped<IAdminAnalyticsRepository>(sp =>
@@ -89,6 +95,7 @@ public static class DependencyInjection
         services.AddSingleton<ITelemetryEventProcessor, TelemetryEventProcessor>();
         services.AddSingleton<IToolExecutionEventService, ToolExecutionEventService>();
         services.AddHostedService<TelemetryBackgroundWorker>();
+        services.AddHostedService<AuditOutboxWorker>();
         // Infrastructure owns concrete executor wiring.
         services.AddToolExecutors();
         return services;

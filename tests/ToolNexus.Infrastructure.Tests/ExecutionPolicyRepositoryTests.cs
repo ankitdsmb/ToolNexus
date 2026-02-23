@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
@@ -32,7 +33,7 @@ public sealed class ExecutionPolicyRepositoryTests
         await context.SaveChangesAsync();
 
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var auditLogger = new AdminAuditLogger(context, new HttpContextAccessor(), NullLogger<AdminAuditLogger>.Instance);
+        var auditLogger = new AdminAuditLogger(context, new HttpContextAccessor(), new AuditPayloadProcessor(), Microsoft.Extensions.Options.Options.Create(new ToolNexus.Infrastructure.Options.AuditGuardrailsOptions { WriteEnabled = true, WorkerEnabled = false }), new AuditGuardrailsMetrics(), NullLogger<AdminAuditLogger>.Instance);
         var repository = new EfExecutionPolicyRepository(context, cache, auditLogger);
 
         var initial = await repository.GetBySlugAsync("json");

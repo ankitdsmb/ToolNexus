@@ -89,6 +89,7 @@ public sealed class EfExecutionPolicyRepository(
             policy.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         await auditLogger.TryLogAsync(
             "PolicyChanged",
@@ -116,8 +117,9 @@ public sealed class EfExecutionPolicyRepository(
                 cancellationToken);
         }
 
-        var model = Map(policy);
-        cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
+        await transaction.CommitAsync(cancellationToken);
+
+        var model = Map(policy);        cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
         return model;
     }
 

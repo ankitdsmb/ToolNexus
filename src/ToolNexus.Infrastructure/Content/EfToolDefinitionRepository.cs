@@ -61,6 +61,7 @@ public sealed class EfToolDefinitionRepository(
                 UpdatedAt = DateTimeOffset.UtcNow
             };
 
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
             dbContext.ToolDefinitions.Add(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
             await auditLogger.TryLogAsync(
@@ -70,6 +71,7 @@ public sealed class EfToolDefinitionRepository(
                 before: null,
                 after: new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder },
                 cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return MapDetail(entity);
         }, cancellationToken);
 
@@ -97,6 +99,7 @@ public sealed class EfToolDefinitionRepository(
             entity.OutputSchema = request.OutputSchema;
             entity.UpdatedAt = DateTimeOffset.UtcNow;
 
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             var after = new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder };
             await auditLogger.TryLogAsync("ToolUpdated", "ToolDefinition", entity.Id.ToString(), before, after, cancellationToken);
@@ -123,6 +126,7 @@ public sealed class EfToolDefinitionRepository(
                     cancellationToken);
             }
 
+            await transaction.CommitAsync(cancellationToken);
             return MapDetail(entity);
         }, cancellationToken);
 
@@ -135,6 +139,7 @@ public sealed class EfToolDefinitionRepository(
                 return false;
             }
 
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
             var beforeStatus = entity.Status;
             entity.Status = enabled ? "Enabled" : "Disabled";
             entity.UpdatedAt = DateTimeOffset.UtcNow;
@@ -146,6 +151,7 @@ public sealed class EfToolDefinitionRepository(
                 new { Status = beforeStatus },
                 new { Status = entity.Status },
                 cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return true;
         }, cancellationToken);
 

@@ -19,6 +19,9 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<DailyToolMetricsEntity> DailyToolMetrics => Set<DailyToolMetricsEntity>();
     public DbSet<ToolAnomalySnapshotEntity> ToolAnomalySnapshots => Set<ToolAnomalySnapshotEntity>();
     public DbSet<AdminAuditLogEntity> AdminAuditLogs => Set<AdminAuditLogEntity>();
+    public DbSet<AuditEventEntity> AuditEvents => Set<AuditEventEntity>();
+    public DbSet<AuditOutboxEntity> AuditOutbox => Set<AuditOutboxEntity>();
+    public DbSet<AuditDeadLetterEntity> AuditDeadLetters => Set<AuditDeadLetterEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -146,6 +149,50 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.ActionType).HasMaxLength(120);
             entity.Property(x => x.EntityType).HasMaxLength(120);
             entity.Property(x => x.EntityId).HasMaxLength(120);
+        });
+
+
+        modelBuilder.Entity<AuditEventEntity>(entity =>
+        {
+            entity.ToTable("audit_events");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.PayloadRedacted).HasColumnType("jsonb");
+            entity.Property(x => x.CreatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.SchemaVersion).HasDefaultValue(1);
+            entity.HasIndex(x => x.OccurredAtUtc).HasDatabaseName("idx_audit_events_occurred_at").IsDescending();
+            entity.HasIndex(x => new { x.ActorType, x.ActorId, x.OccurredAtUtc }).HasDatabaseName("idx_audit_events_actor").IsDescending(false, false, true);
+            entity.HasIndex(x => new { x.Action, x.OccurredAtUtc }).HasDatabaseName("idx_audit_events_action").IsDescending(false, true);
+            entity.HasIndex(x => new { x.TenantId, x.OccurredAtUtc }).HasDatabaseName("idx_audit_events_tenant").IsDescending(false, true);
+            entity.HasIndex(x => x.TraceId).HasDatabaseName("idx_audit_events_trace");
+        });
+
+        modelBuilder.Entity<AuditOutboxEntity>(entity =>
+        {
+            entity.ToTable("audit_outbox");
+            entity.HasKey(x => x.Id);
+            entity.HasOne(x => x.AuditEvent).WithMany(x => x.OutboxEntries).HasForeignKey(x => x.AuditEventId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.Destination, x.AuditEventId }).IsUnique().HasDatabaseName("ux_audit_outbox_destination_event");
+            entity.HasIndex(x => x.IdempotencyKey).IsUnique().HasDatabaseName("ux_audit_outbox_idempotency_key");
+            entity.HasIndex(x => new { x.DeliveryState, x.NextAttemptAtUtc }).HasDatabaseName("idx_audit_outbox_sched");
+            entity.HasIndex(x => x.LeaseExpiresAtUtc).HasDatabaseName("idx_audit_outbox_lease");
+            entity.Property(x => x.CreatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.UpdatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.AttemptCount).HasDefaultValue(0);
+            entity.Property(x => x.NextAttemptAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<AuditDeadLetterEntity>(entity =>
+        {
+            entity.ToTable("audit_dead_letter");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ErrorDetails).HasColumnType("jsonb");
+            entity.Property(x => x.DeadLetteredAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.OperatorStatus).HasDefaultValue("open");
+            entity.Property(x => x.UpdatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasOne(x => x.Outbox).WithOne(x => x.DeadLetter).HasForeignKey<AuditDeadLetterEntity>(x => x.OutboxId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.AuditEvent).WithMany().HasForeignKey(x => x.AuditEventId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.OperatorStatus, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_status_time").IsDescending(false, true);
+            entity.HasIndex(x => new { x.Destination, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_destination").IsDescending(false, true);
         });
     }
 }
