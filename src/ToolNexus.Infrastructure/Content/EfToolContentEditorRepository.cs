@@ -100,6 +100,7 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
 
     public async Task<bool> SaveGraphAsync(int toolId, SaveToolContentGraphRequest request, CancellationToken cancellationToken = default)
     {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         var tool = await dbContext.ToolDefinitions.SingleOrDefaultAsync(x => x.Id == toolId, cancellationToken);
         if (tool is null) return false;
 
@@ -156,6 +157,7 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
             before: null,
             after: new { FeatureCount = content.Features.Count, UseCaseCount = content.UseCases.Count },
             cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return true;
     }
 

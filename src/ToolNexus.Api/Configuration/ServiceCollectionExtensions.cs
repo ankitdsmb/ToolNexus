@@ -18,6 +18,7 @@ using ToolNexus.Api.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Pipeline;
 using ToolNexus.Infrastructure.HealthChecks;
+using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Security;
 
 namespace ToolNexus.Api.Configuration;
@@ -192,6 +193,7 @@ public static class ServiceCollectionExtensions
                 metrics.AddAspNetCoreInstrumentation();
                 metrics.AddHttpClientInstrumentation();
                 metrics.AddMeter(ToolExecutionMetrics.MeterName);
+                metrics.AddMeter(AuditGuardrailsMetrics.MeterName);
                 metrics.AddView("tool_latency_ms", new ExplicitBucketHistogramConfiguration
                 {
                     Boundaries =
