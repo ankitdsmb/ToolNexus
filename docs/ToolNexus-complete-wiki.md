@@ -390,8 +390,14 @@ Key rules:
 ### 5.2 UI Rendering Module (Web)
 
 - Controllers: public browsing, auth, tool route rendering.
-- Areas/Admin provides dashboard, tools management, analytics, change history, API endpoints.
+- Areas/Admin provides dashboard, tools management, analytics, change history, execution monitoring, and API endpoints.
 - ViewModels in `Models` and `Areas/Admin/Models` define shape guarantees to Razor templates.
+
+#### Admin navigation map
+
+- Active modules: Dashboard, Tools, Analytics, Change History, Execution Monitoring.
+- Hidden/disabled modules pending backend readiness: Users, Feature Flags, Settings.
+- Removed placeholder navigation entries: Content and Categories.
 
 ### 5.3 API Module
 

@@ -9,15 +9,12 @@ namespace ToolNexus.Web.Areas.Admin.Controllers;
 public sealed class ManagementController : Controller
 {
     [HttpGet]
-    public IActionResult Tools() => View("Section", "Tools");
+    public IActionResult Users() => View();
 
     [HttpGet]
-    public IActionResult Content() => View("Section", "Content");
+    public IActionResult FeatureFlags() => View();
 
     [HttpGet]
-    public IActionResult Categories() => View("Section", "Categories");
-
-    [HttpGet]
-    public IActionResult Analytics() => View("Section", "Analytics");
+    public IActionResult Settings() => View();
 
 }
