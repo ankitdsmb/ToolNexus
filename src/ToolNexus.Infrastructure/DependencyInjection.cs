@@ -12,6 +12,7 @@ using ToolNexus.Infrastructure.Insights;
 using ToolNexus.Infrastructure.Security;
 using ToolNexus.Application.Services.Insights;
 using ToolNexus.Infrastructure.Observability;
+using ToolNexus.Infrastructure.HealthChecks;
 using StackExchange.Redis;
 
 namespace ToolNexus.Infrastructure;
@@ -25,6 +26,9 @@ public static class DependencyInjection
 
         services.AddDbContext<ToolNexusContentDbContext>(options =>
             DatabaseProviderConfiguration.Configure(options, provider, connectionString));
+        services
+            .AddOptions<DatabaseInitializationOptions>()
+            .Bind(configuration.GetSection(DatabaseInitializationOptions.SectionName));
 
         services.AddSingleton<JsonFileToolManifestRepository>();
         services.AddSingleton<IToolManifestRepository, DbToolManifestRepository>();
@@ -71,7 +75,9 @@ public static class DependencyInjection
             services.AddSingleton<IDistributedWorkerLock, InMemoryWorkerLock>();
         }
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
-        services.AddHostedService<ToolContentSeedHostedService>();
+        services.AddSingleton<DatabaseInitializationState>();
+        services.AddScoped<ToolContentSeedHostedService>();
+        services.AddHostedService<DatabaseInitializationHostedService>();
         services.AddSingleton<IToolInsightProvider, JsonInsightProvider>();
         services.AddSingleton<IToolInsightProvider, XmlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
