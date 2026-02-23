@@ -4,17 +4,16 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
 
-public sealed class ToolsEndpointIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class ToolsEndpointIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public ToolsEndpointIntegrationTests(WebApplicationFactory<Program> factory)
+    public ToolsEndpointIntegrationTests(TestWebApplicationFactory factory)
     {
         _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
         // The default policy requires an API key if not AllowAnonymous.
