@@ -982,3 +982,19 @@ Tool modules must follow runtime-safe contracts:
 3. Return a cleanup routine (`destroy`) for event/timer disposal.
 4. Do not throw on missing optional DOM; allow adapter-provided anchors.
 5. Keep execution handlers type-safe (`typeof action === 'string'`, input normalization).
+
+## Tool Runtime Safety Contract
+
+All execution-style tools must follow a single defensive runtime contract:
+
+- `action` must be a string before use.
+- `input` must be normalized to a string (`""` fallback).
+- tools must never throw for unsupported or malformed runtime payloads.
+- unsupported actions must return `{ ok:false, reason:"unsupported_action" }`.
+- legacy bridge payloads (including accidental `HTMLElement` values) must be treated as no-op and must not crash bootstrap.
+
+Platform enforcement points:
+
+- `runtime/runtime-safe-tool-wrapper.js` normalizes `action` and `input`, guards non-string and DOM payloads, and wraps execution in a no-throw boundary.
+- `tool-page.js` now uses the runtime wrapper before client execution and API fallback invocation.
+- `runtime/legacy-execution-bridge.js` skips execution-only `runTool(action,input)` contracts during mount fallback flow.

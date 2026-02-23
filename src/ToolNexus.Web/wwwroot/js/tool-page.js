@@ -1,3 +1,5 @@
+import { normalizeToolExecutionPayload } from './runtime/runtime-safe-tool-wrapper.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 const page = document.querySelector('.tool-page');
 
@@ -590,10 +592,12 @@ function renderInsight(insight) {
   panel.hidden = false;
 }
 
+
 class ClientToolExecutor {
   canExecute(toolSlug, action, input) {
-    const normalizedSlug = (toolSlug ?? '').trim();
-    const normalizedAction = (action ?? '').trim().toLowerCase();
+    const normalizedPayload = normalizeToolExecutionPayload(action, input);
+    const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
+    const normalizedAction = normalizedPayload.isValidAction ? normalizedPayload.action.trim().toLowerCase() : '';
 
     if (!normalizedSlug || !normalizedAction) return false;
     if (!clientSafeActions.has(normalizedAction)) return false;
@@ -604,14 +608,23 @@ class ClientToolExecutor {
   }
 
   async execute(toolSlug, action, input) {
-    const normalizedSlug = (toolSlug ?? '').trim();
+    const normalizedPayload = normalizeToolExecutionPayload(action, input);
+    const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
     const module = window.ToolNexusModules?.[normalizedSlug];
 
     if (typeof module?.runTool !== 'function') {
       throw new Error('Client execution is not supported for this tool/action.');
     }
 
-    return module.runTool(action, input);
+    if (!normalizedPayload.isValidAction) {
+      return { ok: false, reason: 'unsupported_action' };
+    }
+
+    try {
+      return await module.runTool(normalizedPayload.action, normalizedPayload.input);
+    } catch {
+      return { ok: false, reason: 'tool_execution_failed' };
+    }
   }
 }
 
@@ -625,8 +638,9 @@ function normalizePathPrefix(pathPrefix) {
 }
 
 async function executeToolActionViaApi({ baseUrl = '', slug: toolSlug, action, input }) {
-  const normalizedSlug = (toolSlug ?? '').trim();
-  const normalizedAction = (action ?? '').trim();
+  const payload = normalizeToolExecutionPayload(action, input);
+  const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
+  const normalizedAction = payload.isValidAction ? payload.action.trim() : '';
 
   if (!normalizedSlug) throw new Error('Tool configuration error: missing slug.');
   if (!normalizedAction) throw new Error('Please select an action before running the tool.');
@@ -639,7 +653,7 @@ async function executeToolActionViaApi({ baseUrl = '', slug: toolSlug, action, i
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ input })
+    body: JSON.stringify({ input: payload.input })
   });
 
   let result = null;
@@ -695,7 +709,11 @@ async function run() {
     if (clientExecutor.canExecute(slug, selectedAction, sanitizedInput)) {
       try {
         result = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
-        showToast('Executed locally.', 'success');
+        if (result?.ok === false && result?.reason === 'unsupported_action') {
+          result = '';
+        } else {
+          showToast('Executed locally.', 'success');
+        }
       } catch (clientError) {
         const safeMessage = clientError?.message || 'Client execution failed. Falling back to server.';
         showError(safeMessage);
