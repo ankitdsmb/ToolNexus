@@ -2,9 +2,328 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="card">
-    <div class="card-body">
-        <h3 class="card-title">Admin Dashboard Shell</h3>
-        <p class="text-secondary mb-0">Phase 2 integration complete. Business widgets and data bindings are intentionally deferred.</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Operator Command Overview</h2>
+    <small class="text-secondary">Read-only operational surface powered by audit, execution, and concurrency telemetry.</small>
+</div>
+
+<div class="row g-3 mb-3" id="platform-health-overview">
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <small class="text-secondary">Execution Queue Backlog</small>
+                    <span class="badge" id="badge-queue-severity">-</span>
+                </div>
+                <h3 class="mb-1" id="metric-queue-backlog">-</h3>
+                <small class="text-secondary" id="metric-queue-note">Pending + retry + in-progress</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <small class="text-secondary">Worker Health</small>
+                    <span class="badge" id="badge-worker-severity">-</span>
+                </div>
+                <h3 class="mb-1" id="metric-worker-health">-</h3>
+                <small class="text-secondary" id="metric-worker-note">Lease heartbeat + active worker state</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <small class="text-secondary">Dead-letter Count</small>
+                    <span class="badge" id="badge-dead-letter-severity">-</span>
+                </div>
+                <h3 class="mb-1" id="metric-dead-letter">-</h3>
+                <small class="text-secondary">Open operator-owned dead letters</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <small class="text-secondary">Audit Write Health</small>
+                    <span class="badge" id="badge-audit-severity">-</span>
+                </div>
+                <h3 class="mb-1" id="metric-audit-health">-</h3>
+                <small class="text-secondary" id="metric-audit-note">Outbox backlog + dead-letter pressure</small>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="row g-3 mb-3" id="operational-metrics">
+    <div class="col-xl-3 col-md-6">
+        <button class="card h-100 w-100 text-start border-0 drilldown-card" data-drilldown="concurrency">
+            <div class="card-body">
+                <small class="text-secondary">Concurrency Conflicts (24h)</small>
+                <h3 class="mb-0" id="metric-conflicts-24h">-</h3>
+            </div>
+        </button>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <button class="card h-100 w-100 text-start border-0 drilldown-card" data-drilldown="retries">
+            <div class="card-body">
+                <small class="text-secondary">Pending Retries</small>
+                <h3 class="mb-0" id="metric-pending-retries">-</h3>
+            </div>
+        </button>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <button class="card h-100 w-100 text-start border-0 drilldown-card" data-drilldown="stale-jobs">
+            <div class="card-body">
+                <small class="text-secondary">Stale Jobs</small>
+                <h3 class="mb-0" id="metric-stale-jobs">-</h3>
+            </div>
+        </button>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <button class="card h-100 w-100 text-start border-0 drilldown-card" data-drilldown="incidents">
+            <div class="card-body">
+                <small class="text-secondary">Latest Incidents</small>
+                <h3 class="mb-0" id="metric-latest-incidents">-</h3>
+            </div>
+        </button>
+    </div>
+</div>
+
+<div class="alert border-2 mb-3 d-none" id="operator-attention-panel" role="alert">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <strong>Operator Attention Required</strong>
+        <span class="badge" id="attention-severity">-</span>
+    </div>
+    <ul class="mb-0" id="attention-items"></ul>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-3">Recent Incidents Feed</h4>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 160px;">When (UTC)</th>
+                        <th style="width: 140px;">Type</th>
+                        <th style="width: 140px;">Severity</th>
+                        <th style="width: 140px;">Target</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody id="incident-feed-body"></tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-2">
+            <button class="btn btn-sm btn-outline-secondary" id="incident-prev">Prev</button>
+            <span class="align-self-center text-secondary" id="incident-page-label">Page 1</span>
+            <button class="btn btn-sm btn-outline-secondary" id="incident-next">Next</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    let incidentPage = 1;
+    const incidentPageSize = 12;
+    let incidentTotal = 0;
+
+    const severityBadgeClass = (severity) => {
+        const normalized = (severity || '').toLowerCase();
+        if (normalized === 'critical') return 'bg-red-lt text-red-fg';
+        if (normalized === 'warning') return 'bg-yellow-lt text-yellow-fg';
+        return 'bg-green-lt text-green-fg';
+    };
+
+    const setSeverityBadge = (id, severity) => {
+        const element = document.getElementById(id);
+        element.className = `badge ${severityBadgeClass(severity)}`;
+        element.textContent = severity;
+    };
+
+    const getSeverity = (value, warningThreshold, criticalThreshold, invert = false) => {
+        if (!invert) {
+            if (value >= criticalThreshold) return 'critical';
+            if (value >= warningThreshold) return 'warning';
+            return 'green';
+        }
+
+        if (value <= criticalThreshold) return 'critical';
+        if (value <= warningThreshold) return 'warning';
+        return 'green';
+    };
+
+    const tryParseDate = (value) => {
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.valueOf()) ? null : parsed;
+    };
+
+    const formatUtc = (value) => {
+        const parsed = tryParseDate(value);
+        return parsed ? parsed.toISOString().replace('T', ' ').slice(0, 19) : value;
+    };
+
+    const renderIncidents = (items) => {
+        const body = document.getElementById('incident-feed-body');
+        body.innerHTML = '';
+
+        if (!items.length) {
+            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No incidents in this page window.</td></tr>';
+            return;
+        }
+
+        items.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${formatUtc(item.occurredAtUtc)}</td>
+                <td><span class="badge bg-secondary-lt text-secondary-fg">${item.eventType}</span></td>
+                <td><span class="badge ${severityBadgeClass(item.severity)}">${item.severity}</span></td>
+                <td>${item.destination}</td>
+                <td class="text-truncate" style="max-width: 500px;">${item.summary}</td>`;
+            body.appendChild(tr);
+        });
+    };
+
+    const renderAttentionPanel = (signals) => {
+        const panel = document.getElementById('operator-attention-panel');
+        const list = document.getElementById('attention-items');
+        if (signals.length === 0) {
+            panel.classList.add('d-none');
+            return;
+        }
+
+        panel.classList.remove('d-none');
+        list.innerHTML = '';
+        signals.forEach(signal => {
+            const li = document.createElement('li');
+            li.textContent = signal;
+            list.appendChild(li);
+        });
+
+        const attentionSeverity = signals.length >= 3 ? 'critical' : 'warning';
+        panel.className = attentionSeverity === 'critical'
+            ? 'alert alert-danger border-danger border-2 mb-3'
+            : 'alert alert-warning border-warning border-2 mb-3';
+        setSeverityBadge('attention-severity', attentionSeverity);
+    };
+
+    const mapConcurrencyIncidents = (backgroundHealth) => {
+        const trend = backgroundHealth?.concurrency?.conflictTrend || [];
+        return trend
+            .filter(point => (point.conflicts || 0) > 0)
+            .slice(-6)
+            .map(point => ({
+                occurredAtUtc: point.hourUtc,
+                eventType: 'concurrency_conflict',
+                severity: (point.conflicts || 0) >= 10 ? 'critical' : 'warning',
+                destination: 'admin-write-path',
+                summary: `${point.conflicts} conflicts recorded in this hour window.`
+            }));
+    };
+
+    const loadDashboard = async () => {
+        const [healthRes, workersRes, incidentsRes, backgroundRes] = await Promise.all([
+            fetch('/admin/execution/health'),
+            fetch('/admin/execution/workers'),
+            fetch(`/admin/execution/incidents?page=${incidentPage}&pageSize=${incidentPageSize}`),
+            fetch('/health/background')
+        ]);
+
+        if (!healthRes.ok || !workersRes.ok || !incidentsRes.ok || !backgroundRes.ok) {
+            return;
+        }
+
+        const health = await healthRes.json();
+        const workers = await workersRes.json();
+        const incidents = await incidentsRes.json();
+        const background = await backgroundRes.json();
+
+        const queueBacklog = health.pendingItems || 0;
+        const retryCount = health.retryCount || 0;
+        const deadLetters = health.deadLetterCount || 0;
+        const staleJobs = (health.oldestPendingAgeMinutes || 0) >= 15 ? 1 : 0;
+        const staleWorkers = (workers.workers || []).filter(x => x.isStale).length;
+        const workerActive = !!background.workerActive;
+
+        document.getElementById('metric-queue-backlog').textContent = queueBacklog.toLocaleString();
+        document.getElementById('metric-pending-retries').textContent = retryCount.toLocaleString();
+        document.getElementById('metric-stale-jobs').textContent = staleJobs.toString();
+        document.getElementById('metric-latest-incidents').textContent = (incidents.totalItems || 0).toLocaleString();
+
+        const queueSeverity = getSeverity(queueBacklog, 25, 100);
+        setSeverityBadge('badge-queue-severity', queueSeverity);
+        document.getElementById('metric-queue-note').textContent = health.backlogIncreasing
+            ? 'Backlog trend increasing in the latest 10m window.'
+            : 'Backlog trend stable.';
+
+        const workerSeverity = !workerActive || staleWorkers > 0 ? (staleWorkers > 2 || !workerActive ? 'critical' : 'warning') : 'green';
+        setSeverityBadge('badge-worker-severity', workerSeverity);
+        document.getElementById('metric-worker-health').textContent = workerActive
+            ? `${workers.workers.length - staleWorkers}/${workers.workers.length} healthy`
+            : 'offline';
+        document.getElementById('metric-worker-note').textContent = `${staleWorkers} stale worker(s)`;
+
+        const deadLetterSeverity = getSeverity(deadLetters, 1, 5);
+        setSeverityBadge('badge-dead-letter-severity', deadLetterSeverity);
+        document.getElementById('metric-dead-letter').textContent = deadLetters.toLocaleString();
+
+        const auditBacklog = background?.audit?.outboxBacklogDepth || 0;
+        const auditDeadLetter = background?.audit?.deadLetterOpenCount || 0;
+        const auditSeverity = getSeverity(auditBacklog + auditDeadLetter, 1, 25);
+        setSeverityBadge('badge-audit-severity', auditSeverity);
+        document.getElementById('metric-audit-health').textContent = auditSeverity === 'green' ? 'healthy' : 'degraded';
+        document.getElementById('metric-audit-note').textContent = `Outbox: ${auditBacklog} | Dead letters: ${auditDeadLetter}`;
+
+        const conflicts24h = background?.concurrency?.totalConflictsLast24h || 0;
+        document.getElementById('metric-conflicts-24h').textContent = conflicts24h.toLocaleString();
+
+        const attentionSignals = [];
+        if (queueBacklog >= 100 || health.backlogIncreasing) attentionSignals.push('Blocked queue pressure detected: backlog is increasing and requires immediate triage.');
+        if (!workerActive || staleWorkers > 0) attentionSignals.push('Worker offline/stale signal detected: audit delivery path may be partially degraded.');
+        if (deadLetters > 0 || auditDeadLetter > 0) attentionSignals.push('Dead-letter growth is active: operator intervention required for replay or resolution.');
+        renderAttentionPanel(attentionSignals);
+
+        const mergedIncidents = (incidents.items || [])
+            .map(x => ({ ...x }))
+            .concat(mapConcurrencyIncidents(background))
+            .sort((a, b) => {
+                const left = tryParseDate(a.occurredAtUtc)?.valueOf() || 0;
+                const right = tryParseDate(b.occurredAtUtc)?.valueOf() || 0;
+                return right - left;
+            })
+            .slice(0, incidentPageSize);
+
+        renderIncidents(mergedIncidents);
+
+        incidentTotal = incidents.totalItems || 0;
+        document.getElementById('incident-page-label').textContent = `Page ${incidentPage}`;
+        document.getElementById('incident-prev').disabled = incidentPage <= 1;
+        document.getElementById('incident-next').disabled = incidentPage * incidentPageSize >= incidentTotal;
+    };
+
+    document.getElementById('incident-prev').addEventListener('click', async () => {
+        if (incidentPage <= 1) return;
+        incidentPage -= 1;
+        await loadDashboard();
+    });
+
+    document.getElementById('incident-next').addEventListener('click', async () => {
+        if (incidentPage * incidentPageSize >= incidentTotal) return;
+        incidentPage += 1;
+        await loadDashboard();
+    });
+
+    document.querySelectorAll('.drilldown-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const target = card.getAttribute('data-drilldown') || 'unknown';
+            window.location.hash = `drilldown-${target}`;
+        });
+    });
+
+    loadDashboard();
+})();
+</script>

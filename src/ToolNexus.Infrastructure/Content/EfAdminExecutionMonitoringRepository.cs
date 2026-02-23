@@ -66,6 +66,7 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
         var skip = (page - 1) * pageSize;
 
         var retryCountTask = dbContext.AuditOutbox.LongCountAsync(x => x.DeliveryState == "retry_wait" && x.LastAttemptAtUtc != null, cancellationToken);
+        var failureCountTask = dbContext.AuditOutbox.LongCountAsync(x => x.DeliveryState != "retry_wait" && x.LastAttemptAtUtc != null && x.LastErrorCode != null, cancellationToken);
         var deadLetterCountTask = dbContext.AuditDeadLetters.LongCountAsync(cancellationToken);
 
         var retryEventsTask = dbContext.AuditOutbox
@@ -95,10 +96,25 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
                 x.FinalAttemptCount))
             .ToListAsync(cancellationToken);
 
-        await Task.WhenAll(retryCountTask, deadLetterCountTask, retryEventsTask, deadLetterEventsTask);
+        var failureEventsTask = dbContext.AuditOutbox
+            .AsNoTracking()
+            .Where(x => x.DeliveryState != "retry_wait" && x.LastAttemptAtUtc != null && x.LastErrorCode != null)
+            .OrderByDescending(x => x.LastAttemptAtUtc)
+            .Take(skip + pageSize)
+            .Select(x => new ExecutionIncidentSnapshot(
+                "failure",
+                "critical",
+                x.Destination,
+                x.LastAttemptAtUtc!.Value,
+                x.LastErrorCode!,
+                x.AttemptCount))
+            .ToListAsync(cancellationToken);
 
-        var total = checked((int)Math.Min(int.MaxValue, retryCountTask.Result + deadLetterCountTask.Result));
+        await Task.WhenAll(retryCountTask, failureCountTask, deadLetterCountTask, retryEventsTask, failureEventsTask, deadLetterEventsTask);
+
+        var total = checked((int)Math.Min(int.MaxValue, retryCountTask.Result + failureCountTask.Result + deadLetterCountTask.Result));
         var items = retryEventsTask.Result
+            .Concat(failureEventsTask.Result)
             .Concat(deadLetterEventsTask.Result)
             .OrderByDescending(x => x.OccurredAtUtc)
             .Skip(skip)
