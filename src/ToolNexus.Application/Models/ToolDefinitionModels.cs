@@ -43,4 +43,5 @@ public sealed record UpdateToolDefinitionRequest(
     string Icon,
     int SortOrder,
     string InputSchema,
-    string OutputSchema);
+    string OutputSchema,
+    string? VersionToken = null);

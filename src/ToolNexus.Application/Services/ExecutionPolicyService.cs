@@ -16,13 +16,34 @@ public sealed class ExecutionPolicyService(IExecutionPolicyRepository repository
     public async Task<ToolExecutionPolicyModel> UpdateBySlugAsync(string slug, UpdateToolExecutionPolicyRequest request, CancellationToken cancellationToken = default)
     {
         Validate(request);
-        var updated = await repository.UpsertBySlugAsync(slug, request, cancellationToken);
-        if (updated is null)
+        try
         {
-            throw new ValidationException($"Tool '{slug}' not found.");
-        }
+            var updated = await repository.UpsertBySlugAsync(slug, request, cancellationToken);
+            if (updated is null)
+            {
+                throw new ValidationException($"Tool '{slug}' not found.");
+            }
 
-        return updated;
+            return updated;
+        }
+        catch (OptimisticConcurrencyException ex)
+        {
+            var server = await repository.GetBySlugAsync(slug, cancellationToken);
+            if (server is null)
+            {
+                throw new ValidationException($"Tool '{slug}' not found.");
+            }
+
+            throw new ConcurrencyConflictException(new ConcurrencyConflict(
+                Error: "ConcurrencyConflict",
+                Resource: "ToolExecutionPolicy",
+                ResourceId: slug,
+                ClientVersionToken: ex.ClientVersionToken ?? request.VersionToken,
+                ServerVersionToken: server.VersionToken,
+                ServerState: server,
+                ChangedFields: GetChangedFields(request, server),
+                Message: "Resource was modified by another user. Refresh and reconcile changes."));
+        }
     }
 
     public void Invalidate(string slug)
@@ -55,5 +76,16 @@ public sealed class ExecutionPolicyService(IExecutionPolicyRepository repository
         {
             throw new ValidationException("MaxInputSize must be greater than zero.");
         }
+    }
+
+    private static IReadOnlyCollection<string> GetChangedFields(UpdateToolExecutionPolicyRequest request, ToolExecutionPolicyModel server)
+    {
+        var changed = new List<string>();
+        if (!string.Equals(request.ExecutionMode, server.ExecutionMode, StringComparison.OrdinalIgnoreCase)) changed.Add("executionMode");
+        if (request.TimeoutSeconds != server.TimeoutSeconds) changed.Add("timeoutSeconds");
+        if (request.MaxRequestsPerMinute != server.MaxRequestsPerMinute) changed.Add("maxRequestsPerMinute");
+        if (request.MaxInputSize != server.MaxInputSize) changed.Add("maxInputSize");
+        if (request.IsExecutionEnabled != server.IsExecutionEnabled) changed.Add("isExecutionEnabled");
+        return changed;
     }
 }

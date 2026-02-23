@@ -131,6 +131,100 @@ public sealed class AdminContentEndpointIntegrationTests : IClassFixture<TestWeb
         }
     }
 
+
+    [Fact]
+    public async Task AdminTools_Update_ReturnsConflict_WhenVersionTokenMismatches()
+    {
+        var tool = await TryGetToolAsync();
+        if (tool is null)
+        {
+            return;
+        }
+
+        var detail = await _client.GetFromJsonAsync<ToolDetail>($"/api/admin/tools/{tool.Value.id}");
+        Assert.NotNull(detail);
+
+        var response = await _client.PutAsJsonAsync($"/api/admin/tools/{tool.Value.id}", new
+        {
+            detail!.name,
+            detail.slug,
+            detail.description,
+            detail.category,
+            detail.status,
+            detail.icon,
+            detail.sortOrder,
+            detail.inputSchema,
+            detail.outputSchema,
+            versionToken = "invalid-token"
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var envelope = await response.Content.ReadFromJsonAsync<ConflictEnvelope>();
+        Assert.NotNull(envelope);
+        Assert.Equal("ConcurrencyConflict", envelope!.error);
+        Assert.Equal("ToolDefinition", envelope.resource);
+    }
+
+    [Fact]
+    public async Task AdminExecution_Update_ReturnsConflict_WhenVersionTokenMismatches()
+    {
+        var tool = await TryGetToolAsync();
+        if (tool is null)
+        {
+            return;
+        }
+
+        var seed = await _client.PutAsJsonAsync($"/api/admin/execution/{tool.Value.slug}", new
+        {
+            executionMode = "Local",
+            timeoutSeconds = 30,
+            maxRequestsPerMinute = 120,
+            maxInputSize = 1000000,
+            isExecutionEnabled = true
+        });
+        Assert.Equal(HttpStatusCode.OK, seed.StatusCode);
+
+        var response = await _client.PutAsJsonAsync($"/api/admin/execution/{tool.Value.slug}", new
+        {
+            executionMode = "Sandbox",
+            timeoutSeconds = 45,
+            maxRequestsPerMinute = 90,
+            maxInputSize = 500000,
+            isExecutionEnabled = true,
+            versionToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var envelope = await response.Content.ReadFromJsonAsync<ConflictEnvelope>();
+        Assert.NotNull(envelope);
+        Assert.Equal("ConcurrencyConflict", envelope!.error);
+        Assert.Equal("ToolExecutionPolicy", envelope.resource);
+    }
+
+    [Fact]
+    public async Task AdminContent_Save_ReturnsConflict_WhenVersionTokenMismatches()
+    {
+        var tool = await TryGetToolAsync();
+        if (tool is null)
+        {
+            return;
+        }
+
+        var graph = await _client.GetFromJsonAsync<Graph>($"/api/admin/content/{tool.Value.id}");
+        if (graph is null)
+        {
+            return;
+        }
+
+        var response = await _client.PutAsJsonAsync($"/api/admin/content/{tool.Value.id}", graph.ToSave(versionToken: Convert.ToBase64String(Guid.NewGuid().ToByteArray())));
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        var envelope = await response.Content.ReadFromJsonAsync<ConflictEnvelope>();
+        Assert.NotNull(envelope);
+        Assert.Equal("ConcurrencyConflict", envelope!.error);
+        Assert.Equal("ToolContentGraph", envelope.resource);
+    }
+
     private async Task<(int id, string slug)?> TryGetToolAsync()
     {
         var response = await _client.GetAsync("/api/admin/tools");
@@ -197,8 +291,11 @@ public sealed class AdminContentEndpointIntegrationTests : IClassFixture<TestWeb
     private sealed record Faq(int id, string question, string answer, int sortOrder);
     private sealed record RelatedItem(int id, string relatedSlug, int sortOrder);
     private sealed record Option(string slug, string name);
-    private sealed record Graph(int toolId, string toolSlug, string toolName, Item[] features, Step[] steps, Example[] examples, Faq[] faqs, Item[] useCases, RelatedItem[] relatedTools, Option[] relatedToolOptions)
+    private sealed record Graph(int toolId, string toolSlug, string toolName, Item[] features, Step[] steps, Example[] examples, Faq[] faqs, Item[] useCases, RelatedItem[] relatedTools, Option[] relatedToolOptions, string? versionToken)
     {
-        public object ToSave() => new { features, steps, examples, faqs, useCases, relatedTools };
+        public object ToSave(string? versionToken = null) => new { features, steps, examples, faqs, useCases, relatedTools, versionToken = versionToken ?? this.versionToken };
     }
+
+    private sealed record ToolDetail(int id, string name, string slug, string description, string category, string status, string icon, int sortOrder, string inputSchema, string outputSchema, string? versionToken);
+    private sealed record ConflictEnvelope(string error, string resource, string? clientVersionToken, string? serverVersionToken, object? serverState, string[] changedFields, string message);
 }

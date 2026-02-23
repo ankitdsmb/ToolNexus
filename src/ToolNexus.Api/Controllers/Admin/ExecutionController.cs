@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Authentication;
@@ -32,6 +33,10 @@ public sealed class ExecutionController(IExecutionPolicyService service) : Contr
         {
             return ValidationProblem(detail: ex.Message);
         }
+        catch (ConcurrencyConflictException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Conflict, ConcurrencyConflict.ToEnvelope(ex.Conflict));
+        }
     }
 
     public sealed record UpdateExecutionPolicyRequest(
@@ -39,9 +44,10 @@ public sealed class ExecutionController(IExecutionPolicyService service) : Contr
         int TimeoutSeconds,
         int MaxRequestsPerMinute,
         int MaxInputSize,
-        bool IsExecutionEnabled)
+        bool IsExecutionEnabled,
+        string? VersionToken = null)
     {
         public UpdateToolExecutionPolicyRequest ToModel()
-            => new(ExecutionMode, TimeoutSeconds, MaxRequestsPerMinute, MaxInputSize, IsExecutionEnabled);
+            => new(ExecutionMode, TimeoutSeconds, MaxRequestsPerMinute, MaxInputSize, IsExecutionEnabled, VersionToken);
     }
 }
