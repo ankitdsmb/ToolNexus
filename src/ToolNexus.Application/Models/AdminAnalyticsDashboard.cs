@@ -7,7 +7,8 @@ public sealed record AdminAnalyticsDashboard(
     int ActiveToolsCount,
     IReadOnlyList<AdminAnalyticsToolMetric> TopTools,
     IReadOnlyList<AdminAnalyticsToolMetric> SlowTools,
-    IReadOnlyList<AdminAnalyticsTrendPoint> ExecutionTrend);
+    IReadOnlyList<AdminAnalyticsTrendPoint> ExecutionTrend,
+    IReadOnlyList<ToolAnomalySnapshot> IntelligenceAlerts);
 
 public sealed record AdminAnalyticsToolMetric(
     string ToolSlug,
@@ -21,3 +22,23 @@ public sealed record AdminAnalyticsTrendPoint(
     double SuccessRate,
     double AvgDurationMs);
 
+public enum ToolAnomalyType
+{
+    LatencySpike,
+    FailureSpike,
+    UsageDrop
+}
+
+public enum ToolAnomalySeverity
+{
+    Info,
+    Warning,
+    Critical
+}
+
+public sealed record ToolAnomalySnapshot(
+    string ToolSlug,
+    DateOnly Date,
+    ToolAnomalyType Type,
+    ToolAnomalySeverity Severity,
+    string Description);

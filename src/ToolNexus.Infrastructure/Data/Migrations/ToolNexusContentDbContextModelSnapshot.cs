@@ -58,6 +58,43 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     b.ToTable("DailyToolMetrics");
                 });
 
+            modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolAnomalySnapshotEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ToolSlug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToolSlug", "DateUtc", "Type")
+                        .IsUnique();
+
+                    b.ToTable("ToolAnomalySnapshots");
+                });
+
             modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolCategoryEntity", b =>
                 {
                     b.Property<int>("Id")

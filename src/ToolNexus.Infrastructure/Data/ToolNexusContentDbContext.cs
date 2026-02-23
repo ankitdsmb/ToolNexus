@@ -17,6 +17,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<ToolExecutionPolicyEntity> ToolExecutionPolicies => Set<ToolExecutionPolicyEntity>();
     public DbSet<ToolExecutionEventEntity> ToolExecutionEvents => Set<ToolExecutionEventEntity>();
     public DbSet<DailyToolMetricsEntity> DailyToolMetrics => Set<DailyToolMetricsEntity>();
+    public DbSet<ToolAnomalySnapshotEntity> ToolAnomalySnapshots => Set<ToolAnomalySnapshotEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -124,6 +125,16 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => new { x.ToolSlug, x.DateUtc }).IsUnique();
             entity.Property(x => x.ToolSlug).HasMaxLength(120);
             entity.Property(x => x.AvgDurationMs);
+        });
+
+        modelBuilder.Entity<ToolAnomalySnapshotEntity>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => new { x.ToolSlug, x.DateUtc, x.Type }).IsUnique();
+            entity.Property(x => x.ToolSlug).HasMaxLength(120);
+            entity.Property(x => x.Type).HasMaxLength(32);
+            entity.Property(x => x.Severity).HasMaxLength(16);
+            entity.Property(x => x.Description).HasMaxLength(500);
         });
     }
 }
