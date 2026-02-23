@@ -36,6 +36,39 @@ function createNode(tagName, nodeName) {
   return node;
 }
 
+function ensureToolRootId(node) {
+  if (!node?.dataset) {
+    return;
+  }
+
+  if (!node.dataset.toolRootId) {
+    node.dataset.toolRootId = `tool-root-${Math.random().toString(16).slice(2)}`;
+  }
+}
+
+function ensureExecutionPanel(scope, body, createdNodes, adaptedNodes) {
+  const actionNode = scope.querySelector('[data-tool-actions]')
+    ?? getAliasNode(scope, 'data-tool-actions');
+
+  if (actionNode && actionNode.matches?.('[data-tool-actions]') && actionNode.tagName !== 'BUTTON') {
+    assignNodeAttribute(actionNode, 'data-tool-actions');
+    adaptedNodes.push('data-tool-actions');
+    return actionNode;
+  }
+
+  const panel = createNode('div', 'data-tool-actions');
+  panel.classList.add('tool-execution-panel');
+  body.appendChild(panel);
+  createdNodes.push('data-tool-actions');
+  adaptedNodes.push('data-tool-actions');
+
+  if (actionNode && actionNode.parentElement !== panel) {
+    panel.appendChild(actionNode);
+  }
+
+  return panel;
+}
+
 export function adaptToolDom(root, capability = {}) {
   const scope = normalizeRoot(root);
   if (!scope) {
@@ -73,6 +106,7 @@ export function adaptToolDom(root, capability = {}) {
     })();
 
   assignNodeAttribute(toolRoot, 'data-tool-root');
+  ensureToolRootId(toolRoot);
   adaptedNodes.push('data-tool-root');
 
   const body = scope.querySelector('[data-tool-body]')
@@ -123,17 +157,7 @@ export function adaptToolDom(root, capability = {}) {
   assignNodeAttribute(output, 'data-tool-output');
   adaptedNodes.push('data-tool-output');
 
-  const actions = scope.querySelector('[data-tool-actions]')
-    ?? getAliasNode(scope, 'data-tool-actions')
-    ?? (() => {
-      const node = createNode('div', 'data-tool-actions');
-      body.appendChild(node);
-      createdNodes.push('data-tool-actions');
-      return node;
-    })();
-
-  assignNodeAttribute(actions, 'data-tool-actions');
-  adaptedNodes.push('data-tool-actions');
+  ensureExecutionPanel(scope, body, createdNodes, adaptedNodes);
 
   const after = validateToolDom(scope);
 
