@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Content;
 using Xunit;
 
@@ -50,6 +51,38 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
         Assert.Equal(20, incidents.PageSize);
         Assert.Equal(0, incidents.TotalItems);
         Assert.Empty(incidents.Items);
+    }
+
+
+    [Theory]
+    [ClassData(typeof(ProviderTheoryData))]
+    public async Task IncidentsQuery_IncludesRuntimeIncidents(TestDatabaseProvider provider)
+    {
+        await using var db = await TestDatabaseInstance.CreateAsync(provider);
+        await using (var seed = db.CreateContext())
+        {
+            seed.RuntimeIncidents.Add(new RuntimeIncidentEntity
+            {
+                Fingerprint = "json-formatter::execute::contract_violation::legacy mismatch::html_element",
+                ToolSlug = "json-formatter",
+                Phase = "execute",
+                ErrorType = "contract_violation",
+                Message = "legacy mismatch",
+                PayloadType = "html_element",
+                Severity = "warning",
+                Count = 3,
+                FirstOccurredUtc = DateTime.UtcNow.AddMinutes(-5),
+                LastOccurredUtc = DateTime.UtcNow
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        await using var verify = db.CreateContext();
+        var repository = new EfAdminExecutionMonitoringRepository(verify);
+
+        var incidents = await repository.GetIncidentSnapshotsAsync(1, 20, CancellationToken.None);
+
+        Assert.Contains(incidents.Items, x => x.EventType == "runtime_incident" && x.Destination == "json-formatter" && x.AttemptCount == 3);
     }
 
     private static async Task DropAuditTablesAsync(DbContext context, TestDatabaseProvider provider)

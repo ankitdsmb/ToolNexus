@@ -24,3 +24,10 @@ Prompt: Global runtime compatibility normalization with architecture-first workf
 Result: Added centralized runtime safety wrapper, hardened tool-page + legacy bridge execution paths, and expanded runtime safety tests for malformed payloads.
 Improvement: Prevents class of failures without per-tool patch churn and preserves fallback behavior.
 New Version: Keep platform-first normalization as default for any tool runtime error and require explicit contract tests for malformed payloads.
+
+Date: 2026-02-23
+Problem: Legacy runtime safety prevented crashes but did not guarantee operator-visible incident tracking.
+Prompt: Implement structured runtime incident reporting end-to-end (runtime reporter + API + admin visibility + tests + docs) while preserving no-crash runtime behavior.
+Result: Added runtime incident schema/reporting in JS runtime boundaries, backend ingestion/persistence, admin incidents integration, and automated tests covering ingestion/query/safety paths.
+Improvement: Runtime failures remain non-fatal and now become actionable operational signals in admin monitoring.
+New Version: For all runtime safety fixes, require explicit incident recording pipeline and admin visibility—not silent no-op behavior.

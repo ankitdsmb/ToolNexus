@@ -47,3 +47,28 @@ Contract validation happens pre-mount; adaptation creates missing anchors to kee
 - Runtime classifies failures (`error-classification-engine.js`) and logs stage metadata.
 - Recoverable failures run adaptation and retry flows.
 - Non-recoverable failures mount fallback content and emit observability events for CI + Playwright guards.
+
+## Runtime Incident Reporting
+
+Tool runtime now reports structured incidents without crashing the runtime surface.
+
+### Incident schema
+
+```json
+{
+  "toolSlug": "json-formatter",
+  "phase": "bootstrap | mount | execute",
+  "errorType": "contract_violation | runtime_error",
+  "message": "...",
+  "stack": "...",
+  "payloadType": "html_element | string | object | ...",
+  "timestamp": "ISO-8601"
+}
+```
+
+### Behavior guarantees
+
+- Runtime payload contract violations (HTMLElement action payloads, non-string actions, unsupported action shapes) return safe no-op responses.
+- Runtime always records incidents through `runtime-incident-reporter` and never throws from the reporting path.
+- Reporter queues, deduplicates by fingerprint, debounces burst traffic, and sends batched incidents to `POST /api/admin/runtime/incidents`.
+- Admin Execution Monitoring includes `runtime_incident` records alongside existing execution/audit incidents with severity, message, count, and last occurrence.

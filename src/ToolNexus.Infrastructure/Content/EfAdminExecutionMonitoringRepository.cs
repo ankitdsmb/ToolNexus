@@ -79,64 +79,86 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
 
     public async Task<ExecutionIncidentSnapshotPage> GetIncidentSnapshotsAsync(int page, int pageSize, CancellationToken cancellationToken)
     {
-        if (!await EnsureAuditSchemaAvailableAsync(cancellationToken))
-        {
-            return new ExecutionIncidentSnapshotPage(page, pageSize, 0, []);
-        }
+        var auditAvailable = await EnsureAuditSchemaAvailableAsync(cancellationToken);
 
         return await ExecuteWithSchemaRecoveryAsync(async () =>
         {
             var skip = (page - 1) * pageSize;
 
-            var retryCount = await dbContext.AuditOutbox.LongCountAsync(x => x.DeliveryState == "retry_wait" && x.LastAttemptAtUtc != null, cancellationToken);
-            var failureCount = await dbContext.AuditOutbox.LongCountAsync(x => x.DeliveryState != "retry_wait" && x.LastAttemptAtUtc != null && x.LastErrorCode != null, cancellationToken);
-            var deadLetterCount = await dbContext.AuditDeadLetters.LongCountAsync(cancellationToken);
+            var retryCount = 0L;
+            var failureCount = 0L;
+            var deadLetterCount = 0L;
+            List<ExecutionIncidentSnapshot> retryEvents = [];
+            List<ExecutionIncidentSnapshot> deadLetterEvents = [];
+            List<ExecutionIncidentSnapshot> failureEvents = [];
 
-            var retryEvents = await dbContext.AuditOutbox
+            if (auditAvailable)
+            {
+                retryCount = await dbContext.AuditOutbox.LongCountAsync(x => x.DeliveryState == "retry_wait" && x.LastAttemptAtUtc != null, cancellationToken);
+                failureCount = await dbContext.AuditOutbox.LongCountAsync(x => x.DeliveryState != "retry_wait" && x.LastAttemptAtUtc != null && x.LastErrorCode != null, cancellationToken);
+                deadLetterCount = await dbContext.AuditDeadLetters.LongCountAsync(cancellationToken);
+
+                retryEvents = await dbContext.AuditOutbox
+                    .AsNoTracking()
+                    .Where(x => x.DeliveryState == "retry_wait" && x.LastAttemptAtUtc != null)
+                    .OrderByDescending(x => x.LastAttemptAtUtc)
+                    .Take(skip + pageSize)
+                    .Select(x => new ExecutionIncidentSnapshot(
+                        "retry",
+                        "warning",
+                        x.Destination,
+                        x.LastAttemptAtUtc!.Value,
+                        x.LastErrorCode ?? "retry_scheduled",
+                        x.AttemptCount))
+                    .ToListAsync(cancellationToken);
+
+                deadLetterEvents = await dbContext.AuditDeadLetters
+                    .AsNoTracking()
+                    .OrderByDescending(x => x.DeadLetteredAtUtc)
+                    .Take(skip + pageSize)
+                    .Select(x => new ExecutionIncidentSnapshot(
+                        "dead_letter",
+                        "critical",
+                        x.Destination,
+                        x.DeadLetteredAtUtc,
+                        x.ErrorSummary,
+                        x.FinalAttemptCount))
+                    .ToListAsync(cancellationToken);
+
+                failureEvents = await dbContext.AuditOutbox
+                    .AsNoTracking()
+                    .Where(x => x.DeliveryState != "retry_wait" && x.LastAttemptAtUtc != null && x.LastErrorCode != null)
+                    .OrderByDescending(x => x.LastAttemptAtUtc)
+                    .Take(skip + pageSize)
+                    .Select(x => new ExecutionIncidentSnapshot(
+                        "failure",
+                        "critical",
+                        x.Destination,
+                        x.LastAttemptAtUtc!.Value,
+                        x.LastErrorCode!,
+                        x.AttemptCount))
+                    .ToListAsync(cancellationToken);
+            }
+
+            var runtimeCount = await dbContext.RuntimeIncidents.LongCountAsync(cancellationToken);
+            var runtimeEvents = await dbContext.RuntimeIncidents
                 .AsNoTracking()
-                .Where(x => x.DeliveryState == "retry_wait" && x.LastAttemptAtUtc != null)
-                .OrderByDescending(x => x.LastAttemptAtUtc)
+                .OrderByDescending(x => x.LastOccurredUtc)
                 .Take(skip + pageSize)
                 .Select(x => new ExecutionIncidentSnapshot(
-                    "retry",
-                    "warning",
-                    x.Destination,
-                    x.LastAttemptAtUtc!.Value,
-                    x.LastErrorCode ?? "retry_scheduled",
-                    x.AttemptCount))
+                    "runtime_incident",
+                    x.Severity,
+                    x.ToolSlug,
+                    x.LastOccurredUtc,
+                    x.Message,
+                    x.Count))
                 .ToListAsync(cancellationToken);
 
-            var deadLetterEvents = await dbContext.AuditDeadLetters
-                .AsNoTracking()
-                .OrderByDescending(x => x.DeadLetteredAtUtc)
-                .Take(skip + pageSize)
-                .Select(x => new ExecutionIncidentSnapshot(
-                    "dead_letter",
-                    "critical",
-                    x.Destination,
-                    x.DeadLetteredAtUtc,
-                    x.ErrorSummary,
-                    x.FinalAttemptCount))
-                .ToListAsync(cancellationToken);
-
-            var failureEvents = await dbContext.AuditOutbox
-                .AsNoTracking()
-                .Where(x => x.DeliveryState != "retry_wait" && x.LastAttemptAtUtc != null && x.LastErrorCode != null)
-                .OrderByDescending(x => x.LastAttemptAtUtc)
-                .Take(skip + pageSize)
-                .Select(x => new ExecutionIncidentSnapshot(
-                    "failure",
-                    "critical",
-                    x.Destination,
-                    x.LastAttemptAtUtc!.Value,
-                    x.LastErrorCode!,
-                    x.AttemptCount))
-                .ToListAsync(cancellationToken);
-
-            var total = checked((int)Math.Min(int.MaxValue, retryCount + failureCount + deadLetterCount));
+            var total = checked((int)Math.Min(int.MaxValue, retryCount + failureCount + deadLetterCount + runtimeCount));
             var items = retryEvents
                 .Concat(failureEvents)
                 .Concat(deadLetterEvents)
+                .Concat(runtimeEvents)
                 .OrderByDescending(x => x.OccurredAtUtc)
                 .Skip(skip)
                 .Take(pageSize)

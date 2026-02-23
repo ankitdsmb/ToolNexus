@@ -338,6 +338,72 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     b.ToTable("DailyToolMetrics");
                 });
 
+
+            modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.RuntimeIncidentEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ErrorType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Fingerprint")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FirstOccurredUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastOccurredUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PayloadType")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phase")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Stack")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ToolSlug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fingerprint")
+                        .IsUnique();
+
+                    b.HasIndex("LastOccurredUtc");
+
+                    b.HasIndex("ToolSlug");
+
+                    b.ToTable("RuntimeIncidents");
+                });
+
             modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ToolAnomalySnapshotEntity", b =>
                 {
                     b.Property<long>("Id")
