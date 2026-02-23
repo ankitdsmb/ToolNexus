@@ -6,7 +6,7 @@ namespace ToolNexus.Application.Services;
 
 public sealed class CachingToolDefinitionService(
     ToolDefinitionService inner,
-    IPlatformCacheService cache,
+    IDistributedPlatformCache cache,
     IOptions<PlatformCacheOptions> options) : IToolDefinitionService
 {
     private const string ListKey = "platform:tool-definitions:list";
@@ -43,7 +43,7 @@ public sealed class CachingToolDefinitionService(
 
     private void Invalidate()
     {
-        cache.Remove(ListKey);
-        cache.RemoveByPrefix(DetailPrefix);
+        _ = cache.RemoveAsync(ListKey);
+        _ = cache.RemoveByPrefixAsync(DetailPrefix);
     }
 }

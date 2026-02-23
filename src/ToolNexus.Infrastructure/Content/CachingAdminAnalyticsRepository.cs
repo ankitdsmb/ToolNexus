@@ -7,7 +7,7 @@ namespace ToolNexus.Infrastructure.Content;
 
 public sealed class CachingAdminAnalyticsRepository(
     EfAdminAnalyticsRepository inner,
-    IPlatformCacheService cache,
+    IDistributedPlatformCache cache,
     IOptions<PlatformCacheOptions> options) : IAdminAnalyticsRepository
 {
     private const string SnapshotRangePrefix = "platform:analytics:snapshots:";
@@ -25,9 +25,9 @@ public sealed class CachingAdminAnalyticsRepository(
     public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
     {
         await inner.ReplaceAnomaliesForDateAsync(date, anomalies, cancellationToken);
-        cache.Remove($"{AnomaliesDatePrefix}{date:yyyyMMdd}");
-        cache.Remove(DashboardKey);
-        cache.RemoveByPrefix(SnapshotRangePrefix);
+        await cache.RemoveAsync($"{AnomaliesDatePrefix}{date:yyyyMMdd}", cancellationToken);
+        await cache.RemoveAsync(DashboardKey, cancellationToken);
+        await cache.RemoveByPrefixAsync(SnapshotRangePrefix, cancellationToken);
     }
 
     public Task<IReadOnlyList<ToolAnomalySnapshot>> GetAnomaliesByDateAsync(DateOnly date, CancellationToken cancellationToken)

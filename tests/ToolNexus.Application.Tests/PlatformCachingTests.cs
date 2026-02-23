@@ -90,6 +90,18 @@ public sealed class PlatformCachingTests
                 _entries.Remove(key);
             }
         }
+
+        public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
+        {
+            Remove(key);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
+        {
+            RemoveByPrefix(prefix);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ToolDefinitionRepoStub : IToolDefinitionRepository

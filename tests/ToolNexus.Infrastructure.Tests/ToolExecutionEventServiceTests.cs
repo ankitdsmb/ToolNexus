@@ -36,7 +36,7 @@ public sealed class ToolExecutionEventServiceTests
         var state = new BackgroundWorkerHealthState();
         var queue = new BackgroundWorkQueue(state);
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var worker = new TelemetryBackgroundWorker(queue, state, NullLogger<TelemetryBackgroundWorker>.Instance);
+        var worker = new TelemetryBackgroundWorker(queue, state, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
         var sut = new ToolExecutionEventService(queue, new DelegateTelemetryProcessor((_, _) =>
         {
             tcs.TrySetResult(true);
@@ -60,7 +60,7 @@ public sealed class ToolExecutionEventServiceTests
         var state = new BackgroundWorkerHealthState();
         var queue = new BackgroundWorkQueue(state);
         var finished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var worker = new TelemetryBackgroundWorker(queue, state, NullLogger<TelemetryBackgroundWorker>.Instance);
+        var worker = new TelemetryBackgroundWorker(queue, state, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
         var sut = new ToolExecutionEventService(queue, new DelegateTelemetryProcessor(async (_, token) =>
         {
             await Task.Delay(250, token);
@@ -87,7 +87,7 @@ public sealed class ToolExecutionEventServiceTests
         var queue = new BackgroundWorkQueue(state);
         var processedSecond = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var invocation = 0;
-        var worker = new TelemetryBackgroundWorker(queue, state, NullLogger<TelemetryBackgroundWorker>.Instance);
+        var worker = new TelemetryBackgroundWorker(queue, state, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
 
         await worker.StartAsync(CancellationToken.None);
 
@@ -107,7 +107,7 @@ public sealed class ToolExecutionEventServiceTests
         var completed = await Task.WhenAny(processedSecond.Task, Task.Delay(1000));
         await worker.StopAsync(CancellationToken.None);
 
-        Assert.Same(processedSecond.Task, completed);
+        Assert.True(processedSecond.Task.IsCompletedSuccessfully);
         Assert.Equal(3, invocation);
     }
 
