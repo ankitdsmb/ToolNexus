@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
 using ToolNexus.Infrastructure.Content;
+using ToolNexus.Infrastructure.Observability;
 using Xunit;
 
 namespace ToolNexus.Infrastructure.Tests;
@@ -16,7 +17,7 @@ public sealed class AdminAuditLoggingTests
         await using var context = database.CreateContext();
 
         var auditLogger = new AdminAuditLogger(context, new HttpContextAccessor(), new AuditPayloadProcessor(), Microsoft.Extensions.Options.Options.Create(new ToolNexus.Infrastructure.Options.AuditGuardrailsOptions { WriteEnabled = true, WorkerEnabled = false }), new AuditGuardrailsMetrics(), NullLogger<AdminAuditLogger>.Instance);
-        var repository = new EfToolDefinitionRepository(context, auditLogger, NullLogger<EfToolDefinitionRepository>.Instance);
+        var repository = new EfToolDefinitionRepository(context, auditLogger, new ConcurrencyObservability(), NullLogger<EfToolDefinitionRepository>.Instance);
 
         var created = await repository.CreateAsync(new CreateToolDefinitionRequest(
             "Json",

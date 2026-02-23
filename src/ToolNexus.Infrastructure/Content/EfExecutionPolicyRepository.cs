@@ -12,6 +12,7 @@ public sealed class EfExecutionPolicyRepository(
     ToolNexusContentDbContext db,
     IMemoryCache cache,
     IAdminAuditLogger auditLogger,
+    IConcurrencyObservability concurrencyObservability,
     ILogger<EfExecutionPolicyRepository> logger) : IExecutionPolicyRepository
 {
     private static string Key(string slug) => $"execution-policy::{slug.ToLowerInvariant()}";
@@ -90,6 +91,8 @@ public sealed class EfExecutionPolicyRepository(
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
+        concurrencyObservability.RecordWriteAttempt("ToolExecutionPolicy");
+
         try
         {
             await db.SaveChangesAsync(cancellationToken);
@@ -97,14 +100,17 @@ public sealed class EfExecutionPolicyRepository(
         catch (DbUpdateConcurrencyException ex)
         {
             var currentToken = await db.ToolExecutionPolicies.AsNoTracking().Where(x => x.Id == policy.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            var serverToken = ConcurrencyTokenCodec.Encode(currentToken);
+            concurrencyObservability.RecordConflict("ToolExecutionPolicy", request.VersionToken, serverToken);
+            concurrencyObservability.RecordStaleUpdateAttempt("ToolExecutionPolicy");
             await auditLogger.TryLogAsync(
                 "ConcurrencyConflictDetected",
                 "ToolExecutionPolicy",
                 policy.Id.ToString(),
                 new { AttemptedToken = request.VersionToken },
-                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                new { CurrentToken = serverToken },
                 cancellationToken);
-            logger.LogWarning(ex, "Optimistic concurrency conflict for ToolExecutionPolicy {PolicyId}.", policy.Id);
+            logger.LogWarning(ex, "Optimistic concurrency conflict for ToolExecutionPolicy {PolicyId}. actorId={ActorId} clientToken={ClientToken} serverToken={ServerToken} outcome={Outcome}", policy.Id, "system", request.VersionToken, serverToken, "rejected_conflict");
             throw new OptimisticConcurrencyException(request.VersionToken, ex);
         }
 
@@ -145,6 +151,7 @@ public sealed class EfExecutionPolicyRepository(
     {
         if (string.IsNullOrWhiteSpace(token))
         {
+            concurrencyObservability.RecordMissingVersionToken("ToolExecutionPolicy");
             logger.LogWarning("Missing version token for ToolExecutionPolicy {PolicyId}; allowing transitional write.", policy.Id);
             await auditLogger.TryLogAsync(
                 "MissingVersionToken",

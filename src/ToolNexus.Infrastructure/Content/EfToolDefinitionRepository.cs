@@ -12,6 +12,7 @@ namespace ToolNexus.Infrastructure.Content;
 public sealed class EfToolDefinitionRepository(
     ToolNexusContentDbContext dbContext,
     IAdminAuditLogger auditLogger,
+    IConcurrencyObservability concurrencyObservability,
     ILogger<EfToolDefinitionRepository> logger) : IToolDefinitionRepository
 {
     public Task<IReadOnlyCollection<ToolDefinitionListItem>> GetListAsync(CancellationToken cancellationToken = default)
@@ -155,8 +156,11 @@ public sealed class EfToolDefinitionRepository(
 
     private async Task SaveWithConcurrencyEnforcementAsync(ToolDefinitionEntity entity, string resourceType, string resourceId, string? requestVersionToken, object attemptedPayload, CancellationToken cancellationToken)
     {
+        concurrencyObservability.RecordWriteAttempt(resourceType);
+
         if (string.IsNullOrWhiteSpace(requestVersionToken))
         {
+            concurrencyObservability.RecordMissingVersionToken(resourceType);
             logger.LogWarning("Missing version token for {ResourceType} {ResourceId}; allowing transitional write.", resourceType, resourceId);
             await auditLogger.TryLogAsync(
                 "MissingVersionToken",
@@ -177,14 +181,17 @@ public sealed class EfToolDefinitionRepository(
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogWarning(ex, "Optimistic concurrency conflict for {ResourceType} {ResourceId}.", resourceType, resourceId);
             var currentToken = await dbContext.ToolDefinitions.AsNoTracking().Where(x => x.Id == entity.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            var serverToken = ConcurrencyTokenCodec.Encode(currentToken);
+            concurrencyObservability.RecordConflict(resourceType, requestVersionToken, serverToken);
+            concurrencyObservability.RecordStaleUpdateAttempt(resourceType);
+            logger.LogWarning(ex, "Optimistic concurrency conflict for {ResourceType} {ResourceId}. clientToken={ClientToken} serverToken={ServerToken} outcome={Outcome}", resourceType, resourceId, requestVersionToken, serverToken, "rejected_conflict");
             await auditLogger.TryLogAsync(
                 "ConcurrencyConflictDetected",
                 resourceType,
                 resourceId,
                 new { AttemptedToken = requestVersionToken, attemptedPayload },
-                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                new { CurrentToken = serverToken },
                 cancellationToken);
 
             throw new OptimisticConcurrencyException(requestVersionToken, ex);
