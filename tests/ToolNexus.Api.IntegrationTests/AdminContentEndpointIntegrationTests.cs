@@ -1,15 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
 
-public sealed class AdminContentEndpointIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class AdminContentEndpointIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public AdminContentEndpointIntegrationTests(WebApplicationFactory<Program> factory)
+    public AdminContentEndpointIntegrationTests(TestWebApplicationFactory factory)
     {
         _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
         _client.DefaultRequestHeaders.Add("X-API-KEY", "replace-with-production-api-key");
