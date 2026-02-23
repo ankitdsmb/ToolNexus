@@ -11,7 +11,13 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
     private static readonly string[] PendingStates = ["pending", "retry_wait", "in_progress"];
 
     public async Task<ExecutionHealthSummarySnapshot> GetHealthSnapshotAsync(CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
+    {
+        if (!await EnsureAuditSchemaAvailableAsync(cancellationToken))
+        {
+            return new ExecutionHealthSummarySnapshot(0, 0, 0, null, 0, 0);
+        }
+
+        return await ExecuteWithSchemaRecoveryAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var recentWindowStart = now.AddMinutes(-10);
@@ -37,9 +43,16 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
                 recentBacklog,
                 previousBacklog);
         }, cancellationToken);
+    }
 
     public async Task<IReadOnlyList<ExecutionWorkerSnapshot>> GetWorkerSnapshotsAsync(DateTime utcNow, CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
+    {
+        if (!await EnsureAuditSchemaAvailableAsync(cancellationToken))
+        {
+            return [];
+        }
+
+        return await ExecuteWithSchemaRecoveryAsync(async () =>
         {
             var leases = await dbContext.AuditOutbox
                 .AsNoTracking()
@@ -62,9 +75,16 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
                 x.RecentErrors,
                 x.LastLeaseExpiry is null || x.LastLeaseExpiry < utcNow)).ToList();
         }, cancellationToken);
+    }
 
     public async Task<ExecutionIncidentSnapshotPage> GetIncidentSnapshotsAsync(int page, int pageSize, CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
+    {
+        if (!await EnsureAuditSchemaAvailableAsync(cancellationToken))
+        {
+            return new ExecutionIncidentSnapshotPage(page, pageSize, 0, []);
+        }
+
+        return await ExecuteWithSchemaRecoveryAsync(async () =>
         {
             var skip = (page - 1) * pageSize;
 
@@ -124,6 +144,56 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
 
             return new ExecutionIncidentSnapshotPage(page, pageSize, total, items);
         }, cancellationToken);
+    }
+
+    private async Task<bool> EnsureAuditSchemaAvailableAsync(CancellationToken cancellationToken)
+    {
+        if (await CanQueryAuditSchemaAsync(cancellationToken))
+        {
+            return true;
+        }
+
+        try
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
+        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
+        {
+            return false;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
+                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
+                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+
+        return await CanQueryAuditSchemaAsync(cancellationToken);
+    }
+
+    private async Task<bool> CanQueryAuditSchemaAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            _ = await dbContext.AuditOutbox.AsNoTracking().Select(x => x.Id).Take(1).AnyAsync(cancellationToken);
+            _ = await dbContext.AuditDeadLetters.AsNoTracking().Select(x => x.Id).Take(1).AnyAsync(cancellationToken);
+            return true;
+        }
+        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
+        {
+            return false;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
+                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
+                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+    }
 
     private async Task<T> ExecuteWithSchemaRecoveryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken)
     {
