@@ -32,7 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
         services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
         services.AddScoped<IAdminAnalyticsRepository, EfAdminAnalyticsRepository>();
-        services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
+        services.AddScoped<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
         services
             .AddOptions<ApiKeyOptions>()
             .Bind(configuration.GetSection(ApiKeyOptions.SectionName))
