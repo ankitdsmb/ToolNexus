@@ -22,9 +22,31 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
         Assert.Single(service.Ingested);
     }
 
+    [Fact]
+    public async Task GetToolHealth_ReturnsSnapshots()
+    {
+        var service = new StubRuntimeIncidentService
+        {
+            Health =
+            [
+                new RuntimeToolHealthSnapshot("json-formatter", 76, 4, DateTime.UtcNow, "legacy mismatch")
+            ]
+        };
+
+        var controller = new RuntimeIncidentsController(service);
+
+        var result = await controller.GetToolHealth(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var payload = Assert.IsAssignableFrom<IReadOnlyList<RuntimeToolHealthSnapshot>>(ok.Value);
+        Assert.Single(payload);
+        Assert.Equal("json-formatter", payload[0].Slug);
+    }
+
     private sealed class StubRuntimeIncidentService : IRuntimeIncidentService
     {
         public List<RuntimeIncidentIngestBatch> Ingested { get; } = [];
+        public IReadOnlyList<RuntimeToolHealthSnapshot> Health { get; set; } = [];
 
         public Task IngestAsync(RuntimeIncidentIngestBatch batch, CancellationToken cancellationToken)
         {
@@ -34,5 +56,8 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
 
         public Task<IReadOnlyList<RuntimeIncidentSummary>> GetLatestSummariesAsync(int take, CancellationToken cancellationToken)
             => Task.FromResult<IReadOnlyList<RuntimeIncidentSummary>>([]);
+
+        public Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken)
+            => Task.FromResult(Health);
     }
 }

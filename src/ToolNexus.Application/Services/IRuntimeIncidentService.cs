@@ -6,4 +6,5 @@ public interface IRuntimeIncidentService
 {
     Task IngestAsync(RuntimeIncidentIngestBatch batch, CancellationToken cancellationToken);
     Task<IReadOnlyList<RuntimeIncidentSummary>> GetLatestSummariesAsync(int take, CancellationToken cancellationToken);
+    Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken);
 }

@@ -64,11 +64,61 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
                 .ToListAsync(cancellationToken), cancellationToken);
     }
 
+    public async Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken)
+    {
+        return await ExecuteWithSchemaRecoveryAsync(async () =>
+        {
+            var incidents = await dbContext.RuntimeIncidents
+                .AsNoTracking()
+                .Select(x => new
+                {
+                    x.ToolSlug,
+                    x.Severity,
+                    x.Count,
+                    x.LastOccurredUtc,
+                    x.Message
+                })
+                .ToListAsync(cancellationToken);
+
+            var snapshots = incidents
+                .GroupBy(x => x.ToolSlug)
+                .Select(group =>
+                {
+                    var incidentCount = group.Sum(item => item.Count);
+                    var weightedIncidentCount = group.Sum(item => item.Count * ToSeverityWeight(item.Severity));
+                    var healthScore = Math.Max(0, 100 - weightedIncidentCount);
+
+                    var dominantError = group
+                        .GroupBy(item => item.Message)
+                        .OrderByDescending(item => item.Sum(x => x.Count))
+                        .ThenByDescending(item => item.Max(x => x.LastOccurredUtc))
+                        .Select(item => item.Key)
+                        .FirstOrDefault() ?? "unknown";
+
+                    return new RuntimeToolHealthSnapshot(
+                        group.Key,
+                        healthScore,
+                        incidentCount,
+                        group.Max(item => item.LastOccurredUtc),
+                        dominantError);
+                })
+                .OrderBy(x => x.HealthScore)
+                .ThenByDescending(x => x.IncidentCount)
+                .ThenBy(x => x.Slug)
+                .ToList();
+
+            return (IReadOnlyList<RuntimeToolHealthSnapshot>)snapshots;
+        }, cancellationToken);
+    }
+
     private static string BuildFingerprint(RuntimeIncidentIngestRequest incident)
         => string.Join("::", incident.ToolSlug, incident.Phase, incident.ErrorType, incident.Message, incident.PayloadType);
 
     private static string ToSeverity(string errorType)
         => string.Equals(errorType, "contract_violation", StringComparison.OrdinalIgnoreCase) ? "warning" : "critical";
+
+    private static int ToSeverityWeight(string severity)
+        => string.Equals(severity, "critical", StringComparison.OrdinalIgnoreCase) ? 12 : 5;
 
     private async Task<T> ExecuteWithSchemaRecoveryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken)
     {
