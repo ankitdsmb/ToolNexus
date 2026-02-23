@@ -964,3 +964,21 @@ Documentation contract: every discovered `class`, `interface`, `record`, and `en
 - [x] Onboarding guide complete.
 - [x] AI onboarding included.
 - [x] Extension rules defined.
+
+## Runtime Compatibility Requirements (Platform Contract)
+
+Tool modules must follow runtime-safe contracts:
+
+- Mount logic belongs in lifecycle-compatible APIs (`create/init/destroy` or `mount`).
+- `runTool(action, input)` is execution-only and must **not** assume DOM mount arguments.
+- Runtime DOM anchors must exist (or be creatable by adapter):
+  - `data-tool-root`, `data-tool-header`, `data-tool-body`, `data-tool-input`, `data-tool-output`, `data-tool-actions`.
+- `#tool-root` must include `data-tool-root="true"` and a valid `data-tool-root-id` before lifecycle mount.
+- Legacy modules can rely on bridge compatibility, but should migrate to lifecycle contract to avoid fallback paths.
+
+### Safe tool initialization checklist
+1. Avoid direct `document.getElementById(...)` writes without null checks.
+2. Keep initialization idempotent (multiple bootstraps should not duplicate listeners).
+3. Return a cleanup routine (`destroy`) for event/timer disposal.
+4. Do not throw on missing optional DOM; allow adapter-provided anchors.
+5. Keep execution handlers type-safe (`typeof action === 'string'`, input normalization).

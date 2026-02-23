@@ -6,10 +6,10 @@ import { createToolStateRegistry } from '../../../src/ToolNexus.Web/wwwroot/js/r
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 
 describe('tool execution normalization engine', () => {
-  test('legacy runTool is normalized to lifecycle execution', async () => {
+  test('legacy runTool(action,input) modules are treated as execution-only and not mounted', async () => {
     const root = document.createElement('div');
     const context = createToolExecutionContext({ slug: 'legacy-tool', root, manifest: { slug: 'legacy-tool' } });
-    const runTool = jest.fn(() => { root.innerHTML = '<div>legacy mounted</div>'; });
+    const runTool = jest.fn(function runTool(action, input) { root.innerHTML = '<div>legacy mounted</div>'; return { action, input }; });
 
     const result = await mountToolLifecycle({
       module: { runTool },
@@ -20,9 +20,9 @@ describe('tool execution normalization engine', () => {
       capabilities: { needsDOMReady: false }
     });
 
-    expect(result.mounted).toBe(true);
-    expect(result.mode).toBe('legacy.runTool');
-    expect(runTool).toHaveBeenCalledTimes(1);
+    expect(result.mounted).toBe(false);
+    expect(result.mode).toBe('legacy.runTool.execution-only');
+    expect(runTool).not.toHaveBeenCalled();
   });
 
   test('auto destroy is generated when destroy is missing', async () => {

@@ -49,8 +49,10 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
     ? 'module.lifecycle-contract'
     : normalized.metadata.mode;
 
+  const executionOnly = normalized.metadata.mode === 'legacy.runTool.execution-only';
+
   return {
-    mounted: true,
+    mounted: !executionOnly && normalized.metadata.mode !== 'none',
     cleanup: normalized.destroy,
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,

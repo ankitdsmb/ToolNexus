@@ -15,7 +15,12 @@ function resolveTarget(toolModule, capability = {}, slug = '') {
 
   const runToolTarget = candidates.find((candidate) => typeof candidate?.runTool === 'function');
   if (runToolTarget) {
-    return { target: runToolTarget, mode: 'legacy.runTool' };
+    const runToolArity = Number(runToolTarget.runTool.length ?? 0);
+    const executionLikeRunTool = runToolArity >= 2;
+    return {
+      target: runToolTarget,
+      mode: executionLikeRunTool ? 'legacy.runTool.execution-only' : 'legacy.runTool'
+    };
   }
 
   const initTarget = candidates.find((candidate) => typeof candidate?.init === 'function');
@@ -94,7 +99,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
       });
     }
 
-    if (typeof target?.runTool === 'function') {
+    if (typeof target?.runTool === 'function' && mode !== 'legacy.runTool.execution-only') {
       return withDomTracking(root, context, () => target.runTool(root, context?.manifest, context));
     }
 
