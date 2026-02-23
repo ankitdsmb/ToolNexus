@@ -13,11 +13,14 @@
     "test:playwright:contracts": "playwright test tests/playwright/contracts",
     "test:playwright:runtime": "playwright test tests/playwright/runtime",
     "test:playwright:smoke": "playwright test tests/playwright/smoke",
-    "test:playwright:visual": "playwright test tests/playwright/screenshots"
+    "test:playwright:visual": "playwright test tests/playwright/screenshots",
+    "test:runtime": "vitest run tests/runtime"
   },
   "devDependencies": {
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "vitest": "^2.1.9",
+    "@vitest/coverage-v8": "^2.1.9"
   }
 }
