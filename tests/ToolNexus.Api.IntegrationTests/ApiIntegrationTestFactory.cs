@@ -10,33 +10,27 @@ namespace ToolNexus.Api.IntegrationTests;
 
 public sealed class ApiIntegrationTestFactory : WebApplicationFactory<Program>
 {
-    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"toolnexus-api-integration-tests-{Guid.NewGuid():N}.db");
+    private readonly ITestConnectionResolver _connectionResolver = new TestConnectionResolver();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("IntegrationTest");
 
-        var postgresConnectionString = Environment.GetEnvironmentVariable("TOOLNEXUS_TEST_POSTGRES_CONNECTION_STRING");
-        var usePostgres = !string.IsNullOrWhiteSpace(postgresConnectionString);
+        var resolution = _connectionResolver.Resolve();
+        if (!resolution.IsValid || string.IsNullOrWhiteSpace(resolution.ConnectionString))
+        {
+            throw new InvalidOperationException($"A valid PostgreSQL test connection is required. Check {resolution.SourcePath}.");
+        }
 
         builder.ConfigureAppConfiguration((_, configBuilder) =>
         {
             var settings = new Dictionary<string, string?>
             {
                 ["ConnectionStrings:Redis"] = string.Empty,
-                ["OpenTelemetry:Enabled"] = "false"
+                ["OpenTelemetry:Enabled"] = "false",
+                ["Database:Provider"] = "PostgreSQL",
+                ["Database:ConnectionString"] = resolution.ConnectionString
             };
-
-            if (usePostgres)
-            {
-                settings["Database:Provider"] = "Postgres";
-                settings["Database:ConnectionString"] = postgresConnectionString;
-            }
-            else
-            {
-                settings["Database:Provider"] = "Sqlite";
-                settings["Database:ConnectionString"] = $"Data Source={_databasePath}";
-            }
 
             configBuilder.AddInMemoryCollection(settings);
         });
@@ -46,15 +40,5 @@ public sealed class ApiIntegrationTestFactory : WebApplicationFactory<Program>
             services.RemoveAll<IHostedService>();
             services.AddHostedService<ToolContentSeedHostedService>();
         });
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-
-        if (disposing && File.Exists(_databasePath))
-        {
-            File.Delete(_databasePath);
-        }
     }
 }

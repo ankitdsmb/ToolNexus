@@ -9,11 +9,17 @@ using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
 
-public sealed class ToolsEndpointIntegrationTests : IClassFixture<TestWebApplicationFactory>
+public sealed class ToolsEndpointIntegrationTests : IClassFixture<ApiIntegrationTestFactory>
 {
-    private readonly HttpClient _client = CreateClient(factory);
+    private readonly HttpClient _client;
 
-    public ToolsEndpointIntegrationTests(TestWebApplicationFactory factory)
+    public ToolsEndpointIntegrationTests(ApiIntegrationTestFactory factory)
+    {
+        _client = CreateClient(factory);
+    }
+
+    [Fact]
+    public async Task Get_Ping_ReturnsOk()
     {
         var response = await _client.GetAsync("/api/v1/tools/ping");
 
