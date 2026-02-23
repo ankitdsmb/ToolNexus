@@ -23,6 +23,52 @@ const STORAGE_KEYS = {
 const MAX_HISTORY = 25;
 const MAX_RECENT = 8;
 
+function ensureElement(id, tagName, options = {}) {
+  const existing = document.getElementById(id);
+  if (existing) {
+    return existing;
+  }
+
+  const node = document.createElement(tagName);
+  node.id = id;
+  if (options.hidden) {
+    node.hidden = true;
+  }
+  if (options.className) {
+    node.className = options.className;
+  }
+
+  const parent = options.parent ?? page;
+  parent?.appendChild(node);
+  return node;
+}
+
+function ensureEditorContract() {
+  if (!page.dataset.toolRootId) {
+    page.dataset.toolRootId = `tool-page-${slug || 'runtime'}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  const editorHost = page.querySelector('.tool-layout, .tool-shell-page__workspace, .tool-page__workspace, article, section') ?? page;
+  const fallbackExecutionPanel = ensureElement('toolExecutionPanel', 'section', {
+    parent: editorHost,
+    hidden: true,
+    className: 'tool-execution-panel tool-execution-panel--fallback'
+  });
+
+  const fallbackInput = ensureElement('inputEditor', 'textarea', { parent: fallbackExecutionPanel, hidden: true });
+  const fallbackOutput = ensureElement('outputEditor', 'textarea', { parent: fallbackExecutionPanel, hidden: true });
+  const fallbackOutputField = ensureElement('outputField', 'div', { parent: fallbackExecutionPanel, hidden: true });
+
+  ensureElement('inputEditorSurface', 'div', { parent: fallbackExecutionPanel, hidden: true, className: 'editor-surface' });
+  ensureElement('outputEditorSurface', 'div', { parent: fallbackOutputField, hidden: true, className: 'editor-surface' });
+  ensureElement('runBtn', 'button', { parent: fallbackExecutionPanel, hidden: true });
+
+  return {
+    inputTextArea: fallbackInput,
+    outputTextArea: fallbackOutput
+  };
+}
+
 const clientSafeActions = new Set(
   (page.dataset.clientSafeActions ?? '')
     .split(',')
@@ -30,11 +76,12 @@ const clientSafeActions = new Set(
     .filter(Boolean)
 );
 
-const inputTextArea = document.getElementById('inputEditor');
-const outputTextArea = document.getElementById('outputEditor');
+const contractNodes = ensureEditorContract();
+const inputTextArea = contractNodes.inputTextArea;
+const outputTextArea = contractNodes.outputTextArea;
 const actionSelect = document.getElementById('actionSelect');
-const inputEditorSurface = document.getElementById('inputEditorSurface');
-const outputEditorSurface = document.getElementById('outputEditorSurface');
+const inputEditorSurface = ensureElement('inputEditorSurface', 'div', { parent: page, hidden: true, className: 'editor-surface' });
+const outputEditorSurface = ensureElement('outputEditorSurface', 'div', { parent: page, hidden: true, className: 'editor-surface' });
 
 const runBtn = document.getElementById('runBtn');
 const runBtnLabel = runBtn?.querySelector('.tool-btn__label');
