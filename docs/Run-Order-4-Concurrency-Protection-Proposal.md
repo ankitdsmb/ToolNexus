@@ -1,361 +1,323 @@
 # Run Order 4 — Concurrency Protection (Architecture Proposal)
 
-## Scope and constraints
+## Scope
 
-This proposal analyzes current update flows for:
+This proposal analyzes update/write flows for:
 
 1. Tool definitions
 2. Execution policies
 3. Content editor graph
 
-This is a **design-only** document. No implementation is included.
+Constraint: **design only**. No implementation changes are included.
 
 ---
 
-## 1) Current-state flow analysis
+## 1) Current-state write flow analysis
 
-### 1.1 Tool definitions
+## 1.1 Tool definitions
 
-**Current write path**
+### Active write paths
 
-- Admin MVC form (`Admin/ToolsController.Save`) writes a tool definition and then writes policy in sequence. There is no version/etag parameter in either request shape. 
-- API path (`api/admin/tools/{id}` PUT) forwards update requests with mutable fields only.
-- Repository update (`EfToolDefinitionRepository.UpdateAsync`) loads row by id, mutates all mutable columns, then saves.
+- API write path: `PUT /api/admin/tools/{id}` maps directly to `IToolDefinitionService.UpdateAsync` and accepts mutable fields only (`SaveToolRequest`) with no version token or conditional header requirement.
+- MVC write path: admin `ToolsController.Save` updates tool definition first, then writes execution policy in a second operation.
+- Repository write path: `EfToolDefinitionRepository.UpdateAsync` loads entity by id, overwrites all mutable fields, sets `UpdatedAt = UtcNow`, and saves.
 
-**Concurrency profile**
+### Concurrency profile
 
-- Read phase uses `AsNoTracking` projection for edit payloads, so clients edit snapshots.
-- Write phase does not include any compare-against token.
-- `UpdatedAt` exists but is not used as a compare-and-swap condition.
+- Reads are snapshot-style (`AsNoTracking`) for details/lists.
+- Writes do not compare against a prior version value.
+- `UpdatedAt` exists, but is informational only (not used as a compare-and-swap guard).
 
-**Risk summary**
+### Risk outcomes
 
-- **Last-write-wins** on overlapping edits is guaranteed.
-- A stale form submit can overwrite a recent admin change silently.
-- Sequential tool+policy save in MVC can produce mixed state if one succeeds and the second fails.
-
-### 1.2 Execution policies
-
-**Current write path**
-
-- API path (`api/admin/execution/{slug}` PUT) and MVC tool form path both call `ExecutionPolicyService.UpdateBySlugAsync`.
-- Repository (`EfExecutionPolicyRepository.UpsertBySlugAsync`) does an upsert keyed by tool and saves entire policy.
-
-**Concurrency profile**
-
-- In-memory cache is read-through and updated after write.
-- No version token in model or request.
-- No conditional update predicate beyond identifying the row.
-
-**Risk summary**
-
-- **Last-write-wins** for policy tuning (timeouts, rate limits, enable flag).
-- High operational impact: stale writes may unintentionally re-enable disabled execution or reset limits.
-- Cache does not solve stale update; it only accelerates reads.
-
-### 1.3 Content editor graph
-
-**Current write path**
-
-- Admin content tab fetches `/api/admin/content/{toolId}`, stores graph client-side, and later PUTs entire graph.
-- Repository (`EfToolContentEditorRepository.SaveGraphAsync`) fully clears all child collections and recreates rows from request.
-
-**Concurrency profile**
-
-- Editor keeps a long-lived in-memory graph after first load.
-- Save operation is destructive-replace (clear + rebuild), not patch/merge.
-- No token, revision id, or conflict detection on save.
-
-**Risk summary**
-
-- **Highest stale overwrite risk** across all three flows.
-- Two editors on same tool will race; second save can wipe additions/reordering from first.
-- Because save is graph replacement, conflicts are coarse and can drop substantial user work.
+- Last-write-wins on overlapping edits.
+- Stale admin pages can silently overwrite newer data.
+- Mixed outcome risk in MVC combined save (tool update success + policy update failure, or vice versa).
 
 ---
 
-## 2) Identified overwrite and stale-update scenarios
+## 1.2 Execution policies
 
-## 2.1 Tool definition scenarios
+### Active write paths
 
-1. Admin A changes slug/category, Admin B changes icon/sort order from stale page.
-2. B saves later; A’s slug/category can be reverted silently.
-3. Toggle status endpoint can race with full form update and produce unexpected final status.
+- API write path: `PUT /api/admin/execution/{slug}` calls `IExecutionPolicyService.UpdateBySlugAsync`.
+- MVC path: same policy update called from admin tool form save.
+- Repository write path: `EfExecutionPolicyRepository.UpsertBySlugAsync` does create-or-overwrite for all policy fields and updates in-memory cache after commit.
 
-## 2.2 Policy scenarios
+### Concurrency profile
 
-1. Operator A disables execution during incident response.
-2. Operator B (stale page) updates timeout and leaves `IsExecutionEnabled=true`.
+- Policy GET is cache-backed, but cache does not provide write conflict protection.
+- No token (`Version`, ETag, rowversion/xmin) in request or response contract.
+- Upsert operation has no stale-write condition.
+
+### Risk outcomes
+
+- Last-write-wins for timeout/rate-limit/execution enable flags.
+- Incident response hazard: stale submit can unintentionally re-enable execution.
+- Cached old reads can increase stale-submit probability within the UI lifecycle.
+
+---
+
+## 1.3 Content editor graph
+
+### Active write paths
+
+- UI path: content editor loads graph once on tab open via `GET /api/admin/content/{toolId}`, keeps it client-side, then saves entire graph via `PUT`.
+- Repository write path: `EfToolContentEditorRepository.SaveGraphAsync` clears all collections (`Features`, `UseCases`, `Steps`, `Examples`, `Faq`, `RelatedTools`) and rebuilds from request payload.
+
+### Concurrency profile
+
+- Save model is full replace, not patch.
+- No version token in `ToolContentEditorGraph`/`SaveToolContentGraphRequest`.
+- Long-lived client graph increases stale window.
+
+### Risk outcomes
+
+- Highest-risk overwrite surface.
+- Any stale save can remove unrelated updates from another editor because lists are fully replaced.
+- Reordering + list mutation conflicts are especially destructive under concurrent edits.
+
+---
+
+## 2) Explicit overwrite/stale scenarios
+
+## 2.1 Tool definitions
+
+1. Admin A edits slug/category/status.
+2. Admin B edits icon/sortOrder from older snapshot.
+3. B saves later and silently reverts A’s slug/category/status.
+
+Also: status toggle endpoint (`PATCH /status`) can race with full `PUT`, leading to confusing final status.
+
+## 2.2 Execution policies
+
+1. Operator A disables execution during outage.
+2. Operator B (stale page) adjusts timeout with `IsExecutionEnabled=true` still selected.
 3. B save re-enables execution unintentionally.
 
-## 2.3 Content editor scenarios
+## 2.3 Content editor
 
-1. Editor A adds 3 FAQ items and reorders steps.
-2. Editor B edits feature text from older snapshot.
-3. B save clears/rebuilds graph and can erase A’s FAQ/reorder changes.
+1. Editor A adds FAQs and reorders steps.
+2. Editor B edits features from stale snapshot.
+3. B save clears and recreates graph, removing A’s updates.
 
-## 2.4 Cross-surface scenario (tool form saves tool + policy)
+## 2.4 Composite form (tool + policy)
 
-- MVC save performs two writes in sequence but not as one logical concurrency unit.
-- If one write conflicts but the other succeeds, user sees partial success semantics.
-- Observability/audit records become harder to reason about as a single “edit session”.
+The MVC form performs sequential writes for two distinct resources with no shared concurrency transaction semantics, so partial-update states are possible and hard to reason about operationally.
 
 ---
 
-## 3) Proposed optimistic concurrency architecture
+## 3) Optimistic concurrency architecture (proposed)
 
-## 3.1 Design principles
+## 3.1 Resource boundaries
 
-1. **Optimistic concurrency everywhere** for admin writes.
-2. **Explicit version token required** on mutable admin resources.
-3. **Fail-fast on mismatch** with deterministic conflict payload.
-4. **No silent merge on server** for multi-editor graph writes; server detects and returns conflict context.
-5. **UI owns resolution** (reload, compare, selective apply).
+Introduce explicit optimistic concurrency per independently editable admin resource:
 
-## 3.2 Versioned resources
+- `ToolDefinition`
+- `ToolExecutionPolicy`
+- `ToolContentGraph` (rooted at `ToolContent`)
 
-Treat each independently editable unit as versioned:
+Each resource has its own version token lifecycle.
 
-- Tool Definition resource
-- Tool Execution Policy resource
-- Tool Content Graph resource
+## 3.2 Enforcement model
 
-For composite admin workflows (tool + policy), preserve independent tokens but support combined conflict response in MVC/API orchestration layer.
+1. Every GET for mutable admin resource returns a `versionToken`.
+2. Every write (PUT/PATCH/POST) requires matching token via payload field or `If-Match`.
+3. Repository performs conditional update using concurrency token.
+4. Token mismatch returns structured `409 Conflict` with current server representation.
+
+## 3.3 Why optimistic (not locking)
+
+- Current admin behavior is stateless request/response and occasionally long editing sessions.
+- Pessimistic locks would be fragile for long-lived browser sessions and increase deadlock/abandonment complexity.
+- OCC gives deterministic conflict detection with lower operational cost.
 
 ---
 
 ## 4) Version token strategy
 
-## 4.1 Token shape
+## 4.1 Token design
 
-Use opaque string token surfaced as `versionToken` in JSON DTOs and as ETag-compatible header representation.
+- Token is **opaque** to clients (`string versionToken`).
+- Internally backed by DB concurrency primitive:
+  - PostgreSQL: `xmin` projection or explicit generated version column.
+  - SQLite fallback: explicit integer/binary version column incremented on write.
+- Wire encoding: base64 (or strong ETag-safe quoted token).
 
-Recommended encoding:
+## 4.2 Schema strategy by resource
 
-- Backing value: DB-managed `rowversion/xmin` equivalent or monotonically changing binary stamp.
-- Wire form: Base64 string.
-- Client contract: opaque; never parsed client-side.
+- `ToolDefinitions`: add concurrency column/property and mark as EF concurrency token.
+- `ToolExecutionPolicies`: same pattern.
+- `ToolContents`: add root concurrency token and ensure every graph mutation bumps root token.
 
-## 4.2 Storage strategy by domain
+## 4.3 Contract strategy
 
-### Tool definitions
+- Read DTOs include `VersionToken`:
+  - `ToolDefinitionDetail`
+  - `ToolExecutionPolicyModel`
+  - `ToolContentEditorGraph`
+- Write requests include required `VersionToken`.
+- API may also emit `ETag` and accept `If-Match` for standards alignment.
 
-- Add concurrency column to `ToolDefinitions` (e.g., `byte[] RowVersion` with EF concurrency token).
+## 4.4 Transitional compatibility
 
-### Execution policies
-
-- Add concurrency column to `ToolExecutionPolicies`.
-
-### Content graph
-
-Use a **graph root token** on `ToolContents`.
-
-- Add row-version token to `ToolContents` and bump it on any child collection mutation.
-- Keep child-level item IDs for diff UX, but conflict gate is root token.
-
-Rationale: editing model is full graph today; root token gives stable protection without requiring per-child OCC in v1.
-
-## 4.3 API contract strategy
-
-For each GET response of mutable admin resources:
-
-- Include `versionToken` in body.
-- Optionally mirror as `ETag` response header for standards alignment.
-
-For each PUT/PATCH/POST update:
-
-- Require `versionToken` in payload (or `If-Match` header).
-- Reject missing token with 428 Precondition Required (or 400 if 428 rollout is too disruptive initially).
+- Phase 1: optional token accepted + warning logs when missing.
+- Phase 2: hard enforcement (428 Precondition Required or 400 fallback).
+- Phase 3: remove non-token write path.
 
 ---
 
-## 5) Conflict detection flow
+## 5) Conflict detection and response flow
 
-## 5.1 Write algorithm (generic)
+## 5.1 Server flow
 
-1. Client sends update with `versionToken` from latest GET.
-2. Service maps token to original value and attaches entity with original concurrency value.
-3. Repository attempts save.
-4. If DB reports concurrency mismatch (`DbUpdateConcurrencyException`):
-   - Reload current server state.
-   - Return 409 Conflict with structured conflict envelope.
+1. Client GETs resource and receives `versionToken=A`.
+2. Client submits write with `versionToken=A`.
+3. Server attaches original token and attempts save.
+4. If token differs in DB, EF throws `DbUpdateConcurrencyException` (or zero-row conditional update).
+5. Server loads latest state and responds with `409` conflict envelope.
 
-## 5.2 Conflict envelope contract (proposed)
+## 5.2 Conflict envelope (proposed)
 
 ```json
 {
   "error": "ConcurrencyConflict",
-  "resource": "ToolContentGraph",
-  "resourceId": "tool:42",
-  "clientVersionToken": "...",
-  "serverVersionToken": "...",
-  "serverState": { "...": "latest representation" },
-  "changedFields": ["faqs", "steps"],
-  "message": "Resource was modified by another user. Refresh and reapply your changes."
+  "resource": "ToolDefinition",
+  "resourceId": "42",
+  "clientVersionToken": "A",
+  "serverVersionToken": "B",
+  "serverState": {},
+  "changedFields": ["status", "category"],
+  "message": "Resource was modified by another user. Refresh and reconcile changes."
 }
 ```
 
-For tool and policy, `changedFields` can be computed by comparing client payload to current state.
-For content graph, include coarse sets (`features`, `steps`, `examples`, `faqs`, `useCases`, `relatedTools`) at minimum.
+For content graph, `changedFields` should be section-level at minimum (`features`, `steps`, `examples`, `faqs`, `useCases`, `relatedTools`).
 
-## 5.3 MVC tool+policy orchestrated save behavior
+## 5.3 Composite tool+policy submit handling
 
-When form saves both resources:
+For admin MVC save:
 
-- Validate both tokens up front.
-- Attempt updates in transactional boundary where practical.
-- If either conflicts, return conflict model to view with:
-  - section(s) in conflict
-  - latest server values
-  - user-submitted values
-- Never auto-overwrite conflicted section.
+- Include both tokens (`toolVersionToken`, `policyVersionToken`).
+- Validate both before commit path.
+- On conflict in either section, return an explicit split conflict view model instead of silent redirect.
 
 ---
 
 ## 6) Safe UI conflict handling
 
-## 6.1 Baseline UX behavior
+## 6.1 Baseline UX requirements
 
 On conflict:
 
-1. Preserve unsaved local edits in memory.
-2. Show non-dismissive conflict banner.
-3. Present actions:
-   - **Reload latest** (discard local)
-   - **Review diff**
-   - **Apply my changes again** (rebase flow)
+1. Preserve in-progress edits locally (memory + local storage draft).
+2. Show persistent conflict banner.
+3. Offer actions: reload latest, compare, re-apply.
 
-## 6.2 Tool definition and policy forms
+## 6.2 Tool definition + policy forms
 
-- Field-level diff view: “Your value” vs “Current value”.
-- Allow per-field choose-local/choose-server before resubmit.
-- Disable blind “Save anyway”.
+- Display per-field compare (`Your value` vs `Server value`).
+- Let user choose per-field resolution before re-submit.
+- Disable blind overwrite button.
 
-## 6.3 Content editor flow
+## 6.3 Content editor UX (critical)
 
-Because graph saves are replacement-style:
+Because save is graph replacement today:
 
-- Show section-level diff counts (added/removed/edited/reordered).
-- Provide merge assistant:
-  - Start from latest server graph.
-  - Replay local edits as operations where non-overlapping.
-  - Flag overlapping operations for manual resolution.
+- Show section-level conflict summary and item counts changed.
+- Build rebase helper:
+  - start from latest server graph
+  - replay local operations where non-overlapping
+  - require manual decision on collisions (same item/section reorder conflict)
 
-Minimum safe fallback for first release:
+Minimum safe first release:
 
-- Keep local draft in browser storage.
-- Force explicit manual reconcile on conflict.
+- no auto-merge,
+- preserve draft,
+- explicit manual reconcile workflow.
 
-## 6.4 Real-time staleness hints (optional, recommended)
+## 6.4 Proactive stale warning (recommended)
 
-- Poll lightweight “head version” endpoint while editor open.
-- If server token changes, warn user before they click save.
-- This reduces surprise conflicts without locking.
+- Poll lightweight “head token” endpoint while edit tab is open.
+- If token changes, warn user before save.
+- Reduces surprise conflicts and support burden.
 
 ---
 
 ## 7) Migration impact
 
-## 7.1 Database migrations
+## 7.1 Database
 
-Required schema changes:
+- Add concurrency columns to `ToolDefinitions`, `ToolExecutionPolicies`, `ToolContents`.
+- Backfill existing rows with initial tokens.
+- Ensure provider parity (Postgres + SQLite test matrix).
 
-1. Add concurrency token column to `ToolDefinitions`.
-2. Add concurrency token column to `ToolExecutionPolicies`.
-3. Add concurrency token column to `ToolContents`.
+## 7.2 Application/service layer
 
-Potential one-time backfill:
+- Update model contracts to include `VersionToken`.
+- Update service/repository method signatures to require token on writes.
+- Add deterministic concurrency exception mapping.
 
-- Existing rows get generated token values automatically by DB defaults or first write.
+## 7.3 API/Web clients
 
-## 7.2 Application + domain model changes
+- Admin web forms and JS editor must store/send tokens and handle 409 responses.
+- Any automation/integration clients using admin endpoints must be updated.
 
-- Add `VersionToken` to response models (`ToolDefinitionDetail`, `ToolExecutionPolicyModel`, `ToolContentEditorGraph`).
-- Add `VersionToken` to update request models.
-- Service interfaces and repository signatures change to require tokens.
+## 7.4 Testing and observability
 
-## 7.3 API and client impact
-
-- Admin API consumers must supply token on writes.
-- MVC pages and JS content editor must include token lifecycle (load/store/send/refresh on conflict).
-- Contract tests needed for 409 conflict and 428/400 missing-token responses.
-
-## 7.4 Observability and audit impact
-
-- Audit entries should include:
-  - prior token
-  - new token
-  - conflict outcome metadata (when conflict occurs)
-
-This improves forensic clarity during incident response.
+- Add integration tests for two-writer conflict paths across all three resources.
+- Add audit metadata for conflict outcomes (attempted token, current token, actor).
+- Track conflict rate metrics to tune UX and detect hotspots.
 
 ---
 
 ## 8) Breaking change risks
 
-## 8.1 External/API consumers
+## 8.1 API contract break risk (high)
 
-- **High risk** if token becomes mandatory immediately on existing endpoints.
-- Existing automation clients will fail writes until updated.
-
-Mitigation:
-
-- Versioned endpoints (`/api/admin/v2/...`) or transitional compatibility window.
-- Soft rollout phase: warn on missing token, then enforce.
-
-## 8.2 Admin web UX
-
-- New conflict paths increase UI complexity.
-- If conflict UX is weak, users may lose trust and copy/paste around the system.
+Mandatory token on existing PUT/PATCH endpoints breaks old clients immediately.
 
 Mitigation:
 
-- Ship conflict banner + draft preservation in first increment.
-- Add richer diff/merge iteratively.
+- versioned admin API routes or staged enforcement window.
 
-## 8.3 Data semantics
+## 8.2 UI behavioral change risk (medium)
 
-- Content editor currently replaces full graph; OCC prevents silent overwrite but does not itself merge.
-- Teams may expect auto-merge; unmet expectation can look like regression.
+Users accustomed to “save always works” will now see conflict states.
 
 Mitigation:
 
-- Explicitly communicate “detect + resolve” behavior in release notes.
-- Add operation-based patch model later if collaborative editing becomes frequent.
+- clear conflict UX and draft safety from day one.
 
-## 8.4 Performance and contention
+## 8.3 Content semantics risk (medium/high)
 
-- More 409 responses under high parallel admin activity.
-- Minor extra read/compare work on conflict handling.
+OCC detects conflicts but does not automatically merge replacement-style graphs.
 
 Mitigation:
 
-- Keep payloads focused.
-- Provide staleness hints to reduce preventable conflicts.
+- explicit user education and planned rebase assistant iteration.
+
+## 8.4 Operational risk (low/medium)
+
+Conflict frequency may increase under concentrated admin activity.
+
+Mitigation:
+
+- head-token staleness warnings,
+- actionable conflict payloads,
+- conflict metrics and alerting.
 
 ---
 
-## 9) Recommended rollout plan
+## 9) Recommended rollout sequence
 
-1. **Phase 1 — Foundations**
-   - Add tokens to schema/models.
-   - Return tokens on GET.
-2. **Phase 2 — Enforced OCC (API)**
-   - Require token on write.
-   - Return structured 409 conflict envelope.
-3. **Phase 3 — UI conflict safety**
-   - Draft preservation + reload/diff UX.
-   - Section-level conflict handling for content graph.
-4. **Phase 4 — Hardening**
-   - Contract/integration tests for concurrent writers.
-   - Metrics on conflict rate and resolution outcomes.
+1. **Schema + DTO groundwork**: add tokens, return on reads.
+2. **Server OCC enforcement**: conditional writes + 409 envelope.
+3. **UI safety**: conflict banner + draft preservation + manual reconcile flow.
+4. **Hardening**: provider-parity tests, race simulations, conflict telemetry dashboards.
 
 ---
 
 ## 10) Decision summary
 
-- Current admin update flows for tool definitions, policies, and content graph are vulnerable to silent last-write-wins overwrites.
-- Introduce optimistic concurrency with opaque version tokens across all three resources.
-- Enforce conflict detection via conditional writes and 409 conflict envelopes.
-- Provide explicit UI conflict resolution paths; never silently overwrite on stale state.
-- Plan migration carefully due to contract-level breaking potential for existing admin API clients.
+Current tool definition, policy, and content graph writes are all vulnerable to silent last-write-wins behavior, with content editor carrying the highest destructive overwrite risk. A unified optimistic concurrency model with required version tokens, deterministic conflict responses, and safe UI reconciliation is the recommended architecture. Migration is moderate-to-high impact due to contract changes, so phased rollout and compatibility strategy are essential.
