@@ -4,7 +4,33 @@ function toCandidates(toolModule) {
   return [toolModule, toolModule?.default, toolModule?.lifecycle, toolModule?.default?.lifecycle].filter(Boolean);
 }
 
-function resolveTarget(toolModule, capability = {}, slug = '') {
+function toRuntimeType(value) {
+  if (value === 'execution' || value === 'mount') {
+    return value;
+  }
+
+  return null;
+}
+
+function resolveExplicitRuntimeType(target, capability = {}, context = {}) {
+  const candidates = [
+    target?.toolRuntimeType,
+    target?.runtime?.toolRuntimeType,
+    capability?.toolRuntimeType,
+    context?.manifest?.toolRuntimeType
+  ];
+
+  for (const candidate of candidates) {
+    const runtimeType = toRuntimeType(candidate);
+    if (runtimeType) {
+      return runtimeType;
+    }
+  }
+
+  return null;
+}
+
+function resolveTarget(toolModule, capability = {}, slug = '', context = {}) {
   const candidates = toCandidates(toolModule);
   const target = candidates.find((candidate) =>
     ['create', 'init', 'destroy'].every((method) => typeof candidate?.[method] === 'function'));
@@ -15,8 +41,11 @@ function resolveTarget(toolModule, capability = {}, slug = '') {
 
   const runToolTarget = candidates.find((candidate) => typeof candidate?.runTool === 'function');
   if (runToolTarget) {
-    const runToolArity = Number(runToolTarget.runTool.length ?? 0);
-    const executionLikeRunTool = runToolArity >= 2;
+    const explicitRuntimeType = resolveExplicitRuntimeType(runToolTarget, capability, context);
+    const executionLikeRunTool = explicitRuntimeType
+      ? explicitRuntimeType === 'execution'
+      : Number(runToolTarget.runTool.length ?? 0) >= 2;
+
     return {
       target: runToolTarget,
       mode: executionLikeRunTool ? 'legacy.runTool.execution-only' : 'legacy.runTool'
@@ -30,7 +59,7 @@ function resolveTarget(toolModule, capability = {}, slug = '') {
 
   const registryTarget = window.ToolNexusModules?.[slug];
   if (registryTarget) {
-    return resolveTarget(registryTarget, capability, '');
+    return resolveTarget(registryTarget, capability, '', context);
   }
 
   return { target: {}, mode: 'none' };
@@ -70,7 +99,7 @@ function withDomTracking(root, context, callback) {
 }
 
 export function normalizeToolExecution(toolModule, capability = {}, { slug = '', root, context } = {}) {
-  const { target, mode } = resolveTarget(toolModule, capability, slug);
+  const { target, mode } = resolveTarget(toolModule, capability, slug, context);
   const hasDestroy = typeof target?.destroy === 'function';
   let instance = null;
 
