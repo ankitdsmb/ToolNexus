@@ -5,6 +5,8 @@ namespace ToolNexus.Application.Services;
 public interface IAdminAnalyticsRepository
 {
     Task<IReadOnlyList<DailyToolMetricsSnapshot>> GetByDateRangeAsync(DateOnly startDateInclusive, DateOnly endDateInclusive, CancellationToken cancellationToken);
+    Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ToolAnomalySnapshot>> GetAnomaliesByDateAsync(DateOnly date, CancellationToken cancellationToken);
 }
 
 public sealed record DailyToolMetricsSnapshot(
@@ -13,4 +15,3 @@ public sealed record DailyToolMetricsSnapshot(
     long TotalExecutions,
     long SuccessCount,
     double AvgDurationMs);
-

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Data;
+using ToolNexus.Infrastructure.Content.Entities;
 
 namespace ToolNexus.Infrastructure.Content;
 
@@ -22,5 +24,47 @@ public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbConte
                 x.AvgDurationMs))
             .ToListAsync(cancellationToken);
     }
-}
 
+    public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
+    {
+        var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        await dbContext.ToolAnomalySnapshots
+            .Where(x => x.DateUtc == dateUtc)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (anomalies.Count == 0)
+        {
+            return;
+        }
+
+        var entities = anomalies.Select(x => new ToolAnomalySnapshotEntity
+        {
+            ToolSlug = x.ToolSlug,
+            DateUtc = dateUtc,
+            Type = x.Type.ToString(),
+            Severity = x.Severity.ToString(),
+            Description = x.Description
+        });
+
+        await dbContext.ToolAnomalySnapshots.AddRangeAsync(entities, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ToolAnomalySnapshot>> GetAnomaliesByDateAsync(DateOnly date, CancellationToken cancellationToken)
+    {
+        var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        return await dbContext.ToolAnomalySnapshots
+            .AsNoTracking()
+            .Where(x => x.DateUtc == dateUtc)
+            .OrderBy(x => x.ToolSlug)
+            .ThenBy(x => x.Type)
+            .Select(x => new ToolAnomalySnapshot(
+                x.ToolSlug,
+                DateOnly.FromDateTime(x.DateUtc),
+                Enum.Parse<ToolAnomalyType>(x.Type),
+                Enum.Parse<ToolAnomalySeverity>(x.Severity),
+                x.Description))
+            .ToListAsync(cancellationToken);
+    }
+}

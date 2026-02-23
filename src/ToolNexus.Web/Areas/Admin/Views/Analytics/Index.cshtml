@@ -21,6 +21,19 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title">Intelligence Alerts</h4>
+        <div class="table-responsive">
+            <table class="table table-sm" id="intelligence-alerts-table">
+                <thead><tr><th>Tool</th><th>Type</th><th>Severity</th><th>Description</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <small class="text-secondary">Daily anomalies generated from rolling 7-day tool metrics baselines.</small>
+    </div>
+</div>
+
 <div class="row g-3">
     <div class="col-lg-6">
         <div class="card">
@@ -73,6 +86,20 @@
 
     renderRows('#top-tools-table', dashboard.topTools || []);
     renderRows('#slow-tools-table', dashboard.slowTools || []);
+
+    const alertsBody = document.querySelector('#intelligence-alerts-table tbody');
+    alertsBody.innerHTML = '';
+    (dashboard.intelligenceAlerts || []).forEach(alert => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${alert.toolSlug}</td><td>${alert.type}</td><td>${alert.severity}</td><td>${alert.description}</td>`;
+        alertsBody.appendChild(tr);
+    });
+
+    if (alertsBody.children.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="4" class="text-secondary">No active anomalies for today.</td>';
+        alertsBody.appendChild(tr);
+    }
 
     const trend = dashboard.executionTrend || [];
     const chart = document.getElementById('trend-chart');
