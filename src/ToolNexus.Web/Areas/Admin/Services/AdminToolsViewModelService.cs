@@ -5,11 +5,12 @@ namespace ToolNexus.Web.Areas.Admin.Services;
 
 public sealed class AdminToolsViewModelService(IToolDefinitionService service, IExecutionPolicyService executionPolicyService) : IAdminToolsViewModelService
 {
-    public async Task<ToolAdminIndexViewModel> BuildAsync(ToolAdminFormModel form, CancellationToken cancellationToken)
+    public async Task<ToolAdminIndexViewModel> BuildAsync(ToolAdminFormModel form, CancellationToken cancellationToken, ToolAdminConflictViewModel? conflict = null)
         => new()
         {
             Tools = await service.GetListAsync(cancellationToken),
-            Form = form
+            Form = form,
+            Conflict = conflict
         };
 
     public async Task<ToolAdminFormModel?> BuildFormForEditAsync(int id, CancellationToken cancellationToken)
@@ -27,6 +28,7 @@ public sealed class AdminToolsViewModelService(IToolDefinitionService service, I
         form.MaxRequestsPerMinute = policy.MaxRequestsPerMinute;
         form.MaxInputSize = policy.MaxInputSize;
         form.IsExecutionEnabled = policy.IsExecutionEnabled;
+        form.ExecutionVersionToken = policy.VersionToken;
         return form;
     }
 }

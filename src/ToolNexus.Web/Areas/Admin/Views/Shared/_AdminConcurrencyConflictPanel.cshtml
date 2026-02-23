@@ -1,0 +1,22 @@
+@model ToolNexus.Web.Areas.Admin.Models.ToolAdminConflictViewModel
+
+<div id="admin-concurrency-conflict-panel" class="alert alert-warning border-warning mb-3" role="alert" data-conflict-resource="@Model.Resource">
+    <div class="d-flex align-items-center mb-2">
+        <span class="badge bg-warning text-dark me-2">Concurrency conflict</span>
+        <strong>This item was modified by another operator.</strong>
+    </div>
+    <div class="small mb-2">@Model.Message</div>
+    <ul class="small mb-3">
+        <li><strong>Your version token:</strong> <code>@(Model.ClientVersionToken ?? "n/a")</code></li>
+        <li><strong>Server version token:</strong> <code>@(Model.ServerVersionToken ?? "n/a")</code></li>
+        @if (!string.IsNullOrWhiteSpace(Model.LastModifiedDisplay))
+        {
+            <li><strong>Last modified:</strong> @Model.LastModifiedDisplay</li>
+        }
+    </ul>
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-warning btn-sm" data-conflict-action="reload">Reload Latest</button>
+        <button type="button" class="btn btn-outline-warning btn-sm" data-conflict-action="copy">Copy My Changes</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-conflict-action="compare">Compare Changes</button>
+    </div>
+</div>
