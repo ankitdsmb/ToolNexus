@@ -31,7 +31,12 @@ public static class DependencyInjection
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
         services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
-        services.AddScoped<IAdminAnalyticsRepository, EfAdminAnalyticsRepository>();
+        services.AddScoped<EfAdminAnalyticsRepository>();
+        services.AddScoped<IAdminAnalyticsRepository>(sp =>
+            new CachingAdminAnalyticsRepository(
+                sp.GetRequiredService<EfAdminAnalyticsRepository>(),
+                sp.GetRequiredService<IPlatformCacheService>(),
+                sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ToolNexus.Application.Options.PlatformCacheOptions>>()));
         services.AddScoped<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
         services
             .AddOptions<ApiKeyOptions>()
@@ -39,6 +44,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
         services.AddMemoryCache();
+        services.AddSingleton<IPlatformCacheService, InMemoryPlatformCacheService>();
         services.AddSingleton<IToolExecutionRateGuard, InMemoryToolExecutionRateGuard>();
         services.AddDistributedMemoryCache();
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
