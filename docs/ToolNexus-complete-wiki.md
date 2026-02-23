@@ -956,3 +956,25 @@ Documentation contract: every discovered `class`, `interface`, `record`, and `en
 - [x] Onboarding guide complete.
 - [x] AI onboarding included.
 - [x] Extension rules defined.
+
+## 16. Admin Panel Reality Map (Wiki Guardian Update)
+
+### 16.1 Module maturity snapshot
+- **Implemented**: Tools workspace (definition + execution policy + content editor), analytics dashboard API/UI, change history listing.
+- **Partially implemented**: Dashboard shell (placeholder copy only).
+- **Placeholder-only**: Content section shell, categories, execution section shell, users, feature flags, settings.
+
+### 16.2 Security boundary warning (critical)
+- Current admin controllers in both `ToolNexus.Web` and `ToolNexus.Api` admin surfaces do not declare explicit `[Authorize]`/policy attributes.
+- Wiki policy for future work: all admin read/write routes must be bound to explicit named policies (`AdminRead`, `AdminWrite`) and verified by integration tests.
+
+### 16.3 Hidden dependencies that affect admin correctness
+- Admin analytics fidelity depends on telemetry ingestion + daily metric/anomaly persistence.
+- Change history fidelity depends on best-effort audit logging (write failures are logged but non-blocking).
+- Initialization status from database bootstrap influences whether admin datasets are complete on startup.
+
+### 16.4 Mandatory next governance capabilities
+1. Preflight simulation for execution-policy changes.
+2. Versioned rollback for tool definition/policy/content graphs.
+3. Conflict-safe editing (optimistic concurrency).
+4. Role-segmented admin access model.
