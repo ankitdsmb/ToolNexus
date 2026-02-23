@@ -219,12 +219,14 @@ public sealed class EfToolDefinitionRepository(
         {
             return await action();
         }
-        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
         {
             await RecoverMissingToolDefinitionsSchemaAsync(cancellationToken);
             return await action();
         }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase))
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
+                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
+                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
         {
             await RecoverMissingToolDefinitionsSchemaAsync(cancellationToken);
             return await action();
@@ -273,6 +275,10 @@ public sealed class EfToolDefinitionRepository(
                 """,
                 cancellationToken);
 
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "ALTER TABLE \"ToolDefinitions\" ADD COLUMN IF NOT EXISTS \"RowVersion\" bytea NULL;",
+                cancellationToken);
+
             return;
         }
 
@@ -299,6 +305,16 @@ public sealed class EfToolDefinitionRepository(
                 CREATE UNIQUE INDEX IF NOT EXISTS "IX_ToolDefinitions_Slug" ON "ToolDefinitions" ("Slug");
                 """,
                 cancellationToken);
+
+            try
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE \"ToolDefinitions\" ADD COLUMN \"RowVersion\" BLOB NULL;",
+                    cancellationToken);
+            }
+            catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("duplicate column", StringComparison.OrdinalIgnoreCase))
+            {
+            }
         }
     }
 
