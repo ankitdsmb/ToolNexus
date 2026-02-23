@@ -7,6 +7,7 @@ using ToolNexus.Api.Diagnostics;
 using ToolNexus.Api.Filters;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
+using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.Observability;
@@ -120,7 +121,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
-app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics) => Results.Ok(new
+app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics, IConcurrencyObservability concurrencyObservability) =>
+{
+    var concurrency = concurrencyObservability.GetHealthSnapshot();
+    return Results.Ok(new
 {
     queueSize = health.QueueSize,
     workerActive = health.IsWorkerActive,
@@ -134,8 +138,16 @@ app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseIn
     {
         status = dbInitState.Status.ToString().ToLowerInvariant(),
         error = dbInitState.Error
+    },
+    concurrency = new
+    {
+        totalConflictsLast24h = concurrency.TotalConflictsLast24Hours,
+        conflictTrend = concurrency.ConflictTrend,
+        topConflictingResources = concurrency.TopConflictingResources,
+        severityIndicators = concurrency.Alerts
     }
-}));
+});
+});
 app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")

@@ -13,6 +13,36 @@
     <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Active Tools</small><h3 id="metric-active">-</h3></div></div></div>
 </div>
 
+<div class="row g-3 mb-4" id="concurrency-summary-cards">
+    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Conflicts (24h)</small><h3 id="metric-conflicts-24h">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Highest Conflict Rate</small><h3 id="metric-conflict-rate">-</h3></div></div></div>
+    <div class="col-md-6"><div class="card"><div class="card-body"><small class="text-secondary">Concurrency Severity Indicators</small><div id="concurrency-severity" class="d-flex flex-wrap gap-2 mt-2"></div></div></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Conflict Trend (24h)</h4>
+                <div id="conflict-trend-chart" class="d-flex align-items-end gap-1" style="height:160px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Top Conflicting Resources</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm" id="top-conflicts-table">
+                        <thead><tr><th>Resource</th><th class="text-end">Conflicts</th><th class="text-end">Rate</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card mb-4">
     <div class="card-body">
         <h4 class="card-title">Execution Trend</h4>
@@ -69,6 +99,9 @@
     if (!response.ok) return;
     const dashboard = await response.json();
 
+    const backgroundHealthResponse = await fetch('/health/background');
+    const backgroundHealth = backgroundHealthResponse.ok ? await backgroundHealthResponse.json() : null;
+
     document.getElementById('metric-total').textContent = dashboard.totalExecutionsToday.toLocaleString();
     document.getElementById('metric-success').textContent = `${dashboard.successRate.toFixed(1)}%`;
     document.getElementById('metric-duration').textContent = `${dashboard.avgDurationMs.toFixed(1)} ms`;
@@ -114,6 +147,50 @@
         bar.style.background = '#4f6bed';
         bar.title = `${point.date}: ${point.totalExecutions} executions`;
         chart.appendChild(bar);
+    });
+
+
+    const concurrency = backgroundHealth?.concurrency || {};
+    const topConflicts = concurrency.topConflictingResources || [];
+    const severityIndicators = concurrency.severityIndicators || [];
+    document.getElementById('metric-conflicts-24h').textContent = (concurrency.totalConflictsLast24h || 0).toLocaleString();
+    document.getElementById('metric-conflict-rate').textContent = topConflicts.length > 0 ? `${topConflicts[0].conflictRatePercent.toFixed(1)}%` : '0.0%';
+
+    const severityHost = document.getElementById('concurrency-severity');
+    severityHost.innerHTML = '';
+    if (severityIndicators.length === 0) {
+        severityHost.innerHTML = '<span class="badge bg-success">Normal</span>';
+    }
+
+    severityIndicators.forEach(item => {
+        const severity = (item.severity || '').toLowerCase();
+        const klass = severity === 'critical' ? 'bg-danger' : severity === 'warning' ? 'bg-warning text-dark' : 'bg-info';
+        const badge = document.createElement('span');
+        badge.className = `badge ${klass}`;
+        badge.textContent = `${item.signal}: ${item.description}`;
+        severityHost.appendChild(badge);
+    });
+
+    const conflictsBody = document.querySelector('#top-conflicts-table tbody');
+    conflictsBody.innerHTML = '';
+    topConflicts.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${item.resourceType}</td><td class="text-end">${item.conflicts}</td><td class="text-end">${item.conflictRatePercent.toFixed(1)}%</td>`;
+        conflictsBody.appendChild(tr);
+    });
+
+    const conflictTrend = concurrency.conflictTrend || [];
+    const conflictTrendChart = document.getElementById('conflict-trend-chart');
+    conflictTrendChart.innerHTML = '';
+    const conflictMax = Math.max(...conflictTrend.map(x => x.conflicts || 0), 1);
+    conflictTrend.forEach(point => {
+        const bar = document.createElement('div');
+        const height = Math.max(4, Math.round(((point.conflicts || 0) / conflictMax) * 140));
+        bar.style.height = `${height}px`;
+        bar.style.flex = '1';
+        bar.style.background = '#f59f00';
+        bar.title = `${point.hourUtc}: ${point.conflicts} conflicts`;
+        conflictTrendChart.appendChild(bar);
     });
 })();
 </script>

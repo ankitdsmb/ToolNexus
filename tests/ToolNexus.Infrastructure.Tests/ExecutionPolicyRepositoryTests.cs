@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 using ToolNexus.Application.Models;
 using ToolNexus.Infrastructure.Content;
+using ToolNexus.Infrastructure.Observability;
 using ToolNexus.Infrastructure.Content.Entities;
 using Xunit;
 
@@ -34,7 +35,7 @@ public sealed class ExecutionPolicyRepositoryTests
 
         var cache = new MemoryCache(new MemoryCacheOptions());
         var auditLogger = new AdminAuditLogger(context, new HttpContextAccessor(), new AuditPayloadProcessor(), Microsoft.Extensions.Options.Options.Create(new ToolNexus.Infrastructure.Options.AuditGuardrailsOptions { WriteEnabled = true, WorkerEnabled = false }), new AuditGuardrailsMetrics(), NullLogger<AdminAuditLogger>.Instance);
-        var repository = new EfExecutionPolicyRepository(context, cache, auditLogger, NullLogger<EfExecutionPolicyRepository>.Instance);
+        var repository = new EfExecutionPolicyRepository(context, cache, auditLogger, new ConcurrencyObservability(), NullLogger<EfExecutionPolicyRepository>.Instance);
 
         var initial = await repository.GetBySlugAsync("json");
         Assert.NotNull(initial);

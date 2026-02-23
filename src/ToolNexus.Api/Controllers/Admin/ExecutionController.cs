@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
@@ -11,7 +12,7 @@ namespace ToolNexus.Api.Controllers.Admin;
 [ApiController]
 [Route("api/admin/execution")]
 [Authorize(Policy = AdminPolicyNames.AdminRead)]
-public sealed class ExecutionController(IExecutionPolicyService service) : ControllerBase
+public sealed class ExecutionController(IExecutionPolicyService service , IConcurrencyObservability concurrencyObservability, ILogger<ExecutionController> logger) : ControllerBase
 {
     [HttpGet("{slug}")]
     public async Task<ActionResult<ToolExecutionPolicyModel>> Get([FromRoute] string slug, CancellationToken cancellationToken)
@@ -35,6 +36,8 @@ public sealed class ExecutionController(IExecutionPolicyService service) : Contr
         }
         catch (ConcurrencyConflictException ex)
         {
+            concurrencyObservability.RecordResolutionAction(ex.Conflict.Resource, "conflict_presented");
+            logger.LogWarning("API concurrency conflict handled. resourceType={ResourceType} actorId={ActorId} clientToken={ClientToken} serverToken={ServerToken} outcome={Outcome}", ex.Conflict.Resource, User?.Identity?.Name ?? "unknown", ex.Conflict.ClientVersionToken, ex.Conflict.ServerVersionToken, "return_conflict");
             return StatusCode((int)HttpStatusCode.Conflict, ConcurrencyConflict.ToEnvelope(ex.Conflict));
         }
     }

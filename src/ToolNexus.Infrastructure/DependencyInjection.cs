@@ -91,6 +91,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightProvider, RegexInsightProvider>();
         services.AddSingleton<IToolInsightProvider, TextDiffInsightProvider>();
         services.AddSingleton<BackgroundWorkerHealthState>();
+        services.AddSingleton<IConcurrencyObservability, ConcurrencyObservability>();
         services.AddSingleton<IBackgroundWorkQueue, BackgroundWorkQueue>();
         services.AddSingleton<ExecutionMetricsAggregator>();
         services.AddSingleton<ITelemetryEventProcessor, TelemetryEventProcessor>();

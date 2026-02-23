@@ -8,12 +8,13 @@ using ToolNexus.Application.Services;
 using ToolNexus.Web.Security;
 using ToolNexus.Web.Areas.Admin.Models;
 using ToolNexus.Web.Areas.Admin.Services;
+using Microsoft.Extensions.Logging;
 
 namespace ToolNexus.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Policy = AdminPolicyNames.AdminRead)]
-public sealed class ToolsController(IToolDefinitionService service, IExecutionPolicyService executionPolicyService, IAdminToolsViewModelService viewModelService) : Controller
+public sealed class ToolsController(IToolDefinitionService service, IExecutionPolicyService executionPolicyService, IAdminToolsViewModelService viewModelService, IConcurrencyObservability concurrencyObservability, ILogger<ToolsController> logger) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -67,6 +68,8 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
         }
         catch (ConcurrencyConflictException ex)
         {
+            concurrencyObservability.RecordResolutionAction(ex.Conflict.Resource, "conflict_presented");
+            logger.LogWarning("Admin concurrency conflict handled. resourceType={ResourceType} actorId={ActorId} clientToken={ClientToken} serverToken={ServerToken} outcome={Outcome}", ex.Conflict.Resource, User?.Identity?.Name ?? "unknown", ex.Conflict.ClientVersionToken, ex.Conflict.ServerVersionToken, "show_conflict_panel");
             var conflict = BuildConflict(ex.Conflict);
             ModelState.AddModelError(string.Empty, conflict.Message);
             return View("Index", await viewModelService.BuildAsync(form, cancellationToken, conflict));

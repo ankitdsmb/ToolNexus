@@ -321,3 +321,54 @@ Mitigation:
 ## 10) Decision summary
 
 Current tool definition, policy, and content graph writes are all vulnerable to silent last-write-wins behavior, with content editor carrying the highest destructive overwrite risk. A unified optimistic concurrency model with required version tokens, deterministic conflict responses, and safe UI reconciliation is the recommended architecture. Migration is moderate-to-high impact due to contract changes, so phased rollout and compatibility strategy are essential.
+
+---
+
+## Run Order 4D — Hardening & Observability Implementation Notes
+
+### Metrics added
+
+The platform now emits concurrency hardening metrics through `ToolNexus.Concurrency` meter:
+
+- `concurrency_conflict_total` (counter)
+- `conflict_rate_per_resource` (histogram, `%`)
+- `missing_version_token_total` (counter)
+- `conflict_resolution_action_total` (counter)
+- `stale_update_attempt_total` (counter)
+
+### Structured logging
+
+Conflict and missing-token paths now produce structured log records carrying:
+
+- `resourceType`
+- `actorId`
+- `clientToken`
+- `serverToken`
+- `outcome`
+
+No raw payload bodies are emitted in these logs.
+
+### Dashboard + health integration
+
+`/health/background` now includes a `concurrency` section for:
+
+- total conflicts over last 24h
+- hourly conflict trend
+- top conflicting resources
+- severity indicators for spike/loop signals
+
+The admin analytics page consumes this section and renders concurrency metric cards, trend bars, and top-resource table without redesigning the existing layout.
+
+### Alert thresholds
+
+Initial warning thresholds:
+
+- **Conflict spike**: last-hour conflicts at least 20 and >=2x previous hour
+- **Conflict loop**: per-resource conflict rate >=15%
+- **Missing token growth**: tracked via `missing_version_token_total` for operator follow-up
+
+### Safety validation
+
+- stale token writes are explicitly counted and rejected (`stale_update_attempt_total`)
+- conflicts increment conflict counters and surface conflict outcomes
+- UI/API conflict handling paths increment `conflict_resolution_action_total`
