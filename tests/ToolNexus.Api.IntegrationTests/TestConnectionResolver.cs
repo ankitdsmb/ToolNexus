@@ -1,4 +1,4 @@
-using System.Data.Common;
+using System.Text.Json;
 
 namespace ToolNexus.Api.IntegrationTests;
 
@@ -26,54 +26,58 @@ public sealed class TestConnectionResolver : ITestConnectionResolver
             return TestConnectionResolution.Invalid(path);
         }
 
-        var provider = DetectProvider(raw);
-        if (provider is null)
+        var (provider, connectionString) = ParseConfiguration(raw);
+
+        if (!IsPostgresProvider(provider) || string.IsNullOrWhiteSpace(connectionString))
         {
             return TestConnectionResolution.Invalid(path);
         }
 
-        if (!IsValidConnectionString(raw))
+        if (!IsLikelyPostgresConnectionString(connectionString))
         {
             return TestConnectionResolution.Invalid(path);
         }
 
-        return new TestConnectionResolution(true, provider, raw, path);
+        return new TestConnectionResolution(true, "PostgreSQL", connectionString, path);
     }
 
-    private static string? DetectProvider(string connectionString)
+    private static (string? Provider, string? ConnectionString) ParseConfiguration(string raw)
     {
-        if (connectionString.Contains("Host=", StringComparison.OrdinalIgnoreCase) ||
-            connectionString.Contains("Username=", StringComparison.OrdinalIgnoreCase) ||
-            connectionString.Contains("Port=", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Postgres";
-        }
+        var candidateJson = raw.StartsWith("{", StringComparison.Ordinal) ? raw : $"{{{raw}}}";
 
-        if (connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase) ||
-            connectionString.Contains("Filename=", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Sqlite";
-        }
-
-        return null;
-    }
-
-    private static bool IsValidConnectionString(string connectionString)
-    {
         try
         {
-            var builder = new DbConnectionStringBuilder
+            using var document = JsonDocument.Parse(candidateJson);
+            var root = document.RootElement;
+            if (root.TryGetProperty("Database", out var databaseNode))
             {
-                ConnectionString = connectionString
-            };
-
-            return builder.Count > 0;
+                var provider = databaseNode.TryGetProperty("Provider", out var providerNode)
+                    ? providerNode.GetString()
+                    : null;
+                var connectionString = databaseNode.TryGetProperty("ConnectionString", out var connectionNode)
+                    ? connectionNode.GetString()
+                    : null;
+                return (provider, connectionString);
+            }
         }
-        catch
+        catch (JsonException)
         {
-            return false;
+            // Allow raw PostgreSQL connection strings for backward compatibility.
         }
+
+        return ("PostgreSQL", raw);
     }
+
+    private static bool IsPostgresProvider(string? provider)
+        => !string.IsNullOrWhiteSpace(provider)
+            && (provider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase)
+                || provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)
+                || provider.Equals("Npgsql", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsLikelyPostgresConnectionString(string connectionString)
+        => connectionString.Contains("Host=", StringComparison.OrdinalIgnoreCase)
+           || connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+           || connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase);
 
     private static string? FindRepositoryRoot()
     {

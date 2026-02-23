@@ -6,7 +6,6 @@ namespace ToolNexus.Api.IntegrationTests;
 
 public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"toolnexus.integrationtests.{Guid.NewGuid():N}.db");
     private readonly ITestConnectionResolver _connectionResolver;
 
     public TestWebApplicationFactory()
@@ -25,37 +24,23 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureAppConfiguration((_, configBuilder) =>
         {
             var resolution = _connectionResolver.Resolve();
-            var settings = BuildSettings(resolution, $"Data Source={_dbPath}");
+            var settings = BuildSettings(resolution);
             configBuilder.AddInMemoryCollection(settings);
         });
     }
 
-    internal static Dictionary<string, string?> BuildSettings(TestConnectionResolution resolution, string sqliteFallbackConnectionString)
+    internal static Dictionary<string, string?> BuildSettings(TestConnectionResolution resolution)
     {
-        var settings = new Dictionary<string, string?>
+        if (!resolution.IsValid || string.IsNullOrWhiteSpace(resolution.ConnectionString))
         {
-            ["Redis:Enabled"] = "false"
+            throw new InvalidOperationException($"A valid PostgreSQL test connection is required. Check {resolution.SourcePath}.");
+        }
+
+        return new Dictionary<string, string?>
+        {
+            ["Redis:Enabled"] = "false",
+            ["Database:Provider"] = "PostgreSQL",
+            ["Database:ConnectionString"] = resolution.ConnectionString
         };
-
-        if (resolution.IsValid && !string.IsNullOrWhiteSpace(resolution.Provider) && !string.IsNullOrWhiteSpace(resolution.ConnectionString))
-        {
-            settings["Database:Provider"] = resolution.Provider;
-            settings["Database:ConnectionString"] = resolution.ConnectionString;
-            return settings;
-        }
-
-        settings["Database:Provider"] = "Sqlite";
-        settings["Database:ConnectionString"] = sqliteFallbackConnectionString;
-        return settings;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-
-        if (File.Exists(_dbPath))
-        {
-            File.Delete(_dbPath);
-        }
     }
 }

@@ -5,46 +5,51 @@ namespace ToolNexus.Api.IntegrationTests;
 public sealed class TestConnectionResolverTests
 {
     [Fact]
-    public void Resolve_WhenTestConnectionFileExists_UsesProvidedConnection()
+    public void Resolve_WhenTestConnectionJsonExists_UsesProvidedPostgresConnection()
     {
         var repositoryRoot = CreateRepositoryRoot();
-        var expectedConnection = "Host=localhost;Port=5432;Database=toolnexus;Username=test;Password=test";
-        File.WriteAllText(Path.Combine(repositoryRoot, "testcs.txt"), expectedConnection);
+        var expectedConnection = "postgresql://postgres:postgres@localhost:5432/toolnexus";
+        File.WriteAllText(Path.Combine(repositoryRoot, "testcs.txt"), $$"""
+{
+  "Database": {
+    "Provider": "Postgres",
+    "ConnectionString": "{{expectedConnection}}"
+  }
+}
+""");
 
         var resolver = new TestConnectionResolver(repositoryRoot);
 
         var resolution = resolver.Resolve();
 
         Assert.True(resolution.IsValid);
-        Assert.Equal("Postgres", resolution.Provider);
+        Assert.Equal("PostgreSQL", resolution.Provider);
         Assert.Equal(expectedConnection, resolution.ConnectionString);
     }
 
     [Fact]
-    public void BuildSettings_WhenTestConnectionFileIsMissing_UsesSqliteFallback()
+    public void BuildSettings_WhenTestConnectionFileIsMissing_Throws()
     {
         var repositoryRoot = CreateRepositoryRoot();
         var resolver = new TestConnectionResolver(repositoryRoot);
 
         var resolution = resolver.Resolve();
-        var settings = TestWebApplicationFactory.BuildSettings(resolution, "Data Source=fallback.db");
 
-        Assert.Equal("Sqlite", settings["Database:Provider"]);
-        Assert.Equal("Data Source=fallback.db", settings["Database:ConnectionString"]);
+        var exception = Assert.Throws<InvalidOperationException>(() => TestWebApplicationFactory.BuildSettings(resolution));
+        Assert.Contains("valid PostgreSQL test connection", exception.Message);
     }
 
     [Fact]
-    public void BuildSettings_WhenConnectionStringIsInvalid_UsesSafeSqliteFallback()
+    public void BuildSettings_WhenConnectionStringIsInvalid_Throws()
     {
         var repositoryRoot = CreateRepositoryRoot();
-        File.WriteAllText(Path.Combine(repositoryRoot, "testcs.txt"), "Host");
+        File.WriteAllText(Path.Combine(repositoryRoot, "testcs.txt"), "Data Source=safe-fallback.db");
         var resolver = new TestConnectionResolver(repositoryRoot);
 
         var resolution = resolver.Resolve();
-        var settings = TestWebApplicationFactory.BuildSettings(resolution, "Data Source=safe-fallback.db");
 
-        Assert.Equal("Sqlite", settings["Database:Provider"]);
-        Assert.Equal("Data Source=safe-fallback.db", settings["Database:ConnectionString"]);
+        var exception = Assert.Throws<InvalidOperationException>(() => TestWebApplicationFactory.BuildSettings(resolution));
+        Assert.Contains("valid PostgreSQL test connection", exception.Message);
     }
 
     private static string CreateRepositoryRoot()
