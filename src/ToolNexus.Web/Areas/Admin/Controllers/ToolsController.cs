@@ -87,6 +87,20 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
         return RedirectToAction(nameof(Index));
     }
 
+
+    [HttpPost("admin/tools/bulk-status")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BulkToggleStatus([FromForm] List<int> toolIds, [FromForm] bool enabled, CancellationToken cancellationToken)
+    {
+        foreach (var id in toolIds.Distinct())
+        {
+            await service.SetEnabledAsync(id, enabled, cancellationToken);
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
     private static ToolAdminConflictViewModel BuildConflict(ConcurrencyConflict conflict)
     {
         return new ToolAdminConflictViewModel

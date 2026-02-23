@@ -17,4 +17,24 @@ public sealed class AnalyticsController(IAdminAnalyticsService service) : Contro
         var dashboard = await service.GetDashboardAsync(cancellationToken);
         return Ok(dashboard);
     }
+
+    [HttpGet("drilldown")]
+    public async Task<ActionResult<AdminAnalyticsDrilldownResult>> GetDrilldown(
+        [FromQuery] DateOnly? startDate,
+        [FromQuery] DateOnly? endDate,
+        [FromQuery] string? toolSlug,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        CancellationToken cancellationToken = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var query = new AdminAnalyticsQuery(
+            startDate ?? today.AddDays(-13),
+            endDate ?? today,
+            toolSlug,
+            page,
+            pageSize);
+
+        return Ok(await service.GetDrilldownAsync(query, cancellationToken));
+    }
 }

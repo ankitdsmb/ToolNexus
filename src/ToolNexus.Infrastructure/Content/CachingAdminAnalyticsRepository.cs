@@ -22,6 +22,13 @@ public sealed class CachingAdminAnalyticsRepository(
         return cache.GetOrCreateAsync(key, token => inner.GetByDateRangeAsync(startDateInclusive, endDateInclusive, token), _snapshotTtl, cancellationToken);
     }
 
+    public Task<(IReadOnlyList<DailyToolMetricsSnapshot> Items, int TotalItems)> QueryAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+    {
+        var tool = string.IsNullOrWhiteSpace(query.ToolSlug) ? "all" : query.ToolSlug.Trim().ToLowerInvariant();
+        var key = $"{SnapshotRangePrefix}query:{query.StartDate:yyyyMMdd}:{query.EndDate:yyyyMMdd}:{tool}:{query.Page}:{query.PageSize}";
+        return cache.GetOrCreateAsync(key, token => inner.QueryAsync(query, token), _snapshotTtl, cancellationToken);
+    }
+
     public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
     {
         await inner.ReplaceAnomaliesForDateAsync(date, anomalies, cancellationToken);

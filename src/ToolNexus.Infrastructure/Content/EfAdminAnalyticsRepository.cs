@@ -25,6 +25,40 @@ public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbConte
             .ToListAsync(cancellationToken);
     }
 
+
+    public async Task<(IReadOnlyList<DailyToolMetricsSnapshot> Items, int TotalItems)> QueryAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+    {
+        var startDate = query.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var endDate = query.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        var source = dbContext.DailyToolMetrics
+            .AsNoTracking()
+            .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate);
+
+        if (!string.IsNullOrWhiteSpace(query.ToolSlug))
+        {
+            source = source.Where(x => x.ToolSlug == query.ToolSlug);
+        }
+
+        var totalItems = await source.CountAsync(cancellationToken);
+        var offset = (query.Page - 1) * query.PageSize;
+
+        var items = await source
+            .OrderByDescending(x => x.DateUtc)
+            .ThenBy(x => x.ToolSlug)
+            .Skip(offset)
+            .Take(query.PageSize)
+            .Select(x => new DailyToolMetricsSnapshot(
+                x.ToolSlug,
+                DateOnly.FromDateTime(x.DateUtc),
+                x.TotalExecutions,
+                x.SuccessCount,
+                x.AvgDurationMs))
+            .ToListAsync(cancellationToken);
+
+        return (items, totalItems);
+    }
+
     public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
     {
         var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);

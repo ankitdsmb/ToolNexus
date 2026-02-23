@@ -14,6 +14,7 @@ const state = {
   initialized: false,
   open: false,
   tools: [],
+  adminTools: [],
   commands: [],
   filtered: [],
   activeIndex: 0,
@@ -120,6 +121,40 @@ function createCommandFromTool(tool) {
   };
 }
 
+
+function isAdminShell() {
+  return document.body?.dataset?.adminShell === 'true';
+}
+
+function createAdminNavigationCommands() {
+  if (!isAdminShell()) {
+    return [];
+  }
+
+  const nav = (id, title, description, href, searchText) => ({
+    id,
+    slug: id,
+    title,
+    description,
+    icon: '⌁',
+    category: 'Actions',
+    shortcut: '↩ Open',
+    usage: 0,
+    href,
+    searchText,
+    onSelect: () => window.location.assign(href)
+  });
+
+  return [
+    nav('admin:dashboard', 'Admin · Dashboard', 'Open operator command overview.', '/admin/dashboard', 'admin dashboard open module'),
+    nav('admin:tools', 'Admin · Tool Workspace', 'Open module for tool management.', '/admin/tools', 'admin tools workspace open module'),
+    nav('admin:analytics', 'Admin · Analytics Drilldown', 'Open analytics with drilldown focus.', '/admin/analytics?drilldown=drilldown', 'admin analytics drilldown filter jump'),
+    nav('admin:analytics-top', 'Admin · Analytics Top Tools', 'Jump directly to top tool insights.', '/admin/analytics?drilldown=top-tools', 'admin analytics top tools filter jump'),
+    nav('admin:execution', 'Admin · Execution Monitoring', 'Open execution monitoring module.', '/admin/executionmonitoring', 'admin execution monitoring open module'),
+    nav('admin:history', 'Admin · Change History', 'Open audited changes list.', '/admin/changehistory', 'admin change history open module')
+  ];
+}
+
 function createDisplayCommand() {
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
   const title = isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme';
@@ -146,8 +181,9 @@ function createDisplayCommand() {
 }
 
 function buildCommandCollection() {
-  const toolCommands = state.tools.map(createCommandFromTool);
-  state.commands = [createDisplayCommand(), ...toolCommands];
+  const toolCommands = isAdminShell() ? [] : state.tools.map(createCommandFromTool);
+  const adminCommands = createAdminNavigationCommands();
+  state.commands = [createDisplayCommand(), ...adminCommands, ...toolCommands];
 }
 
 
@@ -336,6 +372,13 @@ function bindEvents() {
 
 async function loadTools() {
   if (state.tools.length) return;
+
+  if (isAdminShell()) {
+    state.tools = [];
+    buildCommandCollection();
+    state.filtered = [...state.commands];
+    return;
+  }
 
   try {
     const response = await fetch('/tools/catalog', { headers: { Accept: 'application/json' } });

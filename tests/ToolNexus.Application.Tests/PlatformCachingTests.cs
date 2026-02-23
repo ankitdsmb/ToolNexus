@@ -174,6 +174,14 @@ public sealed class PlatformCachingTests
             ]);
         }
 
+        public Task<(IReadOnlyList<DailyToolMetricsSnapshot> Items, int TotalItems)> QueryAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+        {
+            GetByDateRangeCallCount++;
+            var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+            IReadOnlyList<DailyToolMetricsSnapshot> items = [new DailyToolMetricsSnapshot("json", today, 10, 9, 12)];
+            return Task.FromResult((items, 1));
+        }
+
         public Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
             => Task.CompletedTask;
 
@@ -182,3 +190,4 @@ public sealed class PlatformCachingTests
     }
 
 }
+

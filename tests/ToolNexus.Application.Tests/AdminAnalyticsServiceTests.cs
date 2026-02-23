@@ -1,3 +1,4 @@
+using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using Xunit;
 
@@ -81,6 +82,19 @@ public sealed class AdminAnalyticsServiceTests
             => Task.FromResult<IReadOnlyList<DailyToolMetricsSnapshot>>(rows
                 .Where(x => x.Date >= startDateInclusive && x.Date <= endDateInclusive)
                 .ToList());
+
+        public Task<(IReadOnlyList<DailyToolMetricsSnapshot> Items, int TotalItems)> QueryAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+        {
+            var filtered = rows
+                .Where(x => x.Date >= query.StartDate && x.Date <= query.EndDate)
+                .Where(x => string.IsNullOrWhiteSpace(query.ToolSlug) || x.ToolSlug == query.ToolSlug)
+                .OrderByDescending(x => x.Date)
+                .ThenBy(x => x.ToolSlug)
+                .ToList();
+
+            var pageItems = filtered.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList();
+            return Task.FromResult<(IReadOnlyList<DailyToolMetricsSnapshot>, int)>((pageItems, filtered.Count));
+        }
 
         public Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolNexus.Application.Models.ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
             => Task.CompletedTask;
