@@ -14,12 +14,13 @@ public sealed class ToolNexusContentDbContextFactory : IDesignTimeDbContextFacto
 
         var provider = providerArg?.Split('=', 2)[1]
             ?? Environment.GetEnvironmentVariable("TOOLNEXUS_DB_PROVIDER")
-            ?? Environment.GetEnvironmentVariable("Database__Provider");
+            ?? Environment.GetEnvironmentVariable("Database__Provider")
+            ?? DatabaseProviderConfiguration.PostgreSqlProvider;
 
         var connectionString = connectionArg?.Split('=', 2)[1]
             ?? Environment.GetEnvironmentVariable("TOOLNEXUS_DB_CONNECTION_STRING")
             ?? Environment.GetEnvironmentVariable("Database__ConnectionString")
-            ?? "Data Source=toolnexus.db";
+            ?? "Host=localhost;Port=5432;Database=toolnexus;Username=postgres;Password=postgres";
 
         DatabaseProviderConfiguration.Configure(builder, provider, connectionString);
 
