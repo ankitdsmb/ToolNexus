@@ -21,4 +21,11 @@ public sealed class CachingAdminAnalyticsService(
         var key = $"{DashboardKey}:drilldown:{query.StartDate:yyyyMMdd}:{query.EndDate:yyyyMMdd}:{tool}:{query.Page}:{query.PageSize}";
         return cache.GetOrCreateAsync(key, token => inner.GetDrilldownAsync(query, token), _ttl, cancellationToken);
     }
+
+    public Task<AdminAnalyticsToolDetail?> GetToolDetailAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+    {
+        var tool = string.IsNullOrWhiteSpace(query.ToolSlug) ? "all" : query.ToolSlug.Trim().ToLowerInvariant();
+        var key = $"{DashboardKey}:tool-detail:{query.StartDate:yyyyMMdd}:{query.EndDate:yyyyMMdd}:{tool}";
+        return cache.GetOrCreateAsync(key, token => inner.GetToolDetailAsync(query, token), _ttl, cancellationToken);
+    }
 }
