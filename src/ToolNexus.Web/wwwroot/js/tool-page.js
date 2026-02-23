@@ -1,4 +1,9 @@
 import { normalizeToolExecutionPayload } from './runtime/runtime-safe-tool-wrapper.js';
+import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
+import {
+  normalizeToolPageExecutionResult,
+  TOOL_PAGE_RUNTIME_FALLBACK_MESSAGE
+} from './runtime/tool-page-result-normalizer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 const page = document.querySelector('.tool-page');
@@ -529,6 +534,28 @@ function showToast(message, type = 'info') {
   }, 3200);
 }
 
+function reportToolPageRuntimeIncident({ action, reason }) {
+  runtimeIncidentReporter?.report?.({
+    toolSlug: slug || 'unknown-tool',
+    phase: 'execute',
+    errorType: 'contract_violation',
+    message: `Tool page execution skipped due to runtime result mismatch (${reason || 'unknown_reason'}).`,
+    payloadType: 'object',
+    timestamp: new Date().toISOString(),
+    stack: action ? `action:${action}` : undefined
+  });
+}
+
+function renderRuntimeFallbackAndStop({ action, reason }) {
+  reportToolPageRuntimeIncident({ action, reason });
+  renderInsight(null);
+  showError(TOOL_PAGE_RUNTIME_FALLBACK_MESSAGE);
+  setOutputValue(TOOL_PAGE_RUNTIME_FALLBACK_MESSAGE);
+  setOutputState(true);
+  setResultStatus('failure', 'Execution skipped');
+  showToast('Execution skipped due to runtime mismatch.', 'warning');
+}
+
 let insightPanel = null;
 
 function ensureInsightPanel() {
@@ -703,15 +730,22 @@ async function run() {
   try {
     setRunningState(true);
 
-    let result = '';
+    let normalizedResult = null;
     let insight = null;
+    let hasClientResult = false;
 
     if (clientExecutor.canExecute(slug, selectedAction, sanitizedInput)) {
       try {
-        result = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
-        if (result?.ok === false && result?.reason === 'unsupported_action') {
-          result = '';
-        } else {
+        const clientResult = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
+        normalizedResult = normalizeToolPageExecutionResult(clientResult);
+        hasClientResult = true;
+
+        if (normalizedResult.shouldAbort) {
+          renderRuntimeFallbackAndStop({ action: selectedAction, reason: normalizedResult.reason });
+          return;
+        }
+
+        if (normalizedResult.output) {
           showToast('Executed locally.', 'success');
         }
       } catch (clientError) {
@@ -721,17 +755,26 @@ async function run() {
       }
     }
 
-    if (!result) {
+    if (!hasClientResult) {
       const response = await executeToolActionViaApi({
         baseUrl: apiBase,
         slug,
         action: selectedAction,
         input: sanitizedInput
       });
-      result = response?.output || response?.error || 'No output';
+
+      normalizedResult = normalizeToolPageExecutionResult(response);
+
+      if (normalizedResult.shouldAbort) {
+        renderRuntimeFallbackAndStop({ action: selectedAction, reason: normalizedResult.reason });
+        return;
+      }
+
       insight = response?.insight ?? null;
       showToast('Execution completed.', 'success');
     }
+
+    const result = normalizedResult?.output || 'No output';
 
     renderInsight(insight);
     setOutputValue(result);
