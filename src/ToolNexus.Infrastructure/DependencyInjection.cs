@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditDeadLetterReplayService, AuditDeadLetterReplayService>();
         services.AddScoped<IAuditOutboxDestinationClient, NoopAuditOutboxDestinationClient>();
         services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
+        services.AddScoped<IAdminExecutionMonitoringRepository, EfAdminExecutionMonitoringRepository>();
         services.AddScoped<EfAdminAnalyticsRepository>();
         services.AddScoped<IAdminAnalyticsRepository>(sp =>
             new CachingAdminAnalyticsRepository(

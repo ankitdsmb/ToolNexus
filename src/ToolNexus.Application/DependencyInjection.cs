@@ -71,6 +71,8 @@ public static class DependencyInjection
                 sp.GetRequiredService<AdminAnalyticsService>(),
                 sp.GetRequiredService<IPlatformCacheService>(),
                 sp.GetRequiredService<IOptions<PlatformCacheOptions>>()));
+        services.AddScoped<AdminExecutionMonitoringService>();
+        services.AddScoped<IAdminExecutionMonitoringService>(sp => sp.GetRequiredService<AdminExecutionMonitoringService>());
         services.AddHostedService<ManifestStartupValidator>();
         services.AddHostedService<PlatformCacheWarmupHostedService>();
         services.AddHostedService<ManifestExecutorAlignmentValidator>();
