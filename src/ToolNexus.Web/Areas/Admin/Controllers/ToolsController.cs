@@ -2,33 +2,27 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Areas.Admin.Models;
+using ToolNexus.Web.Areas.Admin.Services;
 
 namespace ToolNexus.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-public sealed class ToolsController(IToolDefinitionService service, IExecutionPolicyService executionPolicyService) : Controller
+public sealed class ToolsController(IToolDefinitionService service, IExecutionPolicyService executionPolicyService, IAdminToolsViewModelService viewModelService) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
-        => View(await BuildViewModelAsync(new ToolAdminFormModel(), cancellationToken));
+        => View(await viewModelService.BuildAsync(new ToolAdminFormModel(), cancellationToken));
 
     [HttpGet("admin/tools/{id:int}")]
     public async Task<IActionResult> Edit([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var detail = await service.GetByIdAsync(id, cancellationToken);
-        if (detail is null)
+        var form = await viewModelService.BuildFormForEditAsync(id, cancellationToken);
+        if (form is null)
         {
             return RedirectToAction(nameof(Index));
         }
 
-        var form = ToolAdminFormModel.FromDetail(detail);
-        var policy = await executionPolicyService.GetBySlugAsync(detail.Slug, cancellationToken);
-        form.ExecutionMode = policy.ExecutionMode;
-        form.TimeoutSeconds = policy.TimeoutSeconds;
-        form.MaxRequestsPerMinute = policy.MaxRequestsPerMinute;
-        form.MaxInputSize = policy.MaxInputSize;
-        form.IsExecutionEnabled = policy.IsExecutionEnabled;
-        return View("Index", await BuildViewModelAsync(form, cancellationToken));
+        return View("Index", await viewModelService.BuildAsync(form, cancellationToken));
     }
 
     [HttpPost]
@@ -37,7 +31,7 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
     {
         if (!ModelState.IsValid)
         {
-            return View("Index", await BuildViewModelAsync(form, cancellationToken));
+            return View("Index", await viewModelService.BuildAsync(form, cancellationToken));
         }
 
         try
@@ -62,7 +56,7 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
         catch (ValidationException ex)
         {
             ModelState.AddModelError(nameof(form.Slug), ex.Message);
-            return View("Index", await BuildViewModelAsync(form, cancellationToken));
+            return View("Index", await viewModelService.BuildAsync(form, cancellationToken));
         }
 
         return RedirectToAction(nameof(Index));
@@ -76,10 +70,4 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task<ToolAdminIndexViewModel> BuildViewModelAsync(ToolAdminFormModel form, CancellationToken cancellationToken)
-        => new()
-        {
-            Tools = await service.GetListAsync(cancellationToken),
-            Form = form
-        };
 }
