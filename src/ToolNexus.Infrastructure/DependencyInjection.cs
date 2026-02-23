@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
         services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
+        services.AddScoped<IAdminAnalyticsRepository, EfAdminAnalyticsRepository>();
         services.AddSingleton<IToolExecutionPolicyRegistry, ToolExecutionPolicyRegistry>();
         services
             .AddOptions<ApiKeyOptions>()

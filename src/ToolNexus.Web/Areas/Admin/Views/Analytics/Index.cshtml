@@ -1,0 +1,92 @@
+@{
+    ViewData["Title"] = "Analytics";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Admin Analytics</h2>
+</div>
+
+<div class="row g-3 mb-4" id="summary-cards">
+    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Executions Today</small><h3 id="metric-total">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Success Rate</small><h3 id="metric-success">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Avg Duration</small><h3 id="metric-duration">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Active Tools</small><h3 id="metric-active">-</h3></div></div></div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title">Execution Trend</h4>
+        <div id="trend-chart" class="d-flex align-items-end gap-1" style="height:180px;"></div>
+        <small class="text-secondary">Daily executions (last 14 days)</small>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Top Tools</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm" id="top-tools-table">
+                        <thead><tr><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Slow Tools</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm" id="slow-tools-table">
+                        <thead><tr><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(async function(){
+    const response = await fetch('/api/admin/analytics/dashboard');
+    if (!response.ok) return;
+    const dashboard = await response.json();
+
+    document.getElementById('metric-total').textContent = dashboard.totalExecutionsToday.toLocaleString();
+    document.getElementById('metric-success').textContent = `${dashboard.successRate.toFixed(1)}%`;
+    document.getElementById('metric-duration').textContent = `${dashboard.avgDurationMs.toFixed(1)} ms`;
+    document.getElementById('metric-active').textContent = dashboard.activeToolsCount.toString();
+
+    const renderRows = (selector, rows) => {
+        const body = document.querySelector(selector + ' tbody');
+        body.innerHTML = '';
+        rows.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.toolSlug}</td><td class="text-end">${row.totalExecutions}</td><td class="text-end">${row.successRate.toFixed(1)}%</td><td class="text-end">${row.avgDurationMs.toFixed(1)}</td>`;
+            body.appendChild(tr);
+        });
+    };
+
+    renderRows('#top-tools-table', dashboard.topTools || []);
+    renderRows('#slow-tools-table', dashboard.slowTools || []);
+
+    const trend = dashboard.executionTrend || [];
+    const chart = document.getElementById('trend-chart');
+    chart.innerHTML = '';
+    const max = Math.max(...trend.map(x => x.totalExecutions), 1);
+
+    trend.forEach(point => {
+        const bar = document.createElement('div');
+        const height = Math.max(4, Math.round((point.totalExecutions / max) * 160));
+        bar.style.height = `${height}px`;
+        bar.style.flex = '1';
+        bar.style.background = '#4f6bed';
+        bar.title = `${point.date}: ${point.totalExecutions} executions`;
+        chart.appendChild(bar);
+    });
+})();
+</script>
