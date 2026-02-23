@@ -1,173 +1,101 @@
-# AGENTS.md — ToolNexus Admin Platform Governance
+# DATABASE TEST CONNECTION POLICY (MANDATORY)
 
-## PURPOSE
+## Purpose
 
-This repository is building:
+Codex execution environments may not reliably resolve external DB infrastructure.
 
-ToolNexus Admin Platform
+To prevent blocked development and unstable integration tests:
 
-Goal:
-
-* Production-grade admin panel
-* Built using lightweight proven admin template
-* NO custom UI framework reinventing
-* Focus on functionality, scalability, and operator efficiency.
+A deterministic test connection source is required.
 
 ---
 
-# CORE PRINCIPLES
+## Test Connection Source
 
-1. Architecture First
+A repository-level file exists:
 
-* Analyze before implementation.
-* Avoid unnecessary rewrites.
+testcs.txt
 
-2. Template-first Development
+This file contains:
 
-* Use a lightweight popular admin template.
-* Prefer:
+* PostgreSQL test connection string
+* or fallback SQLite test connection string.
 
-  * Tabler
-  * AdminLTE (modern minimal usage)
-  * CoreUI
-  * or similar lightweight Bootstrap-based system.
+Example:
 
-DO NOT create custom design system from scratch.
+Host=...;Port=5432;Database=...;Username=...;Password=...;SSL Mode=Require
 
 ---
 
-# ADMIN DESIGN RULES
+## RULES (STRICT)
 
-* Clean dashboard layout.
-* Fast loading.
-* Keyboard-friendly workflows.
-* CRUD-heavy views optimized for productivity.
+1. Any integration or QA test MUST first attempt to read connection string from:
 
-Admin is for operators, not marketing.
+testcs.txt
 
----
+2. If testcs.txt exists:
 
-# PHASED EXECUTION MODEL
+* use this connection string.
+* DO NOT use environment defaults.
+* DO NOT use production appsettings.
 
-Every task MUST follow:
+3. If testcs.txt is missing:
 
-Phase 1 — Architecture Analysis (NO CODE)
-Phase 2 — Template Integration
-Phase 3 — Admin Shell Layout
-Phase 4 — Tool Management (Dynamic Core)
-Phase 5 — Content Management
-Phase 6 — Execution Control
-Phase 7 — Analytics + Logs
-Phase 8 — Security / Roles
-Phase 9 — Feature Flags
-Phase 10 — Hardening + QA
+* fallback to deterministic local SQLite test DB.
+
+4. Tests must NEVER depend on external unspecified DB configuration.
 
 ---
 
-# DYNAMIC TOOL SYSTEM (MANDATORY)
+## IMPLEMENTATION REQUIREMENTS
 
-Tools must be fully dynamic.
+Create helper:
 
-Admin must support:
+ITestConnectionResolver
 
-* Add tool without code change.
-* Edit input schema.
-* Edit output schema.
-* Enable / disable.
-* Categorization.
-* Version-safe publishing.
+Responsibilities:
 
-NEVER hardcode tools in UI.
+* read testcs.txt safely
+* validate format
+* return provider + connection string.
 
----
-
-# DATABASE RULES
-
-Admin interacts with existing EF Core models.
-
-DO NOT:
-
-* create parallel storage
-* duplicate tool structures.
-
-Reuse ToolNexus entities.
+Test host factory must use this resolver.
 
 ---
 
-# API RULES
+## SECURITY RULE
 
-Admin uses same backend APIs.
+testcs.txt is for development/testing only.
 
-Add:
-
-/api/admin/*
-
-Only when needed.
-
-Avoid separate admin backend.
+* NEVER use in production runtime.
+* NEVER expose in logs.
+* NEVER commit real production credentials.
 
 ---
 
-# SECURITY RULES
+## ARCHITECTURE PRINCIPLE
 
-RBAC Required:
+Testing must be:
 
-* Admin
-* Editor
-* Viewer
-* Developer
-
-No anonymous admin access.
+* deterministic
+* portable
+* environment-independent.
 
 ---
 
-# REQUIRED FEATURES
+## FAILURE BEHAVIOR
 
-1. Dashboard Overview
-2. Tool Management
-3. Tool Content Editor
-4. Categories Manager
-5. Tool Execution Config
-6. Feature Flags
-7. Analytics
-8. Logs Viewer
-9. User Roles
-10. Global Settings
+If connection string is invalid:
+
+* emit clear test setup error.
+* fallback to SQLite test mode.
+
+Tests must remain runnable.
 
 ---
 
-# PERFORMANCE RULES
+## GOAL
 
-Admin UI must:
+Eliminate DB connectivity blockers in Codex execution environments.
 
-* avoid heavy JS frameworks unless required.
-* support server-rendered pages when possible.
-
----
-
-# REPORTING FORMAT (MANDATORY)
-
-Each phase must output:
-
-* Architecture impact summary
-* Files modified
-* Testing done
-* Risks
-* Confidence score
-
----
-
-# FORBIDDEN
-
-* Rebuilding admin UI framework.
-* Breaking existing frontend.
-* Hardcoding tool logic.
-* Skipping phases.
-
----
-
-# EXECUTION ORDER
-
-ANALYZE → PLAN → IMPLEMENT → TEST → VERIFY → REPORT
-
-END OF FILE
+Development velocity must not depend on external network reachability.
