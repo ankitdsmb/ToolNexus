@@ -4,9 +4,15 @@ using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
 
-public sealed class AdminContentEndpointIntegrationTests(ApiIntegrationTestFactory factory) : IClassFixture<ApiIntegrationTestFactory>
+public sealed class AdminContentEndpointIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly HttpClient _client = CreateClient(factory);
+    private readonly HttpClient _client;
+
+    public AdminContentEndpointIntegrationTests(TestWebApplicationFactory factory)
+    {
+        _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
+        _client.DefaultRequestHeaders.Add("X-API-KEY", "replace-with-production-api-key");
+    }
 
     [Fact]
     public async Task AdminTools_List_ReturnsContract()

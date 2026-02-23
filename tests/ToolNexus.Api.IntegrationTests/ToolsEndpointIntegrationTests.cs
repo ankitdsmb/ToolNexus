@@ -9,12 +9,11 @@ using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
 
-public sealed class ToolsEndpointIntegrationTests(ApiIntegrationTestFactory factory) : IClassFixture<ApiIntegrationTestFactory>
+public sealed class ToolsEndpointIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
     private readonly HttpClient _client = CreateClient(factory);
 
-    [Fact]
-    public async Task Ping_ReturnsOkContract()
+    public ToolsEndpointIntegrationTests(TestWebApplicationFactory factory)
     {
         var response = await _client.GetAsync("/api/v1/tools/ping");
 
