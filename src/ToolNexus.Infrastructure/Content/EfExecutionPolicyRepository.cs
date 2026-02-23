@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
@@ -10,7 +11,8 @@ namespace ToolNexus.Infrastructure.Content;
 public sealed class EfExecutionPolicyRepository(
     ToolNexusContentDbContext db,
     IMemoryCache cache,
-    IAdminAuditLogger auditLogger) : IExecutionPolicyRepository
+    IAdminAuditLogger auditLogger,
+    ILogger<EfExecutionPolicyRepository> logger) : IExecutionPolicyRepository
 {
     private static string Key(string slug) => $"execution-policy::{slug.ToLowerInvariant()}";
 
@@ -29,8 +31,8 @@ public sealed class EfExecutionPolicyRepository(
 
         var policy = await db.ToolExecutionPolicies.AsNoTracking().FirstOrDefaultAsync(x => x.ToolDefinitionId == tool.Id, cancellationToken);
         model = policy is null
-            ? new ToolExecutionPolicyModel(tool.Id, tool.Slug, "Local", 30, 120, 1_000_000, true)
-            : Map(policy);
+            ? new ToolExecutionPolicyModel(tool.Id, tool.Slug, "Local", 30, 120, 1_000_000, true, null)
+            : Map(policy, includeVersionToken: true);
 
         cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
         return model;
@@ -65,7 +67,8 @@ public sealed class EfExecutionPolicyRepository(
                 MaxRequestsPerMinute = request.MaxRequestsPerMinute,
                 MaxInputSize = request.MaxInputSize,
                 IsExecutionEnabled = request.IsExecutionEnabled,
-                UpdatedAt = DateTimeOffset.UtcNow
+                UpdatedAt = DateTimeOffset.UtcNow,
+                RowVersion = ConcurrencyTokenCodec.NewToken()
             };
             db.ToolExecutionPolicies.Add(policy);
         }
@@ -81,16 +84,16 @@ public sealed class EfExecutionPolicyRepository(
                 policy.IsExecutionEnabled
             };
 
-            policy.ExecutionMode = request.ExecutionMode;
-            policy.TimeoutSeconds = request.TimeoutSeconds;
-            policy.MaxRequestsPerMinute = request.MaxRequestsPerMinute;
-            policy.MaxInputSize = request.MaxInputSize;
-            policy.IsExecutionEnabled = request.IsExecutionEnabled;
-            policy.UpdatedAt = DateTimeOffset.UtcNow;
+            ApplyUpdates(policy, request);
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        await db.SaveChangesAsync(cancellationToken);
+
+        if (!await SaveWithConcurrencyRecoveryAsync(policy, request, cancellationToken))
+        {
+            return null;
+        }
+
         await auditLogger.TryLogAsync(
             "PolicyChanged",
             "ToolExecutionPolicy",
@@ -119,10 +122,60 @@ public sealed class EfExecutionPolicyRepository(
 
         await transaction.CommitAsync(cancellationToken);
 
-        var model = Map(policy);        cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
+        var model = Map(policy, includeVersionToken: false);
+        cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
         return model;
     }
 
-    private static ToolExecutionPolicyModel Map(ToolExecutionPolicyEntity entity)
-        => new(entity.ToolDefinitionId, entity.ToolSlug, entity.ExecutionMode, entity.TimeoutSeconds, entity.MaxRequestsPerMinute, entity.MaxInputSize, entity.IsExecutionEnabled);
+    private async Task<bool> SaveWithConcurrencyRecoveryAsync(ToolExecutionPolicyEntity policy, UpdateToolExecutionPolicyRequest request, CancellationToken cancellationToken)
+    {
+        var attemptedToken = ConcurrencyTokenCodec.Encode(db.Entry(policy).Property(x => x.RowVersion).OriginalValue);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Optimistic concurrency conflict for ToolExecutionPolicy {PolicyId}.", policy.Id);
+
+            var currentToken = await db.ToolExecutionPolicies.AsNoTracking().Where(x => x.Id == policy.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            await auditLogger.TryLogAsync(
+                "ConcurrencyConflictDetected",
+                "ToolExecutionPolicy",
+                policy.Id.ToString(),
+                new { AttemptedToken = attemptedToken },
+                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                cancellationToken);
+
+            db.Entry(policy).State = EntityState.Detached;
+            var latest = await db.ToolExecutionPolicies.SingleOrDefaultAsync(x => x.Id == policy.Id, cancellationToken);
+            if (latest is null)
+            {
+                return false;
+            }
+
+            ApplyUpdates(latest, request);
+            policy.ToolDefinitionId = latest.ToolDefinitionId;
+            policy.RowVersion = latest.RowVersion;
+
+            await db.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+    }
+
+    private static void ApplyUpdates(ToolExecutionPolicyEntity policy, UpdateToolExecutionPolicyRequest request)
+    {
+        policy.ExecutionMode = request.ExecutionMode;
+        policy.TimeoutSeconds = request.TimeoutSeconds;
+        policy.MaxRequestsPerMinute = request.MaxRequestsPerMinute;
+        policy.MaxInputSize = request.MaxInputSize;
+        policy.IsExecutionEnabled = request.IsExecutionEnabled;
+        policy.UpdatedAt = DateTimeOffset.UtcNow;
+        policy.RowVersion = ConcurrencyTokenCodec.NewToken();
+    }
+
+    private static ToolExecutionPolicyModel Map(ToolExecutionPolicyEntity entity, bool includeVersionToken)
+        => new(entity.ToolDefinitionId, entity.ToolSlug, entity.ExecutionMode, entity.TimeoutSeconds, entity.MaxRequestsPerMinute, entity.MaxInputSize, entity.IsExecutionEnabled, includeVersionToken ? ConcurrencyTokenCodec.Encode(entity.RowVersion) : null);
 }

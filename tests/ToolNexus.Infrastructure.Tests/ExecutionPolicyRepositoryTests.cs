@@ -34,7 +34,7 @@ public sealed class ExecutionPolicyRepositoryTests
 
         var cache = new MemoryCache(new MemoryCacheOptions());
         var auditLogger = new AdminAuditLogger(context, new HttpContextAccessor(), new AuditPayloadProcessor(), Microsoft.Extensions.Options.Options.Create(new ToolNexus.Infrastructure.Options.AuditGuardrailsOptions { WriteEnabled = true, WorkerEnabled = false }), new AuditGuardrailsMetrics(), NullLogger<AdminAuditLogger>.Instance);
-        var repository = new EfExecutionPolicyRepository(context, cache, auditLogger);
+        var repository = new EfExecutionPolicyRepository(context, cache, auditLogger, NullLogger<EfExecutionPolicyRepository>.Instance);
 
         var initial = await repository.GetBySlugAsync("json");
         Assert.NotNull(initial);

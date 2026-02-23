@@ -14,4 +14,5 @@ public sealed class ToolDefinitionEntity
     public required string InputSchema { get; set; }
     public required string OutputSchema { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public byte[]? RowVersion { get; set; }
 }

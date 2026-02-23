@@ -7,11 +7,13 @@ public sealed record ToolExecutionPolicyModel(
     int TimeoutSeconds,
     int MaxRequestsPerMinute,
     int MaxInputSize,
-    bool IsExecutionEnabled);
+    bool IsExecutionEnabled,
+    string? VersionToken = null);
 
 public sealed record UpdateToolExecutionPolicyRequest(
     string ExecutionMode,
     int TimeoutSeconds,
     int MaxRequestsPerMinute,
     int MaxInputSize,
-    bool IsExecutionEnabled);
+    bool IsExecutionEnabled,
+    string? VersionToken = null);

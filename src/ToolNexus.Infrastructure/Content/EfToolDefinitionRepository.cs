@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
@@ -10,7 +11,8 @@ namespace ToolNexus.Infrastructure.Content;
 
 public sealed class EfToolDefinitionRepository(
     ToolNexusContentDbContext dbContext,
-    IAdminAuditLogger auditLogger) : IToolDefinitionRepository
+    IAdminAuditLogger auditLogger,
+    ILogger<EfToolDefinitionRepository> logger) : IToolDefinitionRepository
 {
     public Task<IReadOnlyCollection<ToolDefinitionListItem>> GetListAsync(CancellationToken cancellationToken = default)
         => ExecuteWithSchemaRecoveryAsync(async () =>
@@ -18,7 +20,7 @@ public sealed class EfToolDefinitionRepository(
                 .AsNoTracking()
                 .OrderBy(x => x.SortOrder)
                 .ThenBy(x => x.Name)
-                .Select(x => new ToolDefinitionListItem(x.Id, x.Name, x.Slug, x.Category, x.Status, x.UpdatedAt))
+                .Select(x => new ToolDefinitionListItem(x.Id, x.Name, x.Slug, x.Category, x.Status, x.UpdatedAt, ConcurrencyTokenCodec.Encode(x.RowVersion)))
                 .ToListAsync(cancellationToken),
             cancellationToken);
 
@@ -27,7 +29,7 @@ public sealed class EfToolDefinitionRepository(
             await dbContext.ToolDefinitions
                 .AsNoTracking()
                 .Where(x => x.Id == id)
-                .Select(x => new ToolDefinitionDetail(x.Id, x.Name, x.Slug, x.Description, x.Category, x.Status, x.Icon, x.SortOrder, x.InputSchema, x.OutputSchema, x.UpdatedAt))
+                .Select(x => new ToolDefinitionDetail(x.Id, x.Name, x.Slug, x.Description, x.Category, x.Status, x.Icon, x.SortOrder, x.InputSchema, x.OutputSchema, x.UpdatedAt, ConcurrencyTokenCodec.Encode(x.RowVersion)))
                 .SingleOrDefaultAsync(cancellationToken),
             cancellationToken);
 
@@ -58,7 +60,8 @@ public sealed class EfToolDefinitionRepository(
                 ActionsCsv = "execute",
                 InputSchema = request.InputSchema,
                 OutputSchema = request.OutputSchema,
-                UpdatedAt = DateTimeOffset.UtcNow
+                UpdatedAt = DateTimeOffset.UtcNow,
+                RowVersion = ConcurrencyTokenCodec.NewToken()
             };
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -88,19 +91,14 @@ public sealed class EfToolDefinitionRepository(
             var priorCategory = entity.Category;
             var priorStatus = entity.Status;
 
-            entity.Name = request.Name;
-            entity.Slug = request.Slug;
-            entity.Description = request.Description;
-            entity.Category = request.Category;
-            entity.Status = request.Status;
-            entity.Icon = request.Icon;
-            entity.SortOrder = request.SortOrder;
-            entity.InputSchema = request.InputSchema;
-            entity.OutputSchema = request.OutputSchema;
-            entity.UpdatedAt = DateTimeOffset.UtcNow;
+            ApplyUpdates(entity, request);
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            if (!await SaveWithConcurrencyRecoveryAsync(entity, "ToolDefinition", entity.Id.ToString(), request, cancellationToken))
+            {
+                return null;
+            }
+
             var after = new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder };
             await auditLogger.TryLogAsync("ToolUpdated", "ToolDefinition", entity.Id.ToString(), before, after, cancellationToken);
 
@@ -143,7 +141,13 @@ public sealed class EfToolDefinitionRepository(
             var beforeStatus = entity.Status;
             entity.Status = enabled ? "Enabled" : "Disabled";
             entity.UpdatedAt = DateTimeOffset.UtcNow;
-            await dbContext.SaveChangesAsync(cancellationToken);
+            entity.RowVersion = ConcurrencyTokenCodec.NewToken();
+
+            if (!await SaveWithConcurrencyRecoveryAsync(entity, "ToolDefinition", entity.Id.ToString(), new { Status = entity.Status }, cancellationToken))
+            {
+                return false;
+            }
+
             await auditLogger.TryLogAsync(
                 "FeatureFlagChanged",
                 "ToolDefinition",
@@ -154,6 +158,67 @@ public sealed class EfToolDefinitionRepository(
             await transaction.CommitAsync(cancellationToken);
             return true;
         }, cancellationToken);
+
+    private async Task<bool> SaveWithConcurrencyRecoveryAsync(ToolDefinitionEntity entity, string resourceType, string resourceId, object attemptedPayload, CancellationToken cancellationToken)
+    {
+        var attemptedToken = ConcurrencyTokenCodec.Encode(dbContext.Entry(entity).Property(x => x.RowVersion).OriginalValue);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Optimistic concurrency conflict for {ResourceType} {ResourceId}.", resourceType, resourceId);
+            var currentToken = await dbContext.ToolDefinitions.AsNoTracking().Where(x => x.Id == entity.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            await auditLogger.TryLogAsync(
+                "ConcurrencyConflictDetected",
+                resourceType,
+                resourceId,
+                new { AttemptedToken = attemptedToken, attemptedPayload },
+                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                cancellationToken);
+
+            dbContext.Entry(entity).State = EntityState.Detached;
+            var current = await dbContext.ToolDefinitions.SingleOrDefaultAsync(x => x.Id == entity.Id, cancellationToken);
+            if (current is null)
+            {
+                return false;
+            }
+
+            ApplyUpdates(current, request: new UpdateToolDefinitionRequest(
+                entity.Name,
+                entity.Slug,
+                entity.Description,
+                entity.Category,
+                entity.Status,
+                entity.Icon,
+                entity.SortOrder,
+                entity.InputSchema,
+                entity.OutputSchema));
+
+            entity.Id = current.Id;
+            entity.RowVersion = current.RowVersion;
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+    }
+
+    private static void ApplyUpdates(ToolDefinitionEntity entity, UpdateToolDefinitionRequest request)
+    {
+        entity.Name = request.Name;
+        entity.Slug = request.Slug;
+        entity.Description = request.Description;
+        entity.Category = request.Category;
+        entity.Status = request.Status;
+        entity.Icon = request.Icon;
+        entity.SortOrder = request.SortOrder;
+        entity.InputSchema = request.InputSchema;
+        entity.OutputSchema = request.OutputSchema;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        entity.RowVersion = ConcurrencyTokenCodec.NewToken();
+    }
 
     private async Task<T> ExecuteWithSchemaRecoveryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken)
     {
@@ -181,13 +246,9 @@ public sealed class EfToolDefinitionRepository(
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateTable)
         {
-            // An operator may have created an untracked table manually.
-            // Continue recovery by ensuring the expected runtime table exists.
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
         {
-            // An operator may have created an untracked table manually.
-            // Continue recovery by ensuring the expected runtime table exists.
         }
 
         await EnsureToolDefinitionsTableExistsAsync(cancellationToken);
@@ -211,7 +272,8 @@ public sealed class EfToolDefinitionRepository(
                     "ActionsCsv" character varying(500) NOT NULL,
                     "InputSchema" text NOT NULL,
                     "OutputSchema" text NOT NULL,
-                    "UpdatedAt" timestamp with time zone NOT NULL
+                    "UpdatedAt" timestamp with time zone NOT NULL,
+                    "RowVersion" bytea NULL
                 );
 
                 CREATE UNIQUE INDEX IF NOT EXISTS "IX_ToolDefinitions_Slug" ON "ToolDefinitions" ("Slug");
@@ -237,7 +299,8 @@ public sealed class EfToolDefinitionRepository(
                     "ActionsCsv" TEXT NOT NULL,
                     "InputSchema" TEXT NOT NULL,
                     "OutputSchema" TEXT NOT NULL,
-                    "UpdatedAt" TEXT NOT NULL
+                    "UpdatedAt" TEXT NOT NULL,
+                    "RowVersion" BLOB NULL
                 );
 
                 CREATE UNIQUE INDEX IF NOT EXISTS "IX_ToolDefinitions_Slug" ON "ToolDefinitions" ("Slug");
@@ -247,5 +310,5 @@ public sealed class EfToolDefinitionRepository(
     }
 
     private static ToolDefinitionDetail MapDetail(ToolDefinitionEntity entity)
-        => new(entity.Id, entity.Name, entity.Slug, entity.Description, entity.Category, entity.Status, entity.Icon, entity.SortOrder, entity.InputSchema, entity.OutputSchema, entity.UpdatedAt);
+        => new(entity.Id, entity.Name, entity.Slug, entity.Description, entity.Category, entity.Status, entity.Icon, entity.SortOrder, entity.InputSchema, entity.OutputSchema, entity.UpdatedAt, null);
 }

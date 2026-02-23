@@ -11,4 +11,5 @@ public sealed class ToolExecutionPolicyEntity
     public int MaxInputSize { get; set; }
     public bool IsExecutionEnabled { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public byte[]? RowVersion { get; set; }
 }

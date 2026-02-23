@@ -6,7 +6,8 @@ public sealed record ToolDefinitionListItem(
     string Slug,
     string Category,
     string Status,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string? VersionToken = null);
 
 public sealed record ToolDefinitionDetail(
     int Id,
@@ -19,7 +20,8 @@ public sealed record ToolDefinitionDetail(
     int SortOrder,
     string InputSchema,
     string OutputSchema,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string? VersionToken = null);
 
 public sealed record CreateToolDefinitionRequest(
     string Name,
