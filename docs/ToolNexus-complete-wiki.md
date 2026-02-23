@@ -979,3 +979,31 @@ Documentation contract: every discovered `class`, `interface`, `record`, and `en
 2. Versioned rollback for tool definition/policy/content graphs.
 3. Conflict-safe editing (optimistic concurrency).
 4. Role-segmented admin access model.
+
+## 15. Admin Surface Maturity & Governance Patch (2026-02)
+
+### 15.1 Admin Maturity Matrix (Implemented vs Placeholder)
+
+| Area | Status | Evidence |
+|---|---|---|
+| Dashboard | Placeholder | `DashboardController` returns shell view and `Views/Dashboard/Index.cshtml` explicitly states business widgets are deferred. |
+| Tools Management | Functional baseline | `Areas/Admin/Controllers/ToolsController` supports list/edit/save/toggle; `Views/Tools/Index.cshtml` includes definition/execution/content tabs; content save uses `/api/admin/content/{toolId}`. |
+| Analytics | Functional baseline | `Areas/Admin/Controllers/AnalyticsController` view with `fetch('/api/admin/analytics/dashboard')`; application `AdminAnalyticsService` builds metrics/trend/anomalies. |
+| Execution Monitoring | API-only baseline | `Api/Controllers/Admin/ExecutionController` and `/health/background` endpoint exist; no dedicated Admin execution UI page. |
+| Change History | Functional baseline | `ChangeHistoryController` reads `IAdminAuditLogService`; view renders recent audit rows. |
+| Management subsections (Content/Categories/Execution/Users/Feature Flags/Settings) | Placeholder | `ManagementController` routes all to `Views/Management/Section.cshtml` placeholder text. |
+
+### 15.2 Security Boundary Snapshot
+- Admin Web + API controllers are policy-protected with `AdminRead` for reads and `AdminWrite` for mutating operations.
+- API auth policies are configured in `ToolNexus.Api/Configuration/ServiceCollectionExtensions.cs`; web policies are configured in `ToolNexus.Web/Program.cs`.
+- Remaining gap is not missing authorization, but missing governance workflow controls (preflight, approval, rollback).
+
+### 15.3 Hidden Operational Dependencies (Critical for Admin Trust)
+- `/health/background` is a composite signal (queue size, worker status, last processed timestamp, DB initialization state).
+- `DatabaseInitializationHostedService` can leave system in failed-init state while host keeps running.
+- `AdminAuditLogger` is best-effort and logs warning on persistence failures (no retry queue), so audit logs are not guaranteed lossless.
+
+### 15.4 Required Next Wiki Follow-ups
+1. Add an explicit `Admin API versioning policy` section for `/api/admin/*` to avoid contract drift.
+2. Add `Audit reliability expectations` (best-effort today, planned retry/dead-letter).
+3. Add `Governance lifecycle` section documenting required future `preflight → review → approve → apply` path.
