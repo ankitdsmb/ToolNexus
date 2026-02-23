@@ -4,6 +4,6 @@ namespace ToolNexus.Application.Services;
 
 public interface IAdminAuditLogService
 {
-    Task<IReadOnlyList<AdminAuditLogEntry>> GetRecentAsync(int take, CancellationToken cancellationToken = default);
+    Task<ChangeHistoryPage> QueryAsync(ChangeHistoryQuery query, CancellationToken cancellationToken = default);
+    Task<ChangeHistoryPayloadDetail?> GetPayloadDetailAsync(Guid id, CancellationToken cancellationToken = default);
 }
-

@@ -1,36 +1,225 @@
-@model IReadOnlyList<ToolNexus.Application.Models.AdminAuditLogEntry>
+@using Microsoft.Extensions.Primitives
+@model ToolNexus.Application.Models.ChangeHistoryPage
 @{
     ViewData["Title"] = "Change History";
 }
 
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <input class="form-control" type="search" name="search" value="@Context.Request.Query["search"]" placeholder="action, entity, actor, correlation" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Action</label>
+                <input class="form-control" type="text" name="actionType" value="@Context.Request.Query["actionType"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Entity</label>
+                <input class="form-control" type="text" name="entityType" value="@Context.Request.Query["entityType"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Actor</label>
+                <input class="form-control" type="text" name="actor" value="@Context.Request.Query["actor"]" />
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">Severity</label>
+                <select class="form-select" name="severity">
+                    <option value="">All</option>
+                    <option value="info" selected="@(Context.Request.Query["severity"] == "info")">Info</option>
+                    <option value="warning" selected="@(Context.Request.Query["severity"] == "warning")">Warning</option>
+                    <option value="critical" selected="@(Context.Request.Query["severity"] == "critical")">Critical</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">From (UTC)</label>
+                <input class="form-control" type="datetime-local" name="fromUtc" value="@Context.Request.Query["fromUtc"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">To (UTC)</label>
+                <input class="form-control" type="datetime-local" name="toUtc" value="@Context.Request.Query["toUtc"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Correlation ID</label>
+                <input class="form-control" type="text" name="correlationId" value="@Context.Request.Query["correlationId"]" />
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">Page Size</label>
+                <select class="form-select" name="pageSize">
+                    @foreach (var size in new[] { 25, 50, 100 })
+                    {
+                        var selected = Context.Request.Query["pageSize"] == size.ToString() || (StringValues.IsNullOrEmpty(Context.Request.Query["pageSize"]) && size == Model.PageSize);
+                        <option value="@size" selected="@selected">@size</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Apply</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Reset</a>
+            </div>
+        </form>
+        <div class="mt-3 d-flex gap-2 flex-wrap">
+            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index", new { severity = "critical", pageSize = Model.PageSize })">Critical events</a>
+            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index", new { severity = "warning", pageSize = Model.PageSize })">Warnings</a>
+            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index", new { actionType = "admin.tooldefinition.update", pageSize = Model.PageSize })">Tool updates</a>
+            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index", new { actionType = "admin.executionpolicy.update", pageSize = Model.PageSize })">Policy updates</a>
+        </div>
+    </div>
+</div>
+
 <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div><strong>Total:</strong> @Model.TotalCount</div>
+        <div class="text-muted">Page @Model.Page</div>
+    </div>
     <div class="table-responsive">
-        <table class="table table-vcenter card-table">
+        <table class="table table-vcenter card-table" id="change-history-table">
             <thead>
             <tr>
-                <th>Timestamp (UTC)</th>
-                <th>User</th>
+                <th>Timestamp</th>
+                <th>Actor</th>
                 <th>Action</th>
                 <th>Entity</th>
-                <th>Entity Id</th>
-                <th>Before</th>
-                <th>After</th>
+                <th>Severity</th>
+                <th>Correlation</th>
+                <th>Payload</th>
             </tr>
             </thead>
-            <tbody>
-            @foreach (var entry in Model)
+            <tbody id="change-history-body">
+            @foreach (var entry in Model.Items)
             {
-                <tr>
-                    <td>@entry.TimestampUtc.ToString("u")</td>
-                    <td>@entry.UserId</td>
-                    <td>@entry.ActionType</td>
-                    <td>@entry.EntityType</td>
-                    <td>@entry.EntityId</td>
-                    <td><code>@entry.BeforeJson</code></td>
-                    <td><code>@entry.AfterJson</code></td>
+                <tr data-event-id="@entry.Id">
+                    <td><time datetime="@entry.OccurredAtUtc.ToString("O")">@entry.OccurredAtUtc.ToString("u")</time></td>
+                    <td>@entry.Actor</td>
+                    <td>
+                        <div>@entry.ActionType</div>
+                        <small class="text-muted">@entry.SummaryPreview</small>
+                    </td>
+                    <td>
+                        <div>@entry.EntityType</div>
+                        <small class="text-muted">@entry.EntityId</small>
+                    </td>
+                    <td><span class="badge bg-@(entry.Severity == "critical" ? "danger" : entry.Severity == "warning" ? "warning" : "secondary")">@entry.Severity</span></td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(entry.CorrelationId))
+                        {
+                            <a href="@Url.Action("Index", new { correlationId = entry.CorrelationId, pageSize = Model.PageSize })">@entry.CorrelationId</a>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(entry.RequestId))
+                        {
+                            <a href="@Url.Action("Index", new { correlationId = entry.RequestId, pageSize = Model.PageSize })">@entry.RequestId</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">n/a</span>
+                        }
+                    </td>
+                    <td>
+                        @if (entry.TruncationApplied)
+                        {
+                            <span class="badge bg-warning text-dark me-1">truncated</span>
+                        }
+                        @if (entry.RedactionApplied)
+                        {
+                            <span class="badge bg-secondary me-1">redacted</span>
+                        }
+                        <button type="button" class="btn btn-sm btn-outline-primary js-view-payload" data-event-id="@entry.Id">Expand</button>
+                    </td>
+                </tr>
+                <tr class="d-none" data-payload-row="@entry.Id">
+                    <td colspan="7">
+                        <pre class="mb-0 small border rounded p-2 bg-light" style="max-height:280px; overflow:auto;" data-payload-content="@entry.Id">Loading…</pre>
+                    </td>
                 </tr>
             }
             </tbody>
         </table>
     </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="text-muted">Showing @Model.Items.Count of @Model.TotalCount</span>
+        @if (Model.HasNextPage)
+        {
+            <button type="button" class="btn btn-outline-primary" id="load-more-btn" data-next-page="@(Model.Page + 1)" data-page-size="@Model.PageSize">Load more</button>
+        }
+    </div>
 </div>
+
+<script>
+(() => {
+    const params = new URLSearchParams(window.location.search);
+    const body = document.getElementById('change-history-body');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    document.querySelectorAll('time[datetime]').forEach(t => {
+        const iso = t.getAttribute('datetime');
+        if (!iso) return;
+        const date = new Date(iso);
+        t.textContent = date.toLocaleString();
+        t.title = date.toISOString();
+    });
+
+    body?.addEventListener('click', async (event) => {
+        const button = event.target.closest('.js-view-payload');
+        if (!button) return;
+        const eventId = button.dataset.eventId;
+        const detailRow = document.querySelector(`[data-payload-row="${eventId}"]`);
+        const content = document.querySelector(`[data-payload-content="${eventId}"]`);
+        if (!detailRow || !content) return;
+
+        detailRow.classList.toggle('d-none');
+        if (content.dataset.loaded === 'true') return;
+
+        const response = await fetch(`/Admin/ChangeHistory/payload/${eventId}`);
+        if (!response.ok) {
+            content.textContent = 'Failed to load payload.';
+            return;
+        }
+
+        const payload = await response.json();
+        content.textContent = payload.payloadJson;
+        content.dataset.loaded = 'true';
+    });
+
+    loadMoreBtn?.addEventListener('click', async () => {
+        const page = Number(loadMoreBtn.dataset.nextPage || '0');
+        const pageSize = Number(loadMoreBtn.dataset.pageSize || '25');
+        params.set('page', String(page));
+        params.set('pageSize', String(pageSize));
+        const response = await fetch(`/Admin/ChangeHistory/query?${params.toString()}`);
+        if (!response.ok) return;
+        const result = await response.json();
+        (result.items || []).forEach(item => {
+            const severityClass = item.severity === 'critical' ? 'danger' : item.severity === 'warning' ? 'warning' : 'secondary';
+            const correlation = item.correlationId || item.requestId;
+            const row = document.createElement('tr');
+            row.setAttribute('data-event-id', item.id);
+            row.innerHTML = `
+                <td><time datetime="${item.occurredAtUtc}">${new Date(item.occurredAtUtc).toLocaleString()}</time></td>
+                <td>${item.actor}</td>
+                <td><div>${item.actionType}</div><small class="text-muted">${item.summaryPreview}</small></td>
+                <td><div>${item.entityType}</div><small class="text-muted">${item.entityId}</small></td>
+                <td><span class="badge bg-${severityClass}">${item.severity}</span></td>
+                <td>${correlation ? `<a href="/Admin/ChangeHistory?correlationId=${encodeURIComponent(correlation)}&pageSize=${pageSize}">${correlation}</a>` : '<span class="text-muted">n/a</span>'}</td>
+                <td>
+                    ${item.truncationApplied ? '<span class="badge bg-warning text-dark me-1">truncated</span>' : ''}
+                    ${item.redactionApplied ? '<span class="badge bg-secondary me-1">redacted</span>' : ''}
+                    <button type="button" class="btn btn-sm btn-outline-primary js-view-payload" data-event-id="${item.id}">Expand</button>
+                </td>`;
+            const detailRow = document.createElement('tr');
+            detailRow.className = 'd-none';
+            detailRow.setAttribute('data-payload-row', item.id);
+            detailRow.innerHTML = `<td colspan="7"><pre class="mb-0 small border rounded p-2 bg-light" style="max-height:280px; overflow:auto;" data-payload-content="${item.id}">Loading…</pre></td>`;
+            body.appendChild(row);
+            body.appendChild(detailRow);
+        });
+
+        if (!result.hasNextPage) {
+            loadMoreBtn.remove();
+            return;
+        }
+
+        loadMoreBtn.dataset.nextPage = String(page + 1);
+    });
+})();
+</script>
