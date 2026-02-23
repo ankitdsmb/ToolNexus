@@ -89,13 +89,13 @@ public sealed class DatabaseProviderConfigurationTests
     }
 
     [Fact]
-    public void DesignTimeFactory_DefaultArgs_ConfiguresSqliteProvider()
+    public void DesignTimeFactory_DefaultArgs_ConfiguresPostgreSqlProvider()
     {
         var factory = new ToolNexusContentDbContextFactory();
 
         using var context = factory.CreateDbContext([]);
 
-        Assert.Equal("Microsoft.EntityFrameworkCore.Sqlite", context.Database.ProviderName);
+        Assert.Equal("Npgsql.EntityFrameworkCore.PostgreSQL", context.Database.ProviderName);
     }
 
     [Fact]

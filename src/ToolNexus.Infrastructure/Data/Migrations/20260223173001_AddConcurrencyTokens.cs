@@ -11,11 +11,13 @@ namespace ToolNexus.Infrastructure.Data.Migrations
             migrationBuilder.AddColumn<byte[]>(
                 name: "RowVersion",
                 table: "ToolDefinitions",
+                type: "bytea",
                 nullable: true);
 
             migrationBuilder.AddColumn<byte[]>(
                 name: "RowVersion",
                 table: "ToolContents",
+                type: "bytea",
                 nullable: true);
         }
 
