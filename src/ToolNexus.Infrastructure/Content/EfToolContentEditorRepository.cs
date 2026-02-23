@@ -10,42 +10,92 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
 {
     public async Task<ToolContentEditorGraph?> GetGraphByToolIdAsync(int toolId, CancellationToken cancellationToken = default)
     {
-        var tool = await dbContext.ToolDefinitions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == toolId, cancellationToken);
-        if (tool is null) return null;
-
-        var content = await dbContext.ToolContents
+        var tool = await dbContext.ToolDefinitions
             .AsNoTracking()
-            .Include(x => x.Features)
-            .Include(x => x.Steps)
-            .Include(x => x.Examples)
-            .Include(x => x.Faq)
-            .Include(x => x.UseCases)
-            .Include(x => x.RelatedTools)
-            .SingleOrDefaultAsync(x => x.Slug == tool.Slug, cancellationToken);
+            .Where(x => x.Id == toolId)
+            .Select(x => new { x.Id, x.Slug, x.Name })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (tool is null)
+        {
+            return null;
+        }
 
-        var relatedOptions = await dbContext.ToolDefinitions
+        var contentMeta = await dbContext.ToolContents
+            .AsNoTracking()
+            .Where(x => x.Slug == tool.Slug)
+            .Select(x => new { x.Id })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        var relatedOptionsTask = dbContext.ToolDefinitions
             .AsNoTracking()
             .Where(x => x.Slug != tool.Slug)
             .OrderBy(x => x.Name)
             .Select(x => new RelatedToolOption(x.Slug, x.Name))
             .ToArrayAsync(cancellationToken);
 
-        if (content is null)
+        if (contentMeta is null)
         {
+            var relatedOptions = await relatedOptionsTask;
             return new ToolContentEditorGraph(tool.Id, tool.Slug, tool.Name, [], [], [], [], [], [], relatedOptions);
         }
+
+        var contentId = contentMeta.Id;
+
+        var featuresTask = dbContext.ToolFeatures
+            .AsNoTracking()
+            .Where(x => x.ToolContentId == contentId)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new ContentValueItem(x.Id, x.Value, x.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        var stepsTask = dbContext.ToolSteps
+            .AsNoTracking()
+            .Where(x => x.ToolContentId == contentId)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new ContentStepItem(x.Id, x.Title, x.Description, x.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        var examplesTask = dbContext.ToolExamples
+            .AsNoTracking()
+            .Where(x => x.ToolContentId == contentId)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new ContentExampleItem(x.Id, x.Title, x.Input, x.Output, x.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        var faqTask = dbContext.ToolFaqs
+            .AsNoTracking()
+            .Where(x => x.ToolContentId == contentId)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new ContentFaqItem(x.Id, x.Question, x.Answer, x.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        var useCasesTask = dbContext.ToolUseCases
+            .AsNoTracking()
+            .Where(x => x.ToolContentId == contentId)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new ContentValueItem(x.Id, x.Value, x.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        var relatedToolsTask = dbContext.ToolRelated
+            .AsNoTracking()
+            .Where(x => x.ToolContentId == contentId)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new ContentRelatedItem(x.Id, x.RelatedSlug, x.SortOrder))
+            .ToArrayAsync(cancellationToken);
+
+        await Task.WhenAll(relatedOptionsTask, featuresTask, stepsTask, examplesTask, faqTask, useCasesTask, relatedToolsTask);
 
         return new ToolContentEditorGraph(
             tool.Id,
             tool.Slug,
             tool.Name,
-            content.Features.OrderBy(x => x.SortOrder).Select(x => new ContentValueItem(x.Id, x.Value, x.SortOrder)).ToArray(),
-            content.Steps.OrderBy(x => x.SortOrder).Select(x => new ContentStepItem(x.Id, x.Title, x.Description, x.SortOrder)).ToArray(),
-            content.Examples.OrderBy(x => x.SortOrder).Select(x => new ContentExampleItem(x.Id, x.Title, x.Input, x.Output, x.SortOrder)).ToArray(),
-            content.Faq.OrderBy(x => x.SortOrder).Select(x => new ContentFaqItem(x.Id, x.Question, x.Answer, x.SortOrder)).ToArray(),
-            content.UseCases.OrderBy(x => x.SortOrder).Select(x => new ContentValueItem(x.Id, x.Value, x.SortOrder)).ToArray(),
-            content.RelatedTools.OrderBy(x => x.SortOrder).Select(x => new ContentRelatedItem(x.Id, x.RelatedSlug, x.SortOrder)).ToArray(),
-            relatedOptions);
+            featuresTask.Result,
+            stepsTask.Result,
+            examplesTask.Result,
+            faqTask.Result,
+            useCasesTask.Result,
+            relatedToolsTask.Result,
+            relatedOptionsTask.Result);
     }
 
     public async Task<bool> SaveGraphAsync(int toolId, SaveToolContentGraphRequest request, CancellationToken cancellationToken = default)

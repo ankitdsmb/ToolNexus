@@ -40,7 +40,13 @@ public static class DependencyInjection
         services.AddScoped<IToolService, ToolService>();
         services.AddSingleton<IToolInsightService, ToolInsightService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
-        services.AddSingleton<IToolCatalogService, ToolCatalogService>();
+        services.AddSingleton<ToolCatalogService>();
+        services.AddMemoryCache();
+        services.AddSingleton<IToolCatalogService>(sp =>
+            new CachingToolCatalogService(
+                sp.GetRequiredService<ToolCatalogService>(),
+                sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
+                sp.GetRequiredService<IOptions<PlatformCacheOptions>>()));
         services.AddScoped<ToolDefinitionService>();
         services.AddScoped<IToolDefinitionService>(sp =>
             new CachingToolDefinitionService(
@@ -66,6 +72,7 @@ public static class DependencyInjection
                 sp.GetRequiredService<IPlatformCacheService>(),
                 sp.GetRequiredService<IOptions<PlatformCacheOptions>>()));
         services.AddHostedService<ManifestStartupValidator>();
+        services.AddHostedService<PlatformCacheWarmupHostedService>();
         services.AddHostedService<ManifestExecutorAlignmentValidator>();
         return services;
     }

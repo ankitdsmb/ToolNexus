@@ -12,7 +12,11 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) 
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
         var trendStart = today.AddDays(-(TrendDays - 1));
-        var snapshots = await repository.GetByDateRangeAsync(trendStart, today, cancellationToken);
+        var snapshotsTask = repository.GetByDateRangeAsync(trendStart, today, cancellationToken);
+        var alertsTask = repository.GetAnomaliesByDateAsync(today, cancellationToken);
+        await Task.WhenAll(snapshotsTask, alertsTask);
+
+        var snapshots = snapshotsTask.Result;
 
         var todayRows = snapshots.Where(x => x.Date == today && x.TotalExecutions > 0).ToList();
         var totalExecutionsToday = todayRows.Sum(x => x.TotalExecutions);
@@ -51,9 +55,7 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) 
             })
             .ToList();
 
-        var alerts = await repository.GetAnomaliesByDateAsync(today, cancellationToken);
-
-        return new AdminAnalyticsDashboard(totalExecutionsToday, successRate, avgDuration, activeToolsCount, topTools, slowTools, trend, alerts);
+        return new AdminAnalyticsDashboard(totalExecutionsToday, successRate, avgDuration, activeToolsCount, topTools, slowTools, trend, alertsTask.Result);
     }
 
     private static AdminAnalyticsToolMetric MapTool(DailyToolMetricsSnapshot row)

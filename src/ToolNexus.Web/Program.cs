@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using ToolNexus.Application;
+using ToolNexus.Web.Areas.Admin.Services;
 using ToolNexus.Infrastructure;
 using ToolNexus.Web.Options;
 using ToolNexus.Web.Security;
@@ -53,6 +54,7 @@ builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
 builder.Services.AddSingleton<IToolManifestLoader, ToolManifestLoader>();
 builder.Services.AddSingleton<IToolRegistryService, ToolRegistryService>();
 builder.Services.AddSingleton<IToolViewResolver, ToolViewResolver>();
+builder.Services.AddScoped<IAdminToolsViewModelService, AdminToolsViewModelService>();
 
 var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
 if (!string.IsNullOrWhiteSpace(keyRingPath))
