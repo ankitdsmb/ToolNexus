@@ -72,3 +72,38 @@ Tool runtime now reports structured incidents without crashing the runtime surfa
 - Runtime always records incidents through `runtime-incident-reporter` and never throws from the reporting path.
 - Reporter queues, deduplicates by fingerprint, debounces burst traffic, and sends batched incidents to `POST /api/admin/runtime/incidents`.
 - Admin Execution Monitoring includes `runtime_incident` records alongside existing execution/audit incidents with severity, message, count, and last occurrence.
+
+## Tool Health Scoring (Admin)
+
+Tool health is now exposed through `GET /api/admin/runtime/tool-health` and consumed by the Admin Dashboard Tool Health panel.
+
+Response shape:
+
+```json
+[
+  {
+    "slug": "json-formatter",
+    "healthScore": 61,
+    "incidentCount": 5,
+    "lastIncidentUtc": "2026-03-03T10:20:30Z",
+    "dominantError": "legacy mismatch"
+  }
+]
+```
+
+Scoring model:
+
+- Group incidents by `toolSlug`.
+- `incidentCount` is the summed incident `count` across all fingerprints for the tool.
+- Weighted incident count is computed by severity:
+  - `critical` weight = `12`
+  - `warning` weight = `5`
+- `healthScore = max(0, 100 - weightedIncidentCount)`.
+- `lastIncidentUtc` is the maximum `lastOccurredUtc` in the tool group.
+- `dominantError` is the most frequent incident message for the tool (ties break by most recent occurrence).
+
+Dashboard status colors map directly from score bands:
+
+- Green (`healthy`) = `healthScore >= 85`
+- Yellow (`degraded`) = `60 <= healthScore < 85`
+- Red (`broken`) = `healthScore < 60`

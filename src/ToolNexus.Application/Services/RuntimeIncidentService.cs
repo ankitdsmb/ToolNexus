@@ -35,6 +35,9 @@ public sealed class RuntimeIncidentService(IRuntimeIncidentRepository repository
     public Task<IReadOnlyList<RuntimeIncidentSummary>> GetLatestSummariesAsync(int take, CancellationToken cancellationToken)
         => repository.GetLatestSummariesAsync(Math.Clamp(take, 1, 200), cancellationToken);
 
+    public Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken)
+        => repository.GetToolHealthAsync(cancellationToken);
+
     private static string NormalizePhase(string? phase)
         => phase is "bootstrap" or "mount" or "execute" ? phase : "execute";
 

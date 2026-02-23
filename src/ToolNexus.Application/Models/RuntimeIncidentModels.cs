@@ -19,3 +19,10 @@ public sealed record RuntimeIncidentSummary(
     string Severity,
     int Count,
     DateTime LastOccurrenceUtc);
+
+public sealed record RuntimeToolHealthSnapshot(
+    string Slug,
+    int HealthScore,
+    int IncidentCount,
+    DateTime? LastIncidentUtc,
+    string DominantError);

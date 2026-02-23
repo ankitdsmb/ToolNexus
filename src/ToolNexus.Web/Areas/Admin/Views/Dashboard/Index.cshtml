@@ -68,6 +68,26 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <h4 class="card-title mb-3">Tool Health</h4>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 180px;">Tool</th>
+                        <th style="width: 140px;">Health</th>
+                        <th style="width: 140px;">Incident Count</th>
+                        <th style="width: 190px;">Last Incident (UTC)</th>
+                        <th>Dominant Error</th>
+                    </tr>
+                </thead>
+                <tbody id="tool-health-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <div class="row g-3 mb-3" id="operational-metrics">
     <div class="col-xl-3 col-md-6">
         <button class="card h-100 w-100 text-start border-0 drilldown-card" data-drilldown="concurrency">
@@ -221,6 +241,34 @@
         setSeverityBadge('attention-severity', attentionSeverity);
     };
 
+    const getToolHealthStatus = (healthScore) => {
+        if (healthScore < 60) return { label: 'broken', className: 'bg-red-lt text-red-fg' };
+        if (healthScore < 85) return { label: 'degraded', className: 'bg-yellow-lt text-yellow-fg' };
+        return { label: 'healthy', className: 'bg-green-lt text-green-fg' };
+    };
+
+    const renderToolHealth = (items) => {
+        const body = document.getElementById('tool-health-body');
+        body.innerHTML = '';
+
+        if (!items.length) {
+            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No runtime incidents recorded yet.</td></tr>';
+            return;
+        }
+
+        items.forEach(item => {
+            const status = getToolHealthStatus(item.healthScore || 0);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.slug}</td>
+                <td><span class="badge ${status.className}">${status.label}</span> <span class="text-secondary">(${item.healthScore})</span></td>
+                <td>${(item.incidentCount || 0).toLocaleString()}</td>
+                <td>${item.lastIncidentUtc ? formatUtc(item.lastIncidentUtc) : '-'}</td>
+                <td class="text-truncate" style="max-width: 440px;">${item.dominantError || '-'}</td>`;
+            body.appendChild(tr);
+        });
+    };
+
     const mapConcurrencyIncidents = (backgroundHealth) => {
         const trend = backgroundHealth?.concurrency?.conflictTrend || [];
         return trend
@@ -236,14 +284,15 @@
     };
 
     const loadDashboard = async () => {
-        const [healthRes, workersRes, incidentsRes, backgroundRes] = await Promise.all([
+        const [healthRes, workersRes, incidentsRes, backgroundRes, toolHealthRes] = await Promise.all([
             fetch('/admin/execution/health'),
             fetch('/admin/execution/workers'),
             fetch(`/admin/execution/incidents?page=${incidentPage}&pageSize=${incidentPageSize}`),
-            fetch('/health/background')
+            fetch('/health/background'),
+            fetch('/api/admin/runtime/tool-health')
         ]);
 
-        if (!healthRes.ok || !workersRes.ok || !incidentsRes.ok || !backgroundRes.ok) {
+        if (!healthRes.ok || !workersRes.ok || !incidentsRes.ok || !backgroundRes.ok || !toolHealthRes.ok) {
             return;
         }
 
@@ -251,6 +300,7 @@
         const workers = await workersRes.json();
         const incidents = await incidentsRes.json();
         const background = await backgroundRes.json();
+        const toolHealth = await toolHealthRes.json();
 
         const queueBacklog = health.pendingItems || 0;
         const retryCount = health.retryCount || 0;
@@ -308,6 +358,7 @@
             .slice(0, incidentPageSize);
 
         renderIncidents(mergedIncidents);
+        renderToolHealth(toolHealth || []);
 
         incidentTotal = incidents.totalItems || 0;
         document.getElementById('incident-page-label').textContent = `Page ${incidentPage}`;
