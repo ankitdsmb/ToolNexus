@@ -1,0 +1,26 @@
+ToolNexus Admin Recovery Playbook
+
+Purpose
+- Provide consistent admin/operator procedures for restoring service health.
+
+Recovery Workflow
+1) Triage
+   - Identify blast radius, affected tools, and recent deploy/config changes.
+   - Check runtime health indicators and error signatures.
+2) Stabilize
+   - Disable or isolate failing tool routes if needed.
+   - Apply safe-mode behavior to prevent cascading failures.
+3) Diagnose
+   - Validate lifecycle state (initialize/execute/teardown) for impacted components.
+   - Inspect normalized input/output traces for malformed payload patterns.
+4) Recover
+   - Roll forward with verified fix or roll back to last known-good state.
+   - Re-run smoke tests and high-risk regression checks.
+5) Closeout
+   - Document root cause, customer impact, timeline, and follow-up actions.
+   - Update prompt docs and tests to prevent recurrence.
+
+Admin Safeguards
+- Never apply unreviewed hotfixes directly to production.
+- Prefer reversible configuration changes before binary changes.
+- Preserve audit logs and incident artifacts for postmortem.
