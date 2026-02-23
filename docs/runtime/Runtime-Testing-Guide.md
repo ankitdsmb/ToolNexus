@@ -11,6 +11,7 @@ Coverage focus:
 - Tool platform kernel registration/lifecycle.
 - Lifecycle adapter mount/cleanup behavior.
 - Execution normalizer safety for execution-only legacy modules.
+- Metadata precedence coverage (`toolRuntimeType`) before arity fallback for legacy modules.
 - DOM adapter contract node creation.
 - Legacy bridge compatibility path.
 - Runtime contract validation (toolRootId + required anchors).

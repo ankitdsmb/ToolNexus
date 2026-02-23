@@ -13,6 +13,18 @@
 - **Lifecycle Adapter** (`runtime/tool-lifecycle-adapter.js`): resolves module contracts and returns cleanup.
 - **Execution Normalizer** (`runtime/tool-execution-normalizer.js`): normalizes module shape while preventing accidental invocation of execution-only `runTool(action,input)` contracts during bootstrap.
 
+## Runtime metadata contract
+Legacy `runTool` modules can now explicitly declare runtime intent:
+
+- `toolRuntimeType: "mount"` → treat `runTool` as mount/bootstrap contract.
+- `toolRuntimeType: "execution"` → never call `runTool` during bootstrap.
+
+Resolution order in the execution normalizer:
+1. Explicit metadata (`toolRuntimeType`) on module/runtime capability/manifest.
+2. Legacy fallback detection using `runTool` arity (`>= 2` => execution-only).
+
+This keeps existing tools backward compatible while allowing explicit and deterministic runtime behavior for newly hardened modules.
+
 ## Legacy bridge flow
 When modern lifecycle methods are absent:
 1. Try normalized legacy lifecycle (`init`/mount helpers).
