@@ -320,7 +320,7 @@
     document.querySelectorAll('.drilldown-card').forEach(card => {
         card.addEventListener('click', () => {
             const target = card.getAttribute('data-drilldown') || 'unknown';
-            window.location.hash = `drilldown-${target}`;
+            window.location.href = `/admin/analytics?drilldown=${encodeURIComponent(target)}`;
         });
     });
 

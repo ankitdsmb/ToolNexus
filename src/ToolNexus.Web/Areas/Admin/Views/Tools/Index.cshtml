@@ -6,24 +6,41 @@
 <div class="row g-3">
     <div class="col-lg-7">
         <div class="card">
-            <div class="card-header"><h3 class="card-title">Tools</h3></div>
+            <div class="card-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                <h3 class="card-title mb-0">Tools</h3>
+                <small class="text-secondary">Shortcuts: Ctrl/Cmd + F focus table filter · Ctrl/Cmd + Shift + E enable selected · Ctrl/Cmd + Shift + D disable selected</small>
+            </div>
+            <div class="card-body border-bottom py-2">
+                <form asp-action="BulkToggleStatus" method="post" id="bulk-status-form" class="d-flex gap-2 align-items-center flex-wrap">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="enabled" id="bulk-enabled-input" value="true" />
+                    <input id="tool-filter" class="form-control form-control-sm" placeholder="Filter tools by name/slug" style="max-width: 280px;" />
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="select-visible">Select Visible</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="clear-selected">Clear</button>
+                    <button type="button" class="btn btn-sm btn-success" data-bulk-action="enable">Enable Selected</button>
+                    <button type="button" class="btn btn-sm btn-warning" data-bulk-action="disable">Disable Selected</button>
+                    <span id="bulk-selection-count" class="badge bg-azure-lt">0 selected</span>
+                </form>
+            </div>
             <div class="table-responsive">
-                <table class="table table-vcenter card-table">
+                <table class="table table-vcenter card-table" id="tools-table">
                     <thead>
-                        <tr><th>Name</th><th>Slug</th><th>Category</th><th>Status</th><th>Updated</th><th></th></tr>
+                        <tr><th><input type="checkbox" id="select-all-tools" aria-label="Select all tools" /></th><th>Name</th><th>Slug</th><th>Category</th><th>Status</th><th>Updated</th><th></th></tr>
                     </thead>
                     <tbody>
                     @foreach (var tool in Model.Tools)
                     {
-                        <tr>
+                        var isEnabled = tool.Status == "Enabled";
+                        <tr data-tool-row data-tool-search="@($"{tool.Name} {tool.Slug}".ToLowerInvariant())">
+                            <td><input type="checkbox" class="tool-select" value="@tool.Id" aria-label="Select @tool.Name" /></td>
                             <td>@tool.Name</td>
                             <td><code>@tool.Slug</code></td>
                             <td>@tool.Category</td>
-                            <td>@tool.Status</td>
+                            <td><span class="badge @(isEnabled ? "bg-success-lt" : "bg-secondary-lt")">@tool.Status</span></td>
                             <td>@tool.UpdatedAt.ToLocalTime().ToString("u")</td>
                             <td class="text-end">
                                 <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@tool.Id">Edit</a>
-                                <form asp-action="ToggleStatus" asp-route-id="@tool.Id" method="post" class="d-inline">
+                                <form asp-action="ToggleStatus" asp-route-id="@tool.Id" method="post" class="d-inline" data-single-toggle-form>
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="enabled" value="@(tool.Status == "Enabled" ? "false" : "true")" />
                                     <button class="btn btn-sm btn-outline-secondary" type="submit">@(tool.Status == "Enabled" ? "Disable" : "Enable")</button>
@@ -95,6 +112,112 @@
     const pane = document.getElementById('tab-content');
     const form = document.getElementById('tool-editor-form');
     const editorDraftKey = `admin-tool-editor-draft-${document.getElementById('Form_Id')?.value ?? 'new'}`;
+
+    const toolsTable = document.getElementById('tools-table');
+    const bulkStatusForm = document.getElementById('bulk-status-form');
+    const bulkEnabledInput = document.getElementById('bulk-enabled-input');
+    const selectionCount = document.getElementById('bulk-selection-count');
+    const filterInput = document.getElementById('tool-filter');
+
+    function selectedBoxes() {
+        return Array.from(document.querySelectorAll('.tool-select:checked'));
+    }
+
+    function syncSelectionCount() {
+        if (selectionCount) {
+            selectionCount.textContent = `${selectedBoxes().length} selected`;
+        }
+    }
+
+    function syncBulkInputs() {
+        if (!bulkStatusForm) return;
+        bulkStatusForm.querySelectorAll('input[name="toolIds"]').forEach(x => x.remove());
+        selectedBoxes().forEach(box => {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'toolIds';
+            hidden.value = box.value;
+            bulkStatusForm.appendChild(hidden);
+        });
+        syncSelectionCount();
+    }
+
+    document.getElementById('select-all-tools')?.addEventListener('change', (event) => {
+        const checked = !!event.target.checked;
+        document.querySelectorAll('[data-tool-row]:not([hidden]) .tool-select').forEach(box => box.checked = checked);
+        syncBulkInputs();
+    });
+
+    document.querySelectorAll('.tool-select').forEach(box => box.addEventListener('change', syncBulkInputs));
+
+    document.getElementById('select-visible')?.addEventListener('click', () => {
+        document.querySelectorAll('[data-tool-row]:not([hidden]) .tool-select').forEach(box => box.checked = true);
+        syncBulkInputs();
+    });
+
+    document.getElementById('clear-selected')?.addEventListener('click', () => {
+        document.querySelectorAll('.tool-select').forEach(box => box.checked = false);
+        syncBulkInputs();
+    });
+
+    document.querySelectorAll('[data-bulk-action]').forEach(button => {
+        button.addEventListener('click', () => {
+            const count = selectedBoxes().length;
+            if (!count) {
+                alert('Select at least one tool first.');
+                return;
+            }
+
+            const action = button.getAttribute('data-bulk-action');
+            const enabled = action === 'enable';
+            const confirmation = window.confirm(`Confirm ${enabled ? 'enable' : 'disable'} for ${count} tool(s)?`);
+            if (!confirmation) return;
+
+            bulkEnabledInput.value = enabled ? 'true' : 'false';
+            syncBulkInputs();
+            bulkStatusForm.submit();
+        });
+    });
+
+    document.querySelectorAll('[data-single-toggle-form]').forEach(formEl => {
+        formEl.addEventListener('submit', (event) => {
+            if (!window.confirm('Confirm status change for this tool?')) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    filterInput?.addEventListener('input', () => {
+        const query = filterInput.value.trim().toLowerCase();
+        document.querySelectorAll('[data-tool-row]').forEach(row => {
+            const search = row.getAttribute('data-tool-search') || '';
+            row.hidden = query.length > 0 && !search.includes(query);
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const ctrl = event.ctrlKey || event.metaKey;
+        if (ctrl && event.key.toLowerCase() === 'f') {
+            event.preventDefault();
+            filterInput?.focus();
+            filterInput?.select();
+            return;
+        }
+
+        if (ctrl && event.shiftKey && event.key.toLowerCase() === 'e') {
+            event.preventDefault();
+            document.querySelector('[data-bulk-action="enable"]')?.click();
+            return;
+        }
+
+        if (ctrl && event.shiftKey && event.key.toLowerCase() === 'd') {
+            event.preventDefault();
+            document.querySelector('[data-bulk-action="disable"]')?.click();
+        }
+    });
+
+    syncBulkInputs();
+
 
     function emitTelemetry(eventName, payload) {
         window.dispatchEvent(new CustomEvent('admin:telemetry', { detail: { eventName, payload } }));

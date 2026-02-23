@@ -58,6 +58,47 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) 
         return new AdminAnalyticsDashboard(totalExecutionsToday, successRate, avgDuration, activeToolsCount, topTools, slowTools, trend, alertsTask.Result);
     }
 
+    public async Task<AdminAnalyticsDrilldownResult> GetDrilldownAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(query);
+        var (items, totalItems) = await repository.QueryAsync(normalized, cancellationToken);
+
+        var rows = items
+            .OrderByDescending(x => x.Date)
+            .ThenBy(x => x.ToolSlug, StringComparer.OrdinalIgnoreCase)
+            .Select(x => new AdminAnalyticsDrilldownRow(
+                x.ToolSlug,
+                x.Date,
+                x.TotalExecutions,
+                x.TotalExecutions == 0 ? 0d : (double)x.SuccessCount / x.TotalExecutions * 100d,
+                x.AvgDurationMs,
+                x.TotalExecutions - x.SuccessCount))
+            .ToList();
+
+        return new AdminAnalyticsDrilldownResult(normalized, totalItems, rows);
+    }
+
+    private static AdminAnalyticsQuery Normalize(AdminAnalyticsQuery query)
+    {
+        var page = Math.Max(1, query.Page);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+        var start = query.StartDate;
+        var end = query.EndDate;
+        if (end < start)
+        {
+            (start, end) = (end, start);
+        }
+
+        return query with
+        {
+            StartDate = start,
+            EndDate = end,
+            ToolSlug = string.IsNullOrWhiteSpace(query.ToolSlug) ? null : query.ToolSlug.Trim(),
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     private static AdminAnalyticsToolMetric MapTool(DailyToolMetricsSnapshot row)
     {
         var successRate = row.TotalExecutions == 0 ? 0d : (double)row.SuccessCount / row.TotalExecutions * 100d;

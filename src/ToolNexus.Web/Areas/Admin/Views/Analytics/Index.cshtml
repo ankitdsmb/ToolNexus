@@ -4,193 +4,183 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="mb-0">Admin Analytics</h2>
+    <a class="btn btn-sm btn-outline-secondary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Back to dashboard</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="filter-tool">Tool slug</label>
+                <input id="filter-tool" class="form-control" placeholder="all tools" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filter-start">Start date</label>
+                <input id="filter-start" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filter-end">End date</label>
+                <input id="filter-end" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button id="apply-filters" class="btn btn-primary">Apply filters</button>
+                <button id="clear-filters" class="btn btn-outline-secondary">Reset</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row g-3 mb-4" id="summary-cards">
-    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Executions Today</small><h3 id="metric-total">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Success Rate</small><h3 id="metric-success">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Avg Duration</small><h3 id="metric-duration">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Active Tools</small><h3 id="metric-active">-</h3></div></div></div>
-</div>
-
-<div class="row g-3 mb-4" id="concurrency-summary-cards">
-    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Conflicts (24h)</small><h3 id="metric-conflicts-24h">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small class="text-secondary">Highest Conflict Rate</small><h3 id="metric-conflict-rate">-</h3></div></div></div>
-    <div class="col-md-6"><div class="card"><div class="card-body"><small class="text-secondary">Concurrency Severity Indicators</small><div id="concurrency-severity" class="d-flex flex-wrap gap-2 mt-2"></div></div></div></div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Conflict Trend (24h)</h4>
-                <div id="conflict-trend-chart" class="d-flex align-items-end gap-1" style="height:160px;"></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Top Conflicting Resources</h4>
-                <div class="table-responsive">
-                    <table class="table table-sm" id="top-conflicts-table">
-                        <thead><tr><th>Resource</th><th class="text-end">Conflicts</th><th class="text-end">Rate</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title">Execution Trend</h4>
-        <div id="trend-chart" class="d-flex align-items-end gap-1" style="height:180px;"></div>
-        <small class="text-secondary">Daily executions (last 14 days)</small>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title">Intelligence Alerts</h4>
-        <div class="table-responsive">
-            <table class="table table-sm" id="intelligence-alerts-table">
-                <thead><tr><th>Tool</th><th>Type</th><th>Severity</th><th>Description</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-        <small class="text-secondary">Daily anomalies generated from rolling 7-day tool metrics baselines.</small>
-    </div>
+    <div class="col-md-3"><button class="card w-100 text-start border-0 analytics-nav-card" data-drill="top-tools"><div class="card-body"><small class="text-secondary">Executions Today</small><h3 id="metric-total">-</h3></div></button></div>
+    <div class="col-md-3"><button class="card w-100 text-start border-0 analytics-nav-card" data-drill="success"><div class="card-body"><small class="text-secondary">Success Rate</small><h3 id="metric-success">-</h3></div></button></div>
+    <div class="col-md-3"><button class="card w-100 text-start border-0 analytics-nav-card" data-drill="slow-tools"><div class="card-body"><small class="text-secondary">Avg Duration</small><h3 id="metric-duration">-</h3></div></button></div>
+    <div class="col-md-3"><button class="card w-100 text-start border-0 analytics-nav-card" data-drill="drilldown"><div class="card-body"><small class="text-secondary">Active Tools</small><h3 id="metric-active">-</h3></div></button></div>
 </div>
 
 <div class="row g-3">
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card mb-3" id="panel-top-tools">
             <div class="card-body">
                 <h4 class="card-title">Top Tools</h4>
-                <div class="table-responsive">
-                    <table class="table table-sm" id="top-tools-table">
-                        <thead><tr><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <div class="table-responsive"><table class="table table-sm" id="top-tools-table"><thead><tr><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead><tbody></tbody></table></div>
             </div>
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card mb-3" id="panel-slow-tools">
             <div class="card-body">
                 <h4 class="card-title">Slow Tools</h4>
-                <div class="table-responsive">
-                    <table class="table table-sm" id="slow-tools-table">
-                        <thead><tr><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <div class="table-responsive"><table class="table table-sm" id="slow-tools-table"><thead><tr><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead><tbody></tbody></table></div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3" id="panel-drilldown">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="card-title mb-0">Daily Drilldown</h4>
+            <small class="text-secondary" id="drilldown-count">-</small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm" id="drilldown-table">
+                <thead><tr><th>Date</th><th>Tool</th><th class="text-end">Executions</th><th class="text-end">Failures</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="drilldown-prev">Prev</button>
+            <span class="align-self-center text-secondary" id="drilldown-page-label">Page 1</span>
+            <button class="btn btn-sm btn-outline-secondary" id="drilldown-next">Next</button>
         </div>
     </div>
 </div>
 
 <script>
 (async function(){
-    const response = await fetch('/api/admin/analytics/dashboard');
-    if (!response.ok) return;
-    const dashboard = await response.json();
+    let currentPage = 1;
+    let totalItems = 0;
+    const pageSize = 20;
 
-    const backgroundHealthResponse = await fetch('/health/background');
-    const backgroundHealth = backgroundHealthResponse.ok ? await backgroundHealthResponse.json() : null;
+    const params = new URLSearchParams(window.location.search);
+    const now = new Date();
+    const endDefault = now.toISOString().slice(0, 10);
+    const startDate = new Date(now);
+    startDate.setDate(now.getDate() - 13);
+    const startDefault = startDate.toISOString().slice(0, 10);
 
-    document.getElementById('metric-total').textContent = dashboard.totalExecutionsToday.toLocaleString();
-    document.getElementById('metric-success').textContent = `${dashboard.successRate.toFixed(1)}%`;
-    document.getElementById('metric-duration').textContent = `${dashboard.avgDurationMs.toFixed(1)} ms`;
-    document.getElementById('metric-active').textContent = dashboard.activeToolsCount.toString();
+    const filterTool = document.getElementById('filter-tool');
+    const filterStart = document.getElementById('filter-start');
+    const filterEnd = document.getElementById('filter-end');
+
+    filterTool.value = params.get('toolSlug') || '';
+    filterStart.value = params.get('startDate') || startDefault;
+    filterEnd.value = params.get('endDate') || endDefault;
 
     const renderRows = (selector, rows) => {
         const body = document.querySelector(selector + ' tbody');
         body.innerHTML = '';
         rows.forEach(row => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row.toolSlug}</td><td class="text-end">${row.totalExecutions}</td><td class="text-end">${row.successRate.toFixed(1)}%</td><td class="text-end">${row.avgDurationMs.toFixed(1)}</td>`;
+            tr.innerHTML = `<td><a href="?toolSlug=${encodeURIComponent(row.toolSlug)}&startDate=${filterStart.value}&endDate=${filterEnd.value}">${row.toolSlug}</a></td><td class="text-end">${row.totalExecutions}</td><td class="text-end">${row.successRate.toFixed(1)}%</td><td class="text-end">${row.avgDurationMs.toFixed(1)}</td>`;
             body.appendChild(tr);
         });
     };
 
-    renderRows('#top-tools-table', dashboard.topTools || []);
-    renderRows('#slow-tools-table', dashboard.slowTools || []);
+    async function loadDashboard(){
+        const response = await fetch('/api/admin/analytics/dashboard');
+        if (!response.ok) return;
+        const dashboard = await response.json();
 
-    const alertsBody = document.querySelector('#intelligence-alerts-table tbody');
-    alertsBody.innerHTML = '';
-    (dashboard.intelligenceAlerts || []).forEach(alert => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${alert.toolSlug}</td><td>${alert.type}</td><td>${alert.severity}</td><td>${alert.description}</td>`;
-        alertsBody.appendChild(tr);
-    });
+        document.getElementById('metric-total').textContent = dashboard.totalExecutionsToday.toLocaleString();
+        document.getElementById('metric-success').textContent = `${dashboard.successRate.toFixed(1)}%`;
+        document.getElementById('metric-duration').textContent = `${dashboard.avgDurationMs.toFixed(1)} ms`;
+        document.getElementById('metric-active').textContent = dashboard.activeToolsCount.toString();
 
-    if (alertsBody.children.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="4" class="text-secondary">No active anomalies for today.</td>';
-        alertsBody.appendChild(tr);
+        renderRows('#top-tools-table', dashboard.topTools || []);
+        renderRows('#slow-tools-table', dashboard.slowTools || []);
     }
 
-    const trend = dashboard.executionTrend || [];
-    const chart = document.getElementById('trend-chart');
-    chart.innerHTML = '';
-    const max = Math.max(...trend.map(x => x.totalExecutions), 1);
+    async function loadDrilldown(){
+        const search = new URLSearchParams({
+            startDate: filterStart.value,
+            endDate: filterEnd.value,
+            page: String(currentPage),
+            pageSize: String(pageSize)
+        });
 
-    trend.forEach(point => {
-        const bar = document.createElement('div');
-        const height = Math.max(4, Math.round((point.totalExecutions / max) * 160));
-        bar.style.height = `${height}px`;
-        bar.style.flex = '1';
-        bar.style.background = '#4f6bed';
-        bar.title = `${point.date}: ${point.totalExecutions} executions`;
-        chart.appendChild(bar);
-    });
+        if (filterTool.value.trim()) search.set('toolSlug', filterTool.value.trim());
 
+        history.replaceState({}, '', `${window.location.pathname}?${search.toString()}`);
 
-    const concurrency = backgroundHealth?.concurrency || {};
-    const topConflicts = concurrency.topConflictingResources || [];
-    const severityIndicators = concurrency.severityIndicators || [];
-    document.getElementById('metric-conflicts-24h').textContent = (concurrency.totalConflictsLast24h || 0).toLocaleString();
-    document.getElementById('metric-conflict-rate').textContent = topConflicts.length > 0 ? `${topConflicts[0].conflictRatePercent.toFixed(1)}%` : '0.0%';
+        const response = await fetch(`/api/admin/analytics/drilldown?${search.toString()}`);
+        if (!response.ok) return;
+        const payload = await response.json();
+        const body = document.querySelector('#drilldown-table tbody');
+        body.innerHTML = '';
 
-    const severityHost = document.getElementById('concurrency-severity');
-    severityHost.innerHTML = '';
-    if (severityIndicators.length === 0) {
-        severityHost.innerHTML = '<span class="badge bg-success">Normal</span>';
+        (payload.items || []).forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${item.date}</td><td>${item.toolSlug}</td><td class="text-end">${item.totalExecutions}</td><td class="text-end">${item.failureCount}</td><td class="text-end">${item.successRate.toFixed(1)}%</td><td class="text-end">${item.avgDurationMs.toFixed(1)}</td>`;
+            body.appendChild(tr);
+        });
+
+        totalItems = payload.totalItems || 0;
+        document.getElementById('drilldown-count').textContent = `${totalItems} rows`;
+        document.getElementById('drilldown-page-label').textContent = `Page ${currentPage}`;
+        document.getElementById('drilldown-prev').disabled = currentPage <= 1;
+        document.getElementById('drilldown-next').disabled = currentPage * pageSize >= totalItems;
     }
 
-    severityIndicators.forEach(item => {
-        const severity = (item.severity || '').toLowerCase();
-        const klass = severity === 'critical' ? 'bg-danger' : severity === 'warning' ? 'bg-warning text-dark' : 'bg-info';
-        const badge = document.createElement('span');
-        badge.className = `badge ${klass}`;
-        badge.textContent = `${item.signal}: ${item.description}`;
-        severityHost.appendChild(badge);
+    document.getElementById('apply-filters').addEventListener('click', async () => { currentPage = 1; await loadDrilldown(); });
+    document.getElementById('clear-filters').addEventListener('click', async () => {
+        filterTool.value = '';
+        filterStart.value = startDefault;
+        filterEnd.value = endDefault;
+        currentPage = 1;
+        await loadDrilldown();
     });
 
-    const conflictsBody = document.querySelector('#top-conflicts-table tbody');
-    conflictsBody.innerHTML = '';
-    topConflicts.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${item.resourceType}</td><td class="text-end">${item.conflicts}</td><td class="text-end">${item.conflictRatePercent.toFixed(1)}%</td>`;
-        conflictsBody.appendChild(tr);
+    document.getElementById('drilldown-prev').addEventListener('click', async () => { if (currentPage > 1) { currentPage -= 1; await loadDrilldown(); } });
+    document.getElementById('drilldown-next').addEventListener('click', async () => { if (currentPage * pageSize < totalItems) { currentPage += 1; await loadDrilldown(); } });
+
+    document.querySelectorAll('.analytics-nav-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const target = card.dataset.drill;
+            const panel = document.getElementById(`panel-${target}`) || document.getElementById('panel-drilldown');
+            panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     });
 
-    const conflictTrend = concurrency.conflictTrend || [];
-    const conflictTrendChart = document.getElementById('conflict-trend-chart');
-    conflictTrendChart.innerHTML = '';
-    const conflictMax = Math.max(...conflictTrend.map(x => x.conflicts || 0), 1);
-    conflictTrend.forEach(point => {
-        const bar = document.createElement('div');
-        const height = Math.max(4, Math.round(((point.conflicts || 0) / conflictMax) * 140));
-        bar.style.height = `${height}px`;
-        bar.style.flex = '1';
-        bar.style.background = '#f59f00';
-        bar.title = `${point.hourUtc}: ${point.conflicts} conflicts`;
-        conflictTrendChart.appendChild(bar);
-    });
+    const jump = params.get('drilldown');
+    if (jump) {
+        requestAnimationFrame(() => {
+            const panel = document.getElementById(`panel-${jump}`) || document.getElementById('panel-drilldown');
+            panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    await loadDashboard();
+    await loadDrilldown();
 })();
 </script>

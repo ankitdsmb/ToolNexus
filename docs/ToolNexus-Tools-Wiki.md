@@ -826,6 +826,14 @@ Documentation contract: every discovered `class`, `interface`, `record`, and `en
 - Server: scoped request services and singleton platform services.
 - Cache: distributed platform cache and tool result cache abstractions.
 
+
+### 7.4 Operator workflows (Runs 11–14)
+
+- **Analytics drilldown workflow:** Operators now start from dashboard drilldown cards, jump to `/admin/analytics`, and apply server-side tool/date filters. Results are paged by API query parameters (`page`, `pageSize`) to avoid full dataset loading.
+- **Bulk admin workflow:** In Tool Workspace, operators multi-select tools, run safe bulk enable/disable actions, and must confirm every status mutation before submit.
+- **Operator productivity workflow:** Table filtering, selection shortcuts (`Ctrl/Cmd+F`, `Ctrl/Cmd+Shift+E`, `Ctrl/Cmd+Shift+D`), and status severity badges optimize high-volume triage.
+- **Command palette workflow:** Admin shell now exposes command-palette actions for quick navigation, open-module jumps, and analytics filter jumps. Commands remain read/navigation-only (no runtime mutation actions in palette).
+
 ## 8. Design System Documentation
 
 - Styles in `src/ToolNexus.Web/wwwroot/css` follow platform-first naming and component layering.

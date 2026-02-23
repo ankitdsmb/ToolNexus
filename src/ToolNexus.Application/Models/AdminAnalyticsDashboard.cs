@@ -10,6 +10,26 @@ public sealed record AdminAnalyticsDashboard(
     IReadOnlyList<AdminAnalyticsTrendPoint> ExecutionTrend,
     IReadOnlyList<ToolAnomalySnapshot> IntelligenceAlerts);
 
+public sealed record AdminAnalyticsQuery(
+    DateOnly StartDate,
+    DateOnly EndDate,
+    string? ToolSlug,
+    int Page,
+    int PageSize);
+
+public sealed record AdminAnalyticsDrilldownResult(
+    AdminAnalyticsQuery Query,
+    int TotalItems,
+    IReadOnlyList<AdminAnalyticsDrilldownRow> Items);
+
+public sealed record AdminAnalyticsDrilldownRow(
+    string ToolSlug,
+    DateOnly Date,
+    long TotalExecutions,
+    double SuccessRate,
+    double AvgDurationMs,
+    long FailureCount);
+
 public sealed record AdminAnalyticsToolMetric(
     string ToolSlug,
     long TotalExecutions,
