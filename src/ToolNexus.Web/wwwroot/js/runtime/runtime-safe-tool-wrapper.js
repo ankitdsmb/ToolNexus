@@ -1,3 +1,5 @@
+import { runtimeIncidentReporter } from './runtime-incident-reporter.js';
+
 function isHTMLElementValue(value) {
   if (!value) {
     return false;
@@ -14,8 +16,36 @@ export function safeNoopResult(reason = 'unsupported_action') {
   return { ok: false, reason };
 }
 
-export function normalizeToolExecutionPayload(action, input) {
+function describePayloadType(action) {
   if (isHTMLElementValue(action)) {
+    return 'html_element';
+  }
+
+  if (action === null) {
+    return 'null';
+  }
+
+  return typeof action;
+}
+
+function reportContractViolation({ toolSlug = 'unknown-tool', message, payloadType }) {
+  runtimeIncidentReporter.report({
+    toolSlug,
+    phase: 'execute',
+    errorType: 'contract_violation',
+    message,
+    payloadType,
+    timestamp: new Date().toISOString()
+  });
+}
+
+export function normalizeToolExecutionPayload(action, input, { toolSlug } = {}) {
+  if (isHTMLElementValue(action)) {
+    reportContractViolation({
+      toolSlug,
+      message: 'Legacy runtime contract mismatch: action payload was HTMLElement.',
+      payloadType: 'html_element'
+    });
     return {
       action: '',
       input: typeof input === 'string' ? input : '',
@@ -25,6 +55,11 @@ export function normalizeToolExecutionPayload(action, input) {
   }
 
   if (typeof action !== 'string') {
+    reportContractViolation({
+      toolSlug,
+      message: 'Legacy runtime contract mismatch: action payload must be a string.',
+      payloadType: describePayloadType(action)
+    });
     return {
       action: '',
       input: typeof input === 'string' ? input : '',
@@ -41,16 +76,24 @@ export function normalizeToolExecutionPayload(action, input) {
   };
 }
 
-export async function invokeExecutionToolSafely(runTool, action, input) {
-  const normalized = normalizeToolExecutionPayload(action, input);
+export async function invokeExecutionToolSafely(runTool, action, input, { toolSlug } = {}) {
+  const normalized = normalizeToolExecutionPayload(action, input, { toolSlug });
   if (!normalized.isValidAction) {
     return normalized.result;
   }
 
   try {
     return await runTool(normalized.action, normalized.input);
-  } catch {
+  } catch (error) {
+    runtimeIncidentReporter.report({
+      toolSlug: toolSlug ?? 'unknown-tool',
+      phase: 'execute',
+      errorType: 'runtime_error',
+      message: error?.message ?? 'Tool execution failed.',
+      stack: error?.stack,
+      payloadType: 'string',
+      timestamp: new Date().toISOString()
+    });
     return safeNoopResult('tool_execution_failed');
   }
 }
-

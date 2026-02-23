@@ -1,0 +1,21 @@
+namespace ToolNexus.Application.Models;
+
+public sealed record RuntimeIncidentIngestRequest(
+    string ToolSlug,
+    string Phase,
+    string ErrorType,
+    string Message,
+    string? Stack,
+    string PayloadType,
+    DateTime Timestamp,
+    int Count,
+    string? Fingerprint);
+
+public sealed record RuntimeIncidentIngestBatch(IReadOnlyList<RuntimeIncidentIngestRequest> Incidents);
+
+public sealed record RuntimeIncidentSummary(
+    string ToolSlug,
+    string Message,
+    string Severity,
+    int Count,
+    DateTime LastOccurrenceUtc);

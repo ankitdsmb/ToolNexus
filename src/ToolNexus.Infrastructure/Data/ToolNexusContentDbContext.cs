@@ -22,6 +22,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<AuditEventEntity> AuditEvents => Set<AuditEventEntity>();
     public DbSet<AuditOutboxEntity> AuditOutbox => Set<AuditOutboxEntity>();
     public DbSet<AuditDeadLetterEntity> AuditDeadLetters => Set<AuditDeadLetterEntity>();
+    public DbSet<RuntimeIncidentEntity> RuntimeIncidents => Set<RuntimeIncidentEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -196,6 +197,21 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasOne(x => x.AuditEvent).WithMany().HasForeignKey(x => x.AuditEventId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(x => new { x.OperatorStatus, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_status_time").IsDescending(false, true);
             entity.HasIndex(x => new { x.Destination, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_destination").IsDescending(false, true);
+        });
+
+        modelBuilder.Entity<RuntimeIncidentEntity>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => x.Fingerprint).IsUnique();
+            entity.HasIndex(x => x.LastOccurredUtc);
+            entity.HasIndex(x => x.ToolSlug);
+            entity.Property(x => x.Fingerprint).HasMaxLength(400);
+            entity.Property(x => x.ToolSlug).HasMaxLength(120);
+            entity.Property(x => x.Phase).HasMaxLength(30);
+            entity.Property(x => x.ErrorType).HasMaxLength(40);
+            entity.Property(x => x.Message).HasMaxLength(2000);
+            entity.Property(x => x.PayloadType).HasMaxLength(80);
+            entity.Property(x => x.Severity).HasMaxLength(20);
         });
     }
 }

@@ -998,3 +998,17 @@ Platform enforcement points:
 - `runtime/runtime-safe-tool-wrapper.js` normalizes `action` and `input`, guards non-string and DOM payloads, and wraps execution in a no-throw boundary.
 - `tool-page.js` now uses the runtime wrapper before client execution and API fallback invocation.
 - `runtime/legacy-execution-bridge.js` skips execution-only `runTool(action,input)` contracts during mount fallback flow.
+
+## Runtime Incident Reporting
+
+ToolNexus runtime now includes a dedicated incident channel for legacy contract violations and runtime execution errors.
+
+### What changed
+- Added a normalized runtime incident contract (`toolSlug`, `phase`, `errorType`, `message`, `stack`, `payloadType`, `timestamp`).
+- Added client-side runtime incident reporter with queueing, dedupe, debounce, and batched API delivery.
+- Added backend ingestion endpoint: `POST /api/admin/runtime/incidents`.
+- Added persistence and aggregation for runtime incidents, then surfaced them in Admin Execution → Incidents.
+
+### Operator impact
+- Runtime continues safely (safe noop for invalid payloads) while all incidents are visible to Admin operators.
+- Repeated runtime failures collapse into a single grouped incident with incrementing count and updated last occurrence.

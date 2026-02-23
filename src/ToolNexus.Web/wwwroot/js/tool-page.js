@@ -595,7 +595,7 @@ function renderInsight(insight) {
 
 class ClientToolExecutor {
   canExecute(toolSlug, action, input) {
-    const normalizedPayload = normalizeToolExecutionPayload(action, input);
+    const normalizedPayload = normalizeToolExecutionPayload(action, input, { toolSlug });
     const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
     const normalizedAction = normalizedPayload.isValidAction ? normalizedPayload.action.trim().toLowerCase() : '';
 
@@ -608,7 +608,7 @@ class ClientToolExecutor {
   }
 
   async execute(toolSlug, action, input) {
-    const normalizedPayload = normalizeToolExecutionPayload(action, input);
+    const normalizedPayload = normalizeToolExecutionPayload(action, input, { toolSlug });
     const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
     const module = window.ToolNexusModules?.[normalizedSlug];
 
@@ -638,7 +638,7 @@ function normalizePathPrefix(pathPrefix) {
 }
 
 async function executeToolActionViaApi({ baseUrl = '', slug: toolSlug, action, input }) {
-  const payload = normalizeToolExecutionPayload(action, input);
+  const payload = normalizeToolExecutionPayload(action, input, { toolSlug });
   const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
   const normalizedAction = payload.isValidAction ? payload.action.trim() : '';
 

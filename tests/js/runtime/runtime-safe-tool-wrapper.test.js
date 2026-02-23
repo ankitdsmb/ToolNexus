@@ -1,6 +1,13 @@
+import { jest } from '@jest/globals';
 import { normalizeToolExecutionPayload, safeNoopResult, invokeExecutionToolSafely } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/runtime-safe-tool-wrapper.js';
+import { runtimeIncidentReporter } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/runtime-incident-reporter.js';
 
 describe('runtime safe tool wrapper', () => {
+  beforeEach(async () => {
+    global.fetch = jest.fn(async () => ({ ok: true }));
+    await runtimeIncidentReporter.flush();
+  });
+
   test('returns unsupported_action when action is not a string', () => {
     expect(normalizeToolExecutionPayload(null, 'abc')).toEqual({
       action: '',
@@ -18,6 +25,18 @@ describe('runtime safe tool wrapper', () => {
       isValidAction: false,
       result: safeNoopResult('unsupported_action')
     });
+  });
+
+
+  test('invalid action logs incident and runtime stays safe', async () => {
+    const before = runtimeIncidentReporter.getPendingCount();
+    const payload = normalizeToolExecutionPayload({ bad: true }, 'abc', { toolSlug: 'json-formatter' });
+
+    expect(payload.isValidAction).toBe(false);
+    expect(payload.result).toEqual(safeNoopResult('unsupported_action'));
+    expect(runtimeIncidentReporter.getPendingCount()).toBeGreaterThanOrEqual(before + 1);
+
+    await expect(runtimeIncidentReporter.flush()).resolves.toBeUndefined();
   });
 
   test('normalizes non-string input before execution', async () => {

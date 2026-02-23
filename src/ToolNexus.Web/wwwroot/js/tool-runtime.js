@@ -14,6 +14,7 @@ import { legacyExecuteTool as defaultLegacyExecuteTool, releaseLegacyInitializat
 import { createToolStateRegistry as defaultCreateToolStateRegistry } from './runtime/tool-state-registry.js';
 import { createRuntimeObservability as defaultCreateRuntimeObservability } from './runtime/runtime-observability.js';
 import { classifyRuntimeError } from './runtime/error-classification-engine.js';
+import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -296,6 +297,31 @@ export function createToolRuntime({
       observer?.emit?.(event, payload);
     } catch {
       // observability must never break runtime
+    }
+
+    try {
+      const incidentEvents = {
+        manifest_failure: { phase: 'bootstrap', errorType: 'runtime_error' },
+        template_load_failure: { phase: 'bootstrap', errorType: 'runtime_error' },
+        dom_contract_failure: { phase: 'mount', errorType: 'contract_violation' },
+        module_import_failure: { phase: 'mount', errorType: 'runtime_error' },
+        mount_failure: { phase: 'mount', errorType: 'runtime_error' },
+        tool_unrecoverable_failure: { phase: 'mount', errorType: 'runtime_error' }
+      };
+
+      const definition = incidentEvents[event];
+      if (definition) {
+        runtimeIncidentReporter.report({
+          toolSlug: payload.toolSlug ?? 'unknown-tool',
+          phase: definition.phase,
+          errorType: definition.errorType,
+          message: payload.error ?? payload.metadata?.errors?.join('; ') ?? String(event),
+          payloadType: 'runtime_event',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch {
+      // incident reporting is best-effort and isolated from runtime lifecycle
     }
   }
 

@@ -37,7 +37,7 @@
         <h4 class="card-title">Incident Timeline</h4>
         <div class="table-responsive">
             <table class="table table-sm">
-                <thead><tr><th>When (UTC)</th><th>Type</th><th>Destination</th><th>Summary</th><th class="text-end">Attempts</th></tr></thead>
+                <thead><tr><th>Last Occurrence (UTC)</th><th>Severity / Type</th><th>Tool Slug</th><th>Error Message</th><th class="text-end">Count</th></tr></thead>
                 <tbody id="incidents-body"></tbody>
             </table>
         </div>
@@ -105,7 +105,7 @@
         body.innerHTML = '';
         (result.items || []).forEach(item => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${item.occurredAtUtc}</td><td><span class="badge ${severityClass(item.severity)}">${item.eventType}</span></td><td>${item.destination}</td><td>${item.summary}</td><td class="text-end">${item.attemptCount}</td>`;
+            tr.innerHTML = `<td>${item.occurredAtUtc}</td><td><span class="badge ${severityClass(item.severity)}">${item.severity} / ${item.eventType}</span></td><td>${item.destination}</td><td>${item.summary}</td><td class="text-end">${item.attemptCount}</td>`;
             body.appendChild(tr);
         });
 
