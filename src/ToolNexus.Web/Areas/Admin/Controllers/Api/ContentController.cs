@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Application.Models;
@@ -31,6 +32,10 @@ public sealed class ContentController(IToolContentEditorService service) : Contr
         catch (ValidationException ex)
         {
             return ValidationProblem(detail: ex.Message);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Conflict, ConcurrencyConflict.ToEnvelope(ex.Conflict));
         }
     }
 }

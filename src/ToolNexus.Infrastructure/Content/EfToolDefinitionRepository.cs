@@ -94,10 +94,7 @@ public sealed class EfToolDefinitionRepository(
             ApplyUpdates(entity, request);
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-            if (!await SaveWithConcurrencyRecoveryAsync(entity, "ToolDefinition", entity.Id.ToString(), request, cancellationToken))
-            {
-                return null;
-            }
+            await SaveWithConcurrencyEnforcementAsync(entity, "ToolDefinition", entity.Id.ToString(), request.VersionToken, request, cancellationToken);
 
             var after = new { entity.Name, entity.Slug, entity.Category, entity.Status, entity.SortOrder };
             await auditLogger.TryLogAsync("ToolUpdated", "ToolDefinition", entity.Id.ToString(), before, after, cancellationToken);
@@ -143,10 +140,7 @@ public sealed class EfToolDefinitionRepository(
             entity.UpdatedAt = DateTimeOffset.UtcNow;
             entity.RowVersion = ConcurrencyTokenCodec.NewToken();
 
-            if (!await SaveWithConcurrencyRecoveryAsync(entity, "ToolDefinition", entity.Id.ToString(), new { Status = entity.Status }, cancellationToken))
-            {
-                return false;
-            }
+            await SaveWithConcurrencyEnforcementAsync(entity, "ToolDefinition", entity.Id.ToString(), null, new { Status = entity.Status }, cancellationToken);
 
             await auditLogger.TryLogAsync(
                 "FeatureFlagChanged",
@@ -159,13 +153,27 @@ public sealed class EfToolDefinitionRepository(
             return true;
         }, cancellationToken);
 
-    private async Task<bool> SaveWithConcurrencyRecoveryAsync(ToolDefinitionEntity entity, string resourceType, string resourceId, object attemptedPayload, CancellationToken cancellationToken)
+    private async Task SaveWithConcurrencyEnforcementAsync(ToolDefinitionEntity entity, string resourceType, string resourceId, string? requestVersionToken, object attemptedPayload, CancellationToken cancellationToken)
     {
-        var attemptedToken = ConcurrencyTokenCodec.Encode(dbContext.Entry(entity).Property(x => x.RowVersion).OriginalValue);
+        if (string.IsNullOrWhiteSpace(requestVersionToken))
+        {
+            logger.LogWarning("Missing version token for {ResourceType} {ResourceId}; allowing transitional write.", resourceType, resourceId);
+            await auditLogger.TryLogAsync(
+                "MissingVersionToken",
+                resourceType,
+                resourceId,
+                before: null,
+                after: new { AttemptedPayload = attemptedPayload },
+                cancellationToken);
+        }
+        else
+        {
+            dbContext.Entry(entity).Property(x => x.RowVersion).OriginalValue = ConcurrencyTokenCodec.Decode(requestVersionToken);
+        }
+
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
-            return true;
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -175,33 +183,11 @@ public sealed class EfToolDefinitionRepository(
                 "ConcurrencyConflictDetected",
                 resourceType,
                 resourceId,
-                new { AttemptedToken = attemptedToken, attemptedPayload },
+                new { AttemptedToken = requestVersionToken, attemptedPayload },
                 new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
                 cancellationToken);
 
-            dbContext.Entry(entity).State = EntityState.Detached;
-            var current = await dbContext.ToolDefinitions.SingleOrDefaultAsync(x => x.Id == entity.Id, cancellationToken);
-            if (current is null)
-            {
-                return false;
-            }
-
-            ApplyUpdates(current, request: new UpdateToolDefinitionRequest(
-                entity.Name,
-                entity.Slug,
-                entity.Description,
-                entity.Category,
-                entity.Status,
-                entity.Icon,
-                entity.SortOrder,
-                entity.InputSchema,
-                entity.OutputSchema));
-
-            entity.Id = current.Id;
-            entity.RowVersion = current.RowVersion;
-
-            await dbContext.SaveChangesAsync(cancellationToken);
-            return true;
+            throw new OptimisticConcurrencyException(requestVersionToken, ex);
         }
     }
 

@@ -84,14 +84,28 @@ public sealed class EfExecutionPolicyRepository(
                 policy.IsExecutionEnabled
             };
 
+            await AttachExpectedTokenIfPresentAsync(policy, request.VersionToken, cancellationToken);
             ApplyUpdates(policy, request);
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
-        if (!await SaveWithConcurrencyRecoveryAsync(policy, request, cancellationToken))
+        try
         {
-            return null;
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            var currentToken = await db.ToolExecutionPolicies.AsNoTracking().Where(x => x.Id == policy.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            await auditLogger.TryLogAsync(
+                "ConcurrencyConflictDetected",
+                "ToolExecutionPolicy",
+                policy.Id.ToString(),
+                new { AttemptedToken = request.VersionToken },
+                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                cancellationToken);
+            logger.LogWarning(ex, "Optimistic concurrency conflict for ToolExecutionPolicy {PolicyId}.", policy.Id);
+            throw new OptimisticConcurrencyException(request.VersionToken, ex);
         }
 
         await auditLogger.TryLogAsync(
@@ -127,42 +141,22 @@ public sealed class EfExecutionPolicyRepository(
         return model;
     }
 
-    private async Task<bool> SaveWithConcurrencyRecoveryAsync(ToolExecutionPolicyEntity policy, UpdateToolExecutionPolicyRequest request, CancellationToken cancellationToken)
+    private async Task AttachExpectedTokenIfPresentAsync(ToolExecutionPolicyEntity policy, string? token, CancellationToken cancellationToken)
     {
-        var attemptedToken = ConcurrencyTokenCodec.Encode(db.Entry(policy).Property(x => x.RowVersion).OriginalValue);
-
-        try
+        if (string.IsNullOrWhiteSpace(token))
         {
-            await db.SaveChangesAsync(cancellationToken);
-            return true;
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            logger.LogWarning(ex, "Optimistic concurrency conflict for ToolExecutionPolicy {PolicyId}.", policy.Id);
-
-            var currentToken = await db.ToolExecutionPolicies.AsNoTracking().Where(x => x.Id == policy.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            logger.LogWarning("Missing version token for ToolExecutionPolicy {PolicyId}; allowing transitional write.", policy.Id);
             await auditLogger.TryLogAsync(
-                "ConcurrencyConflictDetected",
+                "MissingVersionToken",
                 "ToolExecutionPolicy",
                 policy.Id.ToString(),
-                new { AttemptedToken = attemptedToken },
-                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                null,
+                new { policy.ToolSlug },
                 cancellationToken);
-
-            db.Entry(policy).State = EntityState.Detached;
-            var latest = await db.ToolExecutionPolicies.SingleOrDefaultAsync(x => x.Id == policy.Id, cancellationToken);
-            if (latest is null)
-            {
-                return false;
-            }
-
-            ApplyUpdates(latest, request);
-            policy.ToolDefinitionId = latest.ToolDefinitionId;
-            policy.RowVersion = latest.RowVersion;
-
-            await db.SaveChangesAsync(cancellationToken);
-            return true;
+            return;
         }
+
+        db.Entry(policy).Property(x => x.RowVersion).OriginalValue = ConcurrencyTokenCodec.Decode(token);
     }
 
     private static void ApplyUpdates(ToolExecutionPolicyEntity policy, UpdateToolExecutionPolicyRequest request)

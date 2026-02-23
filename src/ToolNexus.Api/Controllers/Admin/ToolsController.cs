@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Authentication;
@@ -36,6 +37,10 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
         {
             return ValidationProblem(detail: ex.Message);
         }
+        catch (ConcurrencyConflictException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Conflict, ConcurrencyConflict.ToEnvelope(ex.Conflict));
+        }
     }
 
     [HttpPut("{id:int}")]
@@ -50,6 +55,10 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
         catch (ValidationException ex)
         {
             return ValidationProblem(detail: ex.Message);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Conflict, ConcurrencyConflict.ToEnvelope(ex.Conflict));
         }
     }
 
@@ -70,10 +79,11 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
         [Required] string Icon,
         int SortOrder,
         [Required] string InputSchema,
-        [Required] string OutputSchema)
+        [Required] string OutputSchema,
+        string? VersionToken = null)
     {
         public CreateToolDefinitionRequest ToCreateRequest() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema);
-        public UpdateToolDefinitionRequest ToUpdateRequest() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema);
+        public UpdateToolDefinitionRequest ToUpdateRequest() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema, VersionToken);
     }
 
     public sealed record SetToolStatusRequest(bool Enabled);

@@ -26,4 +26,5 @@ public sealed record SaveToolContentGraphRequest(
     IReadOnlyCollection<ContentExampleItem> Examples,
     IReadOnlyCollection<ContentFaqItem> Faqs,
     IReadOnlyCollection<ContentValueItem> UseCases,
-    IReadOnlyCollection<ContentRelatedItem> RelatedTools);
+    IReadOnlyCollection<ContentRelatedItem> RelatedTools,
+    string? VersionToken = null);

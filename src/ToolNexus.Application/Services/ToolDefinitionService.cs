@@ -20,7 +20,30 @@ public sealed class ToolDefinitionService(IToolDefinitionRepository repository) 
     public async Task<ToolDefinitionDetail?> UpdateAsync(int id, UpdateToolDefinitionRequest request, CancellationToken cancellationToken = default)
     {
         await ValidateAndThrowAsync(request.Slug, id, cancellationToken);
-        return await repository.UpdateAsync(id, Normalize(request), cancellationToken);
+        var normalizedRequest = Normalize(request);
+
+        try
+        {
+            return await repository.UpdateAsync(id, normalizedRequest, cancellationToken);
+        }
+        catch (OptimisticConcurrencyException ex)
+        {
+            var server = await repository.GetByIdAsync(id, cancellationToken);
+            if (server is null)
+            {
+                return null;
+            }
+
+            throw new ConcurrencyConflictException(new ConcurrencyConflict(
+                Error: "ConcurrencyConflict",
+                Resource: "ToolDefinition",
+                ResourceId: id.ToString(),
+                ClientVersionToken: ex.ClientVersionToken ?? normalizedRequest.VersionToken,
+                ServerVersionToken: server.VersionToken,
+                ServerState: server,
+                ChangedFields: GetChangedFields(normalizedRequest, server),
+                Message: "Resource was modified by another user. Refresh and reconcile changes."));
+        }
     }
 
     public Task<bool> SetEnabledAsync(int id, bool enabled, CancellationToken cancellationToken = default)
@@ -67,4 +90,19 @@ public sealed class ToolDefinitionService(IToolDefinitionRepository repository) 
 
     private static string NormalizeStatus(string status)
         => status.Equals("disabled", StringComparison.OrdinalIgnoreCase) ? "Disabled" : "Enabled";
+
+    private static IReadOnlyCollection<string> GetChangedFields(UpdateToolDefinitionRequest request, ToolDefinitionDetail server)
+    {
+        var changed = new List<string>();
+        if (!string.Equals(request.Name, server.Name, StringComparison.Ordinal)) changed.Add("name");
+        if (!string.Equals(request.Slug, server.Slug, StringComparison.Ordinal)) changed.Add("slug");
+        if (!string.Equals(request.Description, server.Description, StringComparison.Ordinal)) changed.Add("description");
+        if (!string.Equals(request.Category, server.Category, StringComparison.Ordinal)) changed.Add("category");
+        if (!string.Equals(request.Status, server.Status, StringComparison.Ordinal)) changed.Add("status");
+        if (!string.Equals(request.Icon, server.Icon, StringComparison.Ordinal)) changed.Add("icon");
+        if (request.SortOrder != server.SortOrder) changed.Add("sortOrder");
+        if (!string.Equals(request.InputSchema, server.InputSchema, StringComparison.Ordinal)) changed.Add("inputSchema");
+        if (!string.Equals(request.OutputSchema, server.OutputSchema, StringComparison.Ordinal)) changed.Add("outputSchema");
+        return changed;
+    }
 }

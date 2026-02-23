@@ -157,10 +157,7 @@ public sealed class EfToolContentEditorRepository(
 
         content.RowVersion = ConcurrencyTokenCodec.NewToken();
 
-        if (!await SaveWithConcurrencyRecoveryAsync(content, request, cancellationToken))
-        {
-            return false;
-        }
+        await SaveWithConcurrencyEnforcementAsync(content, request, cancellationToken);
 
         await auditLogger.TryLogAsync(
             "FeatureFlagChanged",
@@ -176,14 +173,27 @@ public sealed class EfToolContentEditorRepository(
     public async Task<IReadOnlyCollection<string>> GetDefinitionSlugsAsync(CancellationToken cancellationToken = default)
         => await dbContext.ToolDefinitions.AsNoTracking().Select(x => x.Slug).ToArrayAsync(cancellationToken);
 
-    private async Task<bool> SaveWithConcurrencyRecoveryAsync(ToolContentEntity content, SaveToolContentGraphRequest request, CancellationToken cancellationToken)
+    private async Task SaveWithConcurrencyEnforcementAsync(ToolContentEntity content, SaveToolContentGraphRequest request, CancellationToken cancellationToken)
     {
-        var attemptedToken = ConcurrencyTokenCodec.Encode(dbContext.Entry(content).Property(x => x.RowVersion).OriginalValue);
+        if (string.IsNullOrWhiteSpace(request.VersionToken))
+        {
+            logger.LogWarning("Missing version token for ToolContent {ContentId}; allowing transitional write.", content.Id);
+            await auditLogger.TryLogAsync(
+                "MissingVersionToken",
+                "ToolContent",
+                content.Id.ToString(),
+                before: null,
+                after: new { content.Slug },
+                cancellationToken);
+        }
+        else
+        {
+            dbContext.Entry(content).Property(x => x.RowVersion).OriginalValue = ConcurrencyTokenCodec.Decode(request.VersionToken);
+        }
 
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
-            return true;
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -194,48 +204,12 @@ public sealed class EfToolContentEditorRepository(
                 "ConcurrencyConflictDetected",
                 "ToolContent",
                 content.Id.ToString(),
-                new { AttemptedToken = attemptedToken },
+                new { AttemptedToken = request.VersionToken },
                 new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
                 cancellationToken);
 
-            dbContext.Entry(content).State = EntityState.Detached;
-            var latest = await dbContext.ToolContents
-                .Include(x => x.Features)
-                .Include(x => x.Steps)
-                .Include(x => x.Examples)
-                .Include(x => x.Faq)
-                .Include(x => x.UseCases)
-                .Include(x => x.RelatedTools)
-                .SingleOrDefaultAsync(x => x.Id == content.Id, cancellationToken);
-
-            if (latest is null)
-            {
-                return false;
-            }
-
-            latest.Features.Clear();
-            latest.UseCases.Clear();
-            latest.Steps.Clear();
-            latest.Examples.Clear();
-            latest.Faq.Clear();
-            latest.RelatedTools.Clear();
-
-            foreach (var item in request.Features)
-                latest.Features.Add(new ToolFeatureEntity { ToolContentId = latest.Id, Value = item.Value, SortOrder = item.SortOrder });
-            foreach (var item in request.UseCases)
-                latest.UseCases.Add(new ToolUseCaseEntity { ToolContentId = latest.Id, Value = item.Value, SortOrder = item.SortOrder });
-            foreach (var item in request.Steps)
-                latest.Steps.Add(new ToolStepEntity { ToolContentId = latest.Id, Title = item.Title, Description = item.Description, SortOrder = item.SortOrder });
-            foreach (var item in request.Examples)
-                latest.Examples.Add(new ToolExampleEntity { ToolContentId = latest.Id, Title = item.Title, Input = item.Input, Output = item.Output, SortOrder = item.SortOrder });
-            foreach (var item in request.Faqs)
-                latest.Faq.Add(new ToolFaqEntity { ToolContentId = latest.Id, Question = item.Question, Answer = item.Answer, SortOrder = item.SortOrder });
-            foreach (var item in request.RelatedTools)
-                latest.RelatedTools.Add(new ToolRelatedEntity { ToolContentId = latest.Id, RelatedSlug = item.RelatedSlug, SortOrder = item.SortOrder });
-
-            latest.RowVersion = ConcurrencyTokenCodec.NewToken();
-            await dbContext.SaveChangesAsync(cancellationToken);
-            return true;
+            throw new OptimisticConcurrencyException(request.VersionToken, ex);
         }
     }
+
 }
