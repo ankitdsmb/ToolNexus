@@ -18,6 +18,26 @@ public sealed class AnalyticsController(IAdminAnalyticsService service) : Contro
         return Ok(dashboard);
     }
 
+
+    [HttpGet("tool-detail")]
+    public async Task<ActionResult<AdminAnalyticsToolDetail>> GetToolDetail(
+        [FromQuery] DateOnly? startDate,
+        [FromQuery] DateOnly? endDate,
+        [FromQuery] string? toolSlug,
+        CancellationToken cancellationToken = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var query = new AdminAnalyticsQuery(
+            startDate ?? today.AddDays(-13),
+            endDate ?? today,
+            toolSlug,
+            1,
+            100);
+
+        var detail = await service.GetToolDetailAsync(query, cancellationToken);
+        return detail is null ? NotFound() : Ok(detail);
+    }
+
     [HttpGet("drilldown")]
     public async Task<ActionResult<AdminAnalyticsDrilldownResult>> GetDrilldown(
         [FromQuery] DateOnly? startDate,

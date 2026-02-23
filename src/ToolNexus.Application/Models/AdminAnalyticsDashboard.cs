@@ -22,6 +22,16 @@ public sealed record AdminAnalyticsDrilldownResult(
     int TotalItems,
     IReadOnlyList<AdminAnalyticsDrilldownRow> Items);
 
+public sealed record AdminAnalyticsToolDetail(
+    string ToolSlug,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    long TotalExecutions,
+    long TotalFailures,
+    double SuccessRate,
+    double AvgDurationMs,
+    IReadOnlyList<AdminAnalyticsDrilldownRow> DailyRows);
+
 public sealed record AdminAnalyticsDrilldownRow(
     string ToolSlug,
     DateOnly Date,

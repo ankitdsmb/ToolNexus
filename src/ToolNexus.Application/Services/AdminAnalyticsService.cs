@@ -78,6 +78,50 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) 
         return new AdminAnalyticsDrilldownResult(normalized, totalItems, rows);
     }
 
+
+    public async Task<AdminAnalyticsToolDetail?> GetToolDetailAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(query with { Page = 1, PageSize = 100 });
+        if (string.IsNullOrWhiteSpace(normalized.ToolSlug))
+        {
+            return null;
+        }
+
+        var (items, _) = await repository.QueryAsync(normalized, cancellationToken);
+        var rows = items
+            .OrderByDescending(x => x.Date)
+            .ThenBy(x => x.ToolSlug, StringComparer.OrdinalIgnoreCase)
+            .Select(x => new AdminAnalyticsDrilldownRow(
+                x.ToolSlug,
+                x.Date,
+                x.TotalExecutions,
+                x.TotalExecutions == 0 ? 0d : (double)x.SuccessCount / x.TotalExecutions * 100d,
+                x.AvgDurationMs,
+                x.TotalExecutions - x.SuccessCount))
+            .ToList();
+
+        if (rows.Count == 0)
+        {
+            return null;
+        }
+
+        var totalExecutions = rows.Sum(x => x.TotalExecutions);
+        var totalFailures = rows.Sum(x => x.FailureCount);
+        var weightedDurationSum = rows.Sum(x => x.AvgDurationMs * x.TotalExecutions);
+        var avgDuration = totalExecutions == 0 ? 0d : weightedDurationSum / totalExecutions;
+        var successRate = totalExecutions == 0 ? 0d : (double)(totalExecutions - totalFailures) / totalExecutions * 100d;
+
+        return new AdminAnalyticsToolDetail(
+            normalized.ToolSlug!,
+            normalized.StartDate,
+            normalized.EndDate,
+            totalExecutions,
+            totalFailures,
+            successRate,
+            avgDuration,
+            rows);
+    }
+
     private static AdminAnalyticsQuery Normalize(AdminAnalyticsQuery query)
     {
         var page = Math.Max(1, query.Page);
