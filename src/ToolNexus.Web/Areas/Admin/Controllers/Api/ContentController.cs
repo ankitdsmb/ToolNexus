@@ -1,12 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Application.Models;
+using ToolNexus.Web.Security;
 using ToolNexus.Application.Services;
 
 namespace ToolNexus.Web.Areas.Admin.Controllers.Api;
 
 [ApiController]
 [Route("api/admin/content")]
+[Authorize(Policy = AdminPolicyNames.AdminRead)]
 public sealed class ContentController(IToolContentEditorService service) : ControllerBase
 {
     [HttpGet("{toolId:int}")]
@@ -17,6 +20,7 @@ public sealed class ContentController(IToolContentEditorService service) : Contr
     }
 
     [HttpPut("{toolId:int}")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<IActionResult> Save([FromRoute] int toolId, [FromBody] SaveToolContentGraphRequest request, CancellationToken cancellationToken)
     {
         try

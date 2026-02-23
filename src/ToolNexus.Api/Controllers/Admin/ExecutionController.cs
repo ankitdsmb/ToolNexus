@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 
@@ -7,6 +9,7 @@ namespace ToolNexus.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/execution")]
+[Authorize(Policy = AdminPolicyNames.AdminRead)]
 public sealed class ExecutionController(IExecutionPolicyService service) : ControllerBase
 {
     [HttpGet("{slug}")]
@@ -17,6 +20,7 @@ public sealed class ExecutionController(IExecutionPolicyService service) : Contr
     }
 
     [HttpPut("{slug}")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<ActionResult<ToolExecutionPolicyModel>> Update([FromRoute] string slug, [FromBody] UpdateExecutionPolicyRequest request, CancellationToken cancellationToken)
     {
         try

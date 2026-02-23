@@ -1,12 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Application.Services;
+using ToolNexus.Web.Security;
 using ToolNexus.Web.Areas.Admin.Models;
 using ToolNexus.Web.Areas.Admin.Services;
 
 namespace ToolNexus.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
+[Authorize(Policy = AdminPolicyNames.AdminRead)]
 public sealed class ToolsController(IToolDefinitionService service, IExecutionPolicyService executionPolicyService, IAdminToolsViewModelService viewModelService) : Controller
 {
     [HttpGet]
@@ -26,6 +29,7 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
     }
 
     [HttpPost]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(ToolAdminFormModel form, CancellationToken cancellationToken)
     {
@@ -63,6 +67,7 @@ public sealed class ToolsController(IToolDefinitionService service, IExecutionPo
     }
 
     [HttpPost("admin/tools/{id:int}/status")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleStatus([FromRoute] int id, [FromForm] bool enabled, CancellationToken cancellationToken)
     {

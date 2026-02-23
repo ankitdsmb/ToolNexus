@@ -965,8 +965,9 @@ Documentation contract: every discovered `class`, `interface`, `record`, and `en
 - **Placeholder-only**: Content section shell, categories, execution section shell, users, feature flags, settings.
 
 ### 16.2 Security boundary warning (critical)
-- Current admin controllers in both `ToolNexus.Web` and `ToolNexus.Api` admin surfaces do not declare explicit `[Authorize]`/policy attributes.
-- Wiki policy for future work: all admin read/write routes must be bound to explicit named policies (`AdminRead`, `AdminWrite`) and verified by integration tests.
+- Admin controllers in both `ToolNexus.Web` and `ToolNexus.Api` now enforce explicit policy attributes.
+- Admin read routes require `AdminRead`; mutating routes require `AdminWrite`, both mapped to `tool_permission` claims (`admin:read`, `admin:write`, `admin:*`, `*:*`).
+- Integration tests should authenticate with an admin token/cookie carrying `tool_permission` before calling `/api/admin/*` endpoints.
 
 ### 16.3 Hidden dependencies that affect admin correctness
 - Admin analytics fidelity depends on telemetry ingestion + daily metric/anomaly persistence.

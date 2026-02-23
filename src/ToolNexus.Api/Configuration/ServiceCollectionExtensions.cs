@@ -147,6 +147,24 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization(options =>
         {
+            options.AddPolicy(AdminPolicyNames.AdminRead, policy =>
+            {
+                policy.AddAuthenticationSchemes(
+                    JwtBearerDefaults.AuthenticationScheme,
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+                policy.RequireAssertion(context => AdminPermissionClaims.CanRead(context.User));
+            });
+
+            options.AddPolicy(AdminPolicyNames.AdminWrite, policy =>
+            {
+                policy.AddAuthenticationSchemes(
+                    JwtBearerDefaults.AuthenticationScheme,
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+                policy.RequireAssertion(context => AdminPermissionClaims.CanWrite(context.User));
+            });
+
             options.AddPolicy(ToolActionRequirement.PolicyName, policy =>
             {
                 policy.AddAuthenticationSchemes(

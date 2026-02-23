@@ -85,7 +85,20 @@ builder.Services.AddAuthentication(options =>
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AdminPolicyNames.AdminRead, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context => AdminPermissionClaims.CanRead(context.User));
+    });
+
+    options.AddPolicy(AdminPolicyNames.AdminWrite, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context => AdminPermissionClaims.CanWrite(context.User));
+    });
+});
 
 builder.Services.AddCors(options =>
 {
