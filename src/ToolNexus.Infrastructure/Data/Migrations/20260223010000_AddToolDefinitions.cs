@@ -1,10 +1,14 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ToolNexus.Infrastructure.Data.Migrations
 {
+    [DbContextAttribute(typeof(ToolNexusContentDbContext))]
+    [Migration("20260223010000_AddToolDefinitions")]
     public partial class AddToolDefinitions : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
