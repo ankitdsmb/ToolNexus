@@ -1,0 +1,120 @@
+@{
+    ViewData["Title"] = "Execution Monitoring";
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3"><div class="card"><div class="card-body"><small>Pending Items</small><h3 id="pending-count">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small>Retry Count</small><h3 id="retry-count">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small>Dead Letters</small><h3 id="dead-letter-count">-</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><small>Oldest Pending</small><h3 id="oldest-pending">-</h3></div></div></div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4 class="card-title d-flex justify-content-between align-items-center">
+            <span>Worker Status</span>
+            <span id="worker-warning" class="badge bg-yellow-lt d-none">Worker stale</span>
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead><tr><th>Worker Instance ID</th><th>Last Heartbeat</th><th class="text-end">Active Jobs</th><th class="text-end">Recent Errors</th><th>Status</th></tr></thead>
+                <tbody id="workers-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Incident Timeline</h4>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead><tr><th>When (UTC)</th><th>Type</th><th>Destination</th><th>Summary</th><th class="text-end">Attempts</th></tr></thead>
+                <tbody id="incidents-body"></tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="prev-page">Prev</button>
+            <span class="align-self-center text-secondary" id="paging-label">Page 1</span>
+            <button class="btn btn-sm btn-outline-secondary" id="next-page">Next</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(async function() {
+    let page = 1;
+    const pageSize = 15;
+
+    async function loadHealth() {
+        const res = await fetch('/admin/execution/health');
+        if (!res.ok) return;
+        const health = await res.json();
+        document.getElementById('pending-count').textContent = health.pendingItems;
+        document.getElementById('retry-count').textContent = health.retryCount;
+        document.getElementById('dead-letter-count').textContent = health.deadLetterCount;
+        document.getElementById('oldest-pending').textContent = health.oldestPendingAgeMinutes == null ? '-' : `${health.oldestPendingAgeMinutes} min`;
+
+        if (health.hasDeadLetters || health.backlogIncreasing) {
+            document.getElementById('dead-letter-count').closest('.card-body').classList.add('bg-yellow-lt');
+        }
+    }
+
+    async function loadWorkers() {
+        const res = await fetch('/admin/execution/workers');
+        if (!res.ok) return;
+        const data = await res.json();
+        const body = document.getElementById('workers-body');
+        body.innerHTML = '';
+
+        let staleFound = false;
+        (data.workers || []).forEach(worker => {
+            staleFound = staleFound || worker.isStale;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${worker.workerInstanceId}</td><td>${worker.lastHeartbeatUtc ?? '-'}</td><td class="text-end">${worker.activeJobs}</td><td class="text-end">${worker.recentErrors}</td><td><span class="badge ${worker.isStale ? 'bg-yellow-lt' : 'bg-green-lt'}">${worker.isStale ? 'stale' : 'healthy'}</span></td>`;
+            body.appendChild(tr);
+        });
+
+        if (!body.children.length) {
+            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No active workers discovered.</td></tr>';
+        }
+
+        document.getElementById('worker-warning').classList.toggle('d-none', !staleFound);
+    }
+
+    function severityClass(severity) {
+        if (severity === 'critical') return 'bg-red-lt';
+        if (severity === 'warning') return 'bg-yellow-lt';
+        return 'bg-secondary-lt';
+    }
+
+    async function loadIncidents() {
+        const res = await fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`);
+        if (!res.ok) return;
+        const result = await res.json();
+        const body = document.getElementById('incidents-body');
+        body.innerHTML = '';
+        (result.items || []).forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${item.occurredAtUtc}</td><td><span class="badge ${severityClass(item.severity)}">${item.eventType}</span></td><td>${item.destination}</td><td>${item.summary}</td><td class="text-end">${item.attemptCount}</td>`;
+            body.appendChild(tr);
+        });
+
+        if (!body.children.length) {
+            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No incidents found.</td></tr>';
+        }
+
+        const maxPage = Math.max(1, Math.ceil((result.totalItems || 0) / pageSize));
+        document.getElementById('paging-label').textContent = `Page ${page} / ${maxPage}`;
+        document.getElementById('prev-page').disabled = page <= 1;
+        document.getElementById('next-page').disabled = page >= maxPage;
+    }
+
+    document.getElementById('prev-page').addEventListener('click', async () => { page = Math.max(1, page - 1); await loadIncidents(); });
+    document.getElementById('next-page').addEventListener('click', async () => { page += 1; await loadIncidents(); });
+
+    await loadHealth();
+    await loadWorkers();
+    await loadIncidents();
+})();
+</script>
