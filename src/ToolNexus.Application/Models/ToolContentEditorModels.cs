@@ -10,7 +10,8 @@ public sealed record ToolContentEditorGraph(
     IReadOnlyCollection<ContentFaqItem> Faqs,
     IReadOnlyCollection<ContentValueItem> UseCases,
     IReadOnlyCollection<ContentRelatedItem> RelatedTools,
-    IReadOnlyCollection<RelatedToolOption> RelatedToolOptions);
+    IReadOnlyCollection<RelatedToolOption> RelatedToolOptions,
+    string? VersionToken = null);
 
 public sealed record ContentValueItem(int Id, string Value, int SortOrder);
 public sealed record ContentStepItem(int Id, string Title, string Description, int SortOrder);

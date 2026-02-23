@@ -10,6 +10,7 @@ public sealed class ToolContentEntity
     public required string Intro { get; set; }
     public required string LongDescription { get; set; }
     public required string Keywords { get; set; }
+    public byte[]? RowVersion { get; set; }
 
     public List<ToolFeatureEntity> Features { get; set; } = [];
     public List<ToolStepEntity> Steps { get; set; } = [];

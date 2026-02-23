@@ -34,6 +34,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.SeoTitle).HasMaxLength(200);
             entity.Property(x => x.SeoDescription).HasMaxLength(320);
             entity.Property(x => x.Keywords).HasMaxLength(500);
+            entity.Property(x => x.RowVersion).IsConcurrencyToken();
 
             entity.HasMany(x => x.Features).WithOne(x => x.ToolContent).HasForeignKey(x => x.ToolContentId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.Steps).WithOne(x => x.ToolContent).HasForeignKey(x => x.ToolContentId).OnDelete(DeleteBehavior.Cascade);
@@ -101,6 +102,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Icon).HasMaxLength(120);
             entity.Property(x => x.ActionsCsv).HasMaxLength(500);
             entity.Property(x => x.UpdatedAt);
+            entity.Property(x => x.RowVersion).IsConcurrencyToken();
         });
 
         modelBuilder.Entity<ToolExecutionPolicyEntity>(entity =>
@@ -111,6 +113,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.ToolSlug).HasMaxLength(120);
             entity.Property(x => x.ExecutionMode).HasMaxLength(20);
             entity.Property(x => x.UpdatedAt);
+            entity.Property(x => x.RowVersion).IsConcurrencyToken();
         });
 
         modelBuilder.Entity<ToolExecutionEventEntity>(entity =>

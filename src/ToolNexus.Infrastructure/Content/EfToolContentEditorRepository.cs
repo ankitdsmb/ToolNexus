@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
@@ -6,7 +7,10 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Content;
 
-public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbContext, IAdminAuditLogger auditLogger) : IToolContentEditorRepository
+public sealed class EfToolContentEditorRepository(
+    ToolNexusContentDbContext dbContext,
+    IAdminAuditLogger auditLogger,
+    ILogger<EfToolContentEditorRepository> logger) : IToolContentEditorRepository
 {
     public async Task<ToolContentEditorGraph?> GetGraphByToolIdAsync(int toolId, CancellationToken cancellationToken = default)
     {
@@ -23,7 +27,7 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
         var contentMeta = await dbContext.ToolContents
             .AsNoTracking()
             .Where(x => x.Slug == tool.Slug)
-            .Select(x => new { x.Id })
+            .Select(x => new { x.Id, x.RowVersion })
             .SingleOrDefaultAsync(cancellationToken);
 
         var relatedOptionsTask = dbContext.ToolDefinitions
@@ -36,7 +40,7 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
         if (contentMeta is null)
         {
             var relatedOptions = await relatedOptionsTask;
-            return new ToolContentEditorGraph(tool.Id, tool.Slug, tool.Name, [], [], [], [], [], [], relatedOptions);
+            return new ToolContentEditorGraph(tool.Id, tool.Slug, tool.Name, [], [], [], [], [], [], relatedOptions, null);
         }
 
         var contentId = contentMeta.Id;
@@ -95,7 +99,8 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
             faqTask.Result,
             useCasesTask.Result,
             relatedToolsTask.Result,
-            relatedOptionsTask.Result);
+            relatedOptionsTask.Result,
+            ConcurrencyTokenCodec.Encode(contentMeta.RowVersion));
     }
 
     public async Task<bool> SaveGraphAsync(int toolId, SaveToolContentGraphRequest request, CancellationToken cancellationToken = default)
@@ -123,7 +128,8 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
                 SeoDescription = tool.Description,
                 Intro = tool.Description,
                 LongDescription = tool.Description,
-                Keywords = tool.Name
+                Keywords = tool.Name,
+                RowVersion = ConcurrencyTokenCodec.NewToken()
             };
             dbContext.ToolContents.Add(content);
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -149,7 +155,13 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
         foreach (var item in request.RelatedTools)
             content.RelatedTools.Add(new ToolRelatedEntity { ToolContentId = content.Id, RelatedSlug = item.RelatedSlug, SortOrder = item.SortOrder });
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        content.RowVersion = ConcurrencyTokenCodec.NewToken();
+
+        if (!await SaveWithConcurrencyRecoveryAsync(content, request, cancellationToken))
+        {
+            return false;
+        }
+
         await auditLogger.TryLogAsync(
             "FeatureFlagChanged",
             "ToolContent",
@@ -163,4 +175,67 @@ public sealed class EfToolContentEditorRepository(ToolNexusContentDbContext dbCo
 
     public async Task<IReadOnlyCollection<string>> GetDefinitionSlugsAsync(CancellationToken cancellationToken = default)
         => await dbContext.ToolDefinitions.AsNoTracking().Select(x => x.Slug).ToArrayAsync(cancellationToken);
+
+    private async Task<bool> SaveWithConcurrencyRecoveryAsync(ToolContentEntity content, SaveToolContentGraphRequest request, CancellationToken cancellationToken)
+    {
+        var attemptedToken = ConcurrencyTokenCodec.Encode(dbContext.Entry(content).Property(x => x.RowVersion).OriginalValue);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Optimistic concurrency conflict for ToolContent {ContentId}.", content.Id);
+
+            var currentToken = await dbContext.ToolContents.AsNoTracking().Where(x => x.Id == content.Id).Select(x => x.RowVersion).SingleOrDefaultAsync(cancellationToken);
+            await auditLogger.TryLogAsync(
+                "ConcurrencyConflictDetected",
+                "ToolContent",
+                content.Id.ToString(),
+                new { AttemptedToken = attemptedToken },
+                new { CurrentToken = ConcurrencyTokenCodec.Encode(currentToken) },
+                cancellationToken);
+
+            dbContext.Entry(content).State = EntityState.Detached;
+            var latest = await dbContext.ToolContents
+                .Include(x => x.Features)
+                .Include(x => x.Steps)
+                .Include(x => x.Examples)
+                .Include(x => x.Faq)
+                .Include(x => x.UseCases)
+                .Include(x => x.RelatedTools)
+                .SingleOrDefaultAsync(x => x.Id == content.Id, cancellationToken);
+
+            if (latest is null)
+            {
+                return false;
+            }
+
+            latest.Features.Clear();
+            latest.UseCases.Clear();
+            latest.Steps.Clear();
+            latest.Examples.Clear();
+            latest.Faq.Clear();
+            latest.RelatedTools.Clear();
+
+            foreach (var item in request.Features)
+                latest.Features.Add(new ToolFeatureEntity { ToolContentId = latest.Id, Value = item.Value, SortOrder = item.SortOrder });
+            foreach (var item in request.UseCases)
+                latest.UseCases.Add(new ToolUseCaseEntity { ToolContentId = latest.Id, Value = item.Value, SortOrder = item.SortOrder });
+            foreach (var item in request.Steps)
+                latest.Steps.Add(new ToolStepEntity { ToolContentId = latest.Id, Title = item.Title, Description = item.Description, SortOrder = item.SortOrder });
+            foreach (var item in request.Examples)
+                latest.Examples.Add(new ToolExampleEntity { ToolContentId = latest.Id, Title = item.Title, Input = item.Input, Output = item.Output, SortOrder = item.SortOrder });
+            foreach (var item in request.Faqs)
+                latest.Faq.Add(new ToolFaqEntity { ToolContentId = latest.Id, Question = item.Question, Answer = item.Answer, SortOrder = item.SortOrder });
+            foreach (var item in request.RelatedTools)
+                latest.RelatedTools.Add(new ToolRelatedEntity { ToolContentId = latest.Id, RelatedSlug = item.RelatedSlug, SortOrder = item.SortOrder });
+
+            latest.RowVersion = ConcurrencyTokenCodec.NewToken();
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+    }
 }
