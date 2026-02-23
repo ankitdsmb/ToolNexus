@@ -24,20 +24,39 @@ public sealed class ToolContentSeedHostedService(
     ];
 
     public async Task StartAsync(CancellationToken cancellationToken)
+        => await InitializeAsync(runMigration: true, runSeed: true, cancellationToken);
+
+    public async Task InitializeAsync(bool runMigration, bool runSeed, CancellationToken cancellationToken)
     {
+        if (!runMigration && !runSeed)
+        {
+            logger.LogInformation("Database initialization skipped because both migration and seed are disabled.");
+            return;
+        }
+
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-        var skipMigrations = await ShouldSkipSqliteMigrationAsync(dbContext, cancellationToken);
 
-        if (skipMigrations)
+        if (runMigration)
         {
-            logger.LogWarning(
-                "Detected legacy SQLite schema without EF migrations history. Skipping automatic migration to prevent startup failure. " +
-                "Consider baselining this database before cutover.");
+            var skipMigrations = await ShouldSkipSqliteMigrationAsync(dbContext, cancellationToken);
+
+            if (skipMigrations)
+            {
+                logger.LogWarning(
+                    "Detected legacy SQLite schema without EF migrations history. Skipping automatic migration to prevent startup failure. " +
+                    "Consider baselining this database before cutover.");
+            }
+            else
+            {
+                await MigrateWithRetryAsync(dbContext, cancellationToken);
+            }
         }
-        else
+
+        if (!runSeed)
         {
-            await MigrateWithRetryAsync(dbContext, cancellationToken);
+            logger.LogInformation("Tool content seed skipped by configuration.");
+            return;
         }
 
         var tools = manifestRepository.LoadTools();

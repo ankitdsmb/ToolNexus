@@ -194,6 +194,7 @@ public static class ServiceCollectionExtensions
         services.AddHealthChecks()
             .AddCheck("process", () => HealthCheckResult.Healthy("Process running."), tags: ["live"])
             .AddCheck("application-services", () => HealthCheckResult.Healthy("Application services available."), tags: ["ready"])
+            .AddCheck<DatabaseInitializationHealthCheck>("database-initialization", tags: ["ready"])
             .AddCheck<DistributedCacheHealthCheck>("redis", tags: ["ready"]);
 
         return services;
