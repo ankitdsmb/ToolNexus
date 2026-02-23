@@ -7,7 +7,10 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Content;
 
-public sealed class EfExecutionPolicyRepository(ToolNexusContentDbContext db, IMemoryCache cache) : IExecutionPolicyRepository
+public sealed class EfExecutionPolicyRepository(
+    ToolNexusContentDbContext db,
+    IMemoryCache cache,
+    IAdminAuditLogger auditLogger) : IExecutionPolicyRepository
 {
     private static string Key(string slug) => $"execution-policy::{slug.ToLowerInvariant()}";
 
@@ -48,6 +51,9 @@ public sealed class EfExecutionPolicyRepository(ToolNexusContentDbContext db, IM
         }
 
         var policy = await db.ToolExecutionPolicies.FirstOrDefaultAsync(x => x.ToolDefinitionId == tool.Id, cancellationToken);
+        bool? beforeEnabled = null;
+        object? before = null;
+
         if (policy is null)
         {
             policy = new ToolExecutionPolicyEntity
@@ -65,6 +71,16 @@ public sealed class EfExecutionPolicyRepository(ToolNexusContentDbContext db, IM
         }
         else
         {
+            beforeEnabled = policy.IsExecutionEnabled;
+            before = new
+            {
+                policy.ExecutionMode,
+                policy.TimeoutSeconds,
+                policy.MaxRequestsPerMinute,
+                policy.MaxInputSize,
+                policy.IsExecutionEnabled
+            };
+
             policy.ExecutionMode = request.ExecutionMode;
             policy.TimeoutSeconds = request.TimeoutSeconds;
             policy.MaxRequestsPerMinute = request.MaxRequestsPerMinute;
@@ -74,6 +90,32 @@ public sealed class EfExecutionPolicyRepository(ToolNexusContentDbContext db, IM
         }
 
         await db.SaveChangesAsync(cancellationToken);
+        await auditLogger.TryLogAsync(
+            "PolicyChanged",
+            "ToolExecutionPolicy",
+            policy.Id.ToString(),
+            before,
+            new
+            {
+                policy.ExecutionMode,
+                policy.TimeoutSeconds,
+                policy.MaxRequestsPerMinute,
+                policy.MaxInputSize,
+                policy.IsExecutionEnabled
+            },
+            cancellationToken);
+
+        if (beforeEnabled.HasValue && beforeEnabled.Value != policy.IsExecutionEnabled)
+        {
+            await auditLogger.TryLogAsync(
+                "FeatureFlagChanged",
+                "ToolExecutionPolicy",
+                policy.Id.ToString(),
+                new { IsExecutionEnabled = beforeEnabled.Value },
+                new { policy.IsExecutionEnabled },
+                cancellationToken);
+        }
+
         var model = Map(policy);
         cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
         return model;

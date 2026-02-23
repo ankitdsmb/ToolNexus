@@ -8,6 +8,7 @@ using ToolNexus.Api.Filters;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Application;
 using ToolNexus.Infrastructure;
+using ToolNexus.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,6 +119,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
+app.MapGet("/health/background", (BackgroundWorkerHealthState health) => Results.Ok(new
+{
+    queueSize = health.QueueSize,
+    workerActive = health.IsWorkerActive,
+    lastProcessedTimestampUtc = health.LastProcessedUtc
+}));
 app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")

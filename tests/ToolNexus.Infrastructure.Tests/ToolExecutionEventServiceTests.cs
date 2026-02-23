@@ -11,7 +11,7 @@ public sealed class ToolExecutionEventServiceTests
     [Fact]
     public async Task Queue_AcceptsAndDequeuesWorkItems()
     {
-        var queue = new BackgroundWorkQueue();
+        var queue = new BackgroundWorkQueue(new BackgroundWorkerHealthState());
         var processed = false;
 
         await queue.QueueAsync(_ =>
@@ -33,9 +33,10 @@ public sealed class ToolExecutionEventServiceTests
     [Fact]
     public async Task BackgroundWorker_ProcessesQueuedEvents()
     {
-        var queue = new BackgroundWorkQueue();
+        var state = new BackgroundWorkerHealthState();
+        var queue = new BackgroundWorkQueue(state);
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var worker = new TelemetryBackgroundWorker(queue, NullLogger<TelemetryBackgroundWorker>.Instance);
+        var worker = new TelemetryBackgroundWorker(queue, state, NullLogger<TelemetryBackgroundWorker>.Instance);
         var sut = new ToolExecutionEventService(queue, new DelegateTelemetryProcessor((_, _) =>
         {
             tcs.TrySetResult(true);
@@ -50,14 +51,16 @@ public sealed class ToolExecutionEventServiceTests
 
         Assert.Same(tcs.Task, completed);
         Assert.True(await tcs.Task);
+        Assert.NotNull(state.LastProcessedUtc);
     }
 
     [Fact]
     public async Task RecordAsync_DoesNotBlockRequestPath_WhenProcessingIsSlow()
     {
-        var queue = new BackgroundWorkQueue();
+        var state = new BackgroundWorkerHealthState();
+        var queue = new BackgroundWorkQueue(state);
         var finished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var worker = new TelemetryBackgroundWorker(queue, NullLogger<TelemetryBackgroundWorker>.Instance);
+        var worker = new TelemetryBackgroundWorker(queue, state, NullLogger<TelemetryBackgroundWorker>.Instance);
         var sut = new ToolExecutionEventService(queue, new DelegateTelemetryProcessor(async (_, token) =>
         {
             await Task.Delay(250, token);
@@ -78,12 +81,13 @@ public sealed class ToolExecutionEventServiceTests
     }
 
     [Fact]
-    public async Task BackgroundWorker_ContinuesAfterException()
+    public async Task BackgroundWorker_ContinuesAfterException_AndRetriesOnce()
     {
-        var queue = new BackgroundWorkQueue();
+        var state = new BackgroundWorkerHealthState();
+        var queue = new BackgroundWorkQueue(state);
         var processedSecond = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var invocation = 0;
-        var worker = new TelemetryBackgroundWorker(queue, NullLogger<TelemetryBackgroundWorker>.Instance);
+        var worker = new TelemetryBackgroundWorker(queue, state, NullLogger<TelemetryBackgroundWorker>.Instance);
 
         await worker.StartAsync(CancellationToken.None);
 
@@ -104,7 +108,7 @@ public sealed class ToolExecutionEventServiceTests
         await worker.StopAsync(CancellationToken.None);
 
         Assert.Same(processedSecond.Task, completed);
-        Assert.Equal(2, invocation);
+        Assert.Equal(3, invocation);
     }
 
     private static ToolExecutionEvent BuildEvent() => new()

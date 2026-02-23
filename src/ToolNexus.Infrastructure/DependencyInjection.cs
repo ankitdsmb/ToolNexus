@@ -30,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<IToolDefinitionRepository, EfToolDefinitionRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
+        services.AddScoped<IAdminAuditLogRepository, EfAdminAuditLogRepository>();
+        services.AddScoped<IAdminAuditLogger, AdminAuditLogger>();
         services.AddScoped<IExecutionPolicyRepository, EfExecutionPolicyRepository>();
         services.AddScoped<EfAdminAnalyticsRepository>();
         services.AddScoped<IAdminAnalyticsRepository>(sp =>
@@ -54,6 +56,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, RegexInsightProvider>();
         services.AddSingleton<IToolInsightProvider, TextDiffInsightProvider>();
+        services.AddSingleton<BackgroundWorkerHealthState>();
         services.AddSingleton<IBackgroundWorkQueue, BackgroundWorkQueue>();
         services.AddSingleton<ExecutionMetricsAggregator>();
         services.AddSingleton<ITelemetryEventProcessor, TelemetryEventProcessor>();

@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddSingleton<IToolManifestGovernance, ToolManifestGovernanceService>();
         services.AddScoped<IToolContentService, ToolContentService>();
         services.AddScoped<IToolContentEditorService, ToolContentEditorService>();
+        services.AddScoped<IAdminAuditLogService, AdminAuditLogService>();
         services.AddScoped<ExecutionPolicyService>();
         services.AddScoped<IExecutionPolicyService>(sp =>
             new CachingExecutionPolicyService(

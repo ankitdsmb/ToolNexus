@@ -2,7 +2,7 @@ using System.Threading.Channels;
 
 namespace ToolNexus.Infrastructure.Observability;
 
-public sealed class BackgroundWorkQueue : IBackgroundWorkQueue
+public sealed class BackgroundWorkQueue(BackgroundWorkerHealthState healthState) : IBackgroundWorkQueue
 {
     private readonly Channel<Func<CancellationToken, ValueTask>> _channel = Channel.CreateUnbounded<Func<CancellationToken, ValueTask>>(
         new UnboundedChannelOptions
@@ -16,12 +16,19 @@ public sealed class BackgroundWorkQueue : IBackgroundWorkQueue
     {
         ArgumentNullException.ThrowIfNull(workItem);
 
-        if (_channel.Writer.TryWrite(workItem))
+        healthState.IncrementQueue();
+        Func<CancellationToken, ValueTask> wrapped = async ct =>
+        {
+            healthState.DecrementQueue();
+            await workItem(ct);
+        };
+
+        if (_channel.Writer.TryWrite(wrapped))
         {
             return ValueTask.CompletedTask;
         }
 
-        return _channel.Writer.WriteAsync(workItem, cancellationToken);
+        return _channel.Writer.WriteAsync(wrapped, cancellationToken);
     }
 
     public IAsyncEnumerable<Func<CancellationToken, ValueTask>> DequeueAllAsync(CancellationToken cancellationToken)
