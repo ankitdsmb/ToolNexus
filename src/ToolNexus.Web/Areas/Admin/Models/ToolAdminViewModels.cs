@@ -7,6 +7,16 @@ public sealed class ToolAdminIndexViewModel
 {
     public required IReadOnlyCollection<ToolDefinitionListItem> Tools { get; init; }
     public ToolAdminFormModel Form { get; init; } = new();
+    public ToolAdminConflictViewModel? Conflict { get; init; }
+}
+
+public sealed class ToolAdminConflictViewModel
+{
+    public string Resource { get; init; } = string.Empty;
+    public string Message { get; init; } = "This item was modified by another operator.";
+    public string? ClientVersionToken { get; init; }
+    public string? ServerVersionToken { get; init; }
+    public string? LastModifiedDisplay { get; init; }
 }
 
 public sealed class ToolAdminFormModel
@@ -21,14 +31,16 @@ public sealed class ToolAdminFormModel
     public int SortOrder { get; set; }
     [Required] public string InputSchema { get; set; } = "{}";
     [Required] public string OutputSchema { get; set; } = "{}";
+    public string? VersionToken { get; set; }
     [Required] public string ExecutionMode { get; set; } = "Local";
     [Range(1, 3600)] public int TimeoutSeconds { get; set; } = 30;
     [Range(1, 100000)] public int MaxRequestsPerMinute { get; set; } = 120;
     [Range(1, 10_000_000)] public int MaxInputSize { get; set; } = 1_000_000;
     public bool IsExecutionEnabled { get; set; } = true;
+    public string? ExecutionVersionToken { get; set; }
 
     public CreateToolDefinitionRequest ToCreate() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema);
-    public UpdateToolDefinitionRequest ToUpdate() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema);
+    public UpdateToolDefinitionRequest ToUpdate() => new(Name, Slug, Description, Category, Status, Icon, SortOrder, InputSchema, OutputSchema, VersionToken);
 
     public static ToolAdminFormModel FromDetail(ToolDefinitionDetail detail) => new()
     {
@@ -42,6 +54,7 @@ public sealed class ToolAdminFormModel
         SortOrder = detail.SortOrder,
         InputSchema = detail.InputSchema,
         OutputSchema = detail.OutputSchema,
+        VersionToken = detail.VersionToken,
         ExecutionMode = "Local",
         TimeoutSeconds = 30,
         MaxRequestsPerMinute = 120,
