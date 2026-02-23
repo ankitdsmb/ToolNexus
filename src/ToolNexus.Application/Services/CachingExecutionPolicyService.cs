@@ -6,7 +6,7 @@ namespace ToolNexus.Application.Services;
 
 public sealed class CachingExecutionPolicyService(
     ExecutionPolicyService inner,
-    IPlatformCacheService cache,
+    IDistributedPlatformCache cache,
     IOptions<PlatformCacheOptions> options) : IExecutionPolicyService
 {
     private const string SlugPrefix = "platform:execution-policies:slug:";
@@ -26,7 +26,7 @@ public sealed class CachingExecutionPolicyService(
         Invalidate(slug);
         if (updated.ToolId > 0)
         {
-            cache.Remove($"{ToolIdPrefix}{updated.ToolId}");
+            _ = cache.RemoveAsync($"{ToolIdPrefix}{updated.ToolId}", cancellationToken);
         }
 
         return updated;
@@ -34,7 +34,7 @@ public sealed class CachingExecutionPolicyService(
 
     public void Invalidate(string slug)
     {
-        cache.Remove($"{SlugPrefix}{slug}");
+        _ = cache.RemoveAsync($"{SlugPrefix}{slug}");
         inner.Invalidate(slug);
     }
 }

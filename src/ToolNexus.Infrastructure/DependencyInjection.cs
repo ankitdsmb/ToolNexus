@@ -12,6 +12,7 @@ using ToolNexus.Infrastructure.Insights;
 using ToolNexus.Infrastructure.Security;
 using ToolNexus.Application.Services.Insights;
 using ToolNexus.Infrastructure.Observability;
+using StackExchange.Redis;
 
 namespace ToolNexus.Infrastructure;
 
@@ -46,9 +47,29 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
         services.AddMemoryCache();
-        services.AddSingleton<IPlatformCacheService, InMemoryPlatformCacheService>();
+        services.AddSingleton<InMemoryBackgroundEventBus>();
+        services.AddSingleton<IBackgroundEventBus>(sp =>
+            new RedisBackgroundEventBus(
+                sp.GetRequiredService<InMemoryBackgroundEventBus>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RedisBackgroundEventBus>>(),
+                sp.GetService<IConnectionMultiplexer>()));
+        services.AddSingleton<IPlatformCacheService, DistributedPlatformCacheService>();
+        services.AddSingleton<IDistributedPlatformCache>(sp => sp.GetRequiredService<IPlatformCacheService>());
         services.AddSingleton<IToolExecutionRateGuard, InMemoryToolExecutionRateGuard>();
-        services.AddDistributedMemoryCache();
+        var redisConnectionString = configuration.GetConnectionString("Redis") ?? configuration["REDIS_CONNECTION_STRING"];
+        if (!string.IsNullOrWhiteSpace(redisConnectionString))
+        {
+            var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
+            redisOptions.AbortOnConnectFail = false;
+            services.AddStackExchangeRedisCache(options => options.ConfigurationOptions = redisOptions);
+            services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
+            services.AddSingleton<IDistributedWorkerLock, RedisWorkerLock>();
+        }
+        else
+        {
+            services.AddDistributedMemoryCache();
+            services.AddSingleton<IDistributedWorkerLock, InMemoryWorkerLock>();
+        }
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
         services.AddHostedService<ToolContentSeedHostedService>();
         services.AddSingleton<IToolInsightProvider, JsonInsightProvider>();

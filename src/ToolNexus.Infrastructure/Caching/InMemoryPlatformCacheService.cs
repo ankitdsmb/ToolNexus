@@ -41,6 +41,18 @@ public sealed class InMemoryPlatformCacheService(IMemoryCache cache) : IPlatform
         }
     }
 
+    public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
+    {
+        Remove(key);
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
+    {
+        RemoveByPrefix(prefix);
+        return Task.CompletedTask;
+    }
+
     private async Task<T> CreateAsync<T>(string key, Func<CancellationToken, Task<T>> factory, TimeSpan ttl, CancellationToken cancellationToken)
     {
         var created = await factory(cancellationToken);
