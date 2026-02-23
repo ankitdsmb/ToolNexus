@@ -111,16 +111,34 @@ public sealed class EfToolDefinitionRepository(ToolNexusContentDbContext dbConte
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
         {
-            await EnsureToolDefinitionsTableExistsAsync(cancellationToken);
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await RecoverMissingToolDefinitionsSchemaAsync(cancellationToken);
             return await action();
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase))
         {
-            await EnsureToolDefinitionsTableExistsAsync(cancellationToken);
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await RecoverMissingToolDefinitionsSchemaAsync(cancellationToken);
             return await action();
         }
+    }
+
+    private async Task RecoverMissingToolDefinitionsSchemaAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateTable)
+        {
+            // An operator may have created an untracked table manually.
+            // Continue recovery by ensuring the expected runtime table exists.
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        {
+            // An operator may have created an untracked table manually.
+            // Continue recovery by ensuring the expected runtime table exists.
+        }
+
+        await EnsureToolDefinitionsTableExistsAsync(cancellationToken);
     }
 
     private async Task EnsureToolDefinitionsTableExistsAsync(CancellationToken cancellationToken)
