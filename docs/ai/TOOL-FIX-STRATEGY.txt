@@ -1,0 +1,31 @@
+ToolNexus Tool Fix Strategy
+
+Objectives
+- Eliminate fragile behavior in tool handlers.
+- Preserve compatibility for modern and legacy payload formats.
+- Ensure unsupported or malformed inputs fail safely without runtime crashes.
+
+Fix Principles
+- Apply defensive input normalization at every tool boundary.
+- Never call .trim() (or similar string-only methods) without explicit type checks.
+- Unsupported actions must return structured, non-throwing responses.
+- Maintain legacy payload compatibility through adapters/mappers.
+
+Implementation Pattern
+1) Normalize inputs
+   - Accept nullish, string, object, and legacy schema variants.
+   - Coerce into canonical internal shape with safe defaults.
+2) Validate actions
+   - Route only known actions.
+   - Return a typed "unsupported_action" result for unknown actions.
+3) Execute safely
+   - Contain execution errors and convert to structured error responses.
+   - Include diagnostic metadata while avoiding sensitive leakage.
+4) Verify compatibility
+   - Add tests for legacy and current payloads.
+   - Confirm non-throwing behavior for malformed inputs.
+
+Definition of Done
+- No unhandled exceptions from tool entry points.
+- Legacy payload tests pass.
+- Unsupported action path is explicit and stable.

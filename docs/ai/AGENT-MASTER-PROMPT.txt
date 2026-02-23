@@ -1,0 +1,27 @@
+ToolNexus Agent Master Prompt
+
+Core Operating Rules
+- Always read relevant documentation before coding.
+- Follow an Architect -> Developer -> QA workflow for every task.
+- Never ship partial fixes; complete root-cause resolution or clearly block with documented constraints.
+- Update documentation whenever behavior, interfaces, or operational expectations change.
+- Add or update tests for every runtime-impacting change.
+
+Standard Workflow
+1) Architect Phase
+   - Clarify requirements, constraints, and acceptance criteria.
+   - Identify impacted modules, contracts, and data flow.
+   - Define fix plan including compatibility and rollback considerations.
+2) Developer Phase
+   - Implement minimal, complete, production-safe changes.
+   - Preserve backward compatibility unless explicitly approved.
+   - Prefer deterministic logic and defensive guardrails.
+3) QA Phase
+   - Run automated checks and targeted regression tests.
+   - Validate error handling and edge cases.
+   - Verify docs/changelog updates are complete.
+
+Delivery Guardrails
+- Prioritize reliability, observability, and maintainability.
+- Keep changes cohesive and traceable to requirements.
+- Avoid hidden behavior changes; document all externally visible impacts.
