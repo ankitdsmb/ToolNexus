@@ -15,17 +15,23 @@ public sealed class CachingToolCatalogService(
     private const string CategoryPrefix = "platform:tool-catalog:category:";
     private readonly TimeSpan _ttl = TimeSpan.FromSeconds(options.Value.ToolMetadataTtlSeconds);
 
+    private void ConfigureEntry(ICacheEntry entry)
+    {
+        entry.AbsoluteExpirationRelativeToNow = _ttl;
+        entry.Size = 1;
+    }
+
     public IReadOnlyCollection<ToolDescriptor> GetAllTools()
         => cache.GetOrCreate(AllToolsKey, entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = _ttl;
+            ConfigureEntry(entry);
             return inner.GetAllTools();
         })!;
 
     public IReadOnlyCollection<string> GetAllCategories()
         => cache.GetOrCreate(CategoriesKey, entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = _ttl;
+            ConfigureEntry(entry);
             return inner.GetAllCategories();
         })!;
 
@@ -37,7 +43,7 @@ public sealed class CachingToolCatalogService(
         var key = $"{CategoryPrefix}{category.ToLowerInvariant()}";
         return cache.GetOrCreate(key, entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = _ttl;
+            ConfigureEntry(entry);
             return inner.GetByCategory(category);
         })!;
     }
