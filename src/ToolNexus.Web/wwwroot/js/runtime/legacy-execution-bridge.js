@@ -27,6 +27,14 @@ function callLegacyMethod(candidate, method, root, context) {
     return { invoked: false, value: undefined };
   }
 
+  if (method === 'runTool') {
+    const explicitRuntimeType = candidate?.toolRuntimeType ?? candidate?.runtime?.toolRuntimeType ?? context?.manifest?.toolRuntimeType;
+    const isExecutionOnly = explicitRuntimeType === 'execution' || Number(candidate[method].length ?? 0) >= 2;
+    if (isExecutionOnly) {
+      return { invoked: false, value: undefined, skipped: true };
+    }
+  }
+
   const fn = candidate[method];
   const value = fn.length > 1 ? fn(root, context) : fn(root);
   return { invoked: true, value };
