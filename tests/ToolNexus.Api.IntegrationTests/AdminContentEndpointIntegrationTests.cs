@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace ToolNexus.Api.IntegrationTests;
@@ -12,6 +15,7 @@ public sealed class AdminContentEndpointIntegrationTests : IClassFixture<TestWeb
     {
         _client = factory.WithWebHostBuilder(_ => { }).CreateClient();
         _client.DefaultRequestHeaders.Add("X-API-KEY", "replace-with-production-api-key");
+        ConfigureAuthorizedClient(_client);
     }
 
     [Fact]
@@ -144,6 +148,39 @@ public sealed class AdminContentEndpointIntegrationTests : IClassFixture<TestWeb
         }
 
         return (tools[0].id, tools[0].slug);
+    }
+
+
+    private static void ConfigureAuthorizedClient(HttpClient client)
+    {
+        var token = CreateAdminToken();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    private static string CreateAdminToken()
+    {
+        var issuer = "ToolNexus";
+        var audience = "ToolNexus.Api";
+        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("toolnexus-development-signing-key-change-in-production"));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var now = DateTime.UtcNow;
+        var claims = new[]
+        {
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "integration-test-admin"),
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "Integration Test Admin"),
+            new System.Security.Claims.Claim("tool_permission", "admin:write")
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            notBefore: now.AddMinutes(-1),
+            expires: now.AddMinutes(30),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     private static HttpClient CreateClient(ApiIntegrationTestFactory factory)

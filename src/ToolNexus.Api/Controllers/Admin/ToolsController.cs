@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 
@@ -7,6 +9,7 @@ namespace ToolNexus.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/tools")]
+[Authorize(Policy = AdminPolicyNames.AdminRead)]
 public sealed class ToolsController(IToolDefinitionService service) : ControllerBase
 {
     [HttpGet]
@@ -21,6 +24,7 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
     }
 
     [HttpPost]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<ActionResult<ToolDefinitionDetail>> Create([FromBody] SaveToolRequest request, CancellationToken cancellationToken)
     {
         try
@@ -35,6 +39,7 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<ActionResult<ToolDefinitionDetail>> Update([FromRoute] int id, [FromBody] SaveToolRequest request, CancellationToken cancellationToken)
     {
         try
@@ -49,6 +54,7 @@ public sealed class ToolsController(IToolDefinitionService service) : Controller
     }
 
     [HttpPatch("{id:int}/status")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<IActionResult> SetStatus([FromRoute] int id, [FromBody] SetToolStatusRequest request, CancellationToken cancellationToken)
     {
         var changed = await service.SetEnabledAsync(id, request.Enabled, cancellationToken);
