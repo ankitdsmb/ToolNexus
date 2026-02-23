@@ -22,6 +22,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     MaxRequestsPerMinute = table.Column<int>(type: "INTEGER", nullable: false),
                     MaxInputSize = table.Column<int>(type: "INTEGER", nullable: false),
                     IsExecutionEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
+                    RowVersion = table.Column<byte[]>(type: "BLOB", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

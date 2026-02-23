@@ -10,12 +10,6 @@ namespace ToolNexus.Infrastructure.Data.Migrations
         {
             migrationBuilder.AddColumn<byte[]>(
                 name: "RowVersion",
-                table: "ToolExecutionPolicies",
-                type: "BLOB",
-                nullable: true);
-
-            migrationBuilder.AddColumn<byte[]>(
-                name: "RowVersion",
                 table: "ToolDefinitions",
                 type: "BLOB",
                 nullable: true);
@@ -29,10 +23,6 @@ namespace ToolNexus.Infrastructure.Data.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "RowVersion",
-                table: "ToolExecutionPolicies");
-
             migrationBuilder.DropColumn(
                 name: "RowVersion",
                 table: "ToolDefinitions");
