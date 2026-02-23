@@ -6,5 +6,5 @@ public interface IAdminAnalyticsService
 {
     Task<AdminAnalyticsDashboard> GetDashboardAsync(CancellationToken cancellationToken);
     Task<AdminAnalyticsDrilldownResult> GetDrilldownAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken);
+    Task<AdminAnalyticsToolDetail?> GetToolDetailAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken);
 }
-

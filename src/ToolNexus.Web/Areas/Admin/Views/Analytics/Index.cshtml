@@ -76,6 +76,29 @@
     </div>
 </div>
 
+
+
+<div class="card mb-3" id="panel-tool-detail">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="card-title mb-0">Tool Detail Drilldown</h4>
+            <small class="text-secondary" id="tool-detail-range">Select a tool to load detail.</small>
+        </div>
+        <div id="tool-detail-summary" class="row g-2 mb-2 d-none">
+            <div class="col-md-3"><div class="border rounded p-2"><small class="text-secondary">Executions</small><div id="tool-detail-executions" class="fw-semibold">0</div></div></div>
+            <div class="col-md-3"><div class="border rounded p-2"><small class="text-secondary">Failures</small><div id="tool-detail-failures" class="fw-semibold">0</div></div></div>
+            <div class="col-md-3"><div class="border rounded p-2"><small class="text-secondary">Success Rate</small><div id="tool-detail-success" class="fw-semibold">0%</div></div></div>
+            <div class="col-md-3"><div class="border rounded p-2"><small class="text-secondary">Avg Duration</small><div id="tool-detail-duration" class="fw-semibold">0 ms</div></div></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm" id="tool-detail-table">
+                <thead><tr><th>Date</th><th class="text-end">Executions</th><th class="text-end">Failures</th><th class="text-end">Success</th><th class="text-end">Avg ms</th></tr></thead>
+                <tbody><tr><td colspan="5" class="text-secondary">Choose a tool slug from drilldown rows or top tools.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script>
 (async function(){
     let currentPage = 1;
@@ -90,6 +113,7 @@
     const startDefault = startDate.toISOString().slice(0, 10);
 
     const filterTool = document.getElementById('filter-tool');
+    const panelToolDetail = document.getElementById('panel-tool-detail');
     const filterStart = document.getElementById('filter-start');
     const filterEnd = document.getElementById('filter-end');
 
@@ -121,6 +145,42 @@
         renderRows('#slow-tools-table', dashboard.slowTools || []);
     }
 
+
+    async function loadToolDetail(toolSlug){
+        if (!toolSlug) return;
+        const search = new URLSearchParams({
+            toolSlug,
+            startDate: filterStart.value,
+            endDate: filterEnd.value
+        });
+
+        const response = await fetch(`/api/admin/analytics/tool-detail?${search.toString()}`);
+        if (!response.ok) return;
+
+        const detail = await response.json();
+        const summary = document.getElementById('tool-detail-summary');
+        summary.classList.remove('d-none');
+        document.getElementById('tool-detail-range').textContent = `${detail.toolSlug} · ${detail.startDate} → ${detail.endDate}`;
+        document.getElementById('tool-detail-executions').textContent = detail.totalExecutions.toLocaleString();
+        document.getElementById('tool-detail-failures').textContent = detail.totalFailures.toLocaleString();
+        document.getElementById('tool-detail-success').textContent = `${detail.successRate.toFixed(1)}%`;
+        document.getElementById('tool-detail-duration').textContent = `${detail.avgDurationMs.toFixed(1)} ms`;
+
+        const body = document.querySelector('#tool-detail-table tbody');
+        body.innerHTML = '';
+        (detail.dailyRows || []).forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.date}</td><td class="text-end">${row.totalExecutions}</td><td class="text-end">${row.failureCount}</td><td class="text-end">${row.successRate.toFixed(1)}%</td><td class="text-end">${row.avgDurationMs.toFixed(1)}</td>`;
+            body.appendChild(tr);
+        });
+
+        if (!body.children.length) {
+            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No rows found for this tool in selected range.</td></tr>';
+        }
+
+        panelToolDetail?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     async function loadDrilldown(){
         const search = new URLSearchParams({
             startDate: filterStart.value,
@@ -141,7 +201,8 @@
 
         (payload.items || []).forEach(item => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${item.date}</td><td>${item.toolSlug}</td><td class="text-end">${item.totalExecutions}</td><td class="text-end">${item.failureCount}</td><td class="text-end">${item.successRate.toFixed(1)}%</td><td class="text-end">${item.avgDurationMs.toFixed(1)}</td>`;
+            tr.setAttribute('data-tool-slug', item.toolSlug);
+            tr.innerHTML = `<td>${item.date}</td><td><button class="btn btn-link btn-sm p-0 analytics-tool-detail-jump" data-tool-slug="${item.toolSlug}">${item.toolSlug}</button></td><td class="text-end">${item.totalExecutions}</td><td class="text-end">${item.failureCount}</td><td class="text-end">${item.successRate.toFixed(1)}%</td><td class="text-end">${item.avgDurationMs.toFixed(1)}</td>`;
             body.appendChild(tr);
         });
 
@@ -150,6 +211,14 @@
         document.getElementById('drilldown-page-label').textContent = `Page ${currentPage}`;
         document.getElementById('drilldown-prev').disabled = currentPage <= 1;
         document.getElementById('drilldown-next').disabled = currentPage * pageSize >= totalItems;
+
+        body.querySelectorAll('.analytics-tool-detail-jump').forEach(button => {
+            button.addEventListener('click', async () => {
+                const slug = button.getAttribute('data-tool-slug') || '';
+                filterTool.value = slug;
+                await loadToolDetail(slug);
+            });
+        });
     }
 
     document.getElementById('apply-filters').addEventListener('click', async () => { currentPage = 1; await loadDrilldown(); });
@@ -172,6 +241,18 @@
         });
     });
 
+    document.querySelectorAll('#top-tools-table, #slow-tools-table').forEach(table => {
+        table.addEventListener('click', async (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLAnchorElement)) return;
+            const slug = target.textContent?.trim();
+            if (!slug) return;
+            event.preventDefault();
+            filterTool.value = slug;
+            await loadToolDetail(slug);
+        });
+    });
+
     const jump = params.get('drilldown');
     if (jump) {
         requestAnimationFrame(() => {
@@ -182,5 +263,8 @@
 
     await loadDashboard();
     await loadDrilldown();
+    if (filterTool.value.trim()) {
+        await loadToolDetail(filterTool.value.trim());
+    }
 })();
 </script>

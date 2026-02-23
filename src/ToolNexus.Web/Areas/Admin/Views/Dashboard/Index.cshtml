@@ -58,6 +58,16 @@
     </div>
 </div>
 
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-primary" asp-area="Admin" asp-controller="Analytics" asp-action="Index" asp-route-drilldown="top-tools">Open Analytics · Top Tools</a>
+        <a class="btn btn-sm btn-outline-primary" asp-area="Admin" asp-controller="Analytics" asp-action="Index" asp-route-drilldown="drilldown">Open Analytics · Drilldown</a>
+        <a class="btn btn-sm btn-outline-secondary" asp-area="Admin" asp-controller="ExecutionMonitoring" asp-action="Index" asp-route-focus="incidents">Open Execution Incidents</a>
+        <a class="btn btn-sm btn-outline-secondary" asp-area="Admin" asp-controller="Tools" asp-action="Index" asp-route-filter="disabled">Open Disabled Tools</a>
+    </div>
+</div>
+
 <div class="row g-3 mb-3" id="operational-metrics">
     <div class="col-xl-3 col-md-6">
         <button class="card h-100 w-100 text-start border-0 drilldown-card" data-drilldown="concurrency">

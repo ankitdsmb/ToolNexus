@@ -31,7 +31,7 @@
                     @foreach (var tool in Model.Tools)
                     {
                         var isEnabled = tool.Status == "Enabled";
-                        <tr data-tool-row data-tool-search="@($"{tool.Name} {tool.Slug}".ToLowerInvariant())">
+                        <tr data-tool-row data-tool-status="@(isEnabled ? "enabled" : "disabled")" data-tool-search="@($"{tool.Name} {tool.Slug}".ToLowerInvariant())">
                             <td><input type="checkbox" class="tool-select" value="@tool.Id" aria-label="Select @tool.Name" /></td>
                             <td>@tool.Name</td>
                             <td><code>@tool.Slug</code></td>
@@ -187,13 +187,21 @@
         });
     });
 
-    filterInput?.addEventListener('input', () => {
-        const query = filterInput.value.trim().toLowerCase();
+    const params = new URLSearchParams(window.location.search);
+    const statusFilter = (params.get('filter') || '').toLowerCase();
+
+    function applyRowFilters() {
+        const query = filterInput?.value.trim().toLowerCase() || '';
         document.querySelectorAll('[data-tool-row]').forEach(row => {
             const search = row.getAttribute('data-tool-search') || '';
-            row.hidden = query.length > 0 && !search.includes(query);
+            const status = row.getAttribute('data-tool-status') || '';
+            const matchesSearch = query.length === 0 || search.includes(query);
+            const matchesStatus = !statusFilter || status === statusFilter;
+            row.hidden = !(matchesSearch && matchesStatus);
         });
-    });
+    }
+
+    filterInput?.addEventListener('input', applyRowFilters);
 
     document.addEventListener('keydown', (event) => {
         const ctrl = event.ctrlKey || event.metaKey;
@@ -216,6 +224,7 @@
         }
     });
 
+    applyRowFilters();
     syncBulkInputs();
 
 
