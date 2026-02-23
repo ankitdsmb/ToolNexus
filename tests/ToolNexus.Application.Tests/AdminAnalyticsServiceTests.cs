@@ -13,7 +13,7 @@ public sealed class AdminAnalyticsServiceTests
             new DailyToolMetricsSnapshot("json", today, 100, 90, 50),
             new DailyToolMetricsSnapshot("xml", today, 50, 40, 30),
             new DailyToolMetricsSnapshot("yaml", today.AddDays(-1), 1000, 1000, 1)
-        ]), new StubIntelligenceService());
+        ]));
 
         var dashboard = await service.GetDashboardAsync(CancellationToken.None);
 
@@ -31,7 +31,7 @@ public sealed class AdminAnalyticsServiceTests
             new DailyToolMetricsSnapshot("tool-b", today, 50, 40, 10),
             new DailyToolMetricsSnapshot("tool-a", today, 50, 40, 20),
             new DailyToolMetricsSnapshot("tool-c", today, 80, 70, 5)
-        ]), new StubIntelligenceService());
+        ]));
 
         var dashboard = await service.GetDashboardAsync(CancellationToken.None);
 
@@ -49,7 +49,7 @@ public sealed class AdminAnalyticsServiceTests
             new DailyToolMetricsSnapshot("fast", today, 200, 195, 10),
             new DailyToolMetricsSnapshot("slow", today, 20, 16, 300),
             new DailyToolMetricsSnapshot("medium", today, 40, 35, 120)
-        ]), new StubIntelligenceService());
+        ]));
 
         var dashboard = await service.GetDashboardAsync(CancellationToken.None);
 
@@ -67,7 +67,7 @@ public sealed class AdminAnalyticsServiceTests
             new DailyToolMetricsSnapshot("tool", today.AddDays(-1), 10, 10, 10),
             new DailyToolMetricsSnapshot("tool", today.AddDays(-3), 10, 10, 10),
             new DailyToolMetricsSnapshot("tool", today.AddDays(-2), 10, 10, 10)
-        ]), new StubIntelligenceService());
+        ]));
 
         var dashboard = await service.GetDashboardAsync(CancellationToken.None);
 
@@ -89,9 +89,4 @@ public sealed class AdminAnalyticsServiceTests
             => Task.FromResult<IReadOnlyList<ToolNexus.Application.Models.ToolAnomalySnapshot>>([]);
     }
 
-    private sealed class StubIntelligenceService : IToolIntelligenceService
-    {
-        public Task<IReadOnlyList<ToolNexus.Application.Models.ToolAnomalySnapshot>> DetectAndPersistDailyAnomaliesAsync(DateOnly date, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<ToolNexus.Application.Models.ToolAnomalySnapshot>>([]);
-    }
 }

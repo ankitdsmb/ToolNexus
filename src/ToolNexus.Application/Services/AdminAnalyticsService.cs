@@ -2,7 +2,7 @@ using ToolNexus.Application.Models;
 
 namespace ToolNexus.Application.Services;
 
-public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository, IToolIntelligenceService intelligenceService) : IAdminAnalyticsService
+public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) : IAdminAnalyticsService
 {
     private const int TopToolCount = 5;
     private const int SlowToolCount = 5;
@@ -51,7 +51,7 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository, 
             })
             .ToList();
 
-        var alerts = await intelligenceService.DetectAndPersistDailyAnomaliesAsync(today, cancellationToken);
+        var alerts = await repository.GetAnomaliesByDateAsync(today, cancellationToken);
 
         return new AdminAnalyticsDashboard(totalExecutionsToday, successRate, avgDuration, activeToolsCount, topTools, slowTools, trend, alerts);
     }

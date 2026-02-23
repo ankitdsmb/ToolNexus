@@ -54,10 +54,11 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, RegexInsightProvider>();
         services.AddSingleton<IToolInsightProvider, TextDiffInsightProvider>();
+        services.AddSingleton<IBackgroundWorkQueue, BackgroundWorkQueue>();
         services.AddSingleton<ExecutionMetricsAggregator>();
-        services.AddSingleton<ToolExecutionEventService>();
-        services.AddSingleton<IToolExecutionEventService>(sp => sp.GetRequiredService<ToolExecutionEventService>());
-        services.AddHostedService(sp => sp.GetRequiredService<ToolExecutionEventService>());
+        services.AddSingleton<ITelemetryEventProcessor, TelemetryEventProcessor>();
+        services.AddSingleton<IToolExecutionEventService, ToolExecutionEventService>();
+        services.AddHostedService<TelemetryBackgroundWorker>();
         // Infrastructure owns concrete executor wiring.
         services.AddToolExecutors();
         return services;
