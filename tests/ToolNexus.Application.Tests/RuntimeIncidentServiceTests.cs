@@ -13,7 +13,7 @@ public sealed class RuntimeIncidentServiceTests
         var service = new RuntimeIncidentService(repo);
 
         await service.IngestAsync(new RuntimeIncidentIngestBatch([
-            new RuntimeIncidentIngestRequest(" Json-Formatter ", "bad", "bad", "Error", "stack", "", default, 999, "f1", " corr-id ")
+            new RuntimeIncidentIngestRequest(" Json-Formatter ", "bad", "bad", "Error", "critical", "stack", "", default, 999, "f1", " corr-id ")
         ]), CancellationToken.None);
 
         var incident = Assert.Single(repo.Incidents);
@@ -32,7 +32,7 @@ public sealed class RuntimeIncidentServiceTests
         var service = new RuntimeIncidentService(new ThrowingRepository());
 
         var ex = await Record.ExceptionAsync(() => service.IngestAsync(new RuntimeIncidentIngestBatch([
-            new RuntimeIncidentIngestRequest("tool", "execute", "runtime_error", "message", null, "json", DateTime.UtcNow, 1, "f")
+            new RuntimeIncidentIngestRequest("tool", "execute", "runtime_error", "message", "critical", null, "json", DateTime.UtcNow, 1, "f")
         ]), CancellationToken.None));
 
         Assert.Null(ex);
@@ -45,8 +45,8 @@ public sealed class RuntimeIncidentServiceTests
         var service = new RuntimeIncidentService(repo);
 
         await service.IngestAsync(new RuntimeIncidentIngestBatch([
-            new RuntimeIncidentIngestRequest("", "execute", "runtime_error", "message", null, "json", DateTime.UtcNow, 1, "f1"),
-            new RuntimeIncidentIngestRequest("tool", "execute", "runtime_error", "", null, "json", DateTime.UtcNow, 1, "f2")
+            new RuntimeIncidentIngestRequest("", "execute", "runtime_error", "message", "critical", null, "json", DateTime.UtcNow, 1, "f1"),
+            new RuntimeIncidentIngestRequest("tool", "execute", "runtime_error", "", "critical", null, "json", DateTime.UtcNow, 1, "f2")
         ]), CancellationToken.None);
 
         Assert.Empty(repo.Incidents);

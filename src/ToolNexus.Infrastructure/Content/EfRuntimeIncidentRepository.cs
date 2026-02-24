@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -22,7 +23,6 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
             var existing = await dbContext.RuntimeIncidents.FirstOrDefaultAsync(x => x.Fingerprint == fingerprint, cancellationToken);
             if (existing is null)
             {
-                var severity = ToSeverity(incident.ErrorType);
                 dbContext.RuntimeIncidents.Add(new RuntimeIncidentEntity
                 {
                     Fingerprint = fingerprint,
@@ -30,10 +30,10 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
                     Phase = incident.Phase,
                     ErrorType = incident.ErrorType,
                     Message = incident.Message,
-                    Stack = incident.Stack,
+                    Stack = BuildStoredStack(incident.Stack, incident.Metadata),
                     CorrelationId = incident.CorrelationId,
                     PayloadType = incident.PayloadType,
-                    Severity = severity,
+                    Severity = incident.Severity,
                     Count = incident.Count,
                     FirstOccurredUtc = timestamp,
                     LastOccurredUtc = timestamp
@@ -43,9 +43,9 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
             {
                 existing.LastOccurredUtc = timestamp;
                 existing.Count += incident.Count;
-                if (!string.IsNullOrWhiteSpace(incident.Stack))
+                if (!string.IsNullOrWhiteSpace(incident.Stack) || incident.Metadata is not null)
                 {
-                    existing.Stack = incident.Stack;
+                    existing.Stack = BuildStoredStack(incident.Stack, incident.Metadata);
                 }
 
                 if (!string.IsNullOrWhiteSpace(incident.CorrelationId))
@@ -120,8 +120,19 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
     private static string BuildFingerprint(RuntimeIncidentIngestRequest incident)
         => string.Join("::", incident.ToolSlug, incident.Phase, incident.ErrorType, incident.Message, incident.PayloadType);
 
-    private static string ToSeverity(string errorType)
-        => string.Equals(errorType, "contract_violation", StringComparison.OrdinalIgnoreCase) ? "warning" : "critical";
+    private static string? BuildStoredStack(string? stack, IReadOnlyDictionary<string, object?>? metadata)
+    {
+        var normalizedStack = string.IsNullOrWhiteSpace(stack) ? null : stack;
+        if (metadata is null)
+        {
+            return normalizedStack;
+        }
+
+        var serializedMetadata = JsonSerializer.Serialize(metadata);
+        return string.IsNullOrWhiteSpace(normalizedStack)
+            ? $"metadata:{serializedMetadata}"
+            : $"{normalizedStack}{Environment.NewLine}metadata:{serializedMetadata}";
+    }
 
     private static int ToSeverityWeight(string severity)
         => string.Equals(severity, "critical", StringComparison.OrdinalIgnoreCase) ? 12 : 5;

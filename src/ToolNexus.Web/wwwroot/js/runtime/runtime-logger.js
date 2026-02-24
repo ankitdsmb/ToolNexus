@@ -1,4 +1,9 @@
-const DEFAULT_LOG_ENDPOINT = '/api/admin/runtime/incidents/logs';
+const DEFAULT_LOG_ENDPOINT = '/api/admin/runtime/logs';
+
+function truncate(value, max = 1200) {
+  const stringValue = String(value ?? '');
+  return stringValue.length > max ? stringValue.slice(0, max) : stringValue;
+}
 
 function normalizeLevel(level) {
   const value = String(level ?? 'info').toLowerCase();
@@ -19,9 +24,9 @@ function getCorrelationId() {
 export function createRuntimeLogger({
   source = 'runtime',
   endpoint = window.ToolNexusConfig?.runtimeLogEndpoint || DEFAULT_LOG_ENDPOINT,
-  minLevel = window.ToolNexusLogging?.minLevel || 'info',
+  minLevel = window.ToolNexusLogging?.minimumLevel || 'info',
   runtimeDebugEnabled = Boolean(window.ToolNexusLogging?.runtimeDebugEnabled),
-  enableClientIncidents = window.ToolNexusLogging?.enableClientIncidents !== false,
+  enableClientIncidents = window.ToolNexusLogging?.enableRuntimeLogCapture !== false,
   sink = console,
   transport = globalThis.fetch
 } = {}) {
@@ -40,15 +45,14 @@ export function createRuntimeLogger({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          logs: [{
-            source,
-            level: normalizedLevel,
-            message: String(message ?? ''),
-            toolSlug: window.ToolNexusConfig?.tool?.slug ?? null,
-            correlationId: getCorrelationId(),
-            timestamp: new Date().toISOString(),
-            metadata: metadata ?? null
-          }]
+          source,
+          level: normalizedLevel,
+          message: truncate(message, 1200),
+          stack: truncate(metadata?.stack, 2000),
+          toolSlug: window.ToolNexusConfig?.tool?.slug ?? null,
+          correlationId: getCorrelationId(),
+          timestamp: new Date().toISOString(),
+          metadata: metadata ?? null
         })
       });
     } catch {

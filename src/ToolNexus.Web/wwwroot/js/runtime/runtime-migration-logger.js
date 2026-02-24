@@ -19,7 +19,7 @@ export function createRuntimeMigrationLogger({ channel = 'runtime', sink = conso
 
   const write = (level, message, metadata) => {
     try {
-      runtimeLogger[level](`${prefix} ${message}`, metadata);
+      runtimeLogger[level](`${prefix} ${message}`, { channel, ...metadata });
     } catch {
       // logging should never interrupt runtime execution
     }

@@ -12,29 +12,28 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) 
 {
     [HttpPost]
     [AllowAnonymous]
-    public IActionResult Post([FromBody] RuntimeIncidentIngestBatch request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Post([FromBody] RuntimeIncidentIngestBatch request, CancellationToken cancellationToken)
     {
-        var correlationId = ResolveCorrelationId();
-        var normalized = request with
+        if (request?.Incidents is null || request.Incidents.Count == 0)
         {
-            Incidents = request.Incidents.Select(incident => incident with
+            return BadRequest(new { error = "incidents payload is required" });
+        }
+
+        var correlationId = ResolveCorrelationId();
+        var normalizedIncidents = request.Incidents
+            .Where(static incident => !string.IsNullOrWhiteSpace(incident.ToolSlug) && !string.IsNullOrWhiteSpace(incident.Message))
+            .Select(incident => incident with
             {
                 CorrelationId = string.IsNullOrWhiteSpace(incident.CorrelationId) ? correlationId : incident.CorrelationId
-            }).ToArray()
-        };
+            })
+            .ToArray();
 
-        _ = Task.Run(async () =>
+        if (normalizedIncidents.Length == 0)
         {
-            try
-            {
-                await service.IngestAsync(normalized, CancellationToken.None);
-            }
-            catch
-            {
-                // runtime incident ingestion is best-effort and must not fail caller requests
-            }
-        });
+            return BadRequest(new { error = "at least one valid incident is required" });
+        }
 
+        await service.IngestAsync(new RuntimeIncidentIngestBatch(normalizedIncidents), cancellationToken);
         return Ok(new { success = true });
     }
 
