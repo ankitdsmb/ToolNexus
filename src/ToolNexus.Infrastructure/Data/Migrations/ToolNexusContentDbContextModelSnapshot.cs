@@ -348,6 +348,10 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ErrorType")
                         .IsRequired()
                         .HasMaxLength(40)

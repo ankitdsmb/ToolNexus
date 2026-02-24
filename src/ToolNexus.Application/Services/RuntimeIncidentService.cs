@@ -25,10 +25,18 @@ public sealed class RuntimeIncidentService(IRuntimeIncidentRepository repository
                 ErrorType = NormalizeErrorType(incident.ErrorType),
                 PayloadType = string.IsNullOrWhiteSpace(incident.PayloadType) ? "unknown" : incident.PayloadType.Trim().ToLowerInvariant(),
                 Timestamp = incident.Timestamp == default ? DateTime.UtcNow : incident.Timestamp,
-                Count = Math.Clamp(incident.Count, 1, 500)
+                Count = Math.Clamp(incident.Count, 1, 500),
+                CorrelationId = NormalizeCorrelationId(incident.CorrelationId)
             };
 
-            await repository.UpsertAsync(normalized, cancellationToken);
+            try
+            {
+                await repository.UpsertAsync(normalized, cancellationToken);
+            }
+            catch
+            {
+                // incident ingestion must remain best-effort and never break runtime request flow
+            }
         }
     }
 
@@ -43,4 +51,15 @@ public sealed class RuntimeIncidentService(IRuntimeIncidentRepository repository
 
     private static string NormalizeErrorType(string? errorType)
         => errorType is "contract_violation" or "runtime_error" ? errorType : "runtime_error";
+
+    private static string? NormalizeCorrelationId(string? correlationId)
+    {
+        if (string.IsNullOrWhiteSpace(correlationId))
+        {
+            return null;
+        }
+
+        var trimmed = correlationId.Trim();
+        return trimmed[..Math.Min(trimmed.Length, 120)];
+    }
 }

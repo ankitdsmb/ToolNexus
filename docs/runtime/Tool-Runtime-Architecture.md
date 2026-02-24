@@ -62,7 +62,8 @@ Tool runtime now reports structured incidents without crashing the runtime surfa
   "message": "...",
   "stack": "...",
   "payloadType": "html_element | string | object | ...",
-  "timestamp": "ISO-8601"
+  "timestamp": "ISO-8601",
+  "correlationId": "trace/request id (server-enriched when missing)"
 }
 ```
 
@@ -71,6 +72,9 @@ Tool runtime now reports structured incidents without crashing the runtime surfa
 - Runtime payload contract violations (HTMLElement action payloads, non-string actions, unsupported action shapes) return safe no-op responses.
 - Runtime always records incidents through `runtime-incident-reporter` and never throws from the reporting path.
 - Reporter queues, deduplicates by fingerprint, debounces burst traffic, and sends batched incidents to `POST /api/admin/runtime/incidents`.
+- Incident ingestion returns `HTTP 200` with `{ "success": true }` for client/runtime compatibility checks.
+- API/controller layer enriches missing `correlationId` values from `X-Correlation-ID` header or request trace identifier before service/repository persistence.
+- Persisted runtime incident fields include `toolSlug`, `message`, `stack`, `phase`, and `correlationId`.
 - Admin Execution Monitoring includes `runtime_incident` records alongside existing execution/audit incidents with severity, message, count, and last occurrence.
 
 ## Tool Health Scoring (Admin)

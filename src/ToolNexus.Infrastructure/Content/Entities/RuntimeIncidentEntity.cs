@@ -9,6 +9,7 @@ public sealed class RuntimeIncidentEntity
     public string ErrorType { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     public string? Stack { get; set; }
+    public string? CorrelationId { get; set; }
     public string PayloadType { get; set; } = string.Empty;
     public string Severity { get; set; } = string.Empty;
     public int Count { get; set; }

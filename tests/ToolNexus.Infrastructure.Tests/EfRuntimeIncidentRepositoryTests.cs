@@ -74,4 +74,30 @@ public sealed class EfRuntimeIncidentRepositoryTests
         var base64 = Assert.Single(result.Where(x => x.Slug == "base64-encoder"));
         Assert.Equal(95, base64.HealthScore);
     }
+
+
+    [Theory]
+    [ClassData(typeof(ProviderTheoryData))]
+    public async Task UpsertAsync_PersistsCorrelationId(TestDatabaseProvider provider)
+    {
+        await using var db = await TestDatabaseInstance.CreateAsync(provider);
+        await using var context = db.CreateContext();
+        var repository = new EfRuntimeIncidentRepository(context);
+
+        await repository.UpsertAsync(new RuntimeIncidentIngestRequest(
+            "json-formatter",
+            "execute",
+            "runtime_error",
+            "boom",
+            "stack",
+            "json",
+            DateTime.UtcNow,
+            1,
+            "fingerprint-1",
+            "corr-777"), CancellationToken.None);
+
+        var saved = Assert.Single(context.RuntimeIncidents);
+        Assert.Equal("corr-777", saved.CorrelationId);
+    }
+
 }
