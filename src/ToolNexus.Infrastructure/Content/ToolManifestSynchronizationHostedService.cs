@@ -22,7 +22,7 @@ public sealed class ToolManifestSynchronizationHostedService(
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await initializationState.WaitForReadyAsync(stoppingToken);
-        logger.LogInformation("Manifest synchronization started after database readiness signal.");
+        logger.LogInformation("[ToolEndpointRegistration] Manifest synchronization started after database readiness signal.");
 
         try
         {
@@ -89,7 +89,7 @@ public sealed class ToolManifestSynchronizationHostedService(
             }
 
             logger.LogInformation("{Category} synchronization summary: loaded {LoadedTools}, added {AddedTools}, updated {UpdatedTools}.", "ToolSync", loadedCount, added, updated);
-            logger.LogInformation("Manifest synchronization completed successfully.");
+            logger.LogInformation("[ToolEndpointRegistration] Manifest synchronization completed successfully.");
         }
         catch (InvalidCastException ex)
         {
