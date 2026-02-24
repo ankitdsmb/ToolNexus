@@ -1,4 +1,7 @@
 import { safeInitScheduler } from './safe-init-scheduler.js';
+import { createRuntimeLogger } from './runtime-logger.js';
+
+const logger = createRuntimeLogger({ source: 'tool-execution-normalizer' });
 
 function toCandidates(toolModule) {
   return [toolModule, toolModule?.default, toolModule?.lifecycle, toolModule?.default?.lifecycle].filter(Boolean);
@@ -100,11 +103,13 @@ function withDomTracking(root, context, callback) {
 
 export function normalizeToolExecution(toolModule, capability = {}, { slug = '', root, context } = {}) {
   const { target, mode } = resolveTarget(toolModule, capability, slug, context);
+  logger.debug('Execution target normalized.', { slug, mode });
   const hasDestroy = typeof target?.destroy === 'function';
   let instance = null;
 
   async function create() {
     if (typeof target?.create === 'function') {
+      logger.debug('Invoking normalized create lifecycle.', { slug, mode });
       instance = await target.create(root, context?.manifest, context);
     } else {
       instance = { root, context };
@@ -119,6 +124,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     }
 
     if (typeof target?.init === 'function') {
+      logger.debug('Invoking normalized init lifecycle.', { slug, mode });
       return withDomTracking(root, context, async () => {
         const initValue = await target.init(instance ?? context, root, context?.manifest, context);
         if (mode === 'modern.lifecycle' && typeof target?.runTool === 'function') {
@@ -129,6 +135,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     }
 
     if (typeof target?.runTool === 'function' && mode !== 'legacy.runTool.execution-only') {
+      logger.debug('Invoking normalized runTool lifecycle.', { slug, mode });
       return withDomTracking(root, context, () => target.runTool(root, context?.manifest, context));
     }
 
@@ -137,6 +144,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
 
   async function destroy() {
     if (typeof target?.destroy === 'function') {
+      logger.debug('Invoking normalized destroy lifecycle.', { slug, mode });
       await target.destroy(instance ?? context, root, context?.manifest, context);
     }
 

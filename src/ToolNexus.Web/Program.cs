@@ -9,8 +9,10 @@ using ToolNexus.Infrastructure;
 using ToolNexus.Web.Options;
 using ToolNexus.Web.Security;
 using ToolNexus.Web.Services;
+using ToolNexus.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Logging.ToolNexus.json", optional: true, reloadOnChange: true);
 
 /* =========================================================
    RESPONSE COMPRESSION
@@ -216,6 +218,7 @@ else
    ========================================================= */
 
 app.UseRouting();
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseOutputCache();

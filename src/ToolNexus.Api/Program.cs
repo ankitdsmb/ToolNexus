@@ -6,6 +6,7 @@ using ToolNexus.Api.Configuration;
 using ToolNexus.Api.Diagnostics;
 using ToolNexus.Api.Filters;
 using ToolNexus.Api.Middleware;
+using ToolNexus.Api.Logging;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content;
@@ -13,6 +14,7 @@ using ToolNexus.Infrastructure;
 using ToolNexus.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Logging.ToolNexus.json", optional: true, reloadOnChange: true);
 
 builder.Host.UseSerilog((context, cfg) => cfg.ReadFrom.Configuration(context.Configuration));
 
@@ -87,6 +89,8 @@ builder.Services
     .AddRateLimiting(builder.Configuration)
     .AddApiCors(builder.Configuration);
 
+builder.Services.Configure<ToolNexusLoggingOptions>(builder.Configuration.GetSection(ToolNexusLoggingOptions.SectionName));
+builder.Services.AddSingleton<IRuntimeClientLoggerService, RuntimeClientLoggerService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHostedService<EndpointDiagnosticsHostedService>();
 
