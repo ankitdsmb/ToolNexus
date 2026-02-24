@@ -605,6 +605,16 @@ export function createToolRuntime({
           emit('mount_fallback_content', { toolSlug: slug });
         }
 
+        const postMountValidation = normalizeDomValidation(validateDomContract(root));
+        if (!postMountValidation.isValid) {
+          const postMountAdaptation = adaptDomContract(root, capabilities);
+          logger.info('[DomAdapter] post-mount adapter applied', { slug, ...postMountAdaptation });
+          const postMountRevalidation = normalizeDomValidation(validateDomContract(root));
+          if (!postMountRevalidation.isValid) {
+            throw new Error(`runtime assertion failed: DOM contract incomplete for "${slug}"`);
+          }
+        }
+
         const lifecycleContract = inspectLifecycleContract(module);
         const classification = detectToolClassification({
           hasManifest,
@@ -809,9 +819,9 @@ const runtime = createToolRuntime();
 if (typeof document !== 'undefined' && document.getElementById('tool-root')) {
   scheduleNonCriticalTask(() => {
     runtime.bootstrapToolRuntime().catch((error) => {
-      if (typeof console !== 'undefined' && typeof console.error === 'function') {
-        console.error('[ToolRuntime] bootstrap task failed safely.', error);
-      }
+      runtimeLogger.warn('[ToolRuntime] bootstrap task failed safely.', {
+        message: error?.message ?? String(error)
+      });
     });
   });
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Controllers.Admin;
+using ToolNexus.Api.Logging;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using Xunit;
@@ -64,6 +65,34 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
         Assert.Equal("json-formatter", payload[0].Slug);
     }
 
+    [Fact]
+    public async Task PostClientLogs_AcceptsStructuredMetadata()
+    {
+        var service = new StubRuntimeIncidentService();
+        var runtimeLogger = new StubRuntimeClientLoggerService();
+        var controller = new RuntimeIncidentsController(service, runtimeLogger);
+
+        var result = await controller.PostClientLogs(new ClientIncidentLogBatch([
+            new ClientIncidentLogRequest(
+                "runtime.runtime",
+                "info",
+                "Structured payload",
+                "json-formatter",
+                "corr-123",
+                DateTime.UtcNow,
+                new Dictionary<string, object?>
+                {
+                    ["attempt"] = 2,
+                    ["success"] = true,
+                    ["details"] = new Dictionary<string, object?> { ["phase"] = "mount" }
+                })
+        ]), CancellationToken.None);
+
+        Assert.IsType<AcceptedResult>(result);
+        Assert.Single(runtimeLogger.Batches);
+        Assert.True(runtimeLogger.Batches[0].Logs[0].Metadata?.ContainsKey("details"));
+    }
+
     private sealed class StubRuntimeIncidentService : IRuntimeIncidentService
     {
         public List<RuntimeIncidentIngestBatch> Ingested { get; } = [];
@@ -80,5 +109,16 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
 
         public Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken)
             => Task.FromResult(Health);
+    }
+
+    private sealed class StubRuntimeClientLoggerService : IRuntimeClientLoggerService
+    {
+        public List<ClientIncidentLogBatch> Batches { get; } = [];
+
+        public Task WriteBatchAsync(ClientIncidentLogBatch batch, CancellationToken cancellationToken)
+        {
+            Batches.Add(batch);
+            return Task.CompletedTask;
+        }
     }
 }
