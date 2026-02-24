@@ -55,6 +55,8 @@ public sealed class ToolContentSeedHostedService(
             pendingMigrations.Length,
             pendingMigrations.Length == 0 ? "none" : string.Join(", ", pendingMigrations));
 
+        await LogDatabaseTargetAndMigrationStateAsync(dbContext, cancellationToken);
+
         if (runMigration)
         {
             await BaselineLegacySqliteSchemaIfNeededAsync(dbContext, cancellationToken);
@@ -64,6 +66,8 @@ public sealed class ToolContentSeedHostedService(
                 logger.LogInformation("Applied {MigrationCount} pending migration(s) during startup.", pendingMigrations.Length);
             }
         }
+
+        await EnsureAnalyticsSchemaAsync(dbContext, cancellationToken);
 
         if (!runSeed)
         {
@@ -199,7 +203,20 @@ public sealed class ToolContentSeedHostedService(
         {
             try
             {
+                var appliedMigrations = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToArray();
+                var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+                logger.LogInformation("Migration state before applying updates. Applied={AppliedCount} Pending={PendingCount} AppliedNames={AppliedNames} PendingNames={PendingNames}",
+                    appliedMigrations.Length,
+                    pendingMigrations.Length,
+                    string.Join(",", appliedMigrations),
+                    string.Join(",", pendingMigrations));
+
                 await dbContext.Database.MigrateAsync(cancellationToken);
+
+                var appliedAfter = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToArray();
+                logger.LogInformation("Migration state after applying updates. Applied={AppliedCount} AppliedNames={AppliedNames}",
+                    appliedAfter.Length,
+                    string.Join(",", appliedAfter));
                 return;
             }
             catch (Exception ex) when (IsTransientPostgresStartupException(ex) && attempt < MigrationRetryDelays.Length)
@@ -215,6 +232,58 @@ public sealed class ToolContentSeedHostedService(
         }
 
         await dbContext.Database.MigrateAsync(cancellationToken);
+    }
+
+
+    private async Task LogDatabaseTargetAndMigrationStateAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
+    {
+        var connectionString = dbContext.Database.GetConnectionString() ?? "<empty>";
+        var sanitizedConnectionString = SanitizeConnectionString(connectionString);
+        var providerName = dbContext.Database.ProviderName ?? "<unknown>";
+        logger.LogInformation("Database target resolved. Provider={Provider} Connection={Connection}", providerName, sanitizedConnectionString);
+
+        var appliedMigrations = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToArray();
+        var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+        logger.LogInformation("Database migration snapshot. Applied={AppliedCount} Pending={PendingCount} AppliedNames={AppliedNames} PendingNames={PendingNames}",
+            appliedMigrations.Length,
+            pendingMigrations.Length,
+            string.Join(",", appliedMigrations),
+            string.Join(",", pendingMigrations));
+    }
+
+    private async Task EnsureAnalyticsSchemaAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
+    {
+        var metricsTableExists = await TableExistsAsync(dbContext, "DailyToolMetrics", cancellationToken);
+        if (metricsTableExists)
+        {
+            return;
+        }
+
+        logger.LogCritical("DailyToolMetrics table is missing at startup. Triggering self-healing EF migrations.");
+        await MigrateWithRetryAsync(dbContext, cancellationToken);
+    }
+
+    private static string SanitizeConnectionString(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return "<empty>";
+        }
+
+        try
+        {
+            var builder = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+            if (!string.IsNullOrEmpty(builder.Password))
+            {
+                builder.Password = "***";
+            }
+
+            return builder.ConnectionString;
+        }
+        catch
+        {
+            return connectionString;
+        }
     }
 
     private static async Task<bool> TableExistsAsync(ToolNexusContentDbContext dbContext, string tableName, CancellationToken cancellationToken)

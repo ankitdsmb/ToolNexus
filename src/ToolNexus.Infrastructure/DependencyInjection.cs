@@ -27,6 +27,8 @@ public static class DependencyInjection
 
         services.AddDbContext<ToolNexusContentDbContext>(options =>
             DatabaseProviderConfiguration.Configure(options, provider, connectionString));
+        services.AddDbContextFactory<ToolNexusContentDbContext>(options =>
+            DatabaseProviderConfiguration.Configure(options, provider, connectionString));
         services
             .AddOptions<DatabaseInitializationOptions>()
             .Bind(configuration.GetSection(DatabaseInitializationOptions.SectionName));
