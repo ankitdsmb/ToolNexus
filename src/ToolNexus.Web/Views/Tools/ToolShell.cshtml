@@ -99,7 +99,7 @@
                 exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
                 clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
             },
-            runtimeLogEndpoint: "/api/admin/runtime/logs"
+            runtimeLogEndpoint: null
         };
         window.ToolNexusLogging = {
             minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>()["LoggingOptions:MinimumLevel"] ?? "Information")),

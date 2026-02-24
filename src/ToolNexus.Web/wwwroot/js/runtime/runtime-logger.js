@@ -1,4 +1,4 @@
-const DEFAULT_LOG_ENDPOINT = '/api/admin/runtime/logs';
+const DEFAULT_LOG_ENDPOINT = null;
 
 function truncate(value, max = 1200) {
   const stringValue = String(value ?? '');
@@ -37,6 +37,10 @@ export function createRuntimeLogger({
     }
 
     if (normalizedLevel === 'debug' && !runtimeDebugEnabled) {
+      return;
+    }
+
+    if (!endpoint || typeof transport !== 'function') {
       return;
     }
 
