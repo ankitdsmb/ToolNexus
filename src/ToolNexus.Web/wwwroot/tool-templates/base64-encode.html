@@ -8,7 +8,7 @@
     </header>
 
     <section class="base64-workspace" aria-label="Base64 workspace">
-        <section class="tool-panel base64-panel" aria-labelledby="inputHeading">
+        <section class="tool-panel base64-panel" aria-labelledby="inputHeading" data-tool-input>
             <div class="base64-panel__header">
                 <h2 id="inputHeading">Input</h2>
                 <p id="inputMeta" class="base64-meta">Text mode · 0 B</p>
@@ -36,14 +36,14 @@
 
             <p id="warningBanner" class="base64-warning" hidden></p>
 
-            <div class="base64-actions">
+            <div class="base64-actions" data-tool-actions>
                 <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
                 <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
             </div>
             <p class="base64-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Encode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel base64-panel" aria-labelledby="outputHeading">
+        <section class="tool-panel base64-panel" aria-labelledby="outputHeading" data-tool-output>
             <div class="base64-panel__header">
                 <h2 id="outputHeading">Encoded output</h2>
                 <p id="statusText" class="base64-meta">Ready</p>
