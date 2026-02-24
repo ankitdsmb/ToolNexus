@@ -1,4 +1,5 @@
 const DEFAULT_ENDPOINT = '/api/admin/runtime/incidents';
+const DEFAULT_LOG_ENDPOINT = '/api/admin/runtime/logs';
 const DEFAULT_DEBOUNCE_MS = 1500;
 const DEFAULT_MAX_BATCH_SIZE = 20;
 
@@ -49,13 +50,37 @@ async function postBatch(endpoint, batch) {
   });
 }
 
+async function postRuntimeLog(endpoint, incident) {
+  await fetch(endpoint, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      toolSlug: incident.toolSlug,
+      level: 'error',
+      message: incident.message,
+      stack: incident.stack,
+      timestamp: incident.timestamp,
+      source: 'runtime.incident-reporter',
+      metadata: {
+        phase: incident.phase,
+        errorType: incident.errorType,
+        payloadType: incident.payloadType,
+        count: incident.count
+      }
+    })
+  });
+}
+
 export function createRuntimeIncidentReporter({
   endpoint = DEFAULT_ENDPOINT,
   debounceMs = DEFAULT_DEBOUNCE_MS,
   maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
   now = () => Date.now(),
   sendBatch = postBatch,
-  enabled = window.ToolNexusLogging?.enableClientIncidents !== false
+  runtimeLogEndpoint = window.ToolNexusConfig?.runtimeLogEndpoint || DEFAULT_LOG_ENDPOINT,
+  sendRuntimeLog = postRuntimeLog,
+  enabled = window.ToolNexusLogging?.enableRuntimeLogCapture !== false
 } = {}) {
   const queue = [];
   const dedupeMap = new Map();
@@ -94,6 +119,8 @@ export function createRuntimeIncidentReporter({
           count: 1,
           lastSeenMs: timestampMs
         });
+
+        void sendRuntimeLog(runtimeLogEndpoint, normalized);
       }
 
       scheduleFlush();

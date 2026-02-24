@@ -99,12 +99,12 @@
                 exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
                 clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
             },
-            runtimeLogEndpoint: "/api/admin/runtime/incidents/logs"
+            runtimeLogEndpoint: "/api/admin/runtime/logs"
         };
         window.ToolNexusLogging = {
-            minLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>()["ToolNexusLogging:MinLevel"] ?? "Information")),
-            runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("ToolNexusLogging:RuntimeDebugEnabled"))),
-            enableClientIncidents: false
+            minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>()["LoggingOptions:MinimumLevel"] ?? "Information")),
+            runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("LoggingOptions:RuntimeDebugEnabled"))),
+            enableRuntimeLogCapture: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("LoggingOptions:EnableRuntimeLogCapture", true)))
         };
         window.ToolNexus = window.ToolNexus || {};
         window.ToolNexus.correlationId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.TraceIdentifier));
