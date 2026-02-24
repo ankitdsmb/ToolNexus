@@ -15,6 +15,7 @@ Coverage focus:
 - DOM adapter contract node creation.
 - Legacy bridge compatibility path.
 - Runtime contract validation (toolRootId + required anchors).
+- Runtime incident reporter degradation when `fetch` is unavailable (Node/SSR test runtimes) to preserve no-crash guarantees.
 
 ## Playwright runtime guards
 `assertNoRuntimeConsoleErrors()` (in `tests/playwright/helpers/console-guard.js`) fails tests on:
