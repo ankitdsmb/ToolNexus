@@ -14,5 +14,6 @@ describe('DOM adapter contract validation', () => {
     expect(root.querySelector('[data-tool-input]')).not.toBeNull();
     expect(root.querySelector('[data-tool-output]')).not.toBeNull();
     expect(root.querySelector('[data-tool-actions]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-body]')?.style.minHeight).toBe('1px');
   });
 });

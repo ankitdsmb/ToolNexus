@@ -104,7 +104,8 @@
         import('/js/tools-grid.js');
     }
 
-    if (document.querySelector('.tool-page')) {
+    const hasRuntimeShell = Boolean(document.querySelector('#tool-root[data-tool-root="true"]'));
+    if (document.querySelector('.tool-page') && !hasRuntimeShell) {
         import('/js/tool-page.js');
     }
 
