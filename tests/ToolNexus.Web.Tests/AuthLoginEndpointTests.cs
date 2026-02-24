@@ -13,7 +13,7 @@ public sealed class AuthLoginEndpointTests
     [Fact]
     public async Task GetLogin_Unauthenticated_ReturnsOk()
     {
-        await using var factory = new TestWebApplicationFactory();
+        await using var factory = new TestWebApplicationFactory(Environments.Development);
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -24,10 +24,25 @@ public sealed class AuthLoginEndpointTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+
+    [Fact]
+    public async Task GetLogin_NonDevelopment_ReturnsNotFound()
+    {
+        await using var factory = new TestWebApplicationFactory("IntegrationTests");
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        var response = await client.GetAsync("/auth/login");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     [Fact]
     public async Task GetAccessDenied_ReturnsOk()
     {
-        await using var factory = new TestWebApplicationFactory();
+        await using var factory = new TestWebApplicationFactory("IntegrationTests");
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -38,11 +53,11 @@ public sealed class AuthLoginEndpointTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    private sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
+    private sealed class TestWebApplicationFactory(string environmentName) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseEnvironment("IntegrationTests");
+            builder.UseEnvironment(environmentName);
             builder.ConfigureAppConfiguration((_, configBuilder) =>
             {
                 configBuilder.AddInMemoryCollection(new Dictionary<string, string?>

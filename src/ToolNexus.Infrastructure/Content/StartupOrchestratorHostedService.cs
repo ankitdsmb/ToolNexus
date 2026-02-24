@@ -17,6 +17,8 @@ public sealed class StartupOrchestratorHostedService(
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        EnsureUniquePhaseOrdering();
+
         foreach (var phase in _orderedPhases)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -34,6 +36,24 @@ public sealed class StartupOrchestratorHostedService(
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private void EnsureUniquePhaseOrdering()
+    {
+        var duplicateOrders = _orderedPhases
+            .GroupBy(phase => phase.Order)
+            .Where(group => group.Count() > 1)
+            .ToArray();
+
+        if (duplicateOrders.Length == 0)
+        {
+            return;
+        }
+
+        var details = string.Join(", ", duplicateOrders.Select(group =>
+            $"{group.Key}: [{string.Join("|", group.Select(phase => phase.PhaseName))}]"));
+
+        throw new InvalidOperationException($"Startup phase ordering conflict detected: {details}");
+    }
 
     private async Task WriteDiagnosticsLogAsync(string message, CancellationToken cancellationToken)
     {

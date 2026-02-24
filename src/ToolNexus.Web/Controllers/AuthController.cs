@@ -16,6 +16,11 @@ public sealed class AuthController(
     [HttpGet("login")]
     public IActionResult Login([FromQuery] string? returnUrl = null)
     {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
         if (User.Identity?.IsAuthenticated == true)
         {
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -45,7 +50,15 @@ public sealed class AuthController(
         }
 
         var principal = principalFactory.CreatePrincipal();
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = true,
+                AllowRefresh = true,
+                IssuedUtc = DateTimeOffset.UtcNow
+            });
 
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
         {
