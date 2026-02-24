@@ -23,6 +23,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<AuditOutboxEntity> AuditOutbox => Set<AuditOutboxEntity>();
     public DbSet<AuditDeadLetterEntity> AuditDeadLetters => Set<AuditDeadLetterEntity>();
     public DbSet<RuntimeIncidentEntity> RuntimeIncidents => Set<RuntimeIncidentEntity>();
+    public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -265,6 +266,19 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Severity).HasMaxLength(20);
             entity.Property(x => x.FirstOccurredUtc).HasColumnType("timestamp with time zone");
             entity.Property(x => x.LastOccurredUtc).HasColumnType("timestamp with time zone");
+        });
+
+        modelBuilder.Entity<AdminIdentityUserEntity>(entity =>
+        {
+            entity.ToTable("admin_identity_users");
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => x.NormalizedEmail).IsUnique();
+            entity.Property(x => x.Email).HasMaxLength(320);
+            entity.Property(x => x.NormalizedEmail).HasMaxLength(320);
+            entity.Property(x => x.DisplayName).HasMaxLength(120);
+            entity.Property(x => x.PasswordHash).HasMaxLength(1024);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.LockoutEndUtc).HasColumnType("timestamp with time zone");
         });
     }
 }

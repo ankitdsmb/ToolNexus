@@ -15,7 +15,7 @@ public sealed class ToolManifestSynchronizationHostedService(
     IDatabaseInitializationState initializationState,
     ILogger<ToolManifestSynchronizationHostedService> logger) : IStartupPhaseService
 {
-    public int Order => 2;
+    public int Order => 3;
 
     public string PhaseName => "Tool Manifest Synchronization";
 

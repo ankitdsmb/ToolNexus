@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Api.Controllers.Admin;
 using ToolNexus.Api.Logging;
 using ToolNexus.Application.Models;
@@ -14,7 +15,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
     public async Task PostIncident_AcceptsBatch()
     {
         var service = new StubRuntimeIncidentService();
-        var controller = new RuntimeIncidentsController(service);
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance);
 
         var result = await controller.Post(new RuntimeIncidentIngestBatch([
             new RuntimeIncidentIngestRequest("json-formatter", "execute", "contract_violation", "legacy mismatch", "warning", null, "html_element", DateTime.UtcNow, 1, "f1")
@@ -28,7 +29,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
     public async Task PostIncident_UsesRequestCorrelationId()
     {
         var service = new StubRuntimeIncidentService();
-        var controller = new RuntimeIncidentsController(service)
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance)
         {
             ControllerContext = new ControllerContext
             {
@@ -55,7 +56,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
             ]
         };
 
-        var controller = new RuntimeIncidentsController(service);
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance);
 
         var result = await controller.GetToolHealth(CancellationToken.None);
 
@@ -70,7 +71,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
     {
         var service = new StubRuntimeIncidentService();
         var runtimeLogger = new StubRuntimeClientLoggerService();
-        var controller = new RuntimeIncidentsController(service, runtimeLogger);
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance, runtimeLogger);
 
         var result = await controller.PostClientLogs(new ClientIncidentLogBatch([
             new ClientIncidentLogRequest(

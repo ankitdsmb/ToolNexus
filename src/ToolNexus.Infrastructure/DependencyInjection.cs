@@ -14,6 +14,7 @@ using ToolNexus.Application.Services.Insights;
 using ToolNexus.Infrastructure.Observability;
 using ToolNexus.Infrastructure.HealthChecks;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
 using StackExchange.Redis;
 
 namespace ToolNexus.Infrastructure;
@@ -36,6 +37,9 @@ public static class DependencyInjection
         services
             .AddOptions<StartupDiagnosticsOptions>()
             .Bind(configuration.GetSection(StartupDiagnosticsOptions.SectionName));
+        services
+            .AddOptions<AdminBootstrapOptions>()
+            .Bind(configuration.GetSection(AdminBootstrapOptions.SectionName));
         services.AddOptions<AuditGuardrailsOptions>().Bind(configuration.GetSection(AuditGuardrailsOptions.SectionName));
 
         services.AddSingleton<JsonFileToolManifestRepository>();
@@ -90,10 +94,12 @@ public static class DependencyInjection
         }
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
         services.AddSingleton<DatabaseInitializationState>();
+        services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
         services.AddSingleton<IDatabaseInitializationState>(sp => sp.GetRequiredService<DatabaseInitializationState>());
         services.AddScoped<ToolContentSeedHostedService>();
         services.AddSingleton<IStartupPhaseService, DatabaseInitializationHostedService>();
         services.AddSingleton<IStartupPhaseService, ToolContentSeedStartupPhaseService>();
+        services.AddSingleton<IStartupPhaseService, AdminIdentitySeedHostedService>();
         services.AddSingleton<IStartupPhaseService, ToolManifestSynchronizationHostedService>();
         services.AddHostedService<StartupOrchestratorHostedService>();
         services.AddSingleton<IToolInsightProvider, JsonInsightProvider>();

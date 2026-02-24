@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.IO.Compression;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
@@ -56,6 +57,7 @@ builder.Services.Configure<InternalAuthOptions>(builder.Configuration.GetSection
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
+builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
 builder.Services.AddSingleton<IInternalUserPrincipalFactory, InternalUserPrincipalFactory>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
 builder.Services.AddSingleton<IToolManifestLoader, ToolManifestLoader>();
@@ -85,10 +87,10 @@ builder.Services.AddAuthentication(options =>
     {
         options.Cookie.Name = "ToolNexus.Auth";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = SameSiteMode.Lax;
         options.LoginPath = "/auth/login";
-        options.AccessDeniedPath = "/auth/login";
+        options.AccessDeniedPath = "/auth/access-denied";
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });

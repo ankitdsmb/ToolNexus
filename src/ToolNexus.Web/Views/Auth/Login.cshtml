@@ -1,0 +1,12 @@
+@model ToolNexus.Web.Models.AuthLoginViewModel
+<h1>Admin Login</h1>
+<form method="post" asp-action="Login" asp-controller="Auth">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly"></div>
+    <label asp-for="Email"></label>
+    <input asp-for="Email" />
+    <label asp-for="Password"></label>
+    <input asp-for="Password" />
+    <button type="submit">Sign in</button>
+</form>

@@ -55,3 +55,10 @@ Files Modified: scripts/playwright-webserver.mjs; src/ToolNexus.Web/wwwroot/js/r
 Tests Executed: npm run test:runtime; npm run test:js; npx playwright test tests/playwright; dotnet test ToolNexus.sln
 Result: Full mandatory QA suite passes, runtime console guard is clean for tool routes, and Playwright startup no longer depends on external PostgreSQL.
 Next Recommendation: Add a dedicated web-host endpoint capability contract test to assert configured runtime log endpoints resolve before enabling client log transport.
+
+Date: 2026-02-24
+Problem: Admin authentication was incomplete (`GET /auth/login` only), preventing any authenticated admin access despite policy-protected routes.
+Prompt: Implement production-safe admin auth foundation with secure login POST, proper access-denied behavior, startup identity bootstrap, and startup-orchestration alignment.
+Result: Integrated ASP.NET Core Identity, added antiforgery-protected login flow with lockout-aware credential validation, created `AdminIdentitySeedHostedService` startup phase after DB migration, and routed forbidden users to `/auth/access-denied`.
+Improvement: Admin authorization remains strict while authentication is now functional, auditable, and environment-configurable (no hardcoded credentials).
+New Version: Any admin-area authorization work must include end-to-end identity bootstrap + login + forbidden UX validation and startup-phase ordering evidence.
