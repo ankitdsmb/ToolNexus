@@ -62,7 +62,9 @@ export function createRuntimeLogger({
       return;
     }
 
-    const targetLevel = normalizedLevel === 'debug' && !runtimeDebugEnabled ? 'info' : normalizedLevel;
+    const targetLevel = normalizedLevel === 'debug' && !runtimeDebugEnabled
+      ? 'info'
+      : normalizedLevel === 'error' ? 'warn' : normalizedLevel;
     if (typeof sink?.[targetLevel] === 'function') {
       sink[targetLevel](`[${source}] ${message}`, metadata);
     }

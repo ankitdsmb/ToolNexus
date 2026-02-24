@@ -54,7 +54,8 @@ export function createRuntimeIncidentReporter({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
   now = () => Date.now(),
-  sendBatch = postBatch
+  sendBatch = postBatch,
+  enabled = window.ToolNexusLogging?.enableClientIncidents !== false
 } = {}) {
   const queue = [];
   const dedupeMap = new Map();
@@ -73,6 +74,10 @@ export function createRuntimeIncidentReporter({
   }
 
   function report(rawIncident) {
+    if (!enabled) {
+      return;
+    }
+
     try {
       const normalized = normalizeIncident(rawIncident);
       const fingerprint = buildFingerprint(normalized);
@@ -98,7 +103,7 @@ export function createRuntimeIncidentReporter({
   }
 
   async function flush() {
-    if (inFlight || dedupeMap.size === 0) {
+    if (!enabled || inFlight || dedupeMap.size === 0) {
       return;
     }
 

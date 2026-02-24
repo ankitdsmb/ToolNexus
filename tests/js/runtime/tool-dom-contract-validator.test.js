@@ -16,14 +16,14 @@ describe('tool DOM contract validator', () => {
   test('passes when canonical contract nodes are present', () => {
     const root = document.createElement('div');
     root.innerHTML = `
-      <section data-tool-root="true">
+      <section data-runtime-container="true"><section data-tool-root="true">
         <header data-tool-header="true"></header>
         <div data-tool-body="true">
           <section data-tool-input="true"></section>
           <section data-tool-output="true"></section>
           <div data-tool-actions="true"></div>
         </div>
-      </section>
+      </section></section>
     `;
 
     const result = validateToolDom(root);
@@ -31,5 +31,6 @@ describe('tool DOM contract validator', () => {
     expect(result.isValid).toBe(true);
     expect(result.missingNodes).toEqual([]);
     expect(result.detectedLayoutType).toBe('MODERN_LAYOUT');
+    expect(result.missingNodes).not.toContain('data-runtime-container');
   });
 });

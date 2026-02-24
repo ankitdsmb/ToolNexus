@@ -9,7 +9,24 @@ function normalizeRoot(root) {
 }
 
 function hasSelector(scope, selector) {
-  return Boolean(scope?.querySelector?.(selector));
+  if (!scope || !selector) {
+    return false;
+  }
+
+  return Boolean(scope.matches?.(selector) || scope.querySelector?.(selector));
+}
+
+function hasNode(scope, nodeName) {
+  const selector = TOOL_DOM_CONTRACT.nodeSelectors[nodeName];
+  if (!selector) {
+    return false;
+  }
+
+  if (nodeName === 'data-runtime-container') {
+    return hasSelector(scope, selector) || Boolean(scope.closest?.(selector));
+  }
+
+  return hasSelector(scope, selector);
 }
 
 function detectLayoutType(scope) {
@@ -17,8 +34,7 @@ function detectLayoutType(scope) {
     return LAYOUT_TYPES.UNKNOWN_LAYOUT;
   }
 
-  const hasCanonicalNodes = TOOL_DOM_CONTRACT.requiredNodes.every((nodeName) =>
-    hasSelector(scope, TOOL_DOM_CONTRACT.nodeSelectors[nodeName]));
+  const hasCanonicalNodes = TOOL_DOM_CONTRACT.requiredNodes.every((nodeName) => hasNode(scope, nodeName));
 
   if (hasCanonicalNodes) {
     return LAYOUT_TYPES.MODERN_LAYOUT;
@@ -58,8 +74,7 @@ export function validateToolDom(root) {
     };
   }
 
-  const missingNodes = TOOL_DOM_CONTRACT.requiredNodes.filter((nodeName) =>
-    !scope.querySelector(TOOL_DOM_CONTRACT.nodeSelectors[nodeName]));
+  const missingNodes = TOOL_DOM_CONTRACT.requiredNodes.filter((nodeName) => !hasNode(scope, nodeName));
 
   return {
     isValid: missingNodes.length === 0,

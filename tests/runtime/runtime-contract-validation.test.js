@@ -15,6 +15,7 @@ describe('runtime contract validation', () => {
     expect(root).not.toBeNull();
     expect(root.dataset.toolRootId).toBeTruthy();
     expect(adapted.adaptedNodes).toContain('data-tool-actions');
+    expect(adapted.adaptedNodes).toContain('data-runtime-container');
     expect(typeof context.addCleanup).toBe('function');
   });
 });

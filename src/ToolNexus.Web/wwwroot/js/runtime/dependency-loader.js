@@ -53,6 +53,16 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript,
       document.head.appendChild(link);
     });
 
+
+function isLocalRuntimeHost() {
+  const host = window.location?.hostname ?? '';
+  return host === '127.0.0.1' || host === 'localhost';
+}
+
+function shouldSkipRemoteDependency(src) {
+  return isLocalRuntimeHost() && /^https?:\/\//i.test(src);
+}
+
   function emit(event, payload) {
     try {
       observer?.emit?.(event, payload);
@@ -62,6 +72,12 @@ export function createDependencyLoader({ observer = runtimeObserver, loadScript,
   }
 
   async function loadDependency(src, toolSlug) {
+    if (shouldSkipRemoteDependency(src)) {
+      logger.info(`Skipping remote dependency "${src}" on local runtime host.`, { toolSlug });
+      emit('dependency_script_load_skipped', { toolSlug, metadata: { dependency: src, reason: 'local_host_remote_dependency' } });
+      return;
+    }
+
     if (cache.has(src)) {
       emit('cache_hit', { toolSlug, metadata: { dependency: src } });
       logger.debug(`Cache hit for dependency "${src}".`, { toolSlug });

@@ -23,8 +23,15 @@ public sealed class ToolContentSeedHostedService(
         TimeSpan.FromSeconds(10)
     ];
 
-    public async Task StartAsync(CancellationToken cancellationToken)
-        => await InitializeAsync(runMigration: true, runSeed: true, cancellationToken);
+    private CancellationTokenSource? _startupCts;
+    private Task? _startupTask;
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _startupTask = Task.Run(() => InitializeAsync(runMigration: true, runSeed: true, _startupCts.Token), CancellationToken.None);
+        return Task.CompletedTask;
+    }
 
     public async Task InitializeAsync(bool runMigration, bool runSeed, CancellationToken cancellationToken)
     {
@@ -157,7 +164,16 @@ public sealed class ToolContentSeedHostedService(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (_startupCts is null || _startupTask is null)
+        {
+            return;
+        }
+
+        _startupCts.Cancel();
+        await Task.WhenAny(_startupTask, Task.Delay(TimeSpan.FromSeconds(2), cancellationToken));
+    }
 
     private async Task MigrateWithRetryAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
     {

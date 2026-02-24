@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Controllers;
 
 [Route("auth")]
-public sealed class AuthController(IInternalUserPrincipalFactory principalFactory) : Controller
+public sealed class AuthController : Controller
 {
     [AllowAnonymous]
     [HttpGet("login")]
@@ -23,23 +22,18 @@ public sealed class AuthController(IInternalUserPrincipalFactory principalFactor
             return RedirectToAction("Index", "Home");
         }
 
-        return Content("Login required.", "text/html");
-    }
+        var html = """
+                   <!doctype html>
+                   <html lang="en">
+                   <head><meta charset="utf-8"><title>Login</title></head>
+                   <body>
+                       <h1>Login</h1>
+                       <p>Authentication is required to access admin routes.</p>
+                   </body>
+                   </html>
+                   """;
 
-    [AllowAnonymous]
-    [HttpPost("login")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SignIn([FromQuery] string? returnUrl = null)
-    {
-        var principal = principalFactory.CreatePrincipal();
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-        {
-            return LocalRedirect(returnUrl);
-        }
-
-        return RedirectToAction("Index", "Home");
+        return Content(html, "text/html");
     }
 
     [HttpPost("logout")]
