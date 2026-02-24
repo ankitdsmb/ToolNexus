@@ -43,6 +43,11 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) 
     public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int take = 100, CancellationToken cancellationToken = default)
         => Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
 
+    [HttpPost("logs")]
+    [AllowAnonymous]
+    public IActionResult PostClientLogs([FromBody] ClientIncidentLogBatch request)
+        => Accepted();
+
     private string? ResolveCorrelationId()
     {
         var context = HttpContext;
