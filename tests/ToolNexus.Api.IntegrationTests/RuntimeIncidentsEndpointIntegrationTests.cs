@@ -17,7 +17,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
         var controller = new RuntimeIncidentsController(service);
 
         var result = await controller.Post(new RuntimeIncidentIngestBatch([
-            new RuntimeIncidentIngestRequest("json-formatter", "execute", "contract_violation", "legacy mismatch", null, "html_element", DateTime.UtcNow, 1, "f1")
+            new RuntimeIncidentIngestRequest("json-formatter", "execute", "contract_violation", "legacy mismatch", "warning", null, "html_element", DateTime.UtcNow, 1, "f1")
         ]), CancellationToken.None);
 
         Assert.IsType<OkObjectResult>(result);
@@ -38,7 +38,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
         controller.HttpContext.Request.Headers["X-Correlation-ID"] = "corr-123";
 
         await controller.Post(new RuntimeIncidentIngestBatch([
-            new RuntimeIncidentIngestRequest("json-formatter", "execute", "runtime_error", "legacy mismatch", null, "html_element", DateTime.UtcNow, 1, "f1")
+            new RuntimeIncidentIngestRequest("json-formatter", "execute", "runtime_error", "legacy mismatch", "critical", null, "html_element", DateTime.UtcNow, 1, "f1")
         ]), CancellationToken.None);
 
         Assert.Equal("corr-123", service.Ingested[0].Incidents[0].CorrelationId);
