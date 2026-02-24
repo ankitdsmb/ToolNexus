@@ -4,8 +4,8 @@ namespace ToolNexus.Web.Security;
 
 public static class AdminPermissionClaims
 {
-    private static readonly string[] ReadPermissions = ["*:*", "admin:*", "admin:read", "admin:write"];
-    private static readonly string[] WritePermissions = ["*:*", "admin:*", "admin:write"];
+    private static readonly string[] ReadPermissions = ["*:*", "admin:*", "admin:read", "admin:write", "AdminRead", "AdminWrite"];
+    private static readonly string[] WritePermissions = ["*:*", "admin:*", "admin:write", "AdminWrite"];
 
     public static bool CanRead(ClaimsPrincipal user)
         => HasAnyPermission(user, ReadPermissions);

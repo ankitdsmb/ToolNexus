@@ -53,12 +53,9 @@ builder.Services.AddOutputCache(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
-builder.Services.Configure<InternalAuthOptions>(builder.Configuration.GetSection(InternalAuthOptions.SectionName));
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration); // REQUIRED
-builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
-builder.Services.AddSingleton<IInternalUserPrincipalFactory, InternalUserPrincipalFactory>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
 builder.Services.AddSingleton<IToolManifestLoader, ToolManifestLoader>();
 builder.Services.AddSingleton<IToolRegistryService, ToolRegistryService>();
@@ -78,35 +75,43 @@ else
     builder.Services.AddDataProtection().SetApplicationName("ToolNexus.SharedAuth");
 }
 
-builder.Services.AddAuthentication(options =>
+builder.Services
+    .AddIdentity<IdentityUser, IdentityRole>(options =>
     {
-        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequiredLength = 10;
+        options.User.RequireUniqueEmail = true;
     })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-    {
-        options.Cookie.Name = "ToolNexus.Auth";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        options.LoginPath = "/auth/login";
-        options.AccessDeniedPath = "/auth/access-denied";
-        options.SlidingExpiration = true;
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    });
+    .AddEntityFrameworkStores<ToolNexus.Infrastructure.Data.ToolNexusIdentityDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = "ToolNexus.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.LoginPath = "/auth/login";
+    options.AccessDeniedPath = "/auth/access-denied";
+    options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+});
 
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AdminPolicyNames.AdminRead, policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireAssertion(context => AdminPermissionClaims.CanRead(context.User));
+        policy.RequireAssertion(context => AdminPermissionClaims.CanRead(context.User) || context.User.IsInRole("Admin"));
     });
 
     options.AddPolicy(AdminPolicyNames.AdminWrite, policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireAssertion(context => AdminPermissionClaims.CanWrite(context.User));
+        policy.RequireAssertion(context => AdminPermissionClaims.CanWrite(context.User) || context.User.IsInRole("Admin"));
     });
 });
 

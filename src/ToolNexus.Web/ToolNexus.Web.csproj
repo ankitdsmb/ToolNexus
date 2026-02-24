@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../ToolNexus.Application/ToolNexus.Application.csproj" />
     <ProjectReference Include="..\ToolNexus.Infrastructure\ToolNexus.Infrastructure.csproj" />
   </ItemGroup>

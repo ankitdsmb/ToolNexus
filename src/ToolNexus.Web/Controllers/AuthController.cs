@@ -1,26 +1,17 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Web.Models;
-using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Controllers;
 
 [Route("auth")]
-public sealed class AuthController(
-    IWebHostEnvironment environment,
-    IInternalUserPrincipalFactory principalFactory) : Controller
+public sealed class AuthController(SignInManager<IdentityUser> signInManager) : Controller
 {
     [AllowAnonymous]
     [HttpGet("login")]
     public IActionResult Login([FromQuery] string? returnUrl = null)
     {
-        if (!environment.IsDevelopment())
-        {
-            return NotFound();
-        }
-
         if (User.Identity?.IsAuthenticated == true)
         {
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -39,26 +30,22 @@ public sealed class AuthController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(AuthLoginViewModel model)
     {
-        if (!environment.IsDevelopment())
-        {
-            return NotFound();
-        }
-
         if (!ModelState.IsValid)
         {
             return View(model);
         }
 
-        var principal = principalFactory.CreatePrincipal();
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            new AuthenticationProperties
-            {
-                IsPersistent = true,
-                AllowRefresh = true,
-                IssuedUtc = DateTimeOffset.UtcNow
-            });
+        var result = await signInManager.PasswordSignInAsync(
+            model.Email,
+            model.Password,
+            isPersistent: true,
+            lockoutOnFailure: true);
+
+        if (!result.Succeeded)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            return View(model);
+        }
 
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
         {
@@ -76,7 +63,7 @@ public sealed class AuthController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");
     }
 }

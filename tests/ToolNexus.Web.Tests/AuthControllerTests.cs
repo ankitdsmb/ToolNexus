@@ -1,12 +1,8 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using ToolNexus.Web.Controllers;
 using ToolNexus.Web.Models;
-using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Tests;
 
@@ -36,7 +32,7 @@ public sealed class AuthControllerTests
 
     private static AuthController CreateController(bool isAuthenticated)
     {
-        var controller = new AuthController(new TestEnvironment(), new TestPrincipalFactory());
+        var controller = new AuthController(null!);
         var identity = isAuthenticated
             ? new ClaimsIdentity([new Claim(ClaimTypes.Name, "tester")], "Cookies")
             : new ClaimsIdentity();
@@ -47,24 +43,5 @@ public sealed class AuthControllerTests
         };
 
         return controller;
-    }
-
-    private sealed class TestEnvironment : IWebHostEnvironment
-    {
-        public string ApplicationName { get; set; } = "ToolNexus.Tests";
-        public IFileProvider WebRootFileProvider { get; set; } = null!;
-        public string WebRootPath { get; set; } = string.Empty;
-        public string EnvironmentName { get; set; } = Environments.Development;
-        public string ContentRootPath { get; set; } = string.Empty;
-        public IFileProvider ContentRootFileProvider { get; set; } = null!;
-    }
-
-    private sealed class TestPrincipalFactory : IInternalUserPrincipalFactory
-    {
-        public ClaimsPrincipal CreatePrincipal()
-        {
-            var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "dev-admin")], "Cookies");
-            return new ClaimsPrincipal(identity);
-        }
     }
 }

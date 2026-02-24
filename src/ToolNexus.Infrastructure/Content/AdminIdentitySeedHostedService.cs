@@ -1,23 +1,22 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using ToolNexus.Application.Services;
-using ToolNexus.Infrastructure.Content.Entities;
-using ToolNexus.Infrastructure.Data;
-using ToolNexus.Infrastructure.Options;
 
 namespace ToolNexus.Infrastructure.Content;
 
 public sealed class AdminIdentitySeedHostedService(
     IServiceProvider serviceProvider,
     IDatabaseInitializationState initializationState,
-    IHostEnvironment environment,
-    IOptions<AdminBootstrapOptions> options,
     ILogger<AdminIdentitySeedHostedService> logger) : IStartupPhaseService
 {
+    private const string AdminEmail = "dummy@dummy.com";
+    private const string AdminPassword = "passwor@1234";
+    private const string AdminRole = "Admin";
+
     public int Order => 6;
 
     public string PhaseName => "Admin Identity Bootstrap";
@@ -25,82 +24,69 @@ public sealed class AdminIdentitySeedHostedService(
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         await initializationState.WaitForReadyAsync(cancellationToken);
+
         using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<object>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        if (dbContext.Database.IsNpgsql())
+        if (!await roleManager.RoleExistsAsync(AdminRole))
         {
-            await dbContext.Database.ExecuteSqlRawAsync(
-                """
-                CREATE TABLE IF NOT EXISTS admin_identity_users (
-                    "Id" uuid NOT NULL PRIMARY KEY,
-                    "Email" character varying(320) NOT NULL,
-                    "NormalizedEmail" character varying(320) NOT NULL,
-                    "DisplayName" character varying(120) NOT NULL,
-                    "PasswordHash" character varying(1024) NOT NULL,
-                    "AccessFailedCount" integer NOT NULL DEFAULT 0,
-                    "LockoutEndUtc" timestamp with time zone NULL,
-                    "CreatedAtUtc" timestamp with time zone NOT NULL
-                );
-                CREATE UNIQUE INDEX IF NOT EXISTS "IX_admin_identity_users_NormalizedEmail" ON admin_identity_users ("NormalizedEmail");
+            var createRoleResult = await roleManager.CreateAsync(new IdentityRole(AdminRole));
+            if (!createRoleResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Unable to create role '{AdminRole}': {string.Join(';', createRoleResult.Errors.Select(x => x.Description))}");
+            }
+        }
 
-                ALTER TABLE admin_identity_users
-                ALTER COLUMN "Id" TYPE uuid USING "Id"::uuid,
-                ALTER COLUMN "LockoutEndUtc" TYPE timestamp with time zone USING NULLIF("LockoutEndUtc", '')::timestamp with time zone,
-                ALTER COLUMN "CreatedAtUtc" TYPE timestamp with time zone USING "CreatedAtUtc"::timestamp with time zone;
-                """,
-                cancellationToken);
+        var normalizedEmail = userManager.NormalizeEmail(AdminEmail);
+        var user = await userManager.Users.SingleOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
+        if (user is null)
+        {
+            user = new IdentityUser
+            {
+                UserName = AdminEmail,
+                Email = AdminEmail,
+                EmailConfirmed = true
+            };
+
+            var createUserResult = await userManager.CreateAsync(user, AdminPassword);
+            if (!createUserResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Unable to create admin user: {string.Join(';', createUserResult.Errors.Select(x => x.Description))}");
+            }
+
+            logger.LogInformation("[AdminSeed] Created admin user");
         }
         else
         {
-            await dbContext.Database.ExecuteSqlRawAsync(
-                """
-                CREATE TABLE IF NOT EXISTS admin_identity_users (
-                    "Id" TEXT NOT NULL PRIMARY KEY,
-                    "Email" TEXT NOT NULL,
-                    "NormalizedEmail" TEXT NOT NULL,
-                    "DisplayName" TEXT NOT NULL,
-                    "PasswordHash" TEXT NOT NULL,
-                    "AccessFailedCount" INTEGER NOT NULL DEFAULT 0,
-                    "LockoutEndUtc" TEXT NULL,
-                    "CreatedAtUtc" TEXT NOT NULL
-                );
-                CREATE UNIQUE INDEX IF NOT EXISTS IX_admin_identity_users_NormalizedEmail ON admin_identity_users ("NormalizedEmail");
-                """,
-                cancellationToken);
+            logger.LogInformation("[AdminSeed] Admin already exists");
         }
 
-        var settings = options.Value;
-        if (string.IsNullOrWhiteSpace(settings.Email) || string.IsNullOrWhiteSpace(settings.Password))
+        if (!await userManager.IsInRoleAsync(user, AdminRole))
         {
-            var message = "Admin bootstrap credentials are required via AdminBootstrap__Email and AdminBootstrap__Password.";
-            if (environment.IsProduction())
+            var addRoleResult = await userManager.AddToRoleAsync(user, AdminRole);
+            if (!addRoleResult.Succeeded)
             {
-                throw new InvalidOperationException(message);
+                throw new InvalidOperationException($"Unable to assign admin role: {string.Join(';', addRoleResult.Errors.Select(x => x.Description))}");
             }
-
-            logger.LogWarning("{Message} Skipping admin identity seed in development.", message);
-            return;
         }
 
-        var normalizedEmail = settings.Email.Trim().ToUpperInvariant();
-        var existing = await dbContext.AdminIdentityUsers.SingleOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
-        if (existing is not null)
+        await EnsureClaimAsync(userManager, user, "tool_permission", "AdminRead");
+        await EnsureClaimAsync(userManager, user, "tool_permission", "AdminWrite");
+    }
+
+    private static async Task EnsureClaimAsync(UserManager<IdentityUser> userManager, IdentityUser user, string claimType, string claimValue)
+    {
+        var claims = await userManager.GetClaimsAsync(user);
+        if (claims.Any(c => c.Type == claimType && string.Equals(c.Value, claimValue, StringComparison.OrdinalIgnoreCase)))
         {
             return;
         }
 
-        var user = new AdminIdentityUserEntity
+        var result = await userManager.AddClaimAsync(user, new Claim(claimType, claimValue));
+        if (!result.Succeeded)
         {
-            Email = settings.Email.Trim(),
-            NormalizedEmail = normalizedEmail,
-            DisplayName = string.IsNullOrWhiteSpace(settings.DisplayName) ? "ToolNexus Administrator" : settings.DisplayName.Trim(),
-            PasswordHash = hasher.HashPassword(new object(), settings.Password)
-        };
-
-        dbContext.AdminIdentityUsers.Add(user);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Seeded admin identity bootstrap user for {Email}.", user.Email);
+            throw new InvalidOperationException($"Unable to add claim '{claimType}:{claimValue}': {string.Join(';', result.Errors.Select(x => x.Description))}");
+        }
     }
 }
