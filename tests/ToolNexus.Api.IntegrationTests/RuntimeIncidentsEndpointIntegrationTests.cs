@@ -45,6 +45,73 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
         Assert.Equal("corr-123", service.Ingested[0].Incidents[0].CorrelationId);
     }
 
+
+    [Fact]
+    public async Task GetIncidents_WithoutQueryParams_ReturnsOkWithDefaultTake()
+    {
+        var service = new StubRuntimeIncidentService();
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance);
+
+        var result = await controller.Get(null, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsAssignableFrom<IReadOnlyList<RuntimeIncidentSummary>>(ok.Value);
+        Assert.Equal(100, service.LastTake);
+    }
+
+    [Fact]
+    public async Task GetIncidents_WithEmptyTakeEquivalent_ReturnsOkWithDefaultTake()
+    {
+        var service = new StubRuntimeIncidentService();
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance);
+
+        var result = await controller.Get(0, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsAssignableFrom<IReadOnlyList<RuntimeIncidentSummary>>(ok.Value);
+        Assert.Equal(100, service.LastTake);
+    }
+
+    [Fact]
+    public async Task PostClientLogs_InvalidLevel_ReturnsBadRequest()
+    {
+        var service = new StubRuntimeIncidentService();
+        var runtimeLogger = new StubRuntimeClientLoggerService();
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance, runtimeLogger);
+
+        var result = await controller.PostClientLogs(new ClientIncidentLogBatch([
+            new ClientIncidentLogRequest(
+                "runtime.runtime",
+                "fatal",
+                "Unsupported level",
+                null,
+                "json-formatter",
+                "corr-123",
+                DateTime.UtcNow,
+                null)
+        ]), CancellationToken.None);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Empty(runtimeLogger.Batches);
+    }
+
+    [Fact]
+    public async Task GetIncidents_WithValidTake_ReturnsData()
+    {
+        var service = new StubRuntimeIncidentService
+        {
+            Summaries = [new RuntimeIncidentSummary("json-formatter", "runtime incident", "critical", 2, DateTime.UtcNow)]
+        };
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance);
+
+        var result = await controller.Get(25, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var payload = Assert.IsAssignableFrom<IReadOnlyList<RuntimeIncidentSummary>>(ok.Value);
+        Assert.Single(payload);
+        Assert.Equal(25, service.LastTake);
+    }
+
     [Fact]
     public async Task GetToolHealth_ReturnsSnapshots()
     {
@@ -99,6 +166,8 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
     {
         public List<RuntimeIncidentIngestBatch> Ingested { get; } = [];
         public IReadOnlyList<RuntimeToolHealthSnapshot> Health { get; set; } = [];
+        public IReadOnlyList<RuntimeIncidentSummary> Summaries { get; set; } = [];
+        public int LastTake { get; private set; }
 
         public Task IngestAsync(RuntimeIncidentIngestBatch batch, CancellationToken cancellationToken)
         {
@@ -107,7 +176,10 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
         }
 
         public Task<IReadOnlyList<RuntimeIncidentSummary>> GetLatestSummariesAsync(int take, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<RuntimeIncidentSummary>>([]);
+        {
+            LastTake = take;
+            return Task.FromResult(Summaries);
+        }
 
         public Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken)
             => Task.FromResult(Health);

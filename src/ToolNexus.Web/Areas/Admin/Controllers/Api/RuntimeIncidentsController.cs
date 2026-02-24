@@ -41,10 +41,25 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
 
     [HttpGet]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]
-    public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int take = 100, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int? take, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Runtime incident summaries requested from web admin endpoint. take={Take}", take);
-        return Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
+        if (!ModelState.IsValid)
+        {
+            LogModelBindingFailure();
+            return BadRequest(new ValidationProblemDetails(ModelState));
+        }
+
+        var normalizedTake = take.GetValueOrDefault(100);
+        if (normalizedTake <= 0)
+        {
+            normalizedTake = 100;
+        }
+
+        logger.LogInformation("[RuntimeIncidentAPI] Request received for runtime incidents. take={RequestedTake}", take);
+        logger.LogInformation("[RuntimeIncidentAPI] Parsed filters. take={Take}", normalizedTake);
+        var incidents = await service.GetLatestSummariesAsync(normalizedTake, cancellationToken);
+        logger.LogInformation("[RuntimeIncidentAPI] Returning {IncidentCount} incidents.", incidents.Count);
+        return Ok(incidents);
     }
 
     [HttpGet("/api/admin/runtime/tool-health")]
@@ -59,8 +74,37 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
     [AllowAnonymous]
     public IActionResult PostClientLogs([FromBody] ClientIncidentLogBatch request)
     {
+        if (!ModelState.IsValid)
+        {
+            LogModelBindingFailure();
+            return BadRequest(new ValidationProblemDetails(ModelState));
+        }
+
+        var invalidLevel = request.Logs.FirstOrDefault(log => !IsValidLogLevel(log.Level));
+        if (invalidLevel is not null)
+        {
+            ModelState.AddModelError(nameof(ClientIncidentLogRequest.Level), $"Unsupported log level '{invalidLevel.Level}'.");
+            LogModelBindingFailure();
+            return BadRequest(new ValidationProblemDetails(ModelState));
+        }
+
         logger.LogInformation("Runtime client logs accepted from web admin endpoint. count={LogCount}", request.Logs.Count);
         return Accepted();
+    }
+
+    private static bool IsValidLogLevel(string? level)
+        => level is "debug" or "info" or "warn" or "error";
+
+    private void LogModelBindingFailure()
+    {
+        foreach (var entry in ModelState)
+        {
+            var attemptedValue = entry.Value?.AttemptedValue;
+            foreach (var error in entry.Value?.Errors ?? [])
+            {
+                logger.LogWarning("[RuntimeIncidentAPI] Model binding failed: field={Field} value={AttemptedValue} error={Error}", entry.Key, attemptedValue, error.ErrorMessage);
+            }
+        }
     }
 
     private string? ResolveCorrelationId()

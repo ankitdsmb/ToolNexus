@@ -85,14 +85,16 @@ export function createRuntimeLogger({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          source,
-          level: normalizedLevel,
-          message: truncate(message, 1200),
-          stack: truncate(metadata?.stack, 2000),
-          toolSlug: window.ToolNexusConfig?.tool?.slug ?? null,
-          correlationId: getCorrelationId(),
-          timestamp: new Date().toISOString(),
-          metadata: metadata ?? null
+          logs: [{
+            source,
+            level: normalizedLevel,
+            message: truncate(message, 1200),
+            stack: truncate(metadata?.stack, 2000),
+            toolSlug: window.ToolNexusConfig?.tool?.slug ?? null,
+            correlationId: getCorrelationId(),
+            timestamp: new Date().toISOString(),
+            metadata: metadata ?? null
+          }]
         })
       });
     } catch {
