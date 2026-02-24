@@ -1,5 +1,5 @@
 const DEFAULT_ENDPOINT = '/api/admin/runtime/incidents';
-const DEFAULT_LOG_ENDPOINT = '/api/admin/runtime/logs';
+const DEFAULT_LOG_ENDPOINT = null;
 const DEFAULT_DEBOUNCE_MS = 1500;
 const DEFAULT_MAX_BATCH_SIZE = 20;
 
@@ -55,7 +55,7 @@ async function postBatch(endpoint, batch) {
 }
 
 async function postRuntimeLog(endpoint, incident) {
-  if (typeof globalThis.fetch !== 'function') {
+  if (!endpoint || typeof globalThis.fetch !== 'function') {
     return;
   }
 
@@ -128,7 +128,9 @@ export function createRuntimeIncidentReporter({
           lastSeenMs: timestampMs
         });
 
-        void sendRuntimeLog(runtimeLogEndpoint, normalized);
+        if (runtimeLogEndpoint) {
+          void sendRuntimeLog(runtimeLogEndpoint, normalized);
+        }
       }
 
       scheduleFlush();

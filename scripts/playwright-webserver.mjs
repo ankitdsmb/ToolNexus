@@ -17,9 +17,16 @@ const child = spawn(
     baseUrl
   ],
   {
+    cwd: process.cwd(),
     env: {
       ...process.env,
-      ASPNETCORE_ENVIRONMENT: process.env.ASPNETCORE_ENVIRONMENT ?? 'Development'
+      ASPNETCORE_ENVIRONMENT: process.env.ASPNETCORE_ENVIRONMENT ?? 'Development',
+      Database__Provider: process.env.Database__Provider ?? 'Sqlite',
+      Database__ConnectionString:
+        process.env.Database__ConnectionString ?? 'Data Source=toolnexus-playwright.db',
+      TOOLNEXUS_DB_PROVIDER: process.env.TOOLNEXUS_DB_PROVIDER ?? 'Sqlite',
+      TOOLNEXUS_DB_CONNECTION_STRING:
+        process.env.TOOLNEXUS_DB_CONNECTION_STRING ?? 'Data Source=toolnexus-playwright.db'
     },
     stdio: 'inherit'
   }

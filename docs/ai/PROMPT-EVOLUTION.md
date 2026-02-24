@@ -45,3 +45,13 @@ Prompt: Preserve runtime self-healing by treating incident transport as optional
 Result: Added fetch-availability guards in runtime incident reporter, added vitest safety coverage, and aligned logger expectation test with structured `channel` metadata.
 Improvement: Runtime error paths no longer throw in non-browser environments and JS test stability improved without reducing incident fidelity in browsers.
 New Version: For any runtime observability path, require transport capability detection and non-throwing degradation tests.
+
+Date: 2026-02-24
+Problem: Runtime Playwright audits failed because tool pages emitted repeated console errors from 404 POSTs to `/api/admin/runtime/logs`, and QA startup depended on local PostgreSQL availability.
+Root Cause: Tool shell/runtime logger defaults hardcoded a runtime log endpoint that exists in API host but not Web host, so every runtime log attempt generated failed fetches; Playwright webserver inherited PostgreSQL defaults instead of an isolated test database.
+Architecture Decision: Make client-side runtime log transport optional-by-default and explicitly environment-configurable; force Playwright host bootstrap to deterministic SQLite defaults to preserve startup survivability in local/CI environments.
+Fix Implemented: Updated Playwright webserver launcher to inject SQLite provider/connection defaults, disabled implicit runtime log endpoint defaults in web runtime logger/incident reporter, and removed hardcoded ToolShell runtimeLogEndpoint injection to prevent non-existent endpoint calls.
+Files Modified: scripts/playwright-webserver.mjs; src/ToolNexus.Web/wwwroot/js/runtime/runtime-logger.js; src/ToolNexus.Web/wwwroot/js/runtime/runtime-incident-reporter.js; src/ToolNexus.Web/Views/Tools/ToolShell.cshtml
+Tests Executed: npm run test:runtime; npm run test:js; npx playwright test tests/playwright; dotnet test ToolNexus.sln
+Result: Full mandatory QA suite passes, runtime console guard is clean for tool routes, and Playwright startup no longer depends on external PostgreSQL.
+Next Recommendation: Add a dedicated web-host endpoint capability contract test to assert configured runtime log endpoints resolve before enabling client log transport.
