@@ -126,6 +126,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
+app.MapGet("/", () => "ToolNexus API Running");
 app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics, IConcurrencyObservability concurrencyObservability) =>
 {
     var concurrency = concurrencyObservability.GetHealthSnapshot();

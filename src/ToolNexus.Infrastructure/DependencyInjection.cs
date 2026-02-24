@@ -33,6 +33,9 @@ public static class DependencyInjection
         services
             .AddOptions<DatabaseInitializationOptions>()
             .Bind(configuration.GetSection(DatabaseInitializationOptions.SectionName));
+        services
+            .AddOptions<StartupDiagnosticsOptions>()
+            .Bind(configuration.GetSection(StartupDiagnosticsOptions.SectionName));
         services.AddOptions<AuditGuardrailsOptions>().Bind(configuration.GetSection(AuditGuardrailsOptions.SectionName));
 
         services.AddSingleton<JsonFileToolManifestRepository>();
@@ -87,9 +90,12 @@ public static class DependencyInjection
         }
         services.AddScoped<IToolResultCache, RedisToolResultCache>();
         services.AddSingleton<DatabaseInitializationState>();
+        services.AddSingleton<IDatabaseInitializationState>(sp => sp.GetRequiredService<DatabaseInitializationState>());
         services.AddScoped<ToolContentSeedHostedService>();
-        services.AddHostedService<DatabaseInitializationHostedService>();
-        services.AddHostedService<ToolManifestSynchronizationHostedService>();
+        services.AddSingleton<IStartupPhaseService, DatabaseInitializationHostedService>();
+        services.AddSingleton<IStartupPhaseService, ToolContentSeedStartupPhaseService>();
+        services.AddSingleton<IStartupPhaseService, ToolManifestSynchronizationHostedService>();
+        services.AddHostedService<StartupOrchestratorHostedService>();
         services.AddSingleton<IToolInsightProvider, JsonInsightProvider>();
         services.AddSingleton<IToolInsightProvider, XmlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();
