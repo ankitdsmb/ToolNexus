@@ -86,6 +86,7 @@ public static class DependencyInjection
         services.AddSingleton<DatabaseInitializationState>();
         services.AddScoped<ToolContentSeedHostedService>();
         services.AddHostedService<DatabaseInitializationHostedService>();
+        services.AddHostedService<ToolManifestSynchronizationHostedService>();
         services.AddSingleton<IToolInsightProvider, JsonInsightProvider>();
         services.AddSingleton<IToolInsightProvider, XmlInsightProvider>();
         services.AddSingleton<IToolInsightProvider, SqlInsightProvider>();

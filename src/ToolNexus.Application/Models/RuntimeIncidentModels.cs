@@ -5,12 +5,14 @@ public sealed record RuntimeIncidentIngestRequest(
     string Phase,
     string ErrorType,
     string Message,
+    string Severity,
     string? Stack,
     string PayloadType,
     DateTime Timestamp,
     int Count,
     string? Fingerprint,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    IReadOnlyDictionary<string, object?>? Metadata = null);
 
 public sealed record RuntimeIncidentIngestBatch(IReadOnlyList<RuntimeIncidentIngestRequest> Incidents);
 
