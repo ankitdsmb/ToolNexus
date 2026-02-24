@@ -3,6 +3,37 @@ const DEFAULT_LOG_ENDPOINT = null;
 const DEFAULT_DEBOUNCE_MS = 1500;
 const DEFAULT_MAX_BATCH_SIZE = 20;
 
+function normalizeEndpointPath(endpoint) {
+  if (typeof endpoint !== 'string' || endpoint.trim().length === 0) {
+    return null;
+  }
+
+  const raw = endpoint.trim();
+  if (!raw.startsWith('/')) {
+    return null;
+  }
+
+  try {
+    return new URL(raw, window.location.origin).pathname;
+  } catch {
+    return null;
+  }
+}
+
+function isRoutableClientLogEndpoint(endpoint) {
+  const endpointPath = normalizeEndpointPath(endpoint);
+  if (!endpointPath) {
+    return false;
+  }
+
+  const configuredRoutes = window.ToolNexusConfig?.runtimeRoutes?.clientLogEndpoints;
+  const knownPaths = Array.isArray(configuredRoutes)
+    ? configuredRoutes.map(normalizeEndpointPath).filter(Boolean)
+    : [];
+
+  return knownPaths.some(path => path.toLowerCase() === endpointPath.toLowerCase());
+}
+
 function sanitizeString(value, maxLength = 2000) {
   if (typeof value !== 'string') {
     return '';
@@ -128,7 +159,7 @@ export function createRuntimeIncidentReporter({
           lastSeenMs: timestampMs
         });
 
-        if (runtimeLogEndpoint) {
+        if (isRoutableClientLogEndpoint(runtimeLogEndpoint)) {
           void sendRuntimeLog(runtimeLogEndpoint, normalized);
         }
       }
