@@ -210,6 +210,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Phase).HasMaxLength(30);
             entity.Property(x => x.ErrorType).HasMaxLength(40);
             entity.Property(x => x.Message).HasMaxLength(2000);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
             entity.Property(x => x.PayloadType).HasMaxLength(80);
             entity.Property(x => x.Severity).HasMaxLength(20);
         });

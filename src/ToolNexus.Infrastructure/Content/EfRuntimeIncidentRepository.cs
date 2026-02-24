@@ -31,6 +31,7 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
                     ErrorType = incident.ErrorType,
                     Message = incident.Message,
                     Stack = incident.Stack,
+                    CorrelationId = incident.CorrelationId,
                     PayloadType = incident.PayloadType,
                     Severity = severity,
                     Count = incident.Count,
@@ -45,6 +46,11 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
                 if (!string.IsNullOrWhiteSpace(incident.Stack))
                 {
                     existing.Stack = incident.Stack;
+                }
+
+                if (!string.IsNullOrWhiteSpace(incident.CorrelationId))
+                {
+                    existing.CorrelationId = incident.CorrelationId;
                 }
             }
 

@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
-using ToolNexus.Api.Logging;
+using ToolNexus.Web.Security;
 
-namespace ToolNexus.Api.Controllers.Admin;
+namespace ToolNexus.Web.Areas.Admin.Controllers.Api;
 
 [ApiController]
 [Route("api/admin/runtime/incidents")]
-public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, IRuntimeClientLoggerService? runtimeClientLoggerService = null) : ControllerBase
+public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) : ControllerBase
 {
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> Post([FromBody] RuntimeIncidentIngestBatch request, CancellationToken cancellationToken)
+    public IActionResult Post([FromBody] RuntimeIncidentIngestBatch request, CancellationToken cancellationToken)
     {
         var correlationId = ResolveCorrelationId();
         var normalized = request with
@@ -24,41 +23,25 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
             }).ToArray()
         };
 
-        try
+        _ = Task.Run(async () =>
         {
-            await service.IngestAsync(normalized, cancellationToken);
-        }
-        catch
-        {
-            // runtime incident ingestion is best-effort and must not fail caller requests
-        }
+            try
+            {
+                await service.IngestAsync(normalized, CancellationToken.None);
+            }
+            catch
+            {
+                // runtime incident ingestion is best-effort and must not fail caller requests
+            }
+        });
 
         return Ok(new { success = true });
-    }
-
-
-    [HttpPost("logs")]
-    [AllowAnonymous]
-    public async Task<IActionResult> PostClientLogs([FromBody] ClientIncidentLogBatch request, CancellationToken cancellationToken)
-    {
-        if (runtimeClientLoggerService is null)
-        {
-            return Accepted();
-        }
-
-        await runtimeClientLoggerService.WriteBatchAsync(request, cancellationToken);
-        return Accepted();
     }
 
     [HttpGet]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]
     public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int take = 100, CancellationToken cancellationToken = default)
         => Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
-
-    [HttpGet("/api/admin/runtime/tool-health")]
-    [Authorize(Policy = AdminPolicyNames.AdminRead)]
-    public async Task<ActionResult<IReadOnlyList<RuntimeToolHealthSnapshot>>> GetToolHealth(CancellationToken cancellationToken = default)
-        => Ok(await service.GetToolHealthAsync(cancellationToken));
 
     private string? ResolveCorrelationId()
     {

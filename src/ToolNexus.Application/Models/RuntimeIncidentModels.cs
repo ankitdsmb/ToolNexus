@@ -9,7 +9,8 @@ public sealed record RuntimeIncidentIngestRequest(
     string PayloadType,
     DateTime Timestamp,
     int Count,
-    string? Fingerprint);
+    string? Fingerprint,
+    string? CorrelationId = null);
 
 public sealed record RuntimeIncidentIngestBatch(IReadOnlyList<RuntimeIncidentIngestRequest> Incidents);
 

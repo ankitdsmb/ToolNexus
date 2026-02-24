@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Controllers.Admin;
 using ToolNexus.Application.Models;
@@ -18,8 +19,28 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
             new RuntimeIncidentIngestRequest("json-formatter", "execute", "contract_violation", "legacy mismatch", null, "html_element", DateTime.UtcNow, 1, "f1")
         ]), CancellationToken.None);
 
-        Assert.IsType<AcceptedResult>(result);
+        Assert.IsType<OkObjectResult>(result);
         Assert.Single(service.Ingested);
+    }
+
+    [Fact]
+    public async Task PostIncident_UsesRequestCorrelationId()
+    {
+        var service = new StubRuntimeIncidentService();
+        var controller = new RuntimeIncidentsController(service)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
+        controller.HttpContext.Request.Headers["X-Correlation-ID"] = "corr-123";
+
+        await controller.Post(new RuntimeIncidentIngestBatch([
+            new RuntimeIncidentIngestRequest("json-formatter", "execute", "runtime_error", "legacy mismatch", null, "html_element", DateTime.UtcNow, 1, "f1")
+        ]), CancellationToken.None);
+
+        Assert.Equal("corr-123", service.Ingested[0].Incidents[0].CorrelationId);
     }
 
     [Fact]
