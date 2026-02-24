@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Security;
@@ -8,7 +9,7 @@ namespace ToolNexus.Web.Areas.Admin.Controllers.Api;
 
 [ApiController]
 [Route("api/admin/runtime/incidents")]
-public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) : ControllerBase
+public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, ILogger<RuntimeIncidentsController> logger) : ControllerBase
 {
     [HttpPost]
     [AllowAnonymous]
@@ -33,6 +34,7 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) 
             return BadRequest(new { error = "at least one valid incident is required" });
         }
 
+        logger.LogInformation("Runtime incidents ingested from web admin endpoint. count={IncidentCount}", normalizedIncidents.Length);
         await service.IngestAsync(new RuntimeIncidentIngestBatch(normalizedIncidents), cancellationToken);
         return Ok(new { success = true });
     }
@@ -40,17 +42,26 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) 
     [HttpGet]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]
     public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int take = 100, CancellationToken cancellationToken = default)
-        => Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
+    {
+        logger.LogInformation("Runtime incident summaries requested from web admin endpoint. take={Take}", take);
+        return Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
+    }
 
     [HttpGet("/api/admin/runtime/tool-health")]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]
     public async Task<ActionResult<IReadOnlyList<RuntimeToolHealthSnapshot>>> GetToolHealth(CancellationToken cancellationToken = default)
-        => Ok(await service.GetToolHealthAsync(cancellationToken));
+    {
+        logger.LogInformation("Runtime tool health requested from web admin endpoint.");
+        return Ok(await service.GetToolHealthAsync(cancellationToken));
+    }
 
     [HttpPost("logs")]
     [AllowAnonymous]
     public IActionResult PostClientLogs([FromBody] ClientIncidentLogBatch request)
-        => Accepted();
+    {
+        logger.LogInformation("Runtime client logs accepted from web admin endpoint. count={LogCount}", request.Logs.Count);
+        return Accepted();
+    }
 
     private string? ResolveCorrelationId()
     {

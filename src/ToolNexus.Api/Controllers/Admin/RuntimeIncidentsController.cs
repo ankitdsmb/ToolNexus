@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
@@ -9,7 +10,7 @@ namespace ToolNexus.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/runtime/incidents")]
-public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, IRuntimeClientLoggerService? runtimeClientLoggerService = null) : ControllerBase
+public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, ILogger<RuntimeIncidentsController> logger, IRuntimeClientLoggerService? runtimeClientLoggerService = null) : ControllerBase
 {
     [HttpPost]
     [AllowAnonymous]
@@ -27,15 +28,16 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
         try
         {
             await service.IngestAsync(normalized, cancellationToken);
+            logger.LogInformation("Admin API runtime incidents ingested. count={IncidentCount}", normalized.Incidents.Count);
         }
         catch
         {
+            logger.LogWarning("Admin API runtime incident ingestion failed and was suppressed.");
             // runtime incident ingestion is best-effort and must not fail caller requests
         }
 
         return Ok(new { success = true });
     }
-
 
     [HttpPost("logs")]
     [AllowAnonymous]
@@ -43,15 +45,18 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
     {
         if (runtimeClientLoggerService is null)
         {
+            logger.LogInformation("Admin API runtime client logs accepted without sink. count={LogCount}", request.Logs.Count);
             return Accepted();
         }
 
         try
         {
             await runtimeClientLoggerService.WriteBatchAsync(request, cancellationToken);
+            logger.LogInformation("Admin API runtime client logs written. count={LogCount}", request.Logs.Count);
         }
         catch
         {
+            logger.LogWarning("Admin API runtime client log write failed and was suppressed.");
             // best effort logging endpoint must not fail callers
         }
         return Accepted();
@@ -65,12 +70,18 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
     [HttpGet]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]
     public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int take = 100, CancellationToken cancellationToken = default)
-        => Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
+    {
+        logger.LogInformation("Admin API runtime incident summaries requested. take={Take}", take);
+        return Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
+    }
 
     [HttpGet("/api/admin/runtime/tool-health")]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]
     public async Task<ActionResult<IReadOnlyList<RuntimeToolHealthSnapshot>>> GetToolHealth(CancellationToken cancellationToken = default)
-        => Ok(await service.GetToolHealthAsync(cancellationToken));
+    {
+        logger.LogInformation("Admin API runtime tool health requested.");
+        return Ok(await service.GetToolHealthAsync(cancellationToken));
+    }
 
     private string? ResolveCorrelationId()
     {

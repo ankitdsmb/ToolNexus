@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Security;
@@ -8,7 +9,7 @@ namespace ToolNexus.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Policy = AdminPolicyNames.AdminRead)]
-public sealed class ChangeHistoryController(IAdminAuditLogService service) : Controller
+public sealed class ChangeHistoryController(IAdminAuditLogService service, ILogger<ChangeHistoryController> logger) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -24,6 +25,7 @@ public sealed class ChangeHistoryController(IAdminAuditLogService service) : Con
         [FromQuery] string? correlationId = null,
         CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Admin change history page requested. page={Page} pageSize={PageSize}", page, pageSize);
         var query = new ChangeHistoryQuery(page, pageSize, search, actionType, entityType, actor, severity, fromUtc, toUtc, correlationId);
         var entries = await service.QueryAsync(query, cancellationToken);
         return View(entries);
@@ -32,6 +34,7 @@ public sealed class ChangeHistoryController(IAdminAuditLogService service) : Con
     [HttpGet("payload/{id:guid}")]
     public async Task<IActionResult> Payload([FromRoute] Guid id, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Admin change history payload requested. id={AuditEventId}", id);
         var payload = await service.GetPayloadDetailAsync(id, cancellationToken);
         if (payload is null)
         {
@@ -55,6 +58,7 @@ public sealed class ChangeHistoryController(IAdminAuditLogService service) : Con
         [FromQuery] string? correlationId = null,
         CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Admin change history query API requested. page={Page} pageSize={PageSize}", page, pageSize);
         var query = new ChangeHistoryQuery(page, pageSize, search, actionType, entityType, actor, severity, fromUtc, toUtc, correlationId);
         return Ok(await service.QueryAsync(query, cancellationToken));
     }
