@@ -42,6 +42,10 @@ async function postBatch(endpoint, batch) {
     return;
   }
 
+  if (typeof globalThis.fetch !== 'function') {
+    return;
+  }
+
   await fetch(endpoint, {
     method: 'POST',
     credentials: 'include',
@@ -51,6 +55,10 @@ async function postBatch(endpoint, batch) {
 }
 
 async function postRuntimeLog(endpoint, incident) {
+  if (typeof globalThis.fetch !== 'function') {
+    return;
+  }
+
   await fetch(endpoint, {
     method: 'POST',
     credentials: 'include',

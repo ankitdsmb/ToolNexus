@@ -38,3 +38,10 @@ Prompt: Enforce runtime survivability under dependency outage (content DB option
 Result: Added fail-closed content repository behavior (warning + null), legacy `-tools` category alias normalization, and Jest test scoping to `tests/js` only.
 Improvement: Tool runtime remains reachable for all manifest tools during DB outage and CI signal quality improved by eliminating Vitest/Playwright-Jest collisions.
 New Version: Treat content DB as optional for runtime page render; enforce test-runner isolation whenever introducing additional JS suites.
+
+Date: 2026-02-24
+Problem: `npm run test:js` crashed in Node/Jest when runtime incident reporting called `fetch` during fallback/error flows.
+Prompt: Preserve runtime self-healing by treating incident transport as optional; guard network reporters and add regression coverage for environments without `fetch`.
+Result: Added fetch-availability guards in runtime incident reporter, added vitest safety coverage, and aligned logger expectation test with structured `channel` metadata.
+Improvement: Runtime error paths no longer throw in non-browser environments and JS test stability improved without reducing incident fidelity in browsers.
+New Version: For any runtime observability path, require transport capability detection and non-throwing degradation tests.
