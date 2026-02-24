@@ -259,16 +259,20 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
     {
         var options = configuration.GetSection(ApiCorsOptions.SectionName).Get<ApiCorsOptions>() ?? new ApiCorsOptions();
-        if (options.AllowedOrigins.Length == 0)
-        {
-            throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one origin.");
-        }
+        var configuredOrigins = options.AllowedOrigins
+            .Where(origin => !string.IsNullOrWhiteSpace(origin))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var allowedOrigins = configuredOrigins.Length > 0
+            ? configuredOrigins
+            : ["http://localhost:3000"];
 
         services.AddCors(cors =>
         {
             cors.AddPolicy(ApiCorsOptions.PolicyName, policy =>
             {
-                policy.WithOrigins(options.AllowedOrigins)
+                policy.WithOrigins(allowedOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

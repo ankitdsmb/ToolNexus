@@ -5,7 +5,8 @@ export const TOOL_DOM_CONTRACT = {
     'data-tool-body',
     'data-tool-input',
     'data-tool-output',
-    'data-tool-actions'
+    'data-tool-actions',
+    'data-runtime-container'
   ],
   nodeSelectors: {
     'data-tool-root': '[data-tool-root]',
@@ -13,7 +14,8 @@ export const TOOL_DOM_CONTRACT = {
     'data-tool-body': '[data-tool-body]',
     'data-tool-input': '[data-tool-input]',
     'data-tool-output': '[data-tool-output]',
-    'data-tool-actions': '[data-tool-actions]'
+    'data-tool-actions': '[data-tool-actions]',
+    'data-runtime-container': '[data-runtime-container]'
   },
   legacyAliases: {
     'data-tool-root': ['.tool-page', '.tool-runtime-fallback'],
@@ -21,7 +23,8 @@ export const TOOL_DOM_CONTRACT = {
     'data-tool-body': ['.tool-layout', '.tn-tool-body', '.tool-body', 'main'],
     'data-tool-input': ['.tool-controls', '#inputEditor', 'textarea', 'input[type="text"]', '.editor-input'],
     'data-tool-output': ['.tool-result', '#outputField', '.tool-panel--output', '.editor-output', 'pre', 'output'],
-    'data-tool-actions': ['.tool-actions', '.tool-toolbar', '.tool-controls-actions', 'button']
+    'data-tool-actions': ['.tool-actions', '.tool-toolbar', '.tool-controls-actions', 'button'],
+    'data-runtime-container': ['[data-runtime-zone-shell]', '.tool-shell-page__runtime-zone-shell']
   }
 };
 

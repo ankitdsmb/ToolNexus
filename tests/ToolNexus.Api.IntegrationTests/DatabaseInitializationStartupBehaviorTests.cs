@@ -19,12 +19,14 @@ public sealed class DatabaseInitializationStartupBehaviorTests
         using var client = factory.CreateClient();
         startupTimer.Stop();
 
-        var response = await client.GetAsync("/health/background");
+        var backgroundHealthResponse = await client.GetAsync("/health/background");
+        var healthResponse = await client.GetAsync("/health");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, backgroundHealthResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
         Assert.True(startupTimer.Elapsed < TimeSpan.FromSeconds(5));
 
-        var payload = await response.Content.ReadFromJsonAsync<BackgroundHealthPayload>();
+        var payload = await backgroundHealthResponse.Content.ReadFromJsonAsync<BackgroundHealthPayload>();
         Assert.NotNull(payload);
         Assert.Contains(payload!.DatabaseInitialization.Status, new[] { "initializing", "failed", "ready" });
     }
