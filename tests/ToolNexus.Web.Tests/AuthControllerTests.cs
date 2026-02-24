@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Web.Controllers;
-using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Tests;
 
@@ -35,7 +34,7 @@ public sealed class AuthControllerTests
 
     private static AuthController CreateController(bool isAuthenticated)
     {
-        var controller = new AuthController(new StubPrincipalFactory());
+        var controller = new AuthController();
         var identity = new ClaimsIdentity();
         if (isAuthenticated)
         {
@@ -51,10 +50,5 @@ public sealed class AuthControllerTests
         };
 
         return controller;
-    }
-
-    private sealed class StubPrincipalFactory : IInternalUserPrincipalFactory
-    {
-        public ClaimsPrincipal CreatePrincipal() => new(new ClaimsIdentity());
     }
 }
