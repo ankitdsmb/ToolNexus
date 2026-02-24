@@ -46,9 +46,21 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
             return Accepted();
         }
 
-        await runtimeClientLoggerService.WriteBatchAsync(request, cancellationToken);
+        try
+        {
+            await runtimeClientLoggerService.WriteBatchAsync(request, cancellationToken);
+        }
+        catch
+        {
+            // best effort logging endpoint must not fail callers
+        }
         return Accepted();
     }
+
+    [HttpPost("/api/admin/runtime/logs")]
+    [AllowAnonymous]
+    public Task<IActionResult> PostRuntimeLog([FromBody] ClientIncidentLogRequest request, CancellationToken cancellationToken)
+        => PostClientLogs(new ClientIncidentLogBatch([request]), cancellationToken);
 
     [HttpGet]
     [Authorize(Policy = AdminPolicyNames.AdminRead)]

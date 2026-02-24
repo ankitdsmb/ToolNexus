@@ -20,6 +20,7 @@ public sealed record ClientIncidentLogRequest(
     string Source,
     string Level,
     string Message,
+    string? Stack,
     string? ToolSlug,
     string? CorrelationId,
     DateTime Timestamp,
