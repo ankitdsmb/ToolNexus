@@ -1,10 +1,14 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ToolNexus.Infrastructure.Data;
 
 #nullable disable
 
 namespace ToolNexus.Infrastructure.Data.Migrations
 {
+    [DbContext(typeof(ToolNexusContentDbContext))]
+    [Migration("20260303000000_AddRuntimeIncidents")]
     public partial class AddRuntimeIncidents : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
