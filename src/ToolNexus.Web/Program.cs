@@ -14,6 +14,7 @@ using ToolNexus.Web.Options;
 using ToolNexus.Web.Security;
 using ToolNexus.Web.Services;
 using ToolNexus.Web.Middleware;
+using ToolNexus.Web.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Logging.ToolNexus.json", optional: true, reloadOnChange: true);
@@ -60,6 +61,7 @@ builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
 builder.Services.AddSingleton<IToolManifestLoader, ToolManifestLoader>();
 builder.Services.AddSingleton<IToolRegistryService, ToolRegistryService>();
 builder.Services.AddSingleton<IToolViewResolver, ToolViewResolver>();
+builder.Services.AddSingleton<ClientLogEndpointContract>();
 builder.Services.AddScoped<IAdminToolsViewModelService, AdminToolsViewModelService>();
 
 var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
@@ -313,6 +315,8 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Services.GetRequiredService<ClientLogEndpointContract>().ResolveRoutableEndpointOrNull();
 
 app.Run();
 

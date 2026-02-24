@@ -21,6 +21,42 @@ function getCorrelationId() {
     || null;
 }
 
+function normalizeEndpointPath(endpoint) {
+  if (typeof endpoint !== 'string' || endpoint.trim().length === 0) {
+    return null;
+  }
+
+  const raw = endpoint.trim();
+  if (!raw.startsWith('/')) {
+    return null;
+  }
+
+  try {
+    return new URL(raw, window.location.origin).pathname;
+  } catch {
+    return null;
+  }
+}
+
+function isEndpointRoutable(endpoint) {
+  const endpointPath = normalizeEndpointPath(endpoint);
+  if (!endpointPath) {
+    return false;
+  }
+
+  const configuredRoutes = window.ToolNexusConfig?.runtimeRoutes?.clientLogEndpoints;
+  const routeSet = Array.isArray(configuredRoutes) ? configuredRoutes : [];
+  const knownPaths = routeSet
+    .map(normalizeEndpointPath)
+    .filter(Boolean);
+
+  if (knownPaths.length === 0) {
+    return false;
+  }
+
+  return knownPaths.some(path => path.toLowerCase() === endpointPath.toLowerCase());
+}
+
 export function createRuntimeLogger({
   source = 'runtime',
   endpoint = window.ToolNexusConfig?.runtimeLogEndpoint || DEFAULT_LOG_ENDPOINT,
@@ -40,7 +76,7 @@ export function createRuntimeLogger({
       return;
     }
 
-    if (!endpoint || typeof transport !== 'function') {
+    if (!isEndpointRoutable(endpoint) || typeof transport !== 'function') {
       return;
     }
 
