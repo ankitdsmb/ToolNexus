@@ -28,4 +28,28 @@ public sealed class SanitizeErrorMiddlewareTests
         Assert.Equal("internal_error", response!.Code);
         Assert.DoesNotContain("database password leaked", response.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task InvokeAsync_ReturnsSanitizedError_WhenDownstreamThrowsAfterWriteAttempt()
+    {
+        var middleware = new SanitizeErrorMiddleware(
+            async context =>
+            {
+                await context.Response.WriteAsync("partial");
+                throw new InvalidOperationException("stream aborted");
+            },
+            NullLogger<SanitizeErrorMiddleware>.Instance);
+
+        var context = new DefaultHttpContext();
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context);
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var response = await JsonSerializer.DeserializeAsync<SanitizeErrorMiddleware.ApiErrorResponse>(context.Response.Body, options);
+
+        Assert.NotNull(response);
+        Assert.Equal("internal_error", response!.Code);
+    }
 }
