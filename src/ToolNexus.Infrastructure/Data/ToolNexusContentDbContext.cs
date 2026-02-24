@@ -164,9 +164,24 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         {
             entity.ToTable("audit_events");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.PayloadRedacted).HasColumnType("jsonb");
-            entity.Property(x => x.CreatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(x => x.SchemaVersion).HasDefaultValue(1);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OccurredAtUtc).HasColumnName("occurred_at_utc");
+            entity.Property(x => x.ActorType).HasColumnName("actor_type");
+            entity.Property(x => x.ActorId).HasColumnName("actor_id");
+            entity.Property(x => x.TenantId).HasColumnName("tenant_id");
+            entity.Property(x => x.TraceId).HasColumnName("trace_id");
+            entity.Property(x => x.RequestId).HasColumnName("request_id");
+            entity.Property(x => x.Action).HasColumnName("action");
+            entity.Property(x => x.TargetType).HasColumnName("target_type");
+            entity.Property(x => x.TargetId).HasColumnName("target_id");
+            entity.Property(x => x.ResultStatus).HasColumnName("result_status");
+            entity.Property(x => x.HttpStatus).HasColumnName("http_status");
+            entity.Property(x => x.SourceIp).HasColumnName("source_ip");
+            entity.Property(x => x.UserAgent).HasColumnName("user_agent");
+            entity.Property(x => x.PayloadRedacted).HasColumnName("payload_redacted").HasColumnType("jsonb");
+            entity.Property(x => x.PayloadHashSha256).HasColumnName("payload_hash_sha256");
+            entity.Property(x => x.SchemaVersion).HasColumnName("schema_version").HasDefaultValue(1);
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(x => x.OccurredAtUtc).HasDatabaseName("idx_audit_events_occurred_at").IsDescending();
             entity.HasIndex(x => new { x.ActorType, x.ActorId, x.OccurredAtUtc }).HasDatabaseName("idx_audit_events_actor").IsDescending(false, false, true);
             entity.HasIndex(x => new { x.Action, x.OccurredAtUtc }).HasDatabaseName("idx_audit_events_action").IsDescending(false, true);
