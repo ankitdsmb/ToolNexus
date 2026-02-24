@@ -18,7 +18,7 @@ public sealed class AdminIdentitySeedHostedService(
     IOptions<AdminBootstrapOptions> options,
     ILogger<AdminIdentitySeedHostedService> logger) : IStartupPhaseService
 {
-    public int Order => 2;
+    public int Order => 6;
 
     public string PhaseName => "Admin Identity Bootstrap";
 
@@ -29,20 +29,47 @@ public sealed class AdminIdentitySeedHostedService(
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<object>>();
 
-        await dbContext.Database.ExecuteSqlRawAsync(
-            """
-            CREATE TABLE IF NOT EXISTS admin_identity_users (
-                "Id" TEXT NOT NULL PRIMARY KEY,
-                "Email" TEXT NOT NULL,
-                "NormalizedEmail" TEXT NOT NULL,
-                "DisplayName" TEXT NOT NULL,
-                "PasswordHash" TEXT NOT NULL,
-                "AccessFailedCount" INTEGER NOT NULL DEFAULT 0,
-                "LockoutEndUtc" TEXT NULL,
-                "CreatedAtUtc" TEXT NOT NULL
-            );
-            CREATE UNIQUE INDEX IF NOT EXISTS IX_admin_identity_users_NormalizedEmail ON admin_identity_users ("NormalizedEmail");
-            """, cancellationToken);
+        if (dbContext.Database.IsNpgsql())
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TABLE IF NOT EXISTS admin_identity_users (
+                    "Id" uuid NOT NULL PRIMARY KEY,
+                    "Email" character varying(320) NOT NULL,
+                    "NormalizedEmail" character varying(320) NOT NULL,
+                    "DisplayName" character varying(120) NOT NULL,
+                    "PasswordHash" character varying(1024) NOT NULL,
+                    "AccessFailedCount" integer NOT NULL DEFAULT 0,
+                    "LockoutEndUtc" timestamp with time zone NULL,
+                    "CreatedAtUtc" timestamp with time zone NOT NULL
+                );
+                CREATE UNIQUE INDEX IF NOT EXISTS "IX_admin_identity_users_NormalizedEmail" ON admin_identity_users ("NormalizedEmail");
+
+                ALTER TABLE admin_identity_users
+                ALTER COLUMN "Id" TYPE uuid USING "Id"::uuid,
+                ALTER COLUMN "LockoutEndUtc" TYPE timestamp with time zone USING NULLIF("LockoutEndUtc", '')::timestamp with time zone,
+                ALTER COLUMN "CreatedAtUtc" TYPE timestamp with time zone USING "CreatedAtUtc"::timestamp with time zone;
+                """,
+                cancellationToken);
+        }
+        else
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(
+                """
+                CREATE TABLE IF NOT EXISTS admin_identity_users (
+                    "Id" TEXT NOT NULL PRIMARY KEY,
+                    "Email" TEXT NOT NULL,
+                    "NormalizedEmail" TEXT NOT NULL,
+                    "DisplayName" TEXT NOT NULL,
+                    "PasswordHash" TEXT NOT NULL,
+                    "AccessFailedCount" INTEGER NOT NULL DEFAULT 0,
+                    "LockoutEndUtc" TEXT NULL,
+                    "CreatedAtUtc" TEXT NOT NULL
+                );
+                CREATE UNIQUE INDEX IF NOT EXISTS IX_admin_identity_users_NormalizedEmail ON admin_identity_users ("NormalizedEmail");
+                """,
+                cancellationToken);
+        }
 
         var settings = options.Value;
         if (string.IsNullOrWhiteSpace(settings.Email) || string.IsNullOrWhiteSpace(settings.Password))
