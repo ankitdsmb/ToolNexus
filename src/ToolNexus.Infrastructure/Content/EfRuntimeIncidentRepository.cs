@@ -134,15 +134,29 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
         }
         catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
         {
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await RecoverSchemaAsync(cancellationToken);
             return await action();
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode == 1
                                          && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
                                              || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
         {
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await RecoverSchemaAsync(cancellationToken);
             return await action();
+        }
+    }
+
+    private async Task RecoverSchemaAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateTable)
+        {
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        {
         }
     }
 }
