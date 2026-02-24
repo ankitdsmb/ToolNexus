@@ -60,8 +60,9 @@ function normalizeIncident(incident) {
   const stack = sanitizeString(incident?.stack, 4000);
   const payloadType = normalizePayloadType(incident?.payloadType);
   const timestamp = sanitizeString(incident?.timestamp, 60) || new Date().toISOString();
+  const severity = errorType === 'contract_violation' ? 'warning' : 'critical';
 
-  return { toolSlug, phase, errorType, message, stack, payloadType, timestamp };
+  return { toolSlug, phase, errorType, message, severity, stack, payloadType, timestamp };
 }
 
 function buildFingerprint(incident) {
@@ -95,18 +96,21 @@ async function postRuntimeLog(endpoint, incident) {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      toolSlug: incident.toolSlug,
-      level: 'error',
-      message: incident.message,
-      stack: incident.stack,
-      timestamp: incident.timestamp,
-      source: 'runtime.incident-reporter',
-      metadata: {
-        phase: incident.phase,
-        errorType: incident.errorType,
-        payloadType: incident.payloadType,
-        count: incident.count
-      }
+      logs: [{
+        source: 'runtime.incident-reporter',
+        level: 'error',
+        message: incident.message,
+        stack: incident.stack,
+        toolSlug: incident.toolSlug,
+        correlationId: null,
+        timestamp: incident.timestamp,
+        metadata: {
+          phase: incident.phase,
+          errorType: incident.errorType,
+          payloadType: incident.payloadType,
+          count: incident.count
+        }
+      }]
     })
   });
 }
