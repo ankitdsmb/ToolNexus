@@ -1,10 +1,14 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ToolNexus.Infrastructure.Data;
 
 #nullable disable
 
 namespace ToolNexus.Infrastructure.Data.IdentityMigrations;
 
 /// <inheritdoc />
+[DbContext(typeof(ToolNexusIdentityDbContext))]
+[Migration("20260312000000_FixIdentityBooleanColumnsForPostgres")]
 public partial class FixIdentityBooleanColumnsForPostgres : Migration
 {
     /// <inheritdoc />
