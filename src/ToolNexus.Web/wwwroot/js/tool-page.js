@@ -1,15 +1,17 @@
 import { normalizeToolExecutionPayload } from './runtime/runtime-safe-tool-wrapper.js';
 import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
+import { createRuntimeLogger } from './runtime/runtime-logger.js';
 import {
   normalizeToolPageExecutionResult,
   TOOL_PAGE_RUNTIME_FALLBACK_MESSAGE
 } from './runtime/tool-page-result-normalizer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+const logger = createRuntimeLogger({ source: 'tool-page' });
 const page = document.querySelector('.tool-page');
 
 if (!page) {
-  console.debug('tool-page.js: not on tool page, skipping initialization.');
+  logger.debug('Not on tool page, skipping initialization.');
   return;
 }
 
@@ -131,7 +133,7 @@ const TOOL_INTELLIGENCE_GRAPH = {
 };
 
 init().catch((error) => {
-  console.error('Tool page initialization failed', error);
+  logger.error('Tool page initialization failed.', { error: error?.message ?? String(error) });
   showToast('Editor initialization failed. Using basic mode.', 'warning');
 });
 
@@ -159,7 +161,7 @@ async function loadToolModule() {
     await import(`./tools/${slug}.js`);
   } catch (error) {
     // Not every server-backed tool has a dedicated client enhancer module.
-    console.debug(`No dedicated tool module loaded for "${slug}".`, error);
+    logger.debug(`No dedicated tool module loaded for "${slug}".`, { error: error?.message ?? String(error) });
   }
 }
 
@@ -535,6 +537,7 @@ function showToast(message, type = 'info') {
 }
 
 function reportToolPageRuntimeIncident({ action, reason }) {
+  logger.warn('Tool page runtime incident reported.', { action, reason });
   runtimeIncidentReporter?.report?.({
     toolSlug: slug || 'unknown-tool',
     phase: 'execute',

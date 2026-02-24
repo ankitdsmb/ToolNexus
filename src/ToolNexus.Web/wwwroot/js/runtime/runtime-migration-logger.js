@@ -1,3 +1,5 @@
+import { createRuntimeLogger } from './runtime-logger.js';
+
 const PREFIXES = {
   runtime: '[Runtime]',
   manifest: '[ManifestLoader]',
@@ -13,19 +15,11 @@ function normalizePrefix(channel) {
 
 export function createRuntimeMigrationLogger({ channel = 'runtime', sink = console } = {}) {
   const prefix = normalizePrefix(channel);
+  const runtimeLogger = createRuntimeLogger({ source: `runtime.${channel}`, sink });
 
   const write = (level, message, metadata) => {
     try {
-      if (typeof sink?.[level] !== 'function') {
-        return;
-      }
-
-      if (metadata === undefined) {
-        sink[level](`${prefix} ${message}`);
-        return;
-      }
-
-      sink[level](`${prefix} ${message}`, metadata);
+      runtimeLogger[level](`${prefix} ${message}`, metadata);
     } catch {
       // logging should never interrupt runtime execution
     }

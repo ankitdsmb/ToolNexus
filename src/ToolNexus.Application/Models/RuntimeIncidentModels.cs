@@ -13,6 +13,17 @@ public sealed record RuntimeIncidentIngestRequest(
 
 public sealed record RuntimeIncidentIngestBatch(IReadOnlyList<RuntimeIncidentIngestRequest> Incidents);
 
+public sealed record ClientIncidentLogRequest(
+    string Source,
+    string Level,
+    string Message,
+    string? ToolSlug,
+    string? CorrelationId,
+    DateTime Timestamp,
+    IReadOnlyDictionary<string, string?>? Metadata);
+
+public sealed record ClientIncidentLogBatch(IReadOnlyList<ClientIncidentLogRequest> Logs);
+
 public sealed record RuntimeIncidentSummary(
     string ToolSlug,
     string Message,

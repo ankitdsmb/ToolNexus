@@ -3,18 +3,33 @@ using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
+using ToolNexus.Api.Logging;
 
 namespace ToolNexus.Api.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/runtime/incidents")]
-public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) : ControllerBase
+public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, IRuntimeClientLoggerService? runtimeClientLoggerService = null) : ControllerBase
 {
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Post([FromBody] RuntimeIncidentIngestBatch request, CancellationToken cancellationToken)
     {
         await service.IngestAsync(request, cancellationToken);
+        return Accepted();
+    }
+
+
+    [HttpPost("logs")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PostClientLogs([FromBody] ClientIncidentLogBatch request, CancellationToken cancellationToken)
+    {
+        if (runtimeClientLoggerService is null)
+        {
+            return Accepted();
+        }
+
+        await runtimeClientLoggerService.WriteBatchAsync(request, cancellationToken);
         return Accepted();
     }
 

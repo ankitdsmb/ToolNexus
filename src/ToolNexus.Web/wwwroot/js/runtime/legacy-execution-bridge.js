@@ -1,3 +1,7 @@
+import { createRuntimeLogger } from './runtime-logger.js';
+
+const logger = createRuntimeLogger({ source: 'legacy-execution-bridge' });
+
 let initializedRoots = new WeakMap();
 
 function isInitialized(root, slug) {
@@ -68,10 +72,12 @@ function invokeLegacy(candidate, root, context) {
 
 export async function legacyExecuteTool({ slug, root, module, context } = {}) {
   if (!root || !slug) {
+    logger.warn('Legacy execution skipped due to invalid context.', { slug });
     return { mounted: false, mode: 'invalid-context', cleanup: undefined, alreadyInitialized: false };
   }
 
   if (isInitialized(root, slug)) {
+    logger.debug('Legacy execution lock detected.', { slug });
     return { mounted: true, mode: 'locked', cleanup: undefined, alreadyInitialized: true };
   }
 
@@ -80,6 +86,7 @@ export async function legacyExecuteTool({ slug, root, module, context } = {}) {
     const result = invokeLegacy(candidate, root, context);
     if (result.invoked) {
       markInitialized(root, slug);
+      logger.info('Legacy module execution path resolved.', { slug, mode: result.mode });
       return { mounted: true, mode: `module.${result.mode}`, cleanup: result.cleanup, alreadyInitialized: false };
     }
   }
@@ -87,6 +94,7 @@ export async function legacyExecuteTool({ slug, root, module, context } = {}) {
   const globalResult = invokeLegacy(window, root, context);
   if (globalResult.invoked) {
     markInitialized(root, slug);
+    logger.info('Legacy window execution path resolved.', { slug, mode: globalResult.mode });
     return { mounted: true, mode: `window.${globalResult.mode}`, cleanup: globalResult.cleanup, alreadyInitialized: false };
   }
 
@@ -94,9 +102,11 @@ export async function legacyExecuteTool({ slug, root, module, context } = {}) {
   const registryResult = invokeLegacy(registryCandidate, root, context);
   if (registryResult.invoked) {
     markInitialized(root, slug);
+    logger.info('Legacy registry execution path resolved.', { slug, mode: registryResult.mode });
     return { mounted: true, mode: `registry.${registryResult.mode}`, cleanup: registryResult.cleanup, alreadyInitialized: false };
   }
 
+  logger.warn('No legacy execution path resolved.', { slug });
   return { mounted: false, mode: 'none', cleanup: undefined, alreadyInitialized: false };
 }
 

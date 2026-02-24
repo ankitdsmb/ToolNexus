@@ -83,8 +83,16 @@
                 seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.SeoDescription)),
                 exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
                 clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
-            }
+            },
+            runtimeLogEndpoint: "/api/admin/runtime/incidents/logs"
         };
+        window.ToolNexusLogging = {
+            minLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>()["ToolNexusLogging:MinLevel"] ?? "Information")),
+            runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("ToolNexusLogging:RuntimeDebugEnabled"))),
+            enableClientIncidents: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue("ToolNexusLogging:EnableClientIncidents", true)))
+        };
+        window.ToolNexus = window.ToolNexus || {};
+        window.ToolNexus.correlationId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.TraceIdentifier));
     </script>
     <script type="module" src="~/js/tool-runtime.js" asp-append-version="true"></script>
     <script type="module" src="~/js/tool-shell-feel.js" asp-append-version="true"></script>
