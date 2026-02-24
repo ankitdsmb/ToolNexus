@@ -24,6 +24,31 @@ export function createJsonFormatterApp(root) {
     state.disposers.push(() => element?.removeEventListener(eventName, handler));
   };
 
+  const createFallbackEditor = (host, { readOnly = false } = {}) => {
+    const textarea = document.createElement('textarea');
+    textarea.className = 'json-formatter-fallback-editor';
+    textarea.readOnly = readOnly;
+    textarea.spellcheck = false;
+    textarea.setAttribute('aria-label', readOnly ? 'JSON output editor' : 'JSON input editor');
+    host.replaceChildren(textarea);
+
+    return {
+      getValue: () => textarea.value,
+      setValue: (value) => {
+        textarea.value = value ?? '';
+      },
+      revealLine: () => {},
+      updateOptions: () => {},
+      onDidChangeContent: (handler) => {
+        textarea.addEventListener('input', handler);
+        return {
+          dispose: () => textarea.removeEventListener('input', handler)
+        };
+      },
+      dispose: () => {}
+    };
+  };
+
   const updateButtons = () => {
     const hasInput = state.inputModel.getValue().trim().length > 0;
     const hasOutput = state.outputModel.getValue().trim().length > 0;
@@ -44,11 +69,13 @@ export function createJsonFormatterApp(root) {
         startColumn: location.column,
         endColumn: location.column + 1,
         message,
-        severity: state.monaco.MarkerSeverity.Error
+        severity: state.monaco?.MarkerSeverity?.Error
       }]
       : [];
 
-    state.monaco.editor.setModelMarkers(state.inputModel, JSON_FORMATTER_CONFIG.markerOwner, markers);
+    if (state.monaco?.editor && state.inputModel) {
+      state.monaco.editor.setModelMarkers(state.inputModel, JSON_FORMATTER_CONFIG.markerOwner, markers);
+    }
   };
 
   const updateStats = () => {
@@ -102,42 +129,50 @@ export function createJsonFormatterApp(root) {
 
   return {
     async init() {
-      if (!dom.jsonEditor || !window.require) {
-        throw new Error('JSON formatter cannot start: Monaco loader is unavailable.');
+      if (!dom.jsonEditor || !dom.outputEditor) {
+        throw new Error('JSON formatter cannot start: required editor containers are unavailable.');
       }
 
-      window.require.config({
-        paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' }
-      });
+      if (typeof window.require === 'function') {
+        window.require.config({
+          paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' }
+        });
 
-      await new Promise((resolve) => window.require(['vs/editor/editor.main'], resolve));
+        await new Promise((resolve) => window.require(['vs/editor/editor.main'], resolve));
 
-      state.monaco = window.monaco;
-      state.inputModel = state.monaco.editor.createModel(window.ToolNexusConfig?.jsonExampleInput ?? '', 'json');
-      state.outputModel = state.monaco.editor.createModel('', 'json');
+        state.monaco = window.monaco;
+        state.inputModel = state.monaco.editor.createModel(window.ToolNexusConfig?.jsonExampleInput ?? '', 'json');
+        state.outputModel = state.monaco.editor.createModel('', 'json');
 
-      const shared = {
-        theme: JSON_FORMATTER_CONFIG.monacoTheme,
-        minimap: { enabled: false },
-        automaticLayout: true,
-        fontSize: 14,
-        fontFamily: 'var(--font-family-mono)',
-        lineNumbers: 'on',
-        wordWrap: 'off'
-      };
+        const shared = {
+          theme: JSON_FORMATTER_CONFIG.monacoTheme,
+          minimap: { enabled: false },
+          automaticLayout: true,
+          fontSize: 14,
+          fontFamily: 'var(--font-family-mono)',
+          lineNumbers: 'on',
+          wordWrap: 'off'
+        };
 
-      state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
-        ...shared,
-        model: state.inputModel,
-        readOnly: false,
-        glyphMargin: true
-      });
+        state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
+          ...shared,
+          model: state.inputModel,
+          readOnly: false,
+          glyphMargin: true
+        });
 
-      state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
-        ...shared,
-        model: state.outputModel,
-        readOnly: true
-      });
+        state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
+          ...shared,
+          model: state.outputModel,
+          readOnly: true
+        });
+      } else {
+        state.inputEditor = createFallbackEditor(dom.jsonEditor);
+        state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
+        state.inputModel = state.inputEditor;
+        state.outputModel = state.outputEditor;
+        state.inputModel.setValue(window.ToolNexusConfig?.jsonExampleInput ?? '');
+      }
 
       const onInputChanged = () => {
         updateStats();
