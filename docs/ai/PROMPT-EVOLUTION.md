@@ -31,3 +31,10 @@ Prompt: Implement structured runtime incident reporting end-to-end (runtime repo
 Result: Added runtime incident schema/reporting in JS runtime boundaries, backend ingestion/persistence, admin incidents integration, and automated tests covering ingestion/query/safety paths.
 Improvement: Runtime failures remain non-fatal and now become actionable operational signals in admin monitoring.
 New Version: For all runtime safety fixes, require explicit incident recording pipeline and admin visibility—not silent no-op behavior.
+
+Date: 2026-02-24
+Problem: End-to-end runtime QA failed because tool pages returned 500 when PostgreSQL was unavailable, and JS test runner overlap caused false negatives.
+Prompt: Enforce runtime survivability under dependency outage (content DB optional at render time), preserve legacy URL contracts, and isolate JS test runners by scope.
+Result: Added fail-closed content repository behavior (warning + null), legacy `-tools` category alias normalization, and Jest test scoping to `tests/js` only.
+Improvement: Tool runtime remains reachable for all manifest tools during DB outage and CI signal quality improved by eliminating Vitest/Playwright-Jest collisions.
+New Version: Treat content DB as optional for runtime page render; enforce test-runner isolation whenever introducing additional JS suites.

@@ -1,6 +1,7 @@
 export default {
   testEnvironment: 'jsdom',
   setupFiles: ['./jest.setup.js'],
+  testMatch: ['<rootDir>/tests/js/**/*.test.js'],
   testPathIgnorePatterns: ['/node_modules/', 'tool-test-helpers.js'],
   collectCoverageFrom: [
     'src/ToolNexus.Web/wwwroot/js/tools/case-converter.js',

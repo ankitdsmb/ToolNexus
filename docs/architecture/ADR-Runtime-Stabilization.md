@@ -26,3 +26,10 @@ Execution normalizer treated any `runTool` as mount lifecycle and called it with
 - Existing execution-style tool modules no longer receive invalid bootstrap arguments.
 - Runtime fallback rate should decrease and console errors become actionable test failures.
 - Tool developers should prefer explicit `toolRuntimeType` metadata to avoid arity ambiguity, while mount logic remains in lifecycle methods (`create/init/mount`) and execution logic in explicit run actions.
+
+## Addendum 2026-02-24 — Runtime Availability over Content DB Dependency
+
+- **Decision**: Tool runtime pages must degrade gracefully when content database queries fail; render path must continue with catalog/manifest metadata.
+- **Rationale**: Runtime execution and tool operability are higher-priority than enriched editorial content during partial outages.
+- **Implementation**: `EfToolContentRepository` now catches data-access exceptions and returns null/empty results with warning logs; `ToolsController` already supports SEO fallback values when content is null.
+- **Compatibility**: Added `/tools/{category}-tools` alias normalization to preserve legacy links and contract tests.

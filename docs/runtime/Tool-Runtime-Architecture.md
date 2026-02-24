@@ -107,3 +107,9 @@ Dashboard status colors map directly from score bands:
 - Green (`healthy`) = `healthScore >= 85`
 - Yellow (`degraded`) = `60 <= healthScore < 85`
 - Red (`broken`) = `healthScore < 60`
+
+## 2026-02 Runtime Availability Hardening
+
+- Tool page rendering now tolerates content database outages by allowing `IToolContentRepository` to fail closed (warning + null content) instead of surfacing a 500.
+- Tool shell remains operational from manifest/catalog metadata when DB content is unavailable, preserving runtime bootstrap and execution paths.
+- Category routing now supports legacy aliases like `/tools/{category}-tools` by normalizing to canonical category slugs.

@@ -67,10 +67,15 @@ public sealed class ToolsController(
     [OutputCache(Duration = 300, VaryByRouteValueNames = ["segment"])]
     public async Task<IActionResult> Segment(string segment, CancellationToken cancellationToken)
     {
-        if (toolCatalogService.CategoryExists(segment))
+        var normalizedSegment = segment.Trim().ToLowerInvariant();
+        var categorySegment = normalizedSegment.EndsWith("-tools", StringComparison.Ordinal)
+            ? normalizedSegment[..^"-tools".Length]
+            : normalizedSegment;
+
+        if (toolCatalogService.CategoryExists(categorySegment))
         {
-            var tools = toolCatalogService.GetByCategory(segment);
-            return View("Category", new ToolCategoryViewModel { Category = segment, Tools = tools });
+            var tools = toolCatalogService.GetByCategory(categorySegment);
+            return View("Category", new ToolCategoryViewModel { Category = categorySegment, Tools = tools });
         }
 
         var tool = toolCatalogService.GetBySlug(segment);
@@ -117,6 +122,10 @@ public sealed class ToolsController(
             .ToArray();
 
         var apiBaseUrl = ResolveApiBaseUrl(apiSettings.Value.BaseUrl);
+        if (string.IsNullOrWhiteSpace(apiBaseUrl))
+        {
+            apiBaseUrl = $"{Request.Scheme}://{Request.Host}";
+        }
         var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
         var viewModel = new ToolPageViewModel
         {
