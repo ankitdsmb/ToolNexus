@@ -67,8 +67,9 @@ async function tryLegacyFallback({ slug, root, manifest, context, capabilities }
   if (normalized.metadata.mode !== 'none') {
     await normalized.create();
     await normalized.init();
+    const executionOnly = normalized.metadata.mode === 'legacy.runTool.execution-only';
     return {
-      mounted: true,
+      mounted: !executionOnly,
       cleanup: normalized.destroy,
       mode: `window.${normalized.metadata.mode}`,
       normalized: true,
