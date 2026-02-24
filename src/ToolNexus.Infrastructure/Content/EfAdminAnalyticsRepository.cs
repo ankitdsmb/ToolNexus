@@ -8,13 +8,15 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Content;
 
-public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbContext) : IAdminAnalyticsRepository
+public sealed class EfAdminAnalyticsRepository(IDbContextFactory<ToolNexusContentDbContext> dbContextFactory) : IAdminAnalyticsRepository
 {
     public async Task<IReadOnlyList<DailyToolMetricsSnapshot>> GetByDateRangeAsync(DateOnly startDateInclusive, DateOnly endDateInclusive, CancellationToken cancellationToken)
         => await ExecuteWithSchemaRecoveryAsync(async () =>
         {
             var startDate = startDateInclusive.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
             var endDate = endDateInclusive.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             return await dbContext.DailyToolMetrics
                 .AsNoTracking()
@@ -34,6 +36,8 @@ public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbConte
         {
             var startDate = query.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
             var endDate = query.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             var source = dbContext.DailyToolMetrics
                 .AsNoTracking()
@@ -66,6 +70,8 @@ public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbConte
     public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
         => await ExecuteWithSchemaRecoveryAsync(async () =>
         {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
             var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
             await dbContext.ToolAnomalySnapshots
@@ -93,6 +99,8 @@ public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbConte
     public async Task<IReadOnlyList<ToolAnomalySnapshot>> GetAnomaliesByDateAsync(DateOnly date, CancellationToken cancellationToken)
         => await ExecuteWithSchemaRecoveryAsync(async () =>
         {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
             var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
             return await dbContext.ToolAnomalySnapshots
                 .AsNoTracking()
@@ -139,6 +147,7 @@ public sealed class EfAdminAnalyticsRepository(ToolNexusContentDbContext dbConte
     {
         try
         {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
             await dbContext.Database.MigrateAsync(cancellationToken);
             return await action();
         }
