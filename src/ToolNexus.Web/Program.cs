@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.IO.Compression;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
@@ -250,6 +251,25 @@ if (app.Environment.IsDevelopment())
         source = "window.ToolNexus.runtime.getObservabilitySnapshot()"
     }));
 }
+
+app.MapGet("/api/admin/debug/tools-count", async (ToolNexus.Infrastructure.Data.ToolNexusContentDbContext dbContext, CancellationToken cancellationToken) =>
+{
+    string provider = dbContext.Database.IsSqlite()
+        ? "Sqlite"
+        : dbContext.Database.IsNpgsql()
+            ? "PostgreSQL"
+            : dbContext.Database.ProviderName ?? "Unknown";
+
+    var result = new
+    {
+        provider,
+        toolsCount = await dbContext.ToolDefinitions.CountAsync(cancellationToken),
+        contentsCount = await dbContext.ToolContents.CountAsync(cancellationToken),
+        policiesCount = await dbContext.ToolExecutionPolicies.CountAsync(cancellationToken)
+    };
+
+    return Results.Ok(result);
+});
 
 app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics, IConcurrencyObservability concurrencyObservability) =>
 {

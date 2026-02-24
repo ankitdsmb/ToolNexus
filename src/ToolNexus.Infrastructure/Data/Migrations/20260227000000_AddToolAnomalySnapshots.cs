@@ -1,10 +1,14 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ToolNexus.Infrastructure.Data;
 
 #nullable disable
 
 namespace ToolNexus.Infrastructure.Data.Migrations
 {
+    [DbContext(typeof(ToolNexusContentDbContext))]
+    [Migration("20260227000000_AddToolAnomalySnapshots")]
     public partial class AddToolAnomalySnapshots : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

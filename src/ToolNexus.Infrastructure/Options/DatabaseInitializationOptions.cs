@@ -6,5 +6,5 @@ public sealed class DatabaseInitializationOptions
 
     public bool RunMigrationOnStartup { get; set; } = true;
 
-    public bool RunSeedOnStartup { get; set; } = false;
+    public bool RunSeedOnStartup { get; set; } = true;
 }

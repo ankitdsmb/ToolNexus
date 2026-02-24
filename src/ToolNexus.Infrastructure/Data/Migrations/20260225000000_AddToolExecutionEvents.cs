@@ -1,10 +1,14 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ToolNexus.Infrastructure.Data;
 
 #nullable disable
 
 namespace ToolNexus.Infrastructure.Data.Migrations
 {
+    [DbContext(typeof(ToolNexusContentDbContext))]
+    [Migration("20260225000000_AddToolExecutionEvents")]
     public partial class AddToolExecutionEvents : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

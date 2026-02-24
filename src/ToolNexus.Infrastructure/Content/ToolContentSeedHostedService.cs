@@ -43,20 +43,25 @@ public sealed class ToolContentSeedHostedService(
 
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
+        var providerName = ResolveProviderName(dbContext);
+        logger.LogInformation("Using DB Provider: {Provider}", providerName);
+
+        var appliedMigrations = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToArray();
+        var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+        logger.LogInformation("Applied migrations ({Count}): {AppliedMigrations}",
+            appliedMigrations.Length,
+            appliedMigrations.Length == 0 ? "none" : string.Join(", ", appliedMigrations));
+        logger.LogInformation("Pending migrations ({Count}): {PendingMigrations}",
+            pendingMigrations.Length,
+            pendingMigrations.Length == 0 ? "none" : string.Join(", ", pendingMigrations));
 
         if (runMigration)
         {
-            var skipMigrations = await ShouldSkipSqliteMigrationAsync(dbContext, cancellationToken);
-
-            if (skipMigrations)
+            await BaselineLegacySqliteSchemaIfNeededAsync(dbContext, cancellationToken);
+            await MigrateWithRetryAsync(dbContext, cancellationToken);
+            if (pendingMigrations.Length > 0)
             {
-                logger.LogWarning(
-                    "Detected legacy SQLite schema without EF migrations history. Skipping automatic migration to prevent startup failure. " +
-                    "Consider baselining this database before cutover.");
-            }
-            else
-            {
-                await MigrateWithRetryAsync(dbContext, cancellationToken);
+                logger.LogInformation("Applied {MigrationCount} pending migration(s) during startup.", pendingMigrations.Length);
             }
         }
 
@@ -68,6 +73,16 @@ public sealed class ToolContentSeedHostedService(
 
         var tools = manifestRepository.LoadTools();
 
+
+        var requiredTables = new[] { "ToolDefinitions", "ToolContents", "ToolExecutionPolicies", "ToolExecutionEvents" };
+        foreach (var requiredTable in requiredTables)
+        {
+            var exists = await TableExistsAsync(dbContext, requiredTable, cancellationToken);
+            if (!exists)
+            {
+                logger.LogError("Required table {TableName} is missing. Check database provider configuration and migration state.", requiredTable);
+            }
+        }
 
         var toolDefinitionsTableExists = await TableExistsAsync(dbContext, "ToolDefinitions", cancellationToken);
         if (!toolDefinitionsTableExists)
@@ -162,6 +177,9 @@ public sealed class ToolContentSeedHostedService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var seededToolsCount = await dbContext.ToolDefinitions.CountAsync(cancellationToken);
+        logger.LogInformation("Tool seed count after initialization: {Count}", seededToolsCount);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -220,12 +238,37 @@ public sealed class ToolContentSeedHostedService(
             parameter.Value = tableName;
             command.Parameters.Add(parameter);
 
-            return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            var count = result switch
+            {
+                null => 0,
+                int intValue => intValue,
+                long longValue => (int)longValue,
+                decimal decimalValue => (int)decimalValue,
+                _ => Convert.ToInt32(result)
+            };
+
+            return count > 0;
         }
         finally
         {
             await dbContext.Database.CloseConnectionAsync();
         }
+    }
+
+    private static string ResolveProviderName(ToolNexusContentDbContext dbContext)
+    {
+        if (dbContext.Database.IsSqlite())
+        {
+            return "Sqlite";
+        }
+
+        if (dbContext.Database.IsNpgsql())
+        {
+            return "PostgreSQL";
+        }
+
+        return dbContext.Database.ProviderName ?? "Unknown";
     }
 
     private static bool IsTransientPostgresStartupException(Exception exception)
@@ -235,11 +278,11 @@ public sealed class ToolContentSeedHostedService(
                || exception.InnerException is NpgsqlException;
     }
 
-    private static async Task<bool> ShouldSkipSqliteMigrationAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
+    private async Task BaselineLegacySqliteSchemaIfNeededAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
     {
         if (!dbContext.Database.IsSqlite())
         {
-            return false;
+            return;
         }
 
         await dbContext.Database.OpenConnectionAsync(cancellationToken);
@@ -247,35 +290,54 @@ public sealed class ToolContentSeedHostedService(
         {
             var connection = dbContext.Database.GetDbConnection();
 
-            await using var schemaCheck = connection.CreateCommand();
-            schemaCheck.CommandText = """
-                SELECT COUNT(*)
-                FROM sqlite_master
-                WHERE type = 'table'
-                  AND name NOT LIKE 'sqlite_%'
-                  AND name <> '__EFMigrationsHistory';
-                """;
-
-            var schemaTableCount = Convert.ToInt32(await schemaCheck.ExecuteScalarAsync(cancellationToken));
-            if (schemaTableCount == 0)
-            {
-                return false;
-            }
-
             await using var historyExists = connection.CreateCommand();
             historyExists.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '__EFMigrationsHistory';";
             var historyTableExists = Convert.ToInt32(await historyExists.ExecuteScalarAsync(cancellationToken)) > 0;
 
-            if (!historyTableExists)
+            await using var toolContentsExists = connection.CreateCommand();
+            toolContentsExists.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'ToolContents';";
+            var hasToolContents = Convert.ToInt32(await toolContentsExists.ExecuteScalarAsync(cancellationToken)) > 0;
+            if (!hasToolContents)
             {
-                return true;
+                return;
             }
 
-            await using var historyRows = connection.CreateCommand();
-            historyRows.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory;";
-            var appliedMigrationsCount = Convert.ToInt32(await historyRows.ExecuteScalarAsync(cancellationToken));
+            if (historyTableExists)
+            {
+                await using var migrationCountCommand = connection.CreateCommand();
+                migrationCountCommand.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory;";
+                var existingMigrationCount = Convert.ToInt32(await migrationCountCommand.ExecuteScalarAsync(cancellationToken));
+                if (existingMigrationCount > 0)
+                {
+                    return;
+                }
+            }
 
-            return appliedMigrationsCount == 0;
+            var firstMigrationId = dbContext.Database.GetMigrations().FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(firstMigrationId))
+            {
+                return;
+            }
+
+            await using var createHistoryTable = connection.CreateCommand();
+            createHistoryTable.CommandText = "CREATE TABLE IF NOT EXISTS __EFMigrationsHistory (MigrationId TEXT NOT NULL CONSTRAINT PK___EFMigrationsHistory PRIMARY KEY, ProductVersion TEXT NOT NULL);";
+            await createHistoryTable.ExecuteNonQueryAsync(cancellationToken);
+
+            await using var insertBaselineMigration = connection.CreateCommand();
+            insertBaselineMigration.CommandText = "INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES (@migrationId, @productVersion);";
+
+            var migrationParameter = insertBaselineMigration.CreateParameter();
+            migrationParameter.ParameterName = "@migrationId";
+            migrationParameter.Value = firstMigrationId;
+            insertBaselineMigration.Parameters.Add(migrationParameter);
+
+            var versionParameter = insertBaselineMigration.CreateParameter();
+            versionParameter.ParameterName = "@productVersion";
+            versionParameter.Value = typeof(ToolNexusContentDbContext).Assembly.GetName().Version?.ToString() ?? "8.0.0";
+            insertBaselineMigration.Parameters.Add(versionParameter);
+
+            await insertBaselineMigration.ExecuteNonQueryAsync(cancellationToken);
+            logger.LogWarning("Detected legacy SQLite schema and created migration baseline with {MigrationId}.", firstMigrationId);
         }
         finally
         {
