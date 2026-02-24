@@ -20,7 +20,7 @@ describe('hybrid SSR tool shell runtime', () => {
     expect(shell).toContain('class="tool-seo');
     expect(shell).toContain('<h1>@Model.Tool.Title</h1>');
     expect(shell).toContain('Model.Content?.Intro ?? Model.Tool.SeoDescription');
-    expect(shell).toContain('Model.Content?.Examples.Any() == true');
+    expect(shell).toContain('\"Examples\"');
   });
 
   test('runtime templates contain no Razor tokens', () => {

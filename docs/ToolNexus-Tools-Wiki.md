@@ -1012,3 +1012,9 @@ ToolNexus runtime now includes a dedicated incident channel for legacy contract 
 ### Operator impact
 - Runtime continues safely (safe noop for invalid payloads) while all incidents are visible to Admin operators.
 - Repeated runtime failures collapse into a single grouped incident with incrementing count and updated last occurrence.
+
+## 2026-02 Runtime Stabilization Notes
+
+- Added compatibility routing for legacy category URLs (`/tools/json-tools` → `/tools/json`) to preserve older tooling links and Playwright contract flows.
+- Hardened tool-content retrieval so DB outages do not block runtime tool pages; pages render with catalog/manifest SEO fallbacks and continue mounting runtime UI.
+- Jest `test:js` is now scoped to `tests/js/**/*.test.js` so runtime-vitest and Playwright suites remain isolated from Jest globals.
