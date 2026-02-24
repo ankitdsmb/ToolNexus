@@ -39,6 +39,8 @@ public sealed class DatabaseInitializationHostedService(
                 using var scope = serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
                 await MigrateWithRetryAsync(dbContext, stoppingToken);
+                var identityDbContext = scope.ServiceProvider.GetRequiredService<ToolNexusIdentityDbContext>();
+                await MigrateWithRetryAsync(identityDbContext, stoppingToken);
                 logger.LogInformation("Database migration completed.");
             }
 
@@ -54,7 +56,7 @@ public sealed class DatabaseInitializationHostedService(
         }
     }
 
-    private async Task MigrateWithRetryAsync(ToolNexusContentDbContext dbContext, CancellationToken cancellationToken)
+    private async Task MigrateWithRetryAsync(DbContext dbContext, CancellationToken cancellationToken)
     {
         for (var attempt = 0; attempt <= MigrationRetryDelays.Length; attempt++)
         {

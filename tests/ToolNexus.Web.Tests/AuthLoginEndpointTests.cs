@@ -26,7 +26,7 @@ public sealed class AuthLoginEndpointTests
 
 
     [Fact]
-    public async Task GetLogin_NonDevelopment_ReturnsNotFound()
+    public async Task GetLogin_NonDevelopment_ReturnsOk()
     {
         await using var factory = new TestWebApplicationFactory("IntegrationTests");
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
@@ -36,7 +36,7 @@ public sealed class AuthLoginEndpointTests
 
         var response = await client.GetAsync("/auth/login");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]

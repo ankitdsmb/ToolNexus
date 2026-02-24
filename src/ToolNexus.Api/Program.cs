@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -87,6 +88,14 @@ builder.Services
     .AddObservability(builder.Configuration)
     .AddRateLimiting(builder.Configuration)
     .AddApiCors(builder.Configuration);
+
+
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ToolNexus.Infrastructure.Data.ToolNexusIdentityDbContext>();
 
 builder.Services.Configure<ToolNexusLoggingOptions>(builder.Configuration.GetSection(ToolNexusLoggingOptions.SectionName));
 builder.Services.AddSingleton<IRuntimeClientLoggerService, RuntimeClientLoggerService>();
