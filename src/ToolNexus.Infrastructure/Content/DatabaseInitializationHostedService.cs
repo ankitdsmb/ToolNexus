@@ -35,13 +35,15 @@ public sealed class DatabaseInitializationHostedService(
         {
             if (options.Value.RunMigrationOnStartup)
             {
+                logger.LogInformation("Database migration started.");
                 using var scope = serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
                 await MigrateWithRetryAsync(dbContext, stoppingToken);
+                logger.LogInformation("Database migration completed.");
             }
 
             state.MarkReady();
-            logger.LogInformation("Database initialization completed. Migration enabled: {RunMigration}.",
+            logger.LogInformation("Database initialization completed and readiness signal was set. Migration enabled: {RunMigration}.",
                 options.Value.RunMigrationOnStartup);
         }
         catch (Exception ex)

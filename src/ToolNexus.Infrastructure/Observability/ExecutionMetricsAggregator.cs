@@ -9,7 +9,7 @@ public sealed class ExecutionMetricsAggregator
 {
     public async Task UpdateAsync(ToolNexusContentDbContext dbContext, ToolExecutionEvent executionEvent, CancellationToken cancellationToken)
     {
-        var dayUtc = executionEvent.TimestampUtc.Date;
+        var dayUtc = new DateTimeOffset(executionEvent.TimestampUtc.Date, TimeSpan.Zero);
 
         var metrics = await dbContext.DailyToolMetrics
             .SingleOrDefaultAsync(

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ToolNexus.Application.Abstractions;
 
@@ -8,9 +7,13 @@ namespace ToolNexus.Application.Services;
 public sealed class ManifestExecutorAlignmentValidator(
     IToolManifestGovernance governance,
     IServiceScopeFactory scopeFactory,
-    ILogger<ManifestExecutorAlignmentValidator> logger) : IHostedService
+    ILogger<ManifestExecutorAlignmentValidator> logger) : IStartupPhaseService
 {
-    public Task StartAsync(CancellationToken cancellationToken)
+    public int Order => 5;
+
+    public string PhaseName => "Manifest Executor Alignment Validation";
+
+    public Task ExecuteAsync(CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
         var executors = scope.ServiceProvider.GetRequiredService<IEnumerable<IToolExecutor>>();
@@ -46,6 +49,4 @@ public sealed class ManifestExecutorAlignmentValidator(
         logger.LogInformation("Manifest and executor registration alignment validation passed for {ToolCount} tools.", manifestBySlug.Count);
         return Task.CompletedTask;
     }
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

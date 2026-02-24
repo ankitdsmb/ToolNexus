@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
@@ -24,6 +25,7 @@ public sealed class NoopAuditOutboxDestinationClient : IAuditOutboxDestinationCl
 
 public sealed class AuditOutboxWorker(
     IServiceScopeFactory scopeFactory,
+    IDatabaseInitializationState initializationState,
     IOptions<AuditGuardrailsOptions> options,
     AuditGuardrailsMetrics metrics,
     ILogger<AuditOutboxWorker> logger) : BackgroundService
@@ -34,6 +36,10 @@ public sealed class AuditOutboxWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.LogInformation("Audit outbox worker waiting for database initialization readiness.");
+        await initializationState.WaitForReadyAsync(stoppingToken);
+        logger.LogInformation("Audit outbox worker detected database readiness and is starting.");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             if (!options.Value.WorkerEnabled)

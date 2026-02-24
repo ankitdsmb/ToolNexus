@@ -1,6 +1,4 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
@@ -10,146 +8,129 @@ namespace ToolNexus.Infrastructure.Content;
 
 public sealed class EfAdminAnalyticsRepository(
     IDbContextFactory<ToolNexusContentDbContext> dbContextFactory,
-    DatabaseInitializationState initializationState) : IAdminAnalyticsRepository
+    IDatabaseInitializationState initializationState) : IAdminAnalyticsRepository
 {
     public async Task<IReadOnlyList<DailyToolMetricsSnapshot>> GetByDateRangeAsync(DateOnly startDateInclusive, DateOnly endDateInclusive, CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
-        {
-            var startDate = startDateInclusive.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            var endDate = endDateInclusive.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+    {
+        await initializationState.WaitForReadyAsync(cancellationToken);
 
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var startDate = new DateTimeOffset(startDateInclusive.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var endDate = new DateTimeOffset(endDateInclusive.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
 
-            return await dbContext.DailyToolMetrics
-                .AsNoTracking()
-                .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate)
-                .Select(x => new DailyToolMetricsSnapshot(
-                    x.ToolSlug,
-                    DateOnly.FromDateTime(x.DateUtc),
-                    x.TotalExecutions,
-                    x.SuccessCount,
-                    x.AvgDurationMs))
-                .ToListAsync(cancellationToken);
-        }, [], cancellationToken);
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
+        var rows = await dbContext.DailyToolMetrics
+            .AsNoTracking()
+            .Select(x => new { x.ToolSlug, x.DateUtc, x.TotalExecutions, x.SuccessCount, x.AvgDurationMs })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate)
+            .Select(x => new DailyToolMetricsSnapshot(
+                x.ToolSlug,
+                DateOnly.FromDateTime(x.DateUtc.UtcDateTime),
+                x.TotalExecutions,
+                x.SuccessCount,
+                x.AvgDurationMs))
+            .ToList();
+    }
 
     public async Task<(IReadOnlyList<DailyToolMetricsSnapshot> Items, int TotalItems)> QueryAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
+    {
+        await initializationState.WaitForReadyAsync(cancellationToken);
+
+        var startDate = new DateTimeOffset(query.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var endDate = new DateTimeOffset(query.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var allRows = await dbContext.DailyToolMetrics
+            .AsNoTracking()
+            .Select(x => new { x.ToolSlug, x.DateUtc, x.TotalExecutions, x.SuccessCount, x.AvgDurationMs })
+            .ToListAsync(cancellationToken);
+
+        var filteredRows = allRows
+            .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate);
+
+        if (!string.IsNullOrWhiteSpace(query.ToolSlug))
         {
-            var startDate = query.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            var endDate = query.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            filteredRows = filteredRows.Where(x => x.ToolSlug == query.ToolSlug);
+        }
 
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var totalItems = filteredRows.Count();
+        var offset = (query.Page - 1) * query.PageSize;
 
-            var source = dbContext.DailyToolMetrics
-                .AsNoTracking()
-                .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate);
+        var rows = filteredRows
+            .OrderByDescending(x => x.DateUtc)
+            .ThenBy(x => x.ToolSlug)
+            .Skip(offset)
+            .Take(query.PageSize)
+            .ToList();
 
-            if (!string.IsNullOrWhiteSpace(query.ToolSlug))
-            {
-                source = source.Where(x => x.ToolSlug == query.ToolSlug);
-            }
+        var items = rows
+            .Select(x => new DailyToolMetricsSnapshot(
+                x.ToolSlug,
+                DateOnly.FromDateTime(x.DateUtc.UtcDateTime),
+                x.TotalExecutions,
+                x.SuccessCount,
+                x.AvgDurationMs))
+            .ToList();
 
-            var totalItems = await source.CountAsync(cancellationToken);
-            var offset = (query.Page - 1) * query.PageSize;
-
-            var items = await source
-                .OrderByDescending(x => x.DateUtc)
-                .ThenBy(x => x.ToolSlug)
-                .Skip(offset)
-                .Take(query.PageSize)
-                .Select(x => new DailyToolMetricsSnapshot(
-                    x.ToolSlug,
-                    DateOnly.FromDateTime(x.DateUtc),
-                    x.TotalExecutions,
-                    x.SuccessCount,
-                    x.AvgDurationMs))
-                .ToListAsync(cancellationToken);
-
-            return ((IReadOnlyList<DailyToolMetricsSnapshot>)items, totalItems);
-        }, ([], 0), cancellationToken);
+        return ((IReadOnlyList<DailyToolMetricsSnapshot>)items, totalItems);
+    }
 
     public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
+    {
+        await initializationState.WaitForReadyAsync(cancellationToken);
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var dateUtc = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+
+        await dbContext.ToolAnomalySnapshots
+            .Where(x => x.DateUtc == dateUtc)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (anomalies.Count == 0)
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            return;
+        }
 
-            var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var entities = anomalies.Select(x => new ToolAnomalySnapshotEntity
+        {
+            ToolSlug = x.ToolSlug,
+            DateUtc = dateUtc,
+            Type = x.Type.ToString(),
+            Severity = x.Severity.ToString(),
+            Description = x.Description
+        });
 
-            await dbContext.ToolAnomalySnapshots
-                .Where(x => x.DateUtc == dateUtc)
-                .ExecuteDeleteAsync(cancellationToken);
-
-            if (anomalies.Count == 0)
-            {
-                return;
-            }
-
-            var entities = anomalies.Select(x => new ToolAnomalySnapshotEntity
-            {
-                ToolSlug = x.ToolSlug,
-                DateUtc = dateUtc,
-                Type = x.Type.ToString(),
-                Severity = x.Severity.ToString(),
-                Description = x.Description
-            });
-
-            await dbContext.ToolAnomalySnapshots.AddRangeAsync(entities, cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }, cancellationToken);
+        await dbContext.ToolAnomalySnapshots.AddRangeAsync(entities, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
 
     public async Task<IReadOnlyList<ToolAnomalySnapshot>> GetAnomaliesByDateAsync(DateOnly date, CancellationToken cancellationToken)
-        => await ExecuteWithSchemaRecoveryAsync(async () =>
-        {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-
-            var dateUtc = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            return await dbContext.ToolAnomalySnapshots
-                .AsNoTracking()
-                .Where(x => x.DateUtc == dateUtc)
-                .OrderBy(x => x.ToolSlug)
-                .ThenBy(x => x.Type)
-                .Select(x => new ToolAnomalySnapshot(
-                    x.ToolSlug,
-                    DateOnly.FromDateTime(x.DateUtc),
-                    Enum.Parse<ToolAnomalyType>(x.Type),
-                    Enum.Parse<ToolAnomalySeverity>(x.Severity),
-                    x.Description))
-                .ToListAsync(cancellationToken);
-        }, [], cancellationToken);
-
-    private async Task ExecuteWithSchemaRecoveryAsync(Func<Task> action, CancellationToken cancellationToken)
     {
-        _ = await ExecuteWithSchemaRecoveryAsync(async () =>
-        {
-            await action();
-            return true;
-        }, false, cancellationToken);
+        await initializationState.WaitForReadyAsync(cancellationToken);
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var dateUtc = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var rows = await dbContext.ToolAnomalySnapshots
+            .AsNoTracking()
+            .Where(x => x.DateUtc == dateUtc)
+            .OrderBy(x => x.ToolSlug)
+            .ThenBy(x => x.Type)
+            .Select(x => new { x.ToolSlug, x.DateUtc, x.Type, x.Severity, x.Description })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(x => new ToolAnomalySnapshot(
+                x.ToolSlug,
+                DateOnly.FromDateTime(x.DateUtc.UtcDateTime),
+                Enum.Parse<ToolAnomalyType>(x.Type),
+                Enum.Parse<ToolAnomalySeverity>(x.Severity),
+                x.Description))
+            .ToList();
     }
-
-    private async Task<T> ExecuteWithSchemaRecoveryAsync<T>(Func<Task<T>> action, T fallback, CancellationToken cancellationToken)
-    {
-        if (initializationState.Status != DatabaseInitializationStatus.Ready)
-        {
-            return fallback;
-        }
-
-        try
-        {
-            return await action();
-        }
-        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
-        {
-            return await RetryAfterMigrationAsync(action, fallback, cancellationToken);
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
-                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
-                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
-        {
-            return await RetryAfterMigrationAsync(action, fallback, cancellationToken);
-        }
-    }
-
-    private static Task<T> RetryAfterMigrationAsync<T>(Func<Task<T>> action, T fallback, CancellationToken cancellationToken)
-        => Task.FromResult(fallback);
 }

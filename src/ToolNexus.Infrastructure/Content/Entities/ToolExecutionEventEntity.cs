@@ -4,7 +4,7 @@ public sealed class ToolExecutionEventEntity
 {
     public long Id { get; set; }
     public string ToolSlug { get; set; } = string.Empty;
-    public DateTime TimestampUtc { get; set; }
+    public DateTimeOffset TimestampUtc { get; set; }
     public long DurationMs { get; set; }
     public bool Success { get; set; }
     public string? ErrorType { get; set; }

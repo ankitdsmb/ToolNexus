@@ -18,11 +18,13 @@ public sealed class TelemetryEventProcessor(
         using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
 
+        var eventTimestamp = new DateTimeOffset(executionEvent.TimestampUtc, TimeSpan.Zero);
+
         var alreadyProcessed = await dbContext.ToolExecutionEvents
             .AsNoTracking()
             .AnyAsync(x =>
                 x.ToolSlug == executionEvent.ToolSlug
-                && x.TimestampUtc == executionEvent.TimestampUtc
+                && x.TimestampUtc == eventTimestamp
                 && x.DurationMs == executionEvent.DurationMs
                 && x.Success == executionEvent.Success
                 && x.ErrorType == executionEvent.ErrorType
@@ -50,7 +52,7 @@ public sealed class TelemetryEventProcessor(
         return new ToolExecutionEventEntity
         {
             ToolSlug = executionEvent.ToolSlug,
-            TimestampUtc = executionEvent.TimestampUtc,
+            TimestampUtc = new DateTimeOffset(executionEvent.TimestampUtc, TimeSpan.Zero),
             DurationMs = executionEvent.DurationMs,
             Success = executionEvent.Success,
             ErrorType = executionEvent.ErrorType,

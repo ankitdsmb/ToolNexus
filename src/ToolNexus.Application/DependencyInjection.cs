@@ -74,9 +74,9 @@ public static class DependencyInjection
         services.AddScoped<AdminExecutionMonitoringService>();
         services.AddScoped<IAdminExecutionMonitoringService>(sp => sp.GetRequiredService<AdminExecutionMonitoringService>());
         services.AddScoped<IRuntimeIncidentService, RuntimeIncidentService>();
-        services.AddHostedService<ManifestStartupValidator>();
+        services.AddSingleton<IStartupPhaseService, ManifestStartupValidator>();
         services.AddSingleton<IStartupPhaseService, PlatformCacheWarmupHostedService>();
-        services.AddHostedService<ManifestExecutorAlignmentValidator>();
+        services.AddSingleton<IStartupPhaseService, ManifestExecutorAlignmentValidator>();
         return services;
     }
 }

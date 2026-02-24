@@ -4,7 +4,7 @@ public sealed class DailyToolMetricsEntity
 {
     public long Id { get; set; }
     public string ToolSlug { get; set; } = string.Empty;
-    public DateTime DateUtc { get; set; }
+    public DateTimeOffset DateUtc { get; set; }
     public long TotalExecutions { get; set; }
     public long SuccessCount { get; set; }
     public long FailureCount { get; set; }

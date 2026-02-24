@@ -1,14 +1,14 @@
-using Microsoft.Extensions.Hosting;
-
 namespace ToolNexus.Application.Services;
 
-public sealed class ManifestStartupValidator(IToolManifestGovernance governance) : IHostedService
+public sealed class ManifestStartupValidator(IToolManifestGovernance governance) : IStartupPhaseService
 {
-    public Task StartAsync(CancellationToken cancellationToken)
+    public int Order => 4;
+
+    public string PhaseName => "Manifest Startup Validation";
+
+    public Task ExecuteAsync(CancellationToken cancellationToken)
     {
         _ = governance.GetAll();
         return Task.CompletedTask;
     }
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
