@@ -38,7 +38,7 @@ public sealed class ApiIntegrationTestFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IHostedService>();
-            services.AddHostedService<ToolContentSeedHostedService>();
+            services.AddHostedService<StartupOrchestratorHostedService>();
         });
     }
 }

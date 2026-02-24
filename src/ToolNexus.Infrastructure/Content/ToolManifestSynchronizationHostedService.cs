@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
 
@@ -10,38 +11,31 @@ namespace ToolNexus.Infrastructure.Content;
 public sealed class ToolManifestSynchronizationHostedService(
     IServiceProvider serviceProvider,
     JsonFileToolManifestRepository manifestRepository,
-    ILogger<ToolManifestSynchronizationHostedService> logger) : BackgroundService
+    IDatabaseInitializationState initializationState,
+    ILogger<ToolManifestSynchronizationHostedService> logger) : IStartupPhaseService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await Task.Yield();
+    public int Order => 2;
 
-        IReadOnlyCollection<ToolNexus.Application.Models.ToolDescriptor> manifestTools;
-        try
-        {
-            manifestTools = manifestRepository.LoadTools();
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "{Category} unable to load tool manifest at startup.", "ToolSync");
-            return;
-        }
+    public string PhaseName => "Tool Manifest Synchronization";
+
+    public async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await initializationState.WaitForReadyAsync(stoppingToken);
+
+        var manifestTools = manifestRepository.LoadTools();
 
         var loadedCount = manifestTools.Count;
         logger.LogInformation("{Category} loaded {LoadedTools} tools from manifest.", "ToolSync", loadedCount);
 
         if (loadedCount == 0)
         {
-            logger.LogError("{Category} zero tools loaded from manifest. This is a high-severity startup condition.", "ToolSync");
-            return;
+            throw new InvalidOperationException("Tool manifest synchronization aborted because zero tools were loaded.");
         }
 
-        try
-        {
-            using var scope = serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-            var existingBySlug = await dbContext.ToolDefinitions
-                .ToDictionaryAsync(x => x.Slug, StringComparer.OrdinalIgnoreCase, stoppingToken);
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
+        var existingBySlug = await dbContext.ToolDefinitions
+            .ToDictionaryAsync(x => x.Slug, StringComparer.OrdinalIgnoreCase, stoppingToken);
 
             var now = DateTimeOffset.UtcNow;
             var added = 0;
@@ -90,12 +84,7 @@ public sealed class ToolManifestSynchronizationHostedService(
                 await dbContext.SaveChangesAsync(stoppingToken);
             }
 
-            logger.LogInformation("{Category} synchronization summary: loaded {LoadedTools}, added {AddedTools}, updated {UpdatedTools}.", "ToolSync", loadedCount, added, updated);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "{Category} database unavailable during startup synchronization; continuing without DB sync.", "ToolSync");
-        }
+        logger.LogInformation("{Category} synchronization summary: loaded {LoadedTools}, added {AddedTools}, updated {UpdatedTools}.", "ToolSync", loadedCount, added, updated);
     }
 
     private static bool UpdateIfChanged<T>(ToolDefinitionEntity entity, T currentValue, T newValue, Func<T, T> normalize, Action<ToolDefinitionEntity, T> assign)

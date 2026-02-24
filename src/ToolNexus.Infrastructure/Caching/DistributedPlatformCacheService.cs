@@ -113,11 +113,12 @@ public sealed class DistributedPlatformCacheService : IPlatformCacheService, IDi
 
     private void CacheLocally<T>(string key, T value, TimeSpan ttl)
     {
-        _memoryCache.Set(key, value, new MemoryCacheEntryOptions
+        var entryOptions = new MemoryCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = ttl,
-            Size = 1
-        });
+            AbsoluteExpirationRelativeToNow = ttl
+        };
+        entryOptions.SetSize(1);
+        _memoryCache.Set(key, value, entryOptions);
         lock (_sync)
         {
             _keys.Add(key);

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
 
@@ -11,10 +12,9 @@ namespace ToolNexus.Infrastructure.Content;
 
 public sealed class DatabaseInitializationHostedService(
     IServiceProvider serviceProvider,
-    IHostApplicationLifetime applicationLifetime,
     IOptions<DatabaseInitializationOptions> options,
     DatabaseInitializationState state,
-    ILogger<DatabaseInitializationHostedService> logger) : BackgroundService
+    ILogger<DatabaseInitializationHostedService> logger) : IStartupPhaseService
 {
     private static readonly TimeSpan[] MigrationRetryDelays =
     [
@@ -25,39 +25,30 @@ public sealed class DatabaseInitializationHostedService(
         TimeSpan.FromSeconds(10)
     ];
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public int Order => 0;
+
+    public string PhaseName => "Database Initialization";
+
+    public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await WaitForHostStartupAsync(stoppingToken);
-
-        if (stoppingToken.IsCancellationRequested)
-        {
-            return;
-        }
-
-        using var scope = serviceProvider.CreateScope();
-        var initializer = scope.ServiceProvider.GetRequiredService<ToolContentSeedHostedService>();
-
         try
         {
             if (options.Value.RunMigrationOnStartup)
             {
+                using var scope = serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
                 await MigrateWithRetryAsync(dbContext, stoppingToken);
             }
 
-            await initializer.InitializeAsync(
-                runMigration: false,
-                options.Value.RunSeedOnStartup,
-                stoppingToken);
             state.MarkReady();
-            logger.LogInformation("Database initialization completed. Migration enabled: {RunMigration}. Seed enabled: {RunSeed}.",
-                options.Value.RunMigrationOnStartup,
-                options.Value.RunSeedOnStartup);
+            logger.LogInformation("Database initialization completed. Migration enabled: {RunMigration}.",
+                options.Value.RunMigrationOnStartup);
         }
         catch (Exception ex)
         {
             state.MarkFailed(ex.Message);
-            logger.LogError(ex, "Database initialization failed. Host will continue running.");
+            logger.LogError(ex, "Database initialization failed.");
+            throw;
         }
     }
 
@@ -90,22 +81,5 @@ public sealed class DatabaseInitializationHostedService(
         return exception is TimeoutException
                || exception is NpgsqlException
                || exception.InnerException is NpgsqlException;
-    }
-
-    private async Task WaitForHostStartupAsync(CancellationToken cancellationToken)
-    {
-        if (applicationLifetime.ApplicationStarted.IsCancellationRequested)
-        {
-            return;
-        }
-
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var startedRegistration = applicationLifetime.ApplicationStarted.Register(
-            static callbackState => ((TaskCompletionSource)callbackState!).TrySetResult(),
-            tcs);
-        using var cancellationRegistration = cancellationToken.Register(
-            static callbackState => ((TaskCompletionSource)callbackState!).TrySetCanceled(),
-            tcs);
-        await tcs.Task;
     }
 }
