@@ -21,7 +21,7 @@ public sealed record ClientIncidentLogRequest(
     string? ToolSlug,
     string? CorrelationId,
     DateTime Timestamp,
-    IReadOnlyDictionary<string, string?>? Metadata);
+    IReadOnlyDictionary<string, object?>? Metadata);
 
 public sealed record ClientIncidentLogBatch(IReadOnlyList<ClientIncidentLogRequest> Logs);
 

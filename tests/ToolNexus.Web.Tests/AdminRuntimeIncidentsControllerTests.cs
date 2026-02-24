@@ -38,9 +38,28 @@ public sealed class AdminRuntimeIncidentsControllerTests
         Assert.Equal("trace-123", service.LastBatch!.Incidents[0].CorrelationId);
     }
 
+
+    [Fact]
+    public async Task GetToolHealth_ReturnsSnapshotsFromService()
+    {
+        var service = new StubRuntimeIncidentService();
+        service.ToolHealth = [new RuntimeToolHealthSnapshot("json-formatter", 99, 1, DateTime.UtcNow, "runtime_error")];
+
+        var controller = new RuntimeIncidentsController(service);
+
+        var result = await controller.GetToolHealth(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var payload = Assert.IsAssignableFrom<IReadOnlyList<RuntimeToolHealthSnapshot>>(ok.Value);
+        Assert.Single(payload);
+        Assert.Equal("json-formatter", payload[0].Slug);
+    }
+
     private sealed class StubRuntimeIncidentService : IRuntimeIncidentService
     {
         public RuntimeIncidentIngestBatch? LastBatch { get; private set; }
+
+        public IReadOnlyList<RuntimeToolHealthSnapshot> ToolHealth { get; set; } = [];
 
         public Task IngestAsync(RuntimeIncidentIngestBatch batch, CancellationToken cancellationToken)
         {
@@ -52,6 +71,6 @@ public sealed class AdminRuntimeIncidentsControllerTests
             => Task.FromResult<IReadOnlyList<RuntimeIncidentSummary>>([]);
 
         public Task<IReadOnlyList<RuntimeToolHealthSnapshot>> GetToolHealthAsync(CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<RuntimeToolHealthSnapshot>>([]);
+            => Task.FromResult(ToolHealth);
     }
 }

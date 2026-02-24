@@ -48,7 +48,7 @@ function createNode(tagName, nodeName) {
   const node = document.createElement(tagName);
   node.setAttribute(nodeName, 'true');
   node.dataset.adapterInjected = 'true';
-  node.style.minHeight = node.style.minHeight || '1px';
+  node.style.minHeight = '1px';
   return node;
 }
 

@@ -15,6 +15,7 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
         await using (var context = db.CreateContext())
         {
             await DropAuditTablesAsync(context, provider);
+            await DropRuntimeIncidentTableAsync(context);
         }
 
         await using var verifyContext = db.CreateContext();
@@ -32,12 +33,13 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
 
     [Theory]
     [ClassData(typeof(ProviderTheoryData))]
-    public async Task MissingAuditTables_ReturnSafeWorkersAndIncidents(TestDatabaseProvider provider)
+    public async Task MissingAuditAndRuntimeTables_ReturnSafeWorkersAndIncidents(TestDatabaseProvider provider)
     {
         await using var db = await TestDatabaseInstance.CreateAsync(provider);
         await using (var context = db.CreateContext())
         {
             await DropAuditTablesAsync(context, provider);
+            await DropRuntimeIncidentTableAsync(context);
         }
 
         await using var verifyContext = db.CreateContext();
@@ -84,6 +86,9 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
 
         Assert.Contains(incidents.Items, x => x.EventType == "runtime_incident" && x.Destination == "json-formatter" && x.AttemptCount == 3);
     }
+
+    private static async Task DropRuntimeIncidentTableAsync(DbContext context)
+        => await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS \"RuntimeIncidents\";");
 
     private static async Task DropAuditTablesAsync(DbContext context, TestDatabaseProvider provider)
     {
