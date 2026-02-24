@@ -80,6 +80,7 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
     public async Task<ExecutionIncidentSnapshotPage> GetIncidentSnapshotsAsync(int page, int pageSize, CancellationToken cancellationToken)
     {
         var auditAvailable = await EnsureAuditSchemaAvailableAsync(cancellationToken);
+        var runtimeIncidentsAvailable = await EnsureRuntimeIncidentSchemaAvailableAsync(cancellationToken);
 
         return await ExecuteWithSchemaRecoveryAsync(async () =>
         {
@@ -88,9 +89,11 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
             var retryCount = 0L;
             var failureCount = 0L;
             var deadLetterCount = 0L;
+            var runtimeCount = 0L;
             List<ExecutionIncidentSnapshot> retryEvents = [];
             List<ExecutionIncidentSnapshot> deadLetterEvents = [];
             List<ExecutionIncidentSnapshot> failureEvents = [];
+            List<ExecutionIncidentSnapshot> runtimeEvents = [];
 
             if (auditAvailable)
             {
@@ -140,19 +143,22 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
                     .ToListAsync(cancellationToken);
             }
 
-            var runtimeCount = await dbContext.RuntimeIncidents.LongCountAsync(cancellationToken);
-            var runtimeEvents = await dbContext.RuntimeIncidents
-                .AsNoTracking()
-                .OrderByDescending(x => x.LastOccurredUtc)
-                .Take(skip + pageSize)
-                .Select(x => new ExecutionIncidentSnapshot(
-                    "runtime_incident",
-                    x.Severity,
-                    x.ToolSlug,
-                    x.LastOccurredUtc,
-                    x.Message,
-                    x.Count))
-                .ToListAsync(cancellationToken);
+            if (runtimeIncidentsAvailable)
+            {
+                runtimeCount = await dbContext.RuntimeIncidents.LongCountAsync(cancellationToken);
+                runtimeEvents = await dbContext.RuntimeIncidents
+                    .AsNoTracking()
+                    .OrderByDescending(x => x.LastOccurredUtc)
+                    .Take(skip + pageSize)
+                    .Select(x => new ExecutionIncidentSnapshot(
+                        "runtime_incident",
+                        x.Severity,
+                        x.ToolSlug,
+                        x.LastOccurredUtc,
+                        x.Message,
+                        x.Count))
+                    .ToListAsync(cancellationToken);
+            }
 
             var total = checked((int)Math.Min(int.MaxValue, retryCount + failureCount + deadLetterCount + runtimeCount));
             var items = retryEvents
@@ -168,6 +174,54 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
         }, cancellationToken);
     }
 
+
+    private async Task<bool> EnsureRuntimeIncidentSchemaAvailableAsync(CancellationToken cancellationToken)
+    {
+        if (await CanQueryRuntimeIncidentSchemaAsync(cancellationToken))
+        {
+            return true;
+        }
+
+        try
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
+        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
+        {
+            return false;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
+                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
+                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+
+        return await CanQueryRuntimeIncidentSchemaAsync(cancellationToken);
+    }
+
+    private async Task<bool> CanQueryRuntimeIncidentSchemaAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            _ = await dbContext.RuntimeIncidents.AsNoTracking().Select(x => x.Id).Take(1).AnyAsync(cancellationToken);
+            return true;
+        }
+        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
+        {
+            return false;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
+                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
+                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+    }
     private async Task<bool> EnsureAuditSchemaAvailableAsync(CancellationToken cancellationToken)
     {
         if (await CanQueryAuditSchemaAsync(cancellationToken))

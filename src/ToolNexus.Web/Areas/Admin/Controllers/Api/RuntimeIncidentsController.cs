@@ -43,6 +43,11 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service) 
     public async Task<ActionResult<IReadOnlyList<RuntimeIncidentSummary>>> Get([FromQuery] int take = 100, CancellationToken cancellationToken = default)
         => Ok(await service.GetLatestSummariesAsync(take, cancellationToken));
 
+    [HttpGet("/api/admin/runtime/tool-health")]
+    [Authorize(Policy = AdminPolicyNames.AdminRead)]
+    public async Task<ActionResult<IReadOnlyList<RuntimeToolHealthSnapshot>>> GetToolHealth(CancellationToken cancellationToken = default)
+        => Ok(await service.GetToolHealthAsync(cancellationToken));
+
     [HttpPost("logs")]
     [AllowAnonymous]
     public IActionResult PostClientLogs([FromBody] ClientIncidentLogBatch request)

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using ToolNexus.Application;
+using ToolNexus.Application.Services;
+using ToolNexus.Infrastructure.Content;
+using ToolNexus.Infrastructure.Observability;
 using ToolNexus.Web.Areas.Admin.Services;
 using ToolNexus.Infrastructure;
 using ToolNexus.Web.Options;
@@ -247,6 +250,34 @@ if (app.Environment.IsDevelopment())
         source = "window.ToolNexus.runtime.getObservabilitySnapshot()"
     }));
 }
+
+app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics, IConcurrencyObservability concurrencyObservability) =>
+{
+    var concurrency = concurrencyObservability.GetHealthSnapshot();
+    return Results.Ok(new
+    {
+        queueSize = health.QueueSize,
+        workerActive = health.IsWorkerActive,
+        lastProcessedTimestampUtc = health.LastProcessedUtc,
+        audit = new
+        {
+            outboxBacklogDepth = auditMetrics.CurrentOutboxBacklogDepth,
+            deadLetterOpenCount = auditMetrics.CurrentDeadLetterOpenCount
+        },
+        databaseInitialization = new
+        {
+            status = dbInitState.Status.ToString().ToLowerInvariant(),
+            error = dbInitState.Error
+        },
+        concurrency = new
+        {
+            totalConflictsLast24h = concurrency.TotalConflictsLast24Hours,
+            conflictTrend = concurrency.ConflictTrend,
+            topConflictingResources = concurrency.TopConflictingResources,
+            severityIndicators = concurrency.Alerts
+        }
+    });
+});
 
 app.MapControllers();
 
