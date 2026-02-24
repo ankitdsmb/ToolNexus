@@ -230,7 +230,7 @@ export async function runHtmlFormatter(action, input, options = {}) {
   if (!normalizedInput.trim()) return { output: '', warnings: [], metrics: { characters: 0, lines: 0 } };
   if (normalizedInput.length >= LARGE_INPUT_THRESHOLD) await new Promise((resolve) => window.setTimeout(resolve, 16));
 
-  const desiredAction = (action ?? 'format').toLowerCase();
+  const desiredAction = String(action ?? 'format').trim().toLowerCase();
   const effectiveOptions = { ...resolvedOptions, compactMode: desiredAction === 'minify' ? true : resolvedOptions.compactMode };
   const formatted = effectiveOptions.compactMode ? formatCompact(normalizedInput) : formatPretty(normalizedInput, effectiveOptions);
 

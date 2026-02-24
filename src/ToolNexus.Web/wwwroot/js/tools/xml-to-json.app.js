@@ -121,7 +121,7 @@ class XmlToJsonApp {
   }
 
   async run(action, input) {
-    if ((action ?? '').toLowerCase() !== 'convert') {
+    if (String(action ?? '').trim().toLowerCase() !== 'convert') {
       throw new XmlJsonError('Unsupported action', 'XML to JSON supports only the convert action.');
     }
 

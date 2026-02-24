@@ -95,7 +95,8 @@ const Parser = {
 
 const Engine = {
   convert(action, input) {
-    const resolvedAction = ACTION_ALIASES[action] ?? action ?? DEFAULT_ACTION;
+    const normalizedAction = String(action ?? DEFAULT_ACTION).trim().toLowerCase();
+    const resolvedAction = ACTION_ALIASES[normalizedAction] ?? normalizedAction ?? DEFAULT_ACTION;
     const normalizedInput = Normalizer.normalizeInput(input);
     const lines = normalizedInput.split('\n');
 
@@ -427,7 +428,8 @@ class CaseConverterUi {
 
 export async function runTool(action, input) {
   try {
-    const resolvedAction = ACTION_ALIASES[action] ?? action ?? DEFAULT_ACTION;
+    const normalizedAction = String(action ?? DEFAULT_ACTION).trim().toLowerCase();
+    const resolvedAction = ACTION_ALIASES[normalizedAction] ?? normalizedAction ?? DEFAULT_ACTION;
     return Engine.convert(resolvedAction, input);
   } catch (error) {
     return ErrorHandler.handle(error);
@@ -438,7 +440,24 @@ function resolveRoot() {
   return document.querySelector('.tool-page[data-slug="case-converter"]');
 }
 
-export function create(root = resolveRoot()) {
+function resolveRootFromContext(rootOrContext) {
+  if (rootOrContext instanceof Element) {
+    return rootOrContext;
+  }
+
+  if (rootOrContext?.root instanceof Element) {
+    return rootOrContext.root;
+  }
+
+  if (rootOrContext?.toolRoot instanceof Element) {
+    return rootOrContext.toolRoot;
+  }
+
+  return resolveRoot();
+}
+
+export function create(rootOrContext = resolveRoot()) {
+  const root = resolveRootFromContext(rootOrContext);
   if (!root) {
     return null;
   }

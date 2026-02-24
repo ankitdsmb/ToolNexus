@@ -125,7 +125,8 @@ export function runRegexEvaluation(pattern, candidate, flags = '', config = {}) 
 }
 
 export async function runTool(action, input, options = {}) {
-  if (action !== 'test') {
+  const normalizedAction = String(action ?? '').trim().toLowerCase();
+  if (normalizedAction !== 'test') {
     throw new RegexToolError(`Unsupported action: ${action}`, 'UNSUPPORTED_ACTION');
   }
 

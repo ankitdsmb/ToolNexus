@@ -157,7 +157,7 @@ function resolveOptions(baseOptions = DEFAULT_OPTIONS, requested = {}) {
 }
 
 export async function runXmlFormatter(action, input, options = {}) {
-  const normalizedAction = (action ?? 'format').toLowerCase();
+  const normalizedAction = String(action ?? 'format').trim().toLowerCase();
   const normalizedInput = normalizeInput(input);
 
   if (!normalizedInput.trim()) {

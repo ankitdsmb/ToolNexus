@@ -14,7 +14,8 @@ const DEFAULT_OPTIONS = Object.freeze({
 
 export async function runSqlFormatter(action, input, options = {}) {
   const normalized = normalizeSqlInput(input);
-  if ((action ?? 'format') === 'minify') {
+  const normalizedAction = String(action ?? 'format').trim().toLowerCase();
+  if (normalizedAction === 'minify') {
     return normalized.replace(/\s+/g, ' ').trim();
   }
 

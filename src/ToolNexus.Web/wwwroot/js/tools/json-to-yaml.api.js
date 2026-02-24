@@ -31,7 +31,7 @@ function mapOptionsToFormatting(options) {
 }
 
 export async function runJsonToYaml(action, input, options = {}) {
-  const normalizedAction = (action ?? 'convert').toLowerCase();
+  const normalizedAction = String(action ?? 'convert').trim().toLowerCase();
   if (normalizedAction !== 'convert') {
     throw new Error('Unsupported action for json-to-yaml.');
   }

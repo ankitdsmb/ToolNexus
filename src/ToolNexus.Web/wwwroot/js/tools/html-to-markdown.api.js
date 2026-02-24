@@ -130,7 +130,7 @@ function renderBlockChildren(parent, options, depth) {
 }
 
 export async function runHtmlToMarkdown(action, input, runtimeOptions = {}) {
-  if ((action ?? '').toLowerCase() !== 'convert') {
+  if (String(action ?? '').trim().toLowerCase() !== 'convert') {
     throw new Error('Unsupported action for HTML to Markdown tool.');
   }
 

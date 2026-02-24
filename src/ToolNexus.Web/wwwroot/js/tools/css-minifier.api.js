@@ -134,7 +134,7 @@ export function minifyCss(css, options = { preserveImportantComments: false }) {
 }
 
 export async function runCssMinifier(action, input, options = {}) {
-  const normalizedAction = (action ?? 'minify').toLowerCase();
+  const normalizedAction = String(action ?? 'minify').trim().toLowerCase();
   if (normalizedAction !== 'minify') {
     throw new Error('Unsupported action for CSS Minifier tool.');
   }

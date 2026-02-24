@@ -173,7 +173,8 @@ async function convertCsvToJson(input, config) {
 }
 
 async function runTool(action, input) {
-  if (action !== 'convert') {
+  const normalizedAction = String(action ?? '').trim().toLowerCase();
+  if (normalizedAction !== 'convert') {
     throw new Error(`Unsupported action: ${action}`);
   }
 
