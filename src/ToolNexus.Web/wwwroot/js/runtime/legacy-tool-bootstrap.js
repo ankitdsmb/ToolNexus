@@ -14,10 +14,21 @@ function toCandidates(module) {
 async function invokeFirst(candidates, methods, ...args) {
   for (const candidate of candidates) {
     for (const method of methods) {
-      if (typeof candidate?.[method] === 'function') {
-        await candidate[method](...args);
-        return method;
+      if (typeof candidate?.[method] !== 'function') {
+        continue;
       }
+
+      if (method === 'runTool') {
+        const manifestRuntimeType = args?.[1]?.toolRuntimeType;
+        const explicitRuntimeType = candidate?.toolRuntimeType ?? candidate?.runtime?.toolRuntimeType ?? manifestRuntimeType;
+        const isExecutionOnly = explicitRuntimeType === 'execution' || Number(candidate[method].length ?? 0) >= 2;
+        if (isExecutionOnly) {
+          continue;
+        }
+      }
+
+      await candidate[method](...args);
+      return method;
     }
   }
 

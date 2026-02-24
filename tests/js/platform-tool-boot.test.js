@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -70,6 +71,23 @@ describe('platform tool boot harness', () => {
       const hasBootPath = matrix.lifecycle || matrix.runTool || matrix.registry || matrix.domReady || matrix.selfExecuting;
       expect(hasBootPath).toBe(true);
     }
+  });
+
+
+  test('legacy bootstrap does not execute execution-only runTool contracts during mount', async () => {
+    document.body.innerHTML = '<div id="tool-root" data-tool-slug="exec-only"></div>';
+    const root = document.getElementById('tool-root');
+
+    const runTool = jest.fn();
+    const result = await bootstrapLegacyTool({
+      module: { runTool },
+      slug: 'exec-only',
+      root,
+      manifest: { slug: 'exec-only', toolRuntimeType: 'execution' }
+    });
+
+    expect(runTool).not.toHaveBeenCalled();
+    expect(result.mounted).toBe(false);
   });
 
   test('legacy adapter forces DOM-ready boot for modules that missed DOMContentLoaded', async () => {

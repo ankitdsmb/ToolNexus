@@ -16,6 +16,18 @@ export function safeNoopResult(reason = 'unsupported_action') {
   return { ok: false, reason };
 }
 
+function normalizeExecutionInput(input) {
+  if (typeof input === 'string') {
+    return input;
+  }
+
+  if (input && typeof input === 'object' && !Array.isArray(input)) {
+    return input;
+  }
+
+  return '';
+}
+
 function describePayloadType(action) {
   if (isHTMLElementValue(action)) {
     return 'html_element';
@@ -48,7 +60,7 @@ export function normalizeToolExecutionPayload(action, input, { toolSlug } = {}) 
     });
     return {
       action: '',
-      input: typeof input === 'string' ? input : '',
+      input: normalizeExecutionInput(input),
       isValidAction: false,
       result: safeNoopResult('unsupported_action')
     };
@@ -62,7 +74,7 @@ export function normalizeToolExecutionPayload(action, input, { toolSlug } = {}) 
     });
     return {
       action: '',
-      input: typeof input === 'string' ? input : '',
+      input: normalizeExecutionInput(input),
       isValidAction: false,
       result: safeNoopResult('unsupported_action')
     };
@@ -70,7 +82,7 @@ export function normalizeToolExecutionPayload(action, input, { toolSlug } = {}) 
 
   return {
     action,
-    input: typeof input === 'string' ? input : '',
+    input: normalizeExecutionInput(input),
     isValidAction: true,
     result: null
   };

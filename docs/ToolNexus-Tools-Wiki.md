@@ -1018,3 +1018,19 @@ ToolNexus runtime now includes a dedicated incident channel for legacy contract 
 - Added compatibility routing for legacy category URLs (`/tools/json-tools` → `/tools/json`) to preserve older tooling links and Playwright contract flows.
 - Hardened tool-content retrieval so DB outages do not block runtime tool pages; pages render with catalog/manifest SEO fallbacks and continue mounting runtime UI.
 - Jest `test:js` is now scoped to `tests/js/**/*.test.js` so runtime-vitest and Playwright suites remain isolated from Jest globals.
+
+## 15. Runtime contract hardening update (2026-02)
+
+### Root cause
+- Legacy bootstrap fallback paths (`legacy-tool-bootstrap` and lifecycle adapter fallback) still invoked `runTool(root, manifest)` when legacy modules exported only `runTool`, which leaked DOM nodes into execution contracts.
+- Execution payload normalization enforced string input only, which broke valid tools that expect structured object input.
+
+### New invariant
+- Mount/bootstrap flows MUST never call execution-only `runTool(action,input)` contracts.
+- Runtime determines execution-only contracts by explicit `toolRuntimeType: "execution"` or `runTool.length >= 2` and skips mount invocation.
+- `action` must be string; non-string/HTMLElement actions are converted to safe no-op with incident reporting.
+- `input` now allows string or plain object and is passed through safely.
+
+### Developer contract
+- If a tool exports execution `runTool`, declare `toolRuntimeType: "execution"`.
+- If a tool needs bootstrap behavior, export `init` or full `create/init/destroy` lifecycle.
