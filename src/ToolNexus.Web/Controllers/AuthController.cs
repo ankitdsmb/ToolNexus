@@ -1,12 +1,19 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ToolNexus.Infrastructure.Data;
+using ToolNexus.Web.Models;
 
 namespace ToolNexus.Web.Controllers;
 
 [Route("auth")]
-public sealed class AuthController : Controller
+public sealed class AuthController(
+    ToolNexusContentDbContext dbContext,
+    IPasswordHasher<object> passwordHasher) : Controller
 {
     [AllowAnonymous]
     [HttpGet("login")]
@@ -22,19 +29,74 @@ public sealed class AuthController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        var html = """
-                   <!doctype html>
-                   <html lang="en">
-                   <head><meta charset="utf-8"><title>Login</title></head>
-                   <body>
-                       <h1>Login</h1>
-                       <p>Authentication is required to access admin routes.</p>
-                   </body>
-                   </html>
-                   """;
-
-        return Content(html, "text/html");
+        return View(new AuthLoginViewModel { ReturnUrl = returnUrl });
     }
+
+    [AllowAnonymous]
+    [HttpPost("login")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(AuthLoginViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var normalizedEmail = model.Email.Trim().ToUpperInvariant();
+        var user = await dbContext.AdminIdentityUsers.SingleOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail);
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            return View(model);
+        }
+
+        if (user.LockoutEndUtc.HasValue && user.LockoutEndUtc > DateTimeOffset.UtcNow)
+        {
+            ModelState.AddModelError(string.Empty, "Account is locked. Please try again later.");
+            return View(model);
+        }
+
+        var verifyResult = passwordHasher.VerifyHashedPassword(new object(), user.PasswordHash, model.Password);
+        if (verifyResult == PasswordVerificationResult.Failed)
+        {
+            user.AccessFailedCount += 1;
+            if (user.AccessFailedCount >= 5)
+            {
+                user.LockoutEndUtc = DateTimeOffset.UtcNow.AddMinutes(15);
+                user.AccessFailedCount = 0;
+            }
+
+            await dbContext.SaveChangesAsync();
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            return View(model);
+        }
+
+        user.AccessFailedCount = 0;
+        user.LockoutEndUtc = null;
+        await dbContext.SaveChangesAsync();
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.DisplayName),
+            new Claim("tool_permission", "admin:read"),
+            new Claim("tool_permission", "admin:write")
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+        if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+        {
+            return LocalRedirect(model.ReturnUrl);
+        }
+
+        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+    }
+
+    [AllowAnonymous]
+    [HttpGet("access-denied")]
+    public IActionResult AccessDenied() => View();
 
     [HttpPost("logout")]
     [ValidateAntiForgeryToken]

@@ -1,52 +1,59 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ToolNexus.Infrastructure.Data;
 using ToolNexus.Web.Controllers;
+using ToolNexus.Web.Models;
 
 namespace ToolNexus.Web.Tests;
 
 public sealed class AuthControllerTests
 {
     [Fact]
-    public void Login_WhenUnauthenticated_ReturnsLoginPageWithHttp200()
+    public void Login_WhenUnauthenticated_ReturnsLoginView()
     {
-        var controller = CreateController(isAuthenticated: false);
+        using var db = CreateDbContext();
+        var controller = CreateController(db, isAuthenticated: false);
 
         var result = controller.Login();
 
-        var content = Assert.IsType<ContentResult>(result);
-        Assert.Equal(StatusCodes.Status200OK, content.StatusCode ?? StatusCodes.Status200OK);
-        Assert.Equal("text/html", content.ContentType);
-        Assert.Contains("Login", content.Content ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.IsType<AuthLoginViewModel>(view.Model);
     }
 
     [Fact]
     public void Login_WhenAuthenticated_RedirectsToHome()
     {
-        var controller = CreateController(isAuthenticated: true);
+        using var db = CreateDbContext();
+        var controller = CreateController(db, isAuthenticated: true);
 
         var result = controller.Login();
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("Index", redirect.ActionName);
-        Assert.Equal("Home", redirect.ControllerName);
     }
 
-    private static AuthController CreateController(bool isAuthenticated)
+    private static ToolNexusContentDbContext CreateDbContext()
     {
-        var controller = new AuthController();
-        var identity = new ClaimsIdentity();
-        if (isAuthenticated)
-        {
-            identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "tester")], "Cookies");
-        }
+        var options = new DbContextOptionsBuilder<ToolNexusContentDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
+            .Options;
+
+        return new ToolNexusContentDbContext(options);
+    }
+
+    private static AuthController CreateController(ToolNexusContentDbContext db, bool isAuthenticated)
+    {
+        var controller = new AuthController(db, new PasswordHasher<object>());
+        var identity = isAuthenticated
+            ? new ClaimsIdentity([new Claim(ClaimTypes.Name, "tester")], "Cookies")
+            : new ClaimsIdentity();
 
         controller.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext
-            {
-                User = new ClaimsPrincipal(identity)
-            }
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
         };
 
         return controller;

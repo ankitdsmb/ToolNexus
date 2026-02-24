@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Web.Areas.Admin.Controllers.Api;
@@ -13,7 +14,7 @@ public sealed class AdminRuntimeIncidentsControllerTests
     public async Task Post_ReturnsOkAndForwardsIncidents()
     {
         var service = new StubRuntimeIncidentService();
-        var controller = new RuntimeIncidentsController(service)
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance)
         {
             ControllerContext = new ControllerContext
             {
@@ -37,7 +38,7 @@ public sealed class AdminRuntimeIncidentsControllerTests
         var service = new StubRuntimeIncidentService();
         service.ToolHealth = [new RuntimeToolHealthSnapshot("json-formatter", 99, 1, DateTime.UtcNow, "runtime_error")];
 
-        var controller = new RuntimeIncidentsController(service);
+        var controller = new RuntimeIncidentsController(service, NullLogger<RuntimeIncidentsController>.Instance);
 
         var result = await controller.GetToolHealth(CancellationToken.None);
 
