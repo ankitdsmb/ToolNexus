@@ -11,11 +11,16 @@ public sealed class InMemoryToolExecutionRateGuard(IMemoryCache cache) : IToolEx
         var count = cache.GetOrCreate(key, entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+            entry.Size = 1;
             return 0;
         });
 
         var next = (int)count + 1;
-        cache.Set(key, next, TimeSpan.FromMinutes(1));
+        cache.Set(key, next, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
+            Size = 1
+        });
         return next <= maxRequestsPerMinute;
     }
 }

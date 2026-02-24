@@ -177,30 +177,6 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
 
     private async Task<bool> EnsureRuntimeIncidentSchemaAvailableAsync(CancellationToken cancellationToken)
     {
-        if (await CanQueryRuntimeIncidentSchemaAsync(cancellationToken))
-        {
-            return true;
-        }
-
-        try
-        {
-            await dbContext.Database.MigrateAsync(cancellationToken);
-        }
-        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
-        {
-            return false;
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
-                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
-                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
-        {
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
-
         return await CanQueryRuntimeIncidentSchemaAsync(cancellationToken);
     }
 
@@ -224,30 +200,6 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
     }
     private async Task<bool> EnsureAuditSchemaAvailableAsync(CancellationToken cancellationToken)
     {
-        if (await CanQueryAuditSchemaAsync(cancellationToken))
-        {
-            return true;
-        }
-
-        try
-        {
-            await dbContext.Database.MigrateAsync(cancellationToken);
-        }
-        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
-        {
-            return false;
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
-                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
-                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
-        {
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
-
         return await CanQueryAuditSchemaAsync(cancellationToken);
     }
 
@@ -279,15 +231,13 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
         }
         catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
         {
-            await dbContext.Database.MigrateAsync(cancellationToken);
-            return await action();
+            throw new InvalidOperationException("Audit monitoring schema is not ready.", ex);
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode == 1
                                          && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
                                              || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
         {
-            await dbContext.Database.MigrateAsync(cancellationToken);
-            return await action();
+            throw new InvalidOperationException("Audit monitoring schema is not ready.", ex);
         }
     }
 }

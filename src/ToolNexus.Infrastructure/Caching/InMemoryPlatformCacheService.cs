@@ -56,7 +56,11 @@ public sealed class InMemoryPlatformCacheService(IMemoryCache cache) : IPlatform
     private async Task<T> CreateAsync<T>(string key, Func<CancellationToken, Task<T>> factory, TimeSpan ttl, CancellationToken cancellationToken)
     {
         var created = await factory(cancellationToken);
-        cache.Set(key, created, ttl);
+        cache.Set(key, created, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = ttl,
+            Size = 1
+        });
         lock (_sync)
         {
             _keys.Add(key);
