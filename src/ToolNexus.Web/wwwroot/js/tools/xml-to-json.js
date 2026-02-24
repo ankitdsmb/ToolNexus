@@ -33,7 +33,7 @@ export function destroy(root = resolveRoot()) {
 
 export async function runTool(action, input, options = {}) {
   try {
-    if ((action ?? '').toLowerCase() !== 'convert') {
+    if (String(action ?? '').trim().toLowerCase() !== 'convert') {
       throw new XmlJsonError('Unsupported action', 'XML to JSON supports only the convert action.');
     }
 

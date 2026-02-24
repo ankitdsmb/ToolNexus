@@ -17,7 +17,7 @@ export function getDefaultYamlToJsonOptions() {
 }
 
 export async function runYamlToJson(action, input, options = {}) {
-  const normalizedAction = (action ?? 'convert').toLowerCase();
+  const normalizedAction = String(action ?? 'convert').trim().toLowerCase();
   if (normalizedAction !== 'convert') {
     throw new Error('Unsupported action for yaml-to-json.');
   }

@@ -1,16 +1,17 @@
 export async function runTool(action, input) {
-  const normalizedAction = (action ?? '').trim().toLowerCase();
+  const normalizedAction = typeof action === 'string' ? action.trim().toLowerCase() : 'validate';
+  const normalizedInput = typeof input === 'string' ? input : '';
 
   if (normalizedAction !== 'validate') {
-    throw new Error(`Unsupported action: ${action}`);
+    return `Unsupported action: ${String(action)}`;
   }
 
   try {
-    JSON.parse(input);
+    JSON.parse(normalizedInput);
     return 'Valid JSON';
   } catch (error) {
     const details = error instanceof Error ? error.message : 'Unknown parsing error.';
-    throw new Error(`Invalid JSON: ${details}`);
+    return `Invalid JSON: ${details}`;
   }
 }
 

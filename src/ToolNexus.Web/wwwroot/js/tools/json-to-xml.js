@@ -47,7 +47,7 @@ export function destroy(root = resolveRoot()) {
 
 export async function runTool(action, input, options = {}) {
   try {
-    if ((action ?? '').toLowerCase() !== 'convert') {
+    if (String(action ?? '').trim().toLowerCase() !== 'convert') {
       throw new JsonXmlError('Unsupported action', 'Only convert action is supported.');
     }
 

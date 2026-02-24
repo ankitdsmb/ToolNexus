@@ -40,7 +40,7 @@ export function destroy(root = resolveRoot()) {
 }
 
 export async function runTool(action, input) {
-  const normalizedAction = (action ?? '').trim().toLowerCase();
+  const normalizedAction = String(action ?? '').trim().toLowerCase();
   if (normalizedAction !== 'decode') {
     throw new Error(`Unsupported action "${action}" for url-decode.`);
   }

@@ -113,7 +113,7 @@ class JsonToXmlApp {
   }
 
   run(action, input) {
-    if ((action ?? '').toLowerCase() !== 'convert') {
+    if (String(action ?? '').trim().toLowerCase() !== 'convert') {
       throw new JsonXmlError('Unsupported action', 'Only convert action is supported.');
     }
 
