@@ -65,6 +65,52 @@ function normalizeIncident(incident) {
   return { toolSlug, phase, errorType, message, severity, stack, payloadType, timestamp };
 }
 
+function normalizeIncidentPayload(incident) {
+  const normalizedIncident = normalizeIncident(incident);
+  const normalizedCount = Number.isFinite(incident?.count) && incident.count > 0
+    ? Math.floor(incident.count)
+    : 1;
+  const normalizedFingerprint = sanitizeString(incident?.fingerprint, 400) || buildFingerprint(normalizedIncident);
+
+  return {
+    toolSlug: normalizedIncident.toolSlug,
+    phase: normalizedIncident.phase,
+    errorType: normalizedIncident.errorType,
+    message: normalizedIncident.message,
+    severity: normalizedIncident.severity,
+    stack: normalizedIncident.stack || null,
+    payloadType: normalizedIncident.payloadType,
+    timestamp: normalizedIncident.timestamp,
+    count: normalizedCount,
+    fingerprint: normalizedFingerprint,
+    correlationId: null,
+    metadata: null
+  };
+}
+
+function normalizeRuntimeLogPayload(incident) {
+  const normalizedIncident = normalizeIncident(incident);
+  const normalizedCount = Number.isFinite(incident?.count) && incident.count > 0
+    ? Math.floor(incident.count)
+    : 1;
+
+  return {
+    source: 'runtime.incident-reporter',
+    level: 'error',
+    message: normalizedIncident.message,
+    stack: normalizedIncident.stack || null,
+    toolSlug: normalizedIncident.toolSlug,
+    correlationId: null,
+    timestamp: normalizedIncident.timestamp,
+    metadata: {
+      phase: normalizedIncident.phase,
+      errorType: normalizedIncident.errorType,
+      payloadType: normalizedIncident.payloadType,
+      count: normalizedCount
+    }
+  };
+}
+
 function buildFingerprint(incident) {
   return [incident.toolSlug, incident.phase, incident.errorType, incident.message, incident.payloadType].join('::');
 }
@@ -82,7 +128,7 @@ async function postBatch(endpoint, batch) {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ incidents: batch })
+    body: JSON.stringify({ incidents: batch.map(normalizeIncidentPayload) })
   });
 }
 
@@ -95,23 +141,7 @@ async function postRuntimeLog(endpoint, incident) {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      logs: [{
-        source: 'runtime.incident-reporter',
-        level: 'error',
-        message: incident.message,
-        stack: incident.stack,
-        toolSlug: incident.toolSlug,
-        correlationId: null,
-        timestamp: incident.timestamp,
-        metadata: {
-          phase: incident.phase,
-          errorType: incident.errorType,
-          payloadType: incident.payloadType,
-          count: incident.count
-        }
-      }]
-    })
+    body: JSON.stringify({ logs: [normalizeRuntimeLogPayload(incident)] })
   });
 }
 
@@ -208,3 +238,5 @@ export function createRuntimeIncidentReporter({
 }
 
 export const runtimeIncidentReporter = createRuntimeIncidentReporter();
+
+export { normalizeIncidentPayload };

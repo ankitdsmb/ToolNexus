@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -134,6 +135,17 @@ public sealed class RuntimeIncidentsController(IRuntimeIncidentService service, 
 
     private void LogModelBindingFailure()
     {
+        var modelErrors = ModelState
+            .Where(entry => entry.Value?.Errors.Count > 0)
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value?.Errors.Select(error => error.ErrorMessage).ToArray() ?? []);
+
+        if (modelErrors.Count > 0)
+        {
+            logger.LogWarning("[RuntimeIncidentAPI] Model binding failed. errors={ModelErrors}", JsonSerializer.Serialize(modelErrors));
+        }
+
         foreach (var entry in ModelState)
         {
             var attemptedValue = entry.Value?.AttemptedValue;
