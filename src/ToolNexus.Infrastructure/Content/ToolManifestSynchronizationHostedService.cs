@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
@@ -21,21 +22,24 @@ public sealed class ToolManifestSynchronizationHostedService(
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await initializationState.WaitForReadyAsync(stoppingToken);
+        logger.LogInformation("Manifest synchronization started after database readiness signal.");
 
-        var manifestTools = manifestRepository.LoadTools();
-
-        var loadedCount = manifestTools.Count;
-        logger.LogInformation("{Category} loaded {LoadedTools} tools from manifest.", "ToolSync", loadedCount);
-
-        if (loadedCount == 0)
+        try
         {
-            throw new InvalidOperationException("Tool manifest synchronization aborted because zero tools were loaded.");
-        }
+            var manifestTools = manifestRepository.LoadTools();
 
-        using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-        var existingBySlug = await dbContext.ToolDefinitions
-            .ToDictionaryAsync(x => x.Slug, StringComparer.OrdinalIgnoreCase, stoppingToken);
+            var loadedCount = manifestTools.Count;
+            logger.LogInformation("{Category} loaded {LoadedTools} tools from manifest.", "ToolSync", loadedCount);
+
+            if (loadedCount == 0)
+            {
+                throw new InvalidOperationException("Tool manifest synchronization aborted because zero tools were loaded.");
+            }
+
+            using var scope = serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
+            var existingBySlug = await dbContext.ToolDefinitions
+                .ToDictionaryAsync(x => x.Slug, StringComparer.OrdinalIgnoreCase, stoppingToken);
 
             var now = DateTimeOffset.UtcNow;
             var added = 0;
@@ -84,7 +88,19 @@ public sealed class ToolManifestSynchronizationHostedService(
                 await dbContext.SaveChangesAsync(stoppingToken);
             }
 
-        logger.LogInformation("{Category} synchronization summary: loaded {LoadedTools}, added {AddedTools}, updated {UpdatedTools}.", "ToolSync", loadedCount, added, updated);
+            logger.LogInformation("{Category} synchronization summary: loaded {LoadedTools}, added {AddedTools}, updated {UpdatedTools}.", "ToolSync", loadedCount, added, updated);
+            logger.LogInformation("Manifest synchronization completed successfully.");
+        }
+        catch (InvalidCastException ex)
+        {
+            logger.LogError(ex, "Manifest synchronization failed due to incompatible schema type mapping. Ensure migrations completed before synchronization.");
+            throw;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DatatypeMismatch)
+        {
+            logger.LogError(ex, "Manifest synchronization failed due to PostgreSQL datatype mismatch. Ensure timestamp columns are migrated to timestamptz.");
+            throw;
+        }
     }
 
     private static bool UpdateIfChanged<T>(ToolDefinitionEntity entity, T currentValue, T newValue, Func<T, T> normalize, Action<ToolDefinitionEntity, T> assign)

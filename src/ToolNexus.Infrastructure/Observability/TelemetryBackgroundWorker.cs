@@ -6,6 +6,7 @@ namespace ToolNexus.Infrastructure.Observability;
 public sealed class TelemetryBackgroundWorker(
     IBackgroundWorkQueue backgroundWorkQueue,
     BackgroundWorkerHealthState healthState,
+    ToolNexus.Application.Services.IDatabaseInitializationState initializationState,
     IDistributedWorkerLock workerLock,
     ILogger<TelemetryBackgroundWorker> logger) : BackgroundService
 {
@@ -14,6 +15,10 @@ public sealed class TelemetryBackgroundWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.LogInformation("Telemetry background worker waiting for database initialization readiness.");
+        await initializationState.WaitForReadyAsync(stoppingToken);
+        logger.LogInformation("Telemetry background worker detected database readiness and is starting.");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             await using var leaderLease = await workerLock.TryAcquireAsync(AggregatorLockName, LockTtl, stoppingToken);
