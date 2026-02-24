@@ -808,6 +808,10 @@ export { defaultLifecycleAdapter as mountToolModule };
 const runtime = createToolRuntime();
 if (typeof document !== 'undefined' && document.getElementById('tool-root')) {
   scheduleNonCriticalTask(() => {
-    runtime.bootstrapToolRuntime();
+    runtime.bootstrapToolRuntime().catch((error) => {
+      if (typeof console !== 'undefined' && typeof console.error === 'function') {
+        console.error('[ToolRuntime] bootstrap task failed safely.', error);
+      }
+    });
   });
 }

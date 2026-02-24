@@ -44,4 +44,28 @@ describe('tool lifecycle adapter', () => {
       ['destroy', 'ctx-1']
     ]);
   });
+
+  test('legacy registry execution-only runTool contract is not mounted as lifecycle', async () => {
+    const root = document.createElement('div');
+    window.ToolNexusModules = {
+      'exec-only': {
+        runTool: jest.fn((action, input) => ({ action, input }))
+      }
+    };
+
+    try {
+      const result = await mountToolLifecycle({
+        module: {},
+        slug: 'exec-only',
+        root,
+        manifest: { slug: 'exec-only' }
+      });
+
+      expect(result.mounted).toBe(false);
+      expect(result.mode).toBe('legacy.runTool.execution-only');
+      expect(window.ToolNexusModules['exec-only'].runTool).not.toHaveBeenCalled();
+    } finally {
+      delete window.ToolNexusModules;
+    }
+  });
 });
