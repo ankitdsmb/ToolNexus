@@ -15,8 +15,7 @@ using ToolNexus.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Logging.ToolNexus.json", optional: true, reloadOnChange: true);
-
-builder.Host.UseSerilog((context, cfg) => cfg.ReadFrom.Configuration(context.Configuration));
+FileLoggingBootstrapper.Configure(builder);
 
 // Capture IMvcBuilder returned by AddControllers so we can call ConfigureApiBehaviorOptions on it.
 var mvcBuilder = builder.Services.AddControllers(options =>
@@ -101,6 +100,8 @@ app.UseSerilogRequestLogging();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<AdminApiLoggingMiddleware>();
+app.UseMiddleware<ToolExecutionLoggingMiddleware>();
 app.UseMiddleware<SanitizeErrorMiddleware>();
 app.Use(async (context, next) =>
 {
@@ -158,6 +159,9 @@ app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.
 });
 app.MapPrometheusScrapingEndpoint("/metrics");
 app.MapControllers().RequireRateLimiting("ip");
+
+var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(LoggingCategories.StartupLifecycleLogger);
+startupLogger.LogInformation("ToolNexus API startup completed. Environment={EnvironmentName}", app.Environment.EnvironmentName);
 
 app.Run();
 

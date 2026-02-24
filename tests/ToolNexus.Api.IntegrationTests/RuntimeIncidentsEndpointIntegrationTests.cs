@@ -77,6 +77,7 @@ public sealed class RuntimeIncidentsEndpointIntegrationTests
                 "runtime.runtime",
                 "info",
                 "Structured payload",
+                null,
                 "json-formatter",
                 "corr-123",
                 DateTime.UtcNow,
