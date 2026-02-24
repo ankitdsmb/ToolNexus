@@ -14,7 +14,7 @@ public sealed class AdminIdentitySeedHostedService(
     ILogger<AdminIdentitySeedHostedService> logger) : IStartupPhaseService
 {
     private const string AdminEmail = "dummy@dummy.com";
-    private const string AdminPassword = "passwor@1234";
+    private const string AdminPassword = "Dummy@1234";
     private const string AdminRole = "Admin";
 
     public int Order => 6;
