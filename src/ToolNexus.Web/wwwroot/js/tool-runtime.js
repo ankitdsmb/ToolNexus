@@ -43,7 +43,7 @@ async function runPreviousCleanup(root) {
   try {
     await cleanup();
   } catch (error) {
-    console.warn('tool-runtime: previous cleanup failed.', error);
+    createRuntimeMigrationLogger({ channel: 'fallback' }).warn('Previous runtime cleanup failed; continuing with fresh bootstrap.', { error: error?.message ?? String(error) });
   } finally {
     delete root[RUNTIME_CLEANUP_KEY];
   }
@@ -206,7 +206,7 @@ export function createToolRuntime({
       const currentRoot = rootProvider();
       const currentSlug = (currentRoot?.dataset?.toolSlug || '').trim();
       const report = normalizeDomValidation(validateDomContract(currentRoot));
-      console.info('ToolNexus DOM contract report', report);
+      logger.info('[DomContract] report generated via debug hook', report);
       return report;
     };
   }
@@ -809,9 +809,7 @@ const runtime = createToolRuntime();
 if (typeof document !== 'undefined' && document.getElementById('tool-root')) {
   scheduleNonCriticalTask(() => {
     runtime.bootstrapToolRuntime().catch((error) => {
-      if (typeof console !== 'undefined' && typeof console.error === 'function') {
-        console.error('[ToolRuntime] bootstrap task failed safely.', error);
-      }
+      createRuntimeMigrationLogger({ channel: 'fallback' }).error('Bootstrap task failed safely.', { error: error?.message ?? String(error) });
     });
   });
 }

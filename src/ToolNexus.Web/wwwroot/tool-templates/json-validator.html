@@ -1,5 +1,5 @@
 <article class="json-validator-page" data-json-validator>
-    <header class="json-validator-page__header">
+    <header class="json-validator-page__header" data-tool-header="true">
         <div>
             <h1></h1>
             <p class="json-validator-page__description">Validate JSON with precise diagnostics and structure insights. Everything runs locally in your browser.</p>
@@ -7,7 +7,7 @@
         <span class="json-validator-page__badge">Client-side processing</span>
     </header>
 
-    <section class="json-validator-toolbar" role="toolbar" aria-label="JSON validator controls">
+    <section class="json-validator-toolbar" role="toolbar" aria-label="JSON validator controls" data-tool-actions="true">
         <button id="validateBtn" class="tool-btn tool-btn--primary" type="button">Validate</button>
         <button id="formatBtn" class="tool-btn" type="button">Format JSON</button>
         <button id="copyBtn" class="tool-btn" type="button">Copy JSON</button>
@@ -22,8 +22,8 @@
 
     <section id="processingIndicator" class="json-validator-processing" hidden>Processing JSON payload…</section>
 
-    <section class="json-validator-layout" aria-label="JSON validator workspace">
-        <section class="json-validator-panel">
+    <section class="json-validator-layout" aria-label="JSON validator workspace" data-tool-body="true">
+        <section class="json-validator-panel" data-tool-input="true">
             <div class="json-validator-panel__header">
                 <h2>Raw JSON Input</h2>
                 <p>Ctrl/Cmd + Enter: Validate · Ctrl/Cmd + L: Clear</p>
@@ -34,7 +34,7 @@
             <textarea id="schemaInput" class="json-validator-editor json-validator-editor--schema" spellcheck="false" hidden placeholder='{"type":"object","properties":{"id":{"type":"number"}},"required":["id"]}'></textarea>
         </section>
 
-        <section class="json-validator-panel">
+        <section class="json-validator-panel" data-tool-output="true">
             <div class="json-validator-panel__header">
                 <h2>Validation Result</h2>
                 <p id="resultBadge" class="json-validator-result json-validator-result--idle">Awaiting validation</p>

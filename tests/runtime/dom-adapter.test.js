@@ -14,5 +14,6 @@ describe('DOM adapter contract validation', () => {
     expect(root.querySelector('[data-tool-input]')).not.toBeNull();
     expect(root.querySelector('[data-tool-output]')).not.toBeNull();
     expect(root.querySelector('[data-tool-actions]')).not.toBeNull();
+    expect(root.matches('[data-runtime-container]') || root.querySelector('[data-runtime-container]')).toBe(true);
   });
 });

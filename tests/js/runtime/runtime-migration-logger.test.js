@@ -13,7 +13,7 @@ describe('runtime migration logger', () => {
     const logger = createRuntimeMigrationLogger({ channel: 'dependency', sink });
     logger.info('Loaded dependency', { toolSlug: 'json-formatter' });
 
-    expect(sink.info).toHaveBeenCalledWith('[DependencyLoader] Loaded dependency', { toolSlug: 'json-formatter' });
+    expect(sink.info).toHaveBeenCalledWith('[runtime.dependency] [DependencyLoader] Loaded dependency', { toolSlug: 'json-formatter' });
   });
 
   test('swallows sink failures to preserve runtime compatibility', () => {

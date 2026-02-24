@@ -9,6 +9,15 @@ function normalizeRoot(root) {
   return null;
 }
 
+function findNode(scope, nodeName) {
+  const selector = TOOL_DOM_CONTRACT.nodeSelectors[nodeName];
+  if (scope?.matches?.(selector)) {
+    return scope;
+  }
+
+  return scope?.querySelector?.(selector) ?? null;
+}
+
 function getAliasNode(scope, nodeName) {
   const aliases = TOOL_DOM_CONTRACT.legacyAliases[nodeName] ?? [];
   for (const selector of aliases) {
@@ -22,17 +31,24 @@ function getAliasNode(scope, nodeName) {
 }
 
 function assignNodeAttribute(node, nodeName) {
-  if (!node || node.hasAttribute(nodeName)) {
+  if (!node) {
     return;
   }
 
-  node.setAttribute(nodeName, 'true');
+  if (!node.hasAttribute(nodeName)) {
+    node.setAttribute(nodeName, 'true');
+  }
+
+  if (node.hasAttribute('hidden')) {
+    node.removeAttribute('hidden');
+  }
 }
 
 function createNode(tagName, nodeName) {
   const node = document.createElement(tagName);
   node.setAttribute(nodeName, 'true');
   node.dataset.adapterInjected = 'true';
+  node.style.minHeight = node.style.minHeight || '1px';
   return node;
 }
 
@@ -47,7 +63,7 @@ function ensureToolRootId(node) {
 }
 
 function ensureExecutionPanel(scope, body, createdNodes, adaptedNodes) {
-  const actionNode = scope.querySelector('[data-tool-actions]')
+  const actionNode = findNode(scope, 'data-tool-actions')
     ?? getAliasNode(scope, 'data-tool-actions');
 
   if (actionNode && actionNode.matches?.('[data-tool-actions]') && actionNode.tagName !== 'BUTTON') {
@@ -95,7 +111,7 @@ export function adaptToolDom(root, capability = {}) {
   const createdNodes = [];
   const adaptedNodes = [];
 
-  const toolRoot = scope.querySelector('[data-tool-root]')
+  const toolRoot = findNode(scope, 'data-tool-root')
     ?? getAliasNode(scope, 'data-tool-root')
     ?? scope.firstElementChild
     ?? (() => {
@@ -109,7 +125,7 @@ export function adaptToolDom(root, capability = {}) {
   ensureToolRootId(toolRoot);
   adaptedNodes.push('data-tool-root');
 
-  const body = scope.querySelector('[data-tool-body]')
+  const body = findNode(scope, 'data-tool-body')
     ?? getAliasNode(scope, 'data-tool-body')
     ?? (() => {
       const node = createNode('section', 'data-tool-body');
@@ -121,7 +137,7 @@ export function adaptToolDom(root, capability = {}) {
   assignNodeAttribute(body, 'data-tool-body');
   adaptedNodes.push('data-tool-body');
 
-  const header = scope.querySelector('[data-tool-header]')
+  const header = findNode(scope, 'data-tool-header')
     ?? getAliasNode(scope, 'data-tool-header')
     ?? (() => {
       const node = createNode('header', 'data-tool-header');
@@ -133,7 +149,7 @@ export function adaptToolDom(root, capability = {}) {
   assignNodeAttribute(header, 'data-tool-header');
   adaptedNodes.push('data-tool-header');
 
-  const input = scope.querySelector('[data-tool-input]')
+  const input = findNode(scope, 'data-tool-input')
     ?? getAliasNode(scope, 'data-tool-input')
     ?? (() => {
       const node = createNode('section', 'data-tool-input');
@@ -145,19 +161,36 @@ export function adaptToolDom(root, capability = {}) {
   assignNodeAttribute(input, 'data-tool-input');
   adaptedNodes.push('data-tool-input');
 
-  const output = scope.querySelector('[data-tool-output]')
-    ?? getAliasNode(scope, 'data-tool-output')
-    ?? (() => {
-      const node = createNode('section', 'data-tool-output');
-      body.appendChild(node);
-      createdNodes.push('data-tool-output');
-      return node;
-    })();
+  const resolvedOutput = findNode(scope, 'data-tool-output')
+    ?? getAliasNode(scope, 'data-tool-output');
+
+  const output = (() => {
+    if (resolvedOutput && !resolvedOutput.hasAttribute('hidden')) {
+      return resolvedOutput;
+    }
+
+    if (resolvedOutput?.hasAttribute('data-tool-output')) {
+      resolvedOutput.removeAttribute('data-tool-output');
+    }
+
+    const node = createNode('section', 'data-tool-output');
+    body.appendChild(node);
+    createdNodes.push('data-tool-output');
+    return node;
+  })();
 
   assignNodeAttribute(output, 'data-tool-output');
   adaptedNodes.push('data-tool-output');
 
   ensureExecutionPanel(scope, body, createdNodes, adaptedNodes);
+
+  const runtimeContainer = findNode(scope, 'data-runtime-container')
+    ?? getAliasNode(scope, 'data-runtime-container')
+    ?? scope.closest?.('[data-runtime-zone-shell], .tool-shell-page__runtime-zone-shell')
+    ?? scope;
+
+  assignNodeAttribute(runtimeContainer, 'data-runtime-container');
+  adaptedNodes.push('data-runtime-container');
 
   const after = validateToolDom(scope);
 

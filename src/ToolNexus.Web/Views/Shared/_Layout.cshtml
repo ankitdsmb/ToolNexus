@@ -104,7 +104,7 @@
         import('/js/tools-grid.js');
     }
 
-    if (document.querySelector('.tool-page')) {
+    if (document.querySelector('.tool-page') && !document.getElementById('tool-root')) {
         import('/js/tool-page.js');
     }
 

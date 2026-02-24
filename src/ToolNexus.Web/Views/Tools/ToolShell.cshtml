@@ -45,8 +45,23 @@
             <p class="tool-shell-page__workspace-label">INPUT → RUN → COPY</p>
             <p class="tool-shell-page__workspace-hint">Execute in runtime first. Pull context only when blocked.</p>
         </header>
-        <div class="tool-shell-page__runtime-zone-shell" data-runtime-zone-shell="true">
-            <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime"></div>
+        <div class="tool-shell-page__runtime-zone-shell" data-runtime-zone-shell="true" data-runtime-container="true">
+            <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
+                <header data-tool-header="true" class="tn-tool-header">
+                    <h2>@Model.Tool.Title runtime</h2>
+                </header>
+                <section data-tool-body="true" class="tn-tool-body">
+                    <section data-tool-input="true" class="tn-tool-panel" aria-label="Tool input panel">
+                        <p>Input area loading…</p>
+                    </section>
+                    <section data-tool-output="true" class="tn-tool-panel" aria-label="Tool output panel">
+                        <p>Output preview loading…</p>
+                    </section>
+                    <div data-tool-actions="true" class="tool-execution-panel">
+                        <button type="button" disabled>Preparing runtime</button>
+                    </div>
+                </section>
+            </div>
         </div>
         <aside class="tool-shell-page__momentum" aria-live="polite" hidden data-momentum-loop="true">
             <p class="tool-shell-page__momentum-title">Next step ready</p>
@@ -89,7 +104,7 @@
         window.ToolNexusLogging = {
             minLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>()["ToolNexusLogging:MinLevel"] ?? "Information")),
             runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue<bool>("ToolNexusLogging:RuntimeDebugEnabled"))),
-            enableClientIncidents: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>().GetValue("ToolNexusLogging:EnableClientIncidents", true)))
+            enableClientIncidents: false
         };
         window.ToolNexus = window.ToolNexus || {};
         window.ToolNexus.correlationId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.TraceIdentifier));
