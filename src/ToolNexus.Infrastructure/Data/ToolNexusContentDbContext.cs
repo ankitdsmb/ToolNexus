@@ -164,6 +164,24 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         {
             entity.ToTable("audit_events");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OccurredAtUtc).HasColumnName("occurred_at_utc");
+            entity.Property(x => x.ActorType).HasColumnName("actor_type");
+            entity.Property(x => x.ActorId).HasColumnName("actor_id");
+            entity.Property(x => x.TenantId).HasColumnName("tenant_id");
+            entity.Property(x => x.TraceId).HasColumnName("trace_id");
+            entity.Property(x => x.RequestId).HasColumnName("request_id");
+            entity.Property(x => x.Action).HasColumnName("action");
+            entity.Property(x => x.TargetType).HasColumnName("target_type");
+            entity.Property(x => x.TargetId).HasColumnName("target_id");
+            entity.Property(x => x.ResultStatus).HasColumnName("result_status");
+            entity.Property(x => x.HttpStatus).HasColumnName("http_status");
+            entity.Property(x => x.SourceIp).HasColumnName("source_ip");
+            entity.Property(x => x.UserAgent).HasColumnName("user_agent");
+            entity.Property(x => x.PayloadRedacted).HasColumnName("payload_redacted");
+            entity.Property(x => x.PayloadHashSha256).HasColumnName("payload_hash_sha256");
+            entity.Property(x => x.SchemaVersion).HasColumnName("schema_version");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
             entity.Property(x => x.PayloadRedacted).HasColumnType("jsonb");
             entity.Property(x => x.CreatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.SchemaVersion).HasDefaultValue(1);
@@ -178,6 +196,21 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         {
             entity.ToTable("audit_outbox");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.AuditEventId).HasColumnName("audit_event_id");
+            entity.Property(x => x.Destination).HasColumnName("destination");
+            entity.Property(x => x.IdempotencyKey).HasColumnName("idempotency_key");
+            entity.Property(x => x.DeliveryState).HasColumnName("delivery_state");
+            entity.Property(x => x.AttemptCount).HasColumnName("attempt_count");
+            entity.Property(x => x.NextAttemptAtUtc).HasColumnName("next_attempt_at_utc");
+            entity.Property(x => x.LastErrorCode).HasColumnName("last_error_code");
+            entity.Property(x => x.LastErrorMessage).HasColumnName("last_error_message");
+            entity.Property(x => x.LastAttemptAtUtc).HasColumnName("last_attempt_at_utc");
+            entity.Property(x => x.DeliveredAtUtc).HasColumnName("delivered_at_utc");
+            entity.Property(x => x.LeaseOwner).HasColumnName("lease_owner");
+            entity.Property(x => x.LeaseExpiresAtUtc).HasColumnName("lease_expires_at_utc");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
             entity.HasOne(x => x.AuditEvent).WithMany(x => x.OutboxEntries).HasForeignKey(x => x.AuditEventId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(x => new { x.Destination, x.AuditEventId }).IsUnique().HasDatabaseName("ux_audit_outbox_destination_event");
             entity.HasIndex(x => x.IdempotencyKey).IsUnique().HasDatabaseName("ux_audit_outbox_idempotency_key");
@@ -193,6 +226,19 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         {
             entity.ToTable("audit_dead_letter");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OutboxId).HasColumnName("outbox_id");
+            entity.Property(x => x.AuditEventId).HasColumnName("audit_event_id");
+            entity.Property(x => x.Destination).HasColumnName("destination");
+            entity.Property(x => x.FinalAttemptCount).HasColumnName("final_attempt_count");
+            entity.Property(x => x.FirstFailedAtUtc).HasColumnName("first_failed_at_utc");
+            entity.Property(x => x.DeadLetteredAtUtc).HasColumnName("dead_lettered_at_utc");
+            entity.Property(x => x.ErrorSummary).HasColumnName("error_summary");
+            entity.Property(x => x.ErrorDetails).HasColumnName("error_details");
+            entity.Property(x => x.OperatorStatus).HasColumnName("operator_status");
+            entity.Property(x => x.OperatorNote).HasColumnName("operator_note");
+            entity.Property(x => x.OperatorId).HasColumnName("operator_id");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
             entity.Property(x => x.ErrorDetails).HasColumnType("jsonb");
             entity.Property(x => x.DeadLetteredAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.OperatorStatus).HasDefaultValue("open");
