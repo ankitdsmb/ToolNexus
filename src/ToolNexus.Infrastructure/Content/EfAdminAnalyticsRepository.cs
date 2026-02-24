@@ -8,7 +8,9 @@ using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Infrastructure.Content;
 
-public sealed class EfAdminAnalyticsRepository(IDbContextFactory<ToolNexusContentDbContext> dbContextFactory) : IAdminAnalyticsRepository
+public sealed class EfAdminAnalyticsRepository(
+    IDbContextFactory<ToolNexusContentDbContext> dbContextFactory,
+    DatabaseInitializationState initializationState) : IAdminAnalyticsRepository
 {
     public async Task<IReadOnlyList<DailyToolMetricsSnapshot>> GetByDateRangeAsync(DateOnly startDateInclusive, DateOnly endDateInclusive, CancellationToken cancellationToken)
         => await ExecuteWithSchemaRecoveryAsync(async () =>
@@ -127,6 +129,11 @@ public sealed class EfAdminAnalyticsRepository(IDbContextFactory<ToolNexusConten
 
     private async Task<T> ExecuteWithSchemaRecoveryAsync<T>(Func<Task<T>> action, T fallback, CancellationToken cancellationToken)
     {
+        if (initializationState.Status != DatabaseInitializationStatus.Ready)
+        {
+            return fallback;
+        }
+
         try
         {
             return await action();
@@ -143,17 +150,6 @@ public sealed class EfAdminAnalyticsRepository(IDbContextFactory<ToolNexusConten
         }
     }
 
-    private async Task<T> RetryAfterMigrationAsync<T>(Func<Task<T>> action, T fallback, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-            await dbContext.Database.MigrateAsync(cancellationToken);
-            return await action();
-        }
-        catch
-        {
-            return fallback;
-        }
-    }
+    private static Task<T> RetryAfterMigrationAsync<T>(Func<Task<T>> action, T fallback, CancellationToken cancellationToken)
+        => Task.FromResult(fallback);
 }

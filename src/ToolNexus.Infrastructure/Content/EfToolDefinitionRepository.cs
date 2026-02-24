@@ -235,17 +235,6 @@ public sealed class EfToolDefinitionRepository(
 
     private async Task RecoverMissingToolDefinitionsSchemaAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            await dbContext.Database.MigrateAsync(cancellationToken);
-        }
-        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateTable)
-        {
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
-        {
-        }
-
         await EnsureToolDefinitionsTableExistsAsync(cancellationToken);
     }
 

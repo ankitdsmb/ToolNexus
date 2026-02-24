@@ -157,17 +157,6 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
         }
     }
 
-    private async Task RecoverSchemaAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await dbContext.Database.MigrateAsync(cancellationToken);
-        }
-        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateTable)
-        {
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
-        {
-        }
-    }
+    private static Task RecoverSchemaAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }

@@ -35,7 +35,7 @@ public sealed class EfExecutionPolicyRepository(
             ? new ToolExecutionPolicyModel(tool.Id, tool.Slug, "Local", 30, 120, 1_000_000, true, null)
             : Map(policy, includeVersionToken: true);
 
-        cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
+        cache.Set(Key(slug), model, BuildCacheEntryOptions());
         return model;
     }
 
@@ -143,7 +143,7 @@ public sealed class EfExecutionPolicyRepository(
         await transaction.CommitAsync(cancellationToken);
 
         var model = Map(policy, includeVersionToken: false);
-        cache.Set(Key(slug), model, TimeSpan.FromMinutes(10));
+        cache.Set(Key(slug), model, BuildCacheEntryOptions());
         return model;
     }
 
@@ -179,4 +179,11 @@ public sealed class EfExecutionPolicyRepository(
 
     private static ToolExecutionPolicyModel Map(ToolExecutionPolicyEntity entity, bool includeVersionToken)
         => new(entity.ToolDefinitionId, entity.ToolSlug, entity.ExecutionMode, entity.TimeoutSeconds, entity.MaxRequestsPerMinute, entity.MaxInputSize, entity.IsExecutionEnabled, includeVersionToken ? ConcurrencyTokenCodec.Encode(entity.RowVersion) : null);
+
+    private static MemoryCacheEntryOptions BuildCacheEntryOptions()
+        => new()
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
+            Size = 1
+        };
 }

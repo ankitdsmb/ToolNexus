@@ -102,7 +102,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Status).HasMaxLength(20);
             entity.Property(x => x.Icon).HasMaxLength(120);
             entity.Property(x => x.ActionsCsv).HasMaxLength(500);
-            entity.Property(x => x.UpdatedAt);
+            entity.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone");
             entity.Property(x => x.RowVersion).IsConcurrencyToken();
         });
 
@@ -113,7 +113,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => x.ToolSlug).IsUnique();
             entity.Property(x => x.ToolSlug).HasMaxLength(120);
             entity.Property(x => x.ExecutionMode).HasMaxLength(20);
-            entity.Property(x => x.UpdatedAt);
+            entity.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone");
             entity.Property(x => x.RowVersion).IsConcurrencyToken();
         });
 
@@ -125,6 +125,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.ToolSlug).HasMaxLength(120);
             entity.Property(x => x.ErrorType).HasMaxLength(200);
             entity.Property(x => x.ExecutionMode).HasMaxLength(20);
+            entity.Property(x => x.TimestampUtc).HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<DailyToolMetricsEntity>(entity =>
@@ -133,6 +134,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => new { x.ToolSlug, x.DateUtc }).IsUnique();
             entity.Property(x => x.ToolSlug).HasMaxLength(120);
             entity.Property(x => x.AvgDurationMs);
+            entity.Property(x => x.DateUtc).HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<ToolAnomalySnapshotEntity>(entity =>
@@ -143,6 +145,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Type).HasMaxLength(32);
             entity.Property(x => x.Severity).HasMaxLength(16);
             entity.Property(x => x.Description).HasMaxLength(500);
+            entity.Property(x => x.DateUtc).HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<AdminAuditLogEntity>(entity =>
@@ -153,6 +156,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.ActionType).HasMaxLength(120);
             entity.Property(x => x.EntityType).HasMaxLength(120);
             entity.Property(x => x.EntityId).HasMaxLength(120);
+            entity.Property(x => x.TimestampUtc).HasColumnType("timestamp with time zone");
         });
 
 
@@ -213,6 +217,8 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.CorrelationId).HasMaxLength(120);
             entity.Property(x => x.PayloadType).HasMaxLength(80);
             entity.Property(x => x.Severity).HasMaxLength(20);
+            entity.Property(x => x.FirstOccurredUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.LastOccurredUtc).HasColumnType("timestamp with time zone");
         });
     }
 }
