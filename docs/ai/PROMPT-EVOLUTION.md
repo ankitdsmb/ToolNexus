@@ -62,3 +62,8 @@ Prompt: Implement production-safe admin auth foundation with secure login POST, 
 Result: Integrated ASP.NET Core Identity, added antiforgery-protected login flow with lockout-aware credential validation, created `AdminIdentitySeedHostedService` startup phase after DB migration, and routed forbidden users to `/auth/access-denied`.
 Improvement: Admin authorization remains strict while authentication is now functional, auditable, and environment-configurable (no hardcoded credentials).
 New Version: Any admin-area authorization work must include end-to-end identity bootstrap + login + forbidden UX validation and startup-phase ordering evidence.
+
+## 2026-02-24 — Mount/Execute boundary regression closure
+Problem: Legacy fallback bootstrap still called execution-only `runTool` in some paths, causing DOM nodes (`HTMLDivElement`) to flow into execution contracts and trigger `action.trim/toLowerCase` failures.
+Fix Implemented: Added execution-only guards in both lifecycle fallback invokers and broadened payload normalizer to preserve object inputs while still rejecting non-string actions with safe incidented no-op.
+Result: Runtime mount path no longer invokes execution contracts; invalid action payloads self-heal without uncaught promise failures; structured execution inputs remain supported.

@@ -1,11 +1,12 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using ToolNexus.Infrastructure.Data;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using ToolNexus.Web.Controllers;
 using ToolNexus.Web.Models;
+using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Tests;
 
@@ -14,8 +15,7 @@ public sealed class AuthControllerTests
     [Fact]
     public void Login_WhenUnauthenticated_ReturnsLoginView()
     {
-        using var db = CreateDbContext();
-        var controller = CreateController(db, isAuthenticated: false);
+        var controller = CreateController(isAuthenticated: false);
 
         var result = controller.Login();
 
@@ -26,8 +26,7 @@ public sealed class AuthControllerTests
     [Fact]
     public void Login_WhenAuthenticated_RedirectsToHome()
     {
-        using var db = CreateDbContext();
-        var controller = CreateController(db, isAuthenticated: true);
+        var controller = CreateController(isAuthenticated: true);
 
         var result = controller.Login();
 
@@ -35,18 +34,9 @@ public sealed class AuthControllerTests
         Assert.Equal("Index", redirect.ActionName);
     }
 
-    private static ToolNexusContentDbContext CreateDbContext()
+    private static AuthController CreateController(bool isAuthenticated)
     {
-        var options = new DbContextOptionsBuilder<ToolNexusContentDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
-            .Options;
-
-        return new ToolNexusContentDbContext(options);
-    }
-
-    private static AuthController CreateController(ToolNexusContentDbContext db, bool isAuthenticated)
-    {
-        var controller = new AuthController(db, new PasswordHasher<object>());
+        var controller = new AuthController(new TestEnvironment(), new TestPrincipalFactory());
         var identity = isAuthenticated
             ? new ClaimsIdentity([new Claim(ClaimTypes.Name, "tester")], "Cookies")
             : new ClaimsIdentity();
@@ -57,5 +47,24 @@ public sealed class AuthControllerTests
         };
 
         return controller;
+    }
+
+    private sealed class TestEnvironment : IWebHostEnvironment
+    {
+        public string ApplicationName { get; set; } = "ToolNexus.Tests";
+        public IFileProvider WebRootFileProvider { get; set; } = null!;
+        public string WebRootPath { get; set; } = string.Empty;
+        public string EnvironmentName { get; set; } = Environments.Development;
+        public string ContentRootPath { get; set; } = string.Empty;
+        public IFileProvider ContentRootFileProvider { get; set; } = null!;
+    }
+
+    private sealed class TestPrincipalFactory : IInternalUserPrincipalFactory
+    {
+        public ClaimsPrincipal CreatePrincipal()
+        {
+            var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "dev-admin")], "Cookies");
+            return new ClaimsPrincipal(identity);
+        }
     }
 }

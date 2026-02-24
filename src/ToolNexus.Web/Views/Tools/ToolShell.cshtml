@@ -111,7 +111,7 @@
             }
         };
         window.ToolNexusLogging = {
-            minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuration["LoggingOptions:MinimumLevel"] ?? "Information")),
+            minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuration["LoggingOptions:RuntimeLogLevel"] ?? configuration["LoggingOptions:MinimumLevel"] ?? "Information")),
             runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuration.GetValue<bool>("LoggingOptions:RuntimeDebugEnabled"))),
             enableRuntimeLogCapture: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogCaptureEnabled))
         };

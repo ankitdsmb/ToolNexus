@@ -39,9 +39,9 @@ describe('runtime safe tool wrapper', () => {
     await expect(runtimeIncidentReporter.flush()).resolves.toBeUndefined();
   });
 
-  test('normalizes non-string input before execution', async () => {
+  test('preserves object input for tools that accept structured payloads', async () => {
     const runTool = async (_action, input) => input;
-    await expect(invokeExecutionToolSafely(runTool, 'format', { value: true })).resolves.toBe('');
+    await expect(invokeExecutionToolSafely(runTool, 'format', { value: true })).resolves.toEqual({ value: true });
   });
 
   test('never throws when tool execution fails', async () => {

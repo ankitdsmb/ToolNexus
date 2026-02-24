@@ -117,3 +117,11 @@ Dashboard status colors map directly from score bands:
 - Tool page rendering now tolerates content database outages by allowing `IToolContentRepository` to fail closed (warning + null content) instead of surfacing a 500.
 - Tool shell remains operational from manifest/catalog metadata when DB content is unavailable, preserving runtime bootstrap and execution paths.
 - Category routing now supports legacy aliases like `/tools/{category}-tools` by normalizing to canonical category slugs.
+
+## Runtime lifecycle guardrail (2026-02)
+
+A platform-level guard now blocks `runTool` during mount in all legacy fallback paths:
+- `tool-lifecycle-adapter` skips `runTool` when runtime type is execution or arity indicates `(action,input)`.
+- `legacy-tool-bootstrap` applies the same guard before invoking fallback methods.
+
+This removes the `[object HTMLDivElement]` unsupported-action class by preventing DOM payloads from entering execution contracts at mount time.
