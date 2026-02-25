@@ -28,13 +28,14 @@ public sealed class LanguageExecutionAdaptersTests
 
         var result = await adapter.ExecuteAsync(request, context, CancellationToken.None);
 
-        Assert.False(result.Success);
+        Assert.True(result.Success);
         Assert.NotNull(manager.LastEnvelope);
         Assert.Equal("py-tool", manager.LastEnvelope!.ToolId);
         Assert.Equal("run", manager.LastEnvelope.Operation);
         Assert.Equal("corr-1", manager.LastEnvelope.CorrelationId);
         Assert.Equal("tenant-a", manager.LastEnvelope.TenantId);
         Assert.Equal("sandboxed", manager.LastEnvelope.ResourceLimits["capability"]);
+        Assert.Contains("runtime-not-enabled", result.Output, StringComparison.Ordinal);
         Assert.True(pool.AcquireCalled);
         Assert.True(pool.ReleaseCalled);
         Assert.Equal("python", pool.LastWorkerType?.Language.Value);

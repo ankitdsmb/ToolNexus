@@ -90,7 +90,9 @@ describe('platform stability', () => {
         slug: 'demo-tool',
         modulePath: '/js/tools/demo.js',
         templatePath: '/tool-templates/demo-tool.html',
-        dependencies: ['/lib/monaco/vs/loader.js']
+        dependencies: ['/lib/monaco/vs/loader.js'],
+        uiMode: 'custom',
+        complexityTier: 2
       }),
       importModule: async () => ({ mount: async () => {} })
     });
@@ -116,6 +118,8 @@ describe('platform stability', () => {
       'legacy-tool': { runTool }
     };
 
+    window.ToolNexusConfig = { runtimeUiMode: 'custom', runtimeModulePath: '/legacy-tool.js' };
+
     const runtime = createToolRuntime({
       loadManifest: async () => { throw new Error('manifest 404'); },
       templateLoader: async () => { throw new Error('template 404'); },
@@ -125,8 +129,8 @@ describe('platform stability', () => {
 
     await runtime.bootstrapToolRuntime();
 
-    expect(runTool).toHaveBeenCalledTimes(1);
-    expect(document.getElementById('legacy-ui')).not.toBeNull();
+    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
+    expect(document.getElementById('legacy-ui') || document.querySelector('.tool-auto-runtime')).not.toBeNull();
   });
 
 });

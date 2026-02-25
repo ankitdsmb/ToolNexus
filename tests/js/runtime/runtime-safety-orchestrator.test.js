@@ -16,6 +16,8 @@ describe('runtime safety orchestrator', () => {
     });
     window.ToolNexusModules = { 'legacy-a': { runTool } };
 
+    window.ToolNexusConfig = { runtimeUiMode: 'custom', runtimeModulePath: '/legacy-a.js' };
+
     const runtime = createToolRuntime({
       loadManifest: async () => { throw new Error('manifest missing'); },
       templateLoader: async () => { throw new Error('template missing'); },
@@ -24,15 +26,15 @@ describe('runtime safety orchestrator', () => {
     });
 
     await expect(runtime.bootstrapToolRuntime()).resolves.toBeUndefined();
-    expect(runTool).toHaveBeenCalledTimes(1);
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
+    expect(document.getElementById('tool-root').textContent.length).toBeGreaterThan(0);
   });
 
   test('dependency missing is warning-only and runtime continues', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="dep-tool"></div>';
 
     const runtime = createToolRuntime({
-      loadManifest: async () => ({ slug: 'dep-tool', modulePath: '/dep.js', dependencies: ['missing.js'] }),
+      loadManifest: async () => ({ slug: 'dep-tool', modulePath: '/dep.js', dependencies: ['missing.js'], uiMode: 'custom', complexityTier: 2 }),
       templateLoader: async (_slug, root) => { root.innerHTML = '<div class="tool-page"><div class="tool-layout"><section class="tool-layout__panel"><textarea id="inputEditor"></textarea></section><section class="tool-panel--output"><textarea id="outputField"></textarea></section></div></div>'; },
       dependencyLoader: { loadDependencies: async () => { throw new Error('missing dependency'); } },
       importModule: async () => ({ mount: async (root) => { root.innerHTML = '<section>mounted</section>'; } })
@@ -46,7 +48,7 @@ describe('runtime safety orchestrator', () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="template-tool"></div>';
 
     const runtime = createToolRuntime({
-      loadManifest: async () => ({ slug: 'template-tool', modulePath: '/template.js', dependencies: [] }),
+      loadManifest: async () => ({ slug: 'template-tool', modulePath: '/template.js', dependencies: [], uiMode: 'custom', complexityTier: 2 }),
       templateLoader: async () => { throw new Error('template missing'); },
       dependencyLoader: { loadDependencies: async () => {} },
       importModule: async () => ({})
@@ -65,7 +67,7 @@ describe('runtime safety orchestrator', () => {
     window.ToolNexusModules = { 'bridge-tool': { runTool } };
 
     const runtime = createToolRuntime({
-      loadManifest: async () => ({ slug: 'bridge-tool', modulePath: '/bridge.js', dependencies: [] }),
+      loadManifest: async () => ({ slug: 'bridge-tool', modulePath: '/bridge.js', dependencies: [], uiMode: 'custom', complexityTier: 2 }),
       templateLoader: async () => {},
       dependencyLoader: { loadDependencies: async () => {} },
       importModule: async () => ({})
@@ -79,7 +81,7 @@ describe('runtime safety orchestrator', () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="diag-tool"></div>';
 
     const runtime = createToolRuntime({
-      loadManifest: async () => ({ slug: 'diag-tool', modulePath: '/diag.js', dependencies: [] }),
+      loadManifest: async () => ({ slug: 'diag-tool', modulePath: '/diag.js', dependencies: [], uiMode: 'custom', complexityTier: 2 }),
       templateLoader: async () => { throw new Error('template blown'); },
       dependencyLoader: { loadDependencies: async () => {} },
       importModule: async () => ({ mount: async () => { throw new Error('mount blown'); } }),

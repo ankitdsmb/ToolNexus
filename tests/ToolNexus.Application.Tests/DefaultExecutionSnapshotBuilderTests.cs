@@ -39,6 +39,33 @@ public sealed class DefaultExecutionSnapshotBuilderTests
         Assert.Equal("v1", snapshot.ConformanceVersion);
     }
 
+
+
+    [Fact]
+    public void BuildSnapshot_UsesDefaultPolicySnapshot_WhenContextPolicyMissing()
+    {
+        var builder = new DefaultExecutionSnapshotBuilder();
+        var request = new UniversalToolExecutionRequest(
+            "json",
+            "1.0.0",
+            ToolRuntimeLanguage.DotNet,
+            "format",
+            "{}",
+            null,
+            null,
+            1000,
+            null,
+            null,
+            ToolExecutionCapability.Standard);
+        var context = new ToolExecutionContext("json", "format", "{}", null);
+
+        var snapshot = builder.BuildSnapshot(request, context, ExecutionAuthority.UnifiedAuthoritative);
+
+        var policySnapshot = Assert.IsType<Dictionary<string, object?>>(snapshot.PolicySnapshot);
+        Assert.Equal("unknown", policySnapshot["executionMode"]);
+        Assert.Equal(false, policySnapshot["isExecutionEnabled"]);
+    }
+
     [Fact]
     public void ExecutionSnapshot_IsImmutable()
     {
