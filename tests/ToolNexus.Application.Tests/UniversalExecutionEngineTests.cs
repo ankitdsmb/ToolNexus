@@ -25,7 +25,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
@@ -59,7 +59,7 @@ public sealed class UniversalExecutionEngineTests
     {
         var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
         var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
-        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
+        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -100,7 +100,7 @@ public sealed class UniversalExecutionEngineTests
             null,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
@@ -139,7 +139,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -176,7 +176,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -196,6 +196,126 @@ public sealed class UniversalExecutionEngineTests
         Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), context.Items[UniversalExecutionEngine.SnapshotAuthorityContextKey]);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WhenAdmissionDeniedByShadow_ReturnsNormalizedFailureWithoutExecution()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
+            true,
+            "adapter-ok",
+            null,
+            false,
+            "json",
+            "1.0.0",
+            "dotnet",
+            "format",
+            null,
+            null,
+            5,
+            null,
+            null));
+        var engine = new UniversalExecutionEngine(
+            [adapter],
+            legacyStrategy,
+            authorityResolver,
+            new DefaultExecutionConformanceValidator(),
+            new DefaultExecutionSnapshotBuilder(),
+            new StubAdmissionController(new ExecutionAdmissionDecision(false, "ShadowOnly", "test", new Dictionary<string, string>())));
+
+        var context = new ToolExecutionContext("json", "format", "{}", null) { Policy = new StubPolicy() };
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
+            context,
+            CancellationToken.None);
+
+        Assert.False(result.Success);
+        Assert.Equal("Failed", result.Status);
+        Assert.Equal("admission_denied", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
+        Assert.Equal("false", context.Items[UniversalExecutionEngine.AdmissionAllowedContextKey]);
+        Assert.Equal("ShadowOnly", context.Items[UniversalExecutionEngine.AdmissionReasonContextKey]);
+        Assert.Equal(0, adapter.Calls);
+        Assert.Equal(0, legacyStrategy.Calls);
+        Assert.NotNull(result.Metrics);
+        Assert.Equal("ShadowOnly", result.Metrics["admissionReason"]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAdmissionDeniedByUnsupportedRuntime_ReturnsNormalizedFailure()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
+            true,
+            "adapter-ok",
+            null,
+            false,
+            "json",
+            "1.0.0",
+            "dotnet",
+            "format",
+            null,
+            null,
+            5,
+            null,
+            null));
+        var engine = new UniversalExecutionEngine(
+            [adapter],
+            legacyStrategy,
+            authorityResolver,
+            new DefaultExecutionConformanceValidator(),
+            new DefaultExecutionSnapshotBuilder(),
+            new StubAdmissionController(new ExecutionAdmissionDecision(false, "RuntimeUnavailable", "test", new Dictionary<string, string>())));
+
+        var context = new ToolExecutionContext("json", "format", "{}", null) { Policy = new StubPolicy() };
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
+            context,
+            CancellationToken.None);
+
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeUnavailable", context.Items[UniversalExecutionEngine.AdmissionReasonContextKey]);
+        Assert.Equal(0, adapter.Calls);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAdmissionDeniedByCapability_ReturnsNormalizedFailure()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
+            true,
+            "adapter-ok",
+            null,
+            false,
+            "json",
+            "1.0.0",
+            "dotnet",
+            "format",
+            null,
+            null,
+            5,
+            null,
+            null));
+        var engine = new UniversalExecutionEngine(
+            [adapter],
+            legacyStrategy,
+            authorityResolver,
+            new DefaultExecutionConformanceValidator(),
+            new DefaultExecutionSnapshotBuilder(),
+            new StubAdmissionController(new ExecutionAdmissionDecision(false, "CapabilityBlocked", "test", new Dictionary<string, string>())));
+
+        var context = new ToolExecutionContext("json", "format", "{}", null) { Policy = new StubPolicy() };
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
+            context,
+            CancellationToken.None);
+
+        Assert.False(result.Success);
+        Assert.Equal("CapabilityBlocked", context.Items[UniversalExecutionEngine.AdmissionReasonContextKey]);
+        Assert.Equal(0, adapter.Calls);
+    }
+
     private sealed class StubAdapter(ToolRuntimeLanguage language, UniversalToolExecutionResult result) : ILanguageExecutionAdapter
     {
         public int Calls { get; private set; }
@@ -213,6 +333,14 @@ public sealed class UniversalExecutionEngineTests
         public ExecutionAuthority ResolveAuthority(ToolExecutionContext context, UniversalToolExecutionRequest request)
         {
             return authority;
+        }
+    }
+
+    private sealed class StubAdmissionController(ExecutionAdmissionDecision? decision = null) : IExecutionAdmissionController
+    {
+        public ExecutionAdmissionDecision Evaluate(ExecutionSnapshot snapshot, ToolExecutionContext context)
+        {
+            return decision ?? new ExecutionAdmissionDecision(true, "Allowed", "test", new Dictionary<string, string>());
         }
     }
 

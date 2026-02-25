@@ -38,6 +38,10 @@ public static class DependencyInjection
             .AddOptions<ExecutionAuthorityOptions>()
             .Bind(configuration.GetSection(ExecutionAuthorityOptions.SectionName));
 
+        services
+            .AddOptions<ExecutionAdmissionOptions>()
+            .Bind(configuration.GetSection(ExecutionAdmissionOptions.SectionName));
+
         services.AddToolExecutionPipeline();
         services.AddHttpContextAccessor();
         services.AddSingleton<IToolExecutionEventService, NoOpToolExecutionEventService>();
