@@ -49,6 +49,9 @@ describe('tool runtime auto/custom loader', () => {
     expect(root.getAttribute('data-custom-mounted')).toBe('true');
     expect(root.dataset.runtimeResolutionMode).toBe('custom_active');
     expect(root.dataset.runtimeResolutionReason).toBe('custom_runtime_loaded');
+    expect(root.dataset.runtimeIdentityType).toBe('custom');
+    expect(root.dataset.runtimeIdentityMode).toBe('explicit');
+    expect(root.dataset.runtimeIdentitySource).toBe('custom-module');
   });
 
   test('custom import failure falls back to auto mode with metadata and telemetry', async () => {
@@ -73,6 +76,9 @@ describe('tool runtime auto/custom loader', () => {
     expect(document.querySelector('.tool-auto-runtime')).not.toBeNull();
     expect(root.dataset.runtimeResolutionMode).toBe('auto_fallback');
     expect(root.dataset.runtimeResolutionReason).toBe('auto_loaded_after_custom_runtime_failure');
+    expect(root.dataset.runtimeIdentityType).toBe('auto');
+    expect(root.dataset.runtimeIdentityMode).toBe('fallback');
+    expect(root.dataset.runtimeIdentitySource).toBe('module-missing');
     expect(document.querySelector('.tool-auto-runtime__resolution-warning')?.textContent).toContain('Auto runtime loaded due to custom runtime failure');
 
     expect(warnSpy).toHaveBeenCalled();
@@ -107,6 +113,9 @@ describe('tool runtime auto/custom loader', () => {
     const root = document.getElementById('tool-root');
     expect(root.dataset.runtimeResolutionMode).toBe('auto_explicit');
     expect(root.dataset.runtimeResolutionReason).toBe('auto_mode_selected');
+    expect(root.dataset.runtimeIdentityType).toBe('auto');
+    expect(root.dataset.runtimeIdentityMode).toBe('explicit');
+    expect(root.dataset.runtimeIdentitySource).toBe('auto-module');
   });
 
   test('metadata propagation includes runtime resolution tags for mount telemetry', async () => {
@@ -126,5 +135,16 @@ describe('tool runtime auto/custom loader', () => {
     const mountEvent = snapshot.recentTelemetry.find((entry) => entry.eventName === 'mount_success');
     expect(mountEvent.runtimeResolutionMode).toBe('custom_active');
     expect(mountEvent.runtimeResolutionReason).toBe('custom_runtime_loaded');
+    expect(mountEvent.metadata.runtimeIdentity).toEqual(expect.objectContaining({
+      runtimeType: 'custom',
+      uiMode: 'custom',
+      resolutionMode: 'explicit',
+      loaderDecision: 'custom_runtime_loaded',
+      moduleSource: 'custom-module',
+      executionLanguage: 'javascript'
+    }));
+    expect(mountEvent.metadata['runtime.identity.type']).toBe('custom');
+    expect(mountEvent.metadata['runtime.identity.mode']).toBe('explicit');
+    expect(mountEvent.metadata['runtime.identity.source']).toBe('custom-module');
   });
 });

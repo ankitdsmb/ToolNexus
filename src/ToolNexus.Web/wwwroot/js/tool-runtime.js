@@ -27,6 +27,29 @@ const RUNTIME_RESOLUTION_MODES = Object.freeze({
   CUSTOM_FAILED: 'custom_failed'
 });
 
+const RUNTIME_TYPES = Object.freeze({
+  AUTO: 'auto',
+  CUSTOM: 'custom'
+});
+
+function createRuntimeIdentityDescriptor({
+  runtimeType = RUNTIME_TYPES.AUTO,
+  uiMode = 'auto',
+  resolutionMode = 'explicit',
+  loaderDecision = 'auto_mode_selected',
+  moduleSource = 'module-missing',
+  executionLanguage = 'javascript'
+} = {}) {
+  return {
+    runtimeType,
+    uiMode,
+    resolutionMode,
+    loaderDecision,
+    moduleSource,
+    executionLanguage
+  };
+}
+
 function isDevelopmentRuntime() {
   const environment = String(window.ToolNexusConfig?.runtimeEnvironment ?? window.ToolNexusConfig?.environment ?? '').trim().toLowerCase();
   if (environment) {
@@ -457,20 +480,77 @@ export function createToolRuntime({
       reason: 'auto_mode_selected'
     };
 
+    const runtimeIdentity = createRuntimeIdentityDescriptor();
+
+    function inferIdentityResolutionMode(mode) {
+      if (mode === RUNTIME_RESOLUTION_MODES.AUTO_FALLBACK) {
+        return 'fallback';
+      }
+
+      return 'explicit';
+    }
+
+    function inferIdentityType(mode) {
+      return mode === RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE ? RUNTIME_TYPES.CUSTOM : RUNTIME_TYPES.AUTO;
+    }
+
+    function inferIdentitySource({ mode, modulePath }) {
+      if (mode === RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE) {
+        return 'custom-module';
+      }
+
+      if (mode === RUNTIME_RESOLUTION_MODES.AUTO_FALLBACK) {
+        return modulePath ? 'module-missing' : 'auto-module';
+      }
+
+      return modulePath ? 'auto-module' : 'module-missing';
+    }
+
+    function buildRuntimeIdentityTelemetry(identity) {
+      return {
+        'runtime.identity.type': identity.runtimeType,
+        'runtime.identity.mode': identity.resolutionMode,
+        'runtime.identity.source': identity.moduleSource
+      };
+    }
+
+    function syncRuntimeIdentity(target, { modulePath } = {}) {
+      const resolvedIdentity = createRuntimeIdentityDescriptor({
+        runtimeType: inferIdentityType(runtimeResolution.mode),
+        uiMode: runtimeIdentity.uiMode,
+        resolutionMode: inferIdentityResolutionMode(runtimeResolution.mode),
+        loaderDecision: runtimeResolution.reason,
+        moduleSource: inferIdentitySource({ mode: runtimeResolution.mode, modulePath }),
+        executionLanguage: runtimeIdentity.executionLanguage
+      });
+
+      Object.assign(runtimeIdentity, resolvedIdentity);
+
+      const telemetryTags = buildRuntimeIdentityTelemetry(runtimeIdentity);
+      executionContext.runtimeMetadata = {
+        ...(executionContext.runtimeMetadata ?? {}),
+        runtimeResolutionMode: runtimeResolution.mode,
+        runtimeResolutionReason: runtimeResolution.reason,
+        runtimeIdentity: { ...runtimeIdentity },
+        telemetryTags
+      };
+      executionContext.manifest.runtimeResolutionMode = runtimeResolution.mode;
+      executionContext.manifest.runtimeResolutionReason = runtimeResolution.reason;
+      executionContext.manifest.runtimeIdentity = { ...runtimeIdentity };
+      if (root?.dataset) {
+        root.dataset.runtimeResolutionMode = runtimeResolution.mode;
+        root.dataset.runtimeResolutionReason = runtimeResolution.reason;
+        root.dataset.runtimeIdentityType = runtimeIdentity.runtimeType;
+        root.dataset.runtimeIdentityMode = runtimeIdentity.resolutionMode;
+        root.dataset.runtimeIdentitySource = runtimeIdentity.moduleSource;
+      }
+
+      return telemetryTags;
+    }
+
     function setRuntimeResolution(mode, reason) {
       runtimeResolution.mode = mode;
       runtimeResolution.reason = reason;
-      executionContext.runtimeMetadata = {
-        ...(executionContext.runtimeMetadata ?? {}),
-        runtimeResolutionMode: mode,
-        runtimeResolutionReason: reason
-      };
-      executionContext.manifest.runtimeResolutionMode = mode;
-      executionContext.manifest.runtimeResolutionReason = reason;
-      if (root?.dataset) {
-        root.dataset.runtimeResolutionMode = mode;
-        root.dataset.runtimeResolutionReason = reason;
-      }
     }
 
     const capabilitiesAtStart = detectToolCapabilities({ slug, manifest, root });
@@ -539,6 +619,7 @@ export function createToolRuntime({
     const uiMode = normalizeUiMode(manifest.uiMode ?? window.ToolNexusConfig?.runtimeUiMode);
     const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
     const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
+    runtimeIdentity.uiMode = uiMode;
     const safeResolveLifecycle = async () => {
       let module = {};
       if (!modulePath) {
@@ -617,11 +698,19 @@ export function createToolRuntime({
       setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE, 'custom_runtime_loaded');
     }
 
+    const runtimeIdentityTags = syncRuntimeIdentity(root, { modulePath });
+
+    if (isDevelopmentRuntime()) {
+      console.info(`Tool Runtime Identity:\n${runtimeIdentity.runtimeType} / ${runtimeIdentity.resolutionMode} / ${runtimeIdentity.moduleSource}`);
+    }
+
     emit('runtime_resolution', {
       toolSlug: slug,
       metadata: {
         runtimeResolutionMode: runtimeResolution.mode,
-        runtimeResolutionReason: runtimeResolution.reason
+        runtimeResolutionReason: runtimeResolution.reason,
+        runtimeIdentity: { ...runtimeIdentity },
+        ...runtimeIdentityTags
       }
     });
 
@@ -763,7 +852,11 @@ export function createToolRuntime({
           duration: now() - mountStartedAt,
           modeUsed: legacyBridgeUsed ? 'legacy' : 'modern',
           runtimeResolutionMode: runtimeResolution.mode,
-          runtimeResolutionReason: runtimeResolution.reason
+          runtimeResolutionReason: runtimeResolution.reason,
+          metadata: {
+            runtimeIdentity: { ...runtimeIdentity },
+            ...runtimeIdentityTags
+          }
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
         stateRegistry.setPhase(stateKey, 'mounted');
@@ -794,6 +887,10 @@ export function createToolRuntime({
           modeUsed: legacyBridgeUsed ? 'legacy' : 'fallback',
           runtimeResolutionMode: runtimeResolution.mode,
           runtimeResolutionReason: runtimeResolution.reason,
+          metadata: {
+            runtimeIdentity: { ...runtimeIdentity },
+            ...runtimeIdentityTags
+          },
           errorCategory: classifyRuntimeError({ stage: 'mount', message: error?.message, eventName: 'mount_failure' })
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
