@@ -22,4 +22,8 @@ public sealed class ToolExecutionEvent
     public string ConformanceValid { get; init; } = string.Empty;
     public string ConformanceNormalized { get; init; } = string.Empty;
     public int ConformanceIssueCount { get; init; }
+    public string ExecutionSnapshotId { get; init; } = string.Empty;
+    public string SnapshotAuthority { get; init; } = string.Empty;
+    public string SnapshotLanguage { get; init; } = string.Empty;
+    public string SnapshotCapability { get; init; } = string.Empty;
 }
