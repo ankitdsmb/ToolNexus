@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Execution Detail";
+    var executionId = (Guid)(ViewData["ExecutionId"] ?? Guid.Empty);
+}
+<h2>Execution Detail</h2>
+<pre id="detail-json">Loading...</pre>
+<script>
+(async function() {
+  const id = '@executionId';
+  const [detailRes, snapshotRes] = await Promise.all([
+    fetch(`/api/admin/executions/${id}`),
+    fetch(`/api/admin/executions/${id}/snapshot`)
+  ]);
+  if (!detailRes.ok) {
+    document.getElementById('detail-json').textContent = 'Not found';
+    return;
+  }
+  const detail = await detailRes.json();
+  const snapshot = snapshotRes.ok ? await snapshotRes.json() : null;
+  document.getElementById('detail-json').textContent = JSON.stringify({
+    authority: detail.authorityDecision,
+    snapshotMetadata: snapshot,
+    conformanceResult: detail.conformance,
+    traceId: detail.traceId
+  }, null, 2);
+})();
+</script>

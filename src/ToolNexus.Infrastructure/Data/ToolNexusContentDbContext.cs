@@ -23,6 +23,10 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<AuditOutboxEntity> AuditOutbox => Set<AuditOutboxEntity>();
     public DbSet<AuditDeadLetterEntity> AuditDeadLetters => Set<AuditDeadLetterEntity>();
     public DbSet<RuntimeIncidentEntity> RuntimeIncidents => Set<RuntimeIncidentEntity>();
+    public DbSet<ExecutionRunEntity> ExecutionRuns => Set<ExecutionRunEntity>();
+    public DbSet<ExecutionSnapshotEntity> ExecutionSnapshots => Set<ExecutionSnapshotEntity>();
+    public DbSet<ExecutionConformanceResultEntity> ExecutionConformanceResults => Set<ExecutionConformanceResultEntity>();
+    public DbSet<ExecutionAuthorityDecisionEntity> ExecutionAuthorityDecisions => Set<ExecutionAuthorityDecisionEntity>();
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -248,6 +252,76 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasOne(x => x.AuditEvent).WithMany().HasForeignKey(x => x.AuditEventId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(x => new { x.OperatorStatus, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_status_time").IsDescending(false, true);
             entity.HasIndex(x => new { x.Destination, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_destination").IsDescending(false, true);
+        });
+
+        modelBuilder.Entity<ExecutionRunEntity>(entity =>
+        {
+            entity.ToTable("execution_runs");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ToolId).HasColumnName("tool_id").HasMaxLength(120);
+            entity.Property(x => x.ExecutedAtUtc).HasColumnName("executed_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Success).HasColumnName("success");
+            entity.Property(x => x.DurationMs).HasColumnName("duration_ms");
+            entity.Property(x => x.ErrorType).HasColumnName("error_type").HasMaxLength(200);
+            entity.Property(x => x.PayloadSize).HasColumnName("payload_size");
+            entity.Property(x => x.ExecutionMode).HasColumnName("execution_mode").HasMaxLength(32);
+            entity.Property(x => x.RuntimeLanguage).HasColumnName("runtime_language").HasMaxLength(64);
+            entity.Property(x => x.AdapterName).HasColumnName("adapter_name").HasMaxLength(128);
+            entity.Property(x => x.AdapterResolutionStatus).HasColumnName("adapter_resolution_status").HasMaxLength(64);
+            entity.Property(x => x.Capability).HasColumnName("capability").HasMaxLength(64);
+            entity.Property(x => x.Authority).HasColumnName("authority").HasMaxLength(64);
+            entity.Property(x => x.ShadowExecution).HasColumnName("shadow_execution");
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasColumnName("tenant_id").HasMaxLength(120);
+            entity.Property(x => x.TraceId).HasColumnName("trace_id").HasMaxLength(64);
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_execution_runs_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_execution_runs_tenant_id");
+            entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_execution_runs_tool_id");
+            entity.HasIndex(x => x.ExecutedAtUtc).HasDatabaseName("idx_execution_runs_executed_at_utc");
+            entity.HasIndex(x => x.TraceId).HasDatabaseName("idx_execution_runs_trace_id");
+        });
+
+        modelBuilder.Entity<ExecutionSnapshotEntity>(entity =>
+        {
+            entity.ToTable("execution_snapshots");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ExecutionRunId).HasColumnName("execution_run_id");
+            entity.Property(x => x.SnapshotId).HasColumnName("snapshot_id").HasMaxLength(120);
+            entity.Property(x => x.Authority).HasColumnName("authority").HasMaxLength(64);
+            entity.Property(x => x.RuntimeLanguage).HasColumnName("runtime_language").HasMaxLength(64);
+            entity.Property(x => x.ExecutionCapability).HasColumnName("execution_capability").HasMaxLength(64);
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasColumnName("tenant_id").HasMaxLength(120);
+            entity.Property(x => x.TimestampUtc).HasColumnName("timestamp_utc").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.ConformanceVersion).HasColumnName("conformance_version").HasMaxLength(40);
+            entity.Property(x => x.PolicySnapshotJson).HasColumnName("policy_snapshot_json").HasColumnType("jsonb");
+            entity.HasIndex(x => x.SnapshotId).HasDatabaseName("idx_execution_snapshots_snapshot_id");
+            entity.HasOne(x => x.ExecutionRun).WithOne(x => x.Snapshot).HasForeignKey<ExecutionSnapshotEntity>(x => x.ExecutionRunId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ExecutionConformanceResultEntity>(entity =>
+        {
+            entity.ToTable("execution_conformance_results");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ExecutionRunId).HasColumnName("execution_run_id");
+            entity.Property(x => x.IsValid).HasColumnName("is_valid");
+            entity.Property(x => x.NormalizedStatus).HasColumnName("normalized_status").HasMaxLength(64);
+            entity.Property(x => x.WasNormalized).HasColumnName("was_normalized");
+            entity.Property(x => x.IssueCount).HasColumnName("issue_count");
+            entity.Property(x => x.IssuesJson).HasColumnName("issues_json").HasColumnType("jsonb");
+            entity.HasOne(x => x.ExecutionRun).WithOne(x => x.Conformance).HasForeignKey<ExecutionConformanceResultEntity>(x => x.ExecutionRunId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ExecutionAuthorityDecisionEntity>(entity =>
+        {
+            entity.ToTable("execution_authority_decisions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ExecutionRunId).HasColumnName("execution_run_id");
+            entity.Property(x => x.Authority).HasColumnName("authority").HasMaxLength(64);
+            entity.Property(x => x.AdmissionAllowed).HasColumnName("admission_allowed");
+            entity.Property(x => x.AdmissionReason).HasColumnName("admission_reason").HasMaxLength(120);
+            entity.Property(x => x.DecisionSource).HasColumnName("decision_source").HasMaxLength(120);
+            entity.HasOne(x => x.ExecutionRun).WithOne(x => x.AuthorityDecision).HasForeignKey<ExecutionAuthorityDecisionEntity>(x => x.ExecutionRunId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RuntimeIncidentEntity>(entity =>

@@ -127,7 +127,7 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
         }
         catch (Exception ex) when (ex is NpgsqlException or InvalidOperationException)
         {
-            throw new SkipException($"Skipping PostgreSQL-backed tests. Could not provision ephemeral database using TOOLNEXUS_TEST_POSTGRES_CONNECTION. {ex.Message}");
+            throw new SkipException();
         }
 
         var builder = new NpgsqlConnectionStringBuilder(adminConnection)

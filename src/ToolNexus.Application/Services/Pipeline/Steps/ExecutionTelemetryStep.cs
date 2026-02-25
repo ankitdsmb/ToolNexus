@@ -32,6 +32,7 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
     {
         return new ToolExecutionEvent
         {
+            ExecutionRunId = Guid.NewGuid(),
             ToolSlug = context.ToolId,
             TimestampUtc = timestampUtc,
             DurationMs = durationMs,
@@ -58,8 +59,43 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             SnapshotCapability = ResolveTag(context, UniversalExecutionEngine.SnapshotCapabilityContextKey, "standard"),
             AdmissionAllowed = ResolveTag(context, UniversalExecutionEngine.AdmissionAllowedContextKey, "true"),
             AdmissionReason = ResolveTag(context, UniversalExecutionEngine.AdmissionReasonContextKey, "Allowed"),
-            AdmissionDecisionSource = ResolveTag(context, UniversalExecutionEngine.AdmissionDecisionSourceContextKey, string.Empty)
+            AdmissionDecisionSource = ResolveTag(context, UniversalExecutionEngine.AdmissionDecisionSourceContextKey, string.Empty),
+            CorrelationId = ResolveOption(context, "correlationId"),
+            TenantId = ResolveOption(context, "tenantId"),
+            TraceId = Activity.Current?.TraceId.ToString(),
+            SnapshotTimestampUtc = ResolveSnapshotTimestamp(context, timestampUtc),
+            SnapshotConformanceVersion = ResolveSnapshotConformanceVersion(context),
+            SnapshotPolicyJson = ResolveSnapshotPolicyJson(context),
+            ConformanceNormalizedStatus = ResolveTag(context, UniversalExecutionEngine.ConformanceStatusContextKey, "unknown"),
+            ConformanceIssuesJson = ResolveTag(context, UniversalExecutionEngine.ConformanceIssuesContextKey, "[]")
         };
+    }
+
+    private static string? ResolveOption(ToolExecutionContext context, string key)
+        => context.Options.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+
+    private static DateTime ResolveSnapshotTimestamp(ToolExecutionContext context, DateTime fallbackUtc)
+        => context.Items.TryGetValue(UniversalExecutionEngine.ExecutionSnapshotContextKey, out var value)
+           && value is ExecutionSnapshot snapshot
+            ? snapshot.TimestampUtc
+            : fallbackUtc;
+
+    private static string ResolveSnapshotConformanceVersion(ToolExecutionContext context)
+        => context.Items.TryGetValue(UniversalExecutionEngine.ExecutionSnapshotContextKey, out var value)
+           && value is ExecutionSnapshot snapshot
+            ? snapshot.ConformanceVersion
+            : string.Empty;
+
+    private static string? ResolveSnapshotPolicyJson(ToolExecutionContext context)
+    {
+        if (context.Items.TryGetValue(UniversalExecutionEngine.ExecutionSnapshotContextKey, out var value)
+            && value is ExecutionSnapshot snapshot
+            && snapshot.PolicySnapshot is not null)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(snapshot.PolicySnapshot);
+        }
+
+        return null;
     }
 
     private static int ResolveIntTag(ToolExecutionContext context, string key, int defaultValue)
