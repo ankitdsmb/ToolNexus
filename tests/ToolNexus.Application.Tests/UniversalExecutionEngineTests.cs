@@ -25,7 +25,11 @@ public sealed class UniversalExecutionEngineTests
             null,
             5,
             null,
-            null));
+            null,
+            null,
+            "Succeeded",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            Array.Empty<string>()));
         var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
