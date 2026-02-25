@@ -2,7 +2,7 @@ using ToolNexus.Application.Models;
 
 namespace ToolNexus.Application.Services.Pipeline;
 
-public sealed class PythonExecutionAdapter(IWorkerRuntimeManager workerRuntimeManager) : ILanguageExecutionAdapter
+public sealed class PythonExecutionAdapter(WorkerExecutionOrchestrator workerExecutionOrchestrator) : ILanguageExecutionAdapter
 {
     public ToolRuntimeLanguage Language => ToolRuntimeLanguage.Python;
 
@@ -23,13 +23,18 @@ public sealed class PythonExecutionAdapter(IWorkerRuntimeManager workerRuntimeMa
             request.CorrelationId,
             request.TenantId);
 
-        var preparation = await workerRuntimeManager.PrepareExecutionAsync(envelope, cancellationToken);
+        var workerType = WorkerType.Create(request.RuntimeLanguage, request.ExecutionCapability);
+        var orchestration = await workerExecutionOrchestrator.PrepareExecutionAsync(envelope, workerType, cancellationToken);
+
         context.Items[UniversalExecutionEngine.WorkerManagerUsedContextKey] = "true";
+        context.Items[UniversalExecutionEngine.WorkerLeaseAcquiredContextKey] = orchestration.LeaseAcquired.ToString().ToLowerInvariant();
+        context.Items[UniversalExecutionEngine.WorkerLeaseStateContextKey] = orchestration.WorkerLeaseState.ToString();
+        context.Items[UniversalExecutionEngine.WorkerOrchestratorUsedContextKey] = "true";
 
         var response = new ToolExecutionResponse(
             false,
             string.Empty,
-            $"Python worker runtime is scaffolded but execution is not enabled in this phase ({preparation.Status}).");
+            $"Python worker runtime is scaffolded but execution is not enabled in this phase ({orchestration.Preparation.Status}).");
 
         return UniversalToolExecutionResult.FromToolExecutionResponse(response, request, durationMs: 0);
     }

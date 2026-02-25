@@ -75,6 +75,9 @@ public sealed class ExecutionTelemetryStepTests
         context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey] = "resolved";
         context.Items[UniversalExecutionEngine.CapabilityContextKey] = "sandboxed";
         context.Items[UniversalExecutionEngine.WorkerManagerUsedContextKey] = "true";
+        context.Items[UniversalExecutionEngine.WorkerLeaseAcquiredContextKey] = "true";
+        context.Items[UniversalExecutionEngine.WorkerLeaseStateContextKey] = WorkerLeaseState.Busy.ToString();
+        context.Items[UniversalExecutionEngine.WorkerOrchestratorUsedContextKey] = "true";
 
         await step.InvokeAsync(
             context,
@@ -87,6 +90,9 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Equal("resolved", evt.AdapterResolutionStatus);
         Assert.Equal("sandboxed", evt.Capability);
         Assert.Equal("true", evt.WorkerManagerUsed);
+        Assert.Equal("true", evt.LeaseAcquired);
+        Assert.Equal(WorkerLeaseState.Busy.ToString(), evt.WorkerLeaseState);
+        Assert.Equal("true", evt.OrchestratorUsed);
     }
 
     [Fact]
