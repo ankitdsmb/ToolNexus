@@ -11,4 +11,6 @@ public interface IClientToolExecutionStrategy
 public interface IApiToolExecutionStrategy
 {
     Task<ToolExecutionResponse> ExecuteAsync(string toolId, string action, string input, IToolExecutionPolicy? policy, CancellationToken cancellationToken = default);
+
+    Task<UniversalExecutionResult> ExecuteAsync(UniversalExecutionRequest request, IToolExecutionPolicy? policy, CancellationToken cancellationToken = default);
 }

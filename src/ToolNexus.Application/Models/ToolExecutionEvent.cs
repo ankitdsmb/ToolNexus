@@ -9,4 +9,7 @@ public sealed class ToolExecutionEvent
     public string? ErrorType { get; init; }
     public int PayloadSize { get; init; }
     public string ExecutionMode { get; init; } = string.Empty;
+    public string RuntimeLanguage { get; init; } = string.Empty;
+    public string AdapterName { get; init; } = string.Empty;
+    public string AdapterResolutionStatus { get; init; } = string.Empty;
 }

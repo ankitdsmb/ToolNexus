@@ -13,6 +13,8 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddSingleton<IToolExecutionResiliencePipelineProvider, ToolExecutionResiliencePipelineProvider>();
 
         services.AddScoped<IApiToolExecutionStrategy, ApiToolExecutionStrategy>();
+        services.AddScoped<IUniversalExecutionRequestMapper, UniversalExecutionRequestMapper>();
+
         services.AddScoped<IClientToolExecutionStrategy, NoOpClientExecutionStrategy>();
 
         services.AddToolExecutionStep<ValidationStep>();

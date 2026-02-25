@@ -8,6 +8,8 @@ public abstract class ToolExecutorBase : IToolExecutor
 
     public abstract ToolMetadata Metadata { get; }
 
+    public virtual ToolRuntimeLanguage Language => ToolRuntimeLanguage.DotNet;
+
     public abstract IReadOnlyCollection<string> SupportedActions { get; }
 
     public async Task<ToolResult> ExecuteAsync(ToolRequest request, CancellationToken cancellationToken = default)

@@ -14,21 +14,44 @@ public sealed class ApiToolExecutionStrategy(
 
     public async Task<ToolExecutionResponse> ExecuteAsync(string toolId, string action, string input, IToolExecutionPolicy? policy, CancellationToken cancellationToken = default)
     {
-        var normalizedToolId = toolId.Trim();
+        var request = new UniversalExecutionRequest(
+            toolId,
+            action,
+            input,
+            ToolRuntimeLanguage.DotNet,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            null,
+            null);
+
+        var result = await ExecuteAsync(request, policy, cancellationToken);
+        return result.Response;
+    }
+
+    public async Task<UniversalExecutionResult> ExecuteAsync(UniversalExecutionRequest request, IToolExecutionPolicy? policy, CancellationToken cancellationToken = default)
+    {
+        var normalizedToolId = request.ToolId.Trim();
         if (!_executorsBySlug.TryGetValue(normalizedToolId, out var executor))
         {
-            return new ToolExecutionResponse(false, string.Empty, $"Tool '{normalizedToolId}' not found.", true);
+            return new UniversalExecutionResult(
+                new ToolExecutionResponse(false, string.Empty, $"No execution adapter is registered for tool '{normalizedToolId}'.", true),
+                request.Language,
+                "none",
+                "missing");
         }
 
         if (policy is null)
         {
-            return new ToolExecutionResponse(false, string.Empty, "Execution policy was not resolved.");
+            return new UniversalExecutionResult(
+                new ToolExecutionResponse(false, string.Empty, "Execution policy was not resolved."),
+                request.Language,
+                executor.GetType().Name,
+                "resolved");
         }
 
         var tags = new KeyValuePair<string, object?>[]
         {
             new("tool_slug", normalizedToolId),
-            new("action", action),
+            new("action", request.Action),
             new("cache_status", "n/a")
         };
 
@@ -36,7 +59,8 @@ public sealed class ApiToolExecutionStrategy(
 
         async ValueTask<ToolExecutionResponse> ExecuteCoreAsync(CancellationToken token)
         {
-            var result = await executor.ExecuteAsync(new ToolRequest(action.Trim().ToLowerInvariant(), input), token);
+            var executionRequest = new ToolRequest(request.Action.Trim().ToLowerInvariant(), request.Input, request.Options);
+            var result = await executor.ExecuteAsync(executionRequest, token);
             if (!result.Success && result.Error?.Contains("timed out", StringComparison.OrdinalIgnoreCase) == true)
             {
                 metrics.Timeouts.Add(1, tags);
@@ -45,6 +69,7 @@ public sealed class ApiToolExecutionStrategy(
             return new ToolExecutionResponse(result.Success, result.Output, result.Error);
         }
 
-        return await pipeline.ExecuteAsync(ExecuteCoreAsync, cancellationToken);
+        var response = await pipeline.ExecuteAsync(ExecuteCoreAsync, cancellationToken);
+        return new UniversalExecutionResult(response, request.Language, executor.GetType().Name, "resolved");
     }
 }

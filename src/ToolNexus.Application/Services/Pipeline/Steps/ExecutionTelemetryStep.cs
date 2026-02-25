@@ -30,6 +30,10 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
 
     private static ToolExecutionEvent CreateEvent(ToolExecutionContext context, DateTime timestampUtc, long durationMs, bool success, string? errorType)
     {
+        context.Items.TryGetValue(ExecutionStep.RuntimeLanguageContextKey, out var runtimeLanguage);
+        context.Items.TryGetValue(ExecutionStep.AdapterNameContextKey, out var adapterName);
+        context.Items.TryGetValue(ExecutionStep.AdapterResolutionStatusContextKey, out var adapterResolutionStatus);
+
         return new ToolExecutionEvent
         {
             ToolSlug = context.ToolId,
@@ -38,7 +42,10 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             Success = success,
             ErrorType = errorType,
             PayloadSize = Encoding.UTF8.GetByteCount(context.Input),
-            ExecutionMode = context.Policy?.ExecutionMode ?? "unknown"
+            ExecutionMode = context.Policy?.ExecutionMode ?? "unknown",
+            RuntimeLanguage = runtimeLanguage?.ToString() ?? "dotnet",
+            AdapterName = adapterName?.ToString() ?? "unknown",
+            AdapterResolutionStatus = adapterResolutionStatus?.ToString() ?? "unknown"
         };
     }
 }

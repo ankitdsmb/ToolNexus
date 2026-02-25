@@ -3,6 +3,7 @@ namespace ToolNexus.Application.Abstractions;
 public interface IToolExecutor
 {
     string Slug { get; }
+    ToolRuntimeLanguage Language { get; }
 
     ToolMetadata Metadata { get; }
 
