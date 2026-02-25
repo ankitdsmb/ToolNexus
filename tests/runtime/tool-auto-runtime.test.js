@@ -64,6 +64,80 @@ describe('tool auto runtime', () => {
     expect(host.textContent).toContain('requires custom UI');
   });
 
+
+
+  test('forbidden execution override fields are ignored while request remains server-controlled', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ ok: true })
+    }));
+    global.fetch = fetchMock;
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: {
+        uiMode: 'auto',
+        complexityTier: 2,
+        runtimeIsDevelopment: true,
+        operationSchema: {
+          type: 'object',
+          properties: {
+            executionAuthority: { type: 'text', title: 'Execution authority' },
+            runtimeAdapter: { type: 'text', title: 'Runtime adapter' },
+            capabilityClass: { type: 'text', title: 'Capability class' },
+            inputText: { type: 'text', title: 'Input text' }
+          }
+        }
+      }
+    });
+
+    const state = module.create(host);
+    const telemetry = [];
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    module.init(state, host, {
+      adapters: {
+        emitTelemetry: (eventName, payload) => telemetry.push({ eventName, payload })
+      },
+      addCleanup() {}
+    });
+
+    host.querySelector('#tool-auto-executionAuthority').value = 'client-override';
+    host.querySelector('#tool-auto-runtimeAdapter').value = 'unsafe-adapter';
+    host.querySelector('#tool-auto-capabilityClass').value = 'admin';
+    host.querySelector('#tool-auto-inputText').value = 'safe';
+
+    host.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const [, request] = fetchMock.mock.calls[0];
+    const parsedBody = JSON.parse(request.body);
+    expect(JSON.parse(parsedBody.input)).toEqual({ inputText: 'safe' });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[ExecutionBoundary] Ignored client-owned execution fields.',
+      expect.objectContaining({
+        slug: 'auto-tool',
+        ignoredFields: expect.arrayContaining(['executionAuthority', 'runtimeAdapter', 'capabilityClass'])
+      })
+    );
+
+    expect(telemetry).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          eventName: 'runtime_execution_boundary_checked',
+          payload: expect.objectContaining({
+            runtime: expect.objectContaining({ executionBoundaryRespected: true })
+          })
+        })
+      ])
+    );
+
+    warnSpy.mockRestore();
+  });
+
   test('auto execution sends expected payload and output renders safely', async () => {
     const host = document.createElement('div');
     document.body.append(host);

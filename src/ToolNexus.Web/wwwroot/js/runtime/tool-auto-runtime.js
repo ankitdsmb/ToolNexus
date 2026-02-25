@@ -2,6 +2,65 @@ import { createUnifiedToolControl } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
+const FORBIDDEN_EXECUTION_FIELDS = new Set([
+  'executionAuthority',
+  'authority',
+  'runtimeAdapter',
+  'adapter',
+  'capabilityClass',
+  'conformanceBypass',
+  'bypassConformance',
+  'policyDecision',
+  'policyOverride'
+]);
+const FORBIDDEN_EXECUTION_FIELD_PREFIXES = ['execution', 'authority', 'runtime', 'capability', 'conformance', 'policy'];
+
+function toBoundaryComparableKey(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
+}
+
+function isForbiddenExecutionField(fieldName) {
+  const comparable = toBoundaryComparableKey(fieldName);
+  if (!comparable) {
+    return false;
+  }
+
+  for (const forbiddenField of FORBIDDEN_EXECUTION_FIELDS) {
+    if (comparable === toBoundaryComparableKey(forbiddenField)) {
+      return true;
+    }
+  }
+
+  return FORBIDDEN_EXECUTION_FIELD_PREFIXES.some((prefix) => comparable.startsWith(prefix));
+}
+
+function sanitizeExecutionPayload(payload = {}) {
+  const sanitized = {};
+  const ignoredFields = [];
+
+  for (const [key, value] of Object.entries(payload)) {
+    if (isForbiddenExecutionField(key)) {
+      ignoredFields.push(key);
+      continue;
+    }
+
+    sanitized[key] = value;
+  }
+
+  return { sanitized, ignoredFields };
+}
+
+function shouldWarnExecutionBoundary(manifest) {
+  if (manifest?.runtimeIsDevelopment) {
+    return true;
+  }
+
+  const environment = (globalThis.window?.ToolNexusConfig?.environment ?? '').toString().trim().toLowerCase();
+  return environment === 'development';
+}
 
 function normalizePathPrefix(pathPrefix) {
   const normalized = (pathPrefix ?? '').toString().trim();
@@ -396,11 +455,33 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           return;
         }
 
+        const { sanitized, ignoredFields } = sanitizeExecutionPayload(payload);
+        if (ignoredFields.length > 0 && shouldWarnExecutionBoundary(manifest)) {
+          console.warn('[ExecutionBoundary] Ignored client-owned execution fields.', {
+            slug,
+            ignoredFields
+          });
+        }
+
         runButton.disabled = true;
         unifiedControl.setStatus('Running…');
 
         try {
-          const result = await executeTool({ slug, payload });
+          runtimeContext?.adapters?.emitTelemetry?.('runtime_execution_boundary_checked', {
+            toolSlug: slug,
+            runtime: {
+              executionBoundaryRespected: true
+            },
+            metadata: {
+              ignoredFields
+            }
+          });
+        } catch {
+          // telemetry is best-effort
+        }
+
+        try {
+          const result = await executeTool({ slug, payload: sanitized });
           unifiedControl.renderResult(result);
           unifiedControl.setStatus('Completed');
         } catch (error) {
