@@ -15,9 +15,11 @@ public sealed record UniversalToolExecutionRequest(
     int TimeoutBudgetMs,
     string? TenantId,
     string? CorrelationId,
+    ToolExecutionCapability ExecutionCapability,
     IDictionary<string, string>? Options = null)
 {
     public string Language => RuntimeLanguage.Value;
+    public string Capability => ExecutionCapability.Value;
 
     public ToolExecutionRequest ToToolExecutionRequest()
     {
@@ -32,7 +34,8 @@ public sealed record UniversalToolExecutionRequest(
         string? executionPolicyId = null,
         string? resourceClass = null,
         string? tenantId = null,
-        string? correlationId = null)
+        string? correlationId = null,
+        ToolExecutionCapability? executionCapability = null)
     {
         return FromToolExecutionRequest(
             request,
@@ -42,7 +45,8 @@ public sealed record UniversalToolExecutionRequest(
             executionPolicyId,
             resourceClass,
             tenantId,
-            correlationId);
+            correlationId,
+            executionCapability);
     }
 
     public static UniversalToolExecutionRequest FromToolExecutionRequest(
@@ -53,7 +57,8 @@ public sealed record UniversalToolExecutionRequest(
         string? executionPolicyId = null,
         string? resourceClass = null,
         string? tenantId = null,
-        string? correlationId = null)
+        string? correlationId = null,
+        ToolExecutionCapability? executionCapability = null)
     {
         return new UniversalToolExecutionRequest(
             request.Slug,
@@ -66,6 +71,7 @@ public sealed record UniversalToolExecutionRequest(
             timeoutBudgetMs,
             tenantId,
             correlationId,
+            executionCapability ?? ToolExecutionCapability.Standard,
             request.Options);
     }
 }

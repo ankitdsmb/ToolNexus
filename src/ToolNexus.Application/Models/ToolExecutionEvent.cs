@@ -12,4 +12,6 @@ public sealed class ToolExecutionEvent
     public string Language { get; init; } = string.Empty;
     public string AdapterName { get; init; } = string.Empty;
     public string AdapterResolutionStatus { get; init; } = string.Empty;
+    public string Capability { get; init; } = string.Empty;
+    public string WorkerManagerUsed { get; init; } = string.Empty;
 }

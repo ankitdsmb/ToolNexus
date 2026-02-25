@@ -43,6 +43,7 @@ public sealed class ExecutionStepUniversalAdapterTests
 
         Assert.NotNull(requestCapture);
         Assert.Equal(ToolRuntimeLanguage.DotNet, requestCapture!.RuntimeLanguage);
+        Assert.Equal(ToolExecutionCapability.Standard, requestCapture.ExecutionCapability);
         Assert.Equal("formatted", response.Output);
         Assert.True(response.Success);
     }
