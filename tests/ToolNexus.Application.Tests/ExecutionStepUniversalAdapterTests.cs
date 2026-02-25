@@ -30,7 +30,7 @@ public sealed class ExecutionStepUniversalAdapterTests
                 request.CorrelationId));
         });
 
-        var step = new ExecutionStep(engine);
+        var step = new ExecutionStep(engine, new UniversalExecutionRequestMapper());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -42,7 +42,7 @@ public sealed class ExecutionStepUniversalAdapterTests
             CancellationToken.None);
 
         Assert.NotNull(requestCapture);
-        Assert.Equal(DotNetExecutionAdapter.DotNetLanguage, requestCapture!.Language);
+        Assert.Equal(ToolRuntimeLanguage.DotNet, requestCapture!.RuntimeLanguage);
         Assert.Equal("formatted", response.Output);
         Assert.True(response.Success);
     }

@@ -4,7 +4,7 @@ namespace ToolNexus.Application.Services.Pipeline;
 
 public interface ILanguageExecutionAdapter
 {
-    string Language { get; }
+    ToolRuntimeLanguage Language { get; }
 
     Task<UniversalToolExecutionResult> ExecuteAsync(
         UniversalToolExecutionRequest request,
