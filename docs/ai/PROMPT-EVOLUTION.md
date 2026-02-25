@@ -67,3 +67,10 @@ New Version: Any admin-area authorization work must include end-to-end identity 
 Problem: Legacy fallback bootstrap still called execution-only `runTool` in some paths, causing DOM nodes (`HTMLDivElement`) to flow into execution contracts and trigger `action.trim/toLowerCase` failures.
 Fix Implemented: Added execution-only guards in both lifecycle fallback invokers and broadened payload normalizer to preserve object inputs while still rejecting non-string actions with safe incidented no-op.
 Result: Runtime mount path no longer invokes execution contracts; invalid action payloads self-heal without uncaught promise failures; structured execution inputs remain supported.
+
+Date: 2026-02-25
+Problem: Task requests increasingly require explicit architecture-first reporting, but agent output expectations were distributed across prompts and not consistently codified in the shared master prompt.
+Prompt: Standardize a mandatory 5-part delivery contract (architecture understanding, implementation approach, exact changes, risks, tests) in the agent master prompt to keep platform work reviewable and maintainable.
+Result: Added a "Required Delivery Output (for architecture-sensitive tasks)" section to `docs/ai/AGENT-MASTER-PROMPT.txt` with clear structure and rationale.
+Improvement: Reduces ambiguity in task handoff quality and aligns implementation reporting with long-term platform governance.
+New Version: For architecture-impacting tasks, default to the 5-part delivery contract unless explicitly overridden by task-specific output requirements.
