@@ -59,7 +59,9 @@ public sealed class ToolsController(
             templatePath = descriptor.TemplatePath,
             dependencies = descriptor.Dependencies,
             styles = descriptor.Styles,
-            cssPath = descriptor.CssPath
+            cssPath = descriptor.CssPath,
+            uiMode = descriptor.UiMode,
+            complexityTier = descriptor.ComplexityTier
         });
     }
 
@@ -138,7 +140,9 @@ public sealed class ToolsController(
             SameCategoryTools = sameCategoryTools,
             NextTools = nextTools,
             RuntimeModulePath = descriptor?.ModulePath,
-            RuntimeCssPath = descriptor?.CssPath
+            RuntimeCssPath = descriptor?.CssPath,
+            RuntimeUiMode = descriptor?.UiMode ?? "auto",
+            RuntimeComplexityTier = descriptor?.ComplexityTier ?? 1
         };
 
         return View("ToolShell", viewModel);

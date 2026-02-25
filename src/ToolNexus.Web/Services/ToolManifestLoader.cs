@@ -136,8 +136,25 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             Dependencies = normalizedDependencies,
             Styles = normalizedStyles,
             CssPath = normalizedStyles.FirstOrDefault(),
-            Category = manifest.Category
+            Category = manifest.Category,
+            UiMode = NormalizeUiMode(manifest.UiMode),
+            ComplexityTier = NormalizeComplexityTier(manifest.ComplexityTier)
         };
+    }
+
+    private string NormalizeUiMode(string? uiMode)
+    {
+        if (string.Equals(uiMode, "custom", StringComparison.OrdinalIgnoreCase))
+        {
+            return "custom";
+        }
+
+        return "auto";
+    }
+
+    private static int NormalizeComplexityTier(int complexityTier)
+    {
+        return Math.Clamp(complexityTier <= 0 ? 1 : complexityTier, 1, 5);
     }
 
     private string[] NormalizeDependencies(string[]? dependencies, string slug)
@@ -279,7 +296,9 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             Dependencies = NormalizeDependencies([], toolView.Slug),
             Styles = styles,
             CssPath = styles.FirstOrDefault(),
-            Category = string.Empty
+            Category = string.Empty,
+            UiMode = "auto",
+            ComplexityTier = 1
         };
     }
 

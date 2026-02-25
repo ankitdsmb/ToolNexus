@@ -18,7 +18,9 @@ public sealed class ToolRegistryService : IToolRegistryService
                 Styles = manifest.Styles?.Length > 0
                     ? manifest.Styles
                     : (string.IsNullOrWhiteSpace(manifest.CssPath) ? [] : [manifest.CssPath]),
-                Category = manifest.Category
+                Category = manifest.Category,
+                UiMode = manifest.UiMode,
+                ComplexityTier = manifest.ComplexityTier
             })
             .ToArray();
 

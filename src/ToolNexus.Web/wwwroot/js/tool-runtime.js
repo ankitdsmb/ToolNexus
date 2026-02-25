@@ -15,6 +15,7 @@ import { createToolStateRegistry as defaultCreateToolStateRegistry } from './run
 import { createRuntimeObservability as defaultCreateRuntimeObservability } from './runtime/runtime-observability.js';
 import { classifyRuntimeError } from './runtime/error-classification-engine.js';
 import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
+import { createAutoToolRuntimeModule } from './runtime/tool-auto-runtime.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -211,6 +212,19 @@ export function createToolRuntime({
     };
   }
 
+  function normalizeUiMode(uiMode) {
+    return String(uiMode ?? 'auto').trim().toLowerCase() === 'custom' ? 'custom' : 'auto';
+  }
+
+  function normalizeComplexityTier(complexityTier) {
+    const parsed = Number.parseInt(complexityTier ?? 1, 10);
+    if (Number.isNaN(parsed)) {
+      return 1;
+    }
+
+    return Math.min(5, Math.max(1, parsed));
+  }
+
   function ensureRootFallback(root, slug, { force = false } = {}) {
     if (!root) {
       return false;
@@ -383,7 +397,9 @@ export function createToolRuntime({
       dependencies: [],
       styles: [],
       modulePath: window.ToolNexusConfig?.runtimeModulePath,
-      templatePath: `/tool-templates/${slug}.html`
+      templatePath: `/tool-templates/${slug}.html`,
+      uiMode: window.ToolNexusConfig?.runtimeUiMode ?? 'auto',
+      complexityTier: window.ToolNexusConfig?.runtimeComplexityTier ?? 1
     };
 
     const safeLoadManifest = async () => {
@@ -472,11 +488,13 @@ export function createToolRuntime({
 
     await safeLoadDependencies();
 
+    const uiMode = normalizeUiMode(manifest.uiMode ?? window.ToolNexusConfig?.runtimeUiMode);
+    const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
     const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
     const safeResolveLifecycle = async () => {
       let module = {};
       if (!modulePath) {
-        return { module, importFailed: false };
+        return { module, importFailed: false, autoSelected: true };
       }
 
       const moduleImportStartedAt = now();
@@ -514,10 +532,22 @@ export function createToolRuntime({
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
-      return { module, importFailed };
+      return { module, importFailed, autoSelected: false };
     };
 
-    const { module, importFailed } = await safeResolveLifecycle();
+    const { module: loadedModule, importFailed } = await safeResolveLifecycle();
+    const enforceCustomForTier = complexityTier >= 4;
+    const shouldUseAutoModule = uiMode === 'auto' || importFailed || !modulePath;
+    const module = shouldUseAutoModule
+      ? createAutoToolRuntimeModule({
+        manifest: { ...manifest, uiMode, complexityTier, operationSchema: window.ToolNexusConfig?.tool?.operationSchema },
+        slug
+      })
+      : loadedModule;
+
+    if (enforceCustomForTier && uiMode === 'auto') {
+      lifecycleLogger.warn(`Tool "${slug}" has complexity tier ${complexityTier} requiring custom UI; auto mode blocked.`);
+    }
 
     const safeMount = async () => {
       const mountStartedAt = now();
