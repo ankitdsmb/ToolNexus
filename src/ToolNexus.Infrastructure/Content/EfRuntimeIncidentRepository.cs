@@ -66,7 +66,7 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
                 .AsNoTracking()
                 .OrderByDescending(x => x.LastOccurredUtc)
                 .Take(take)
-                .Select(x => new RuntimeIncidentSummary(x.ToolSlug, x.Message, x.Severity, x.Count, x.LastOccurredUtc.UtcDateTime))
+                .Select(x => new RuntimeIncidentSummary(x.ToolSlug, x.Message, x.Severity, x.Count, DateTime.SpecifyKind(x.LastOccurredUtc, DateTimeKind.Utc)))
                 .ToListAsync(cancellationToken), cancellationToken);
     }
 
@@ -105,7 +105,7 @@ public sealed class EfRuntimeIncidentRepository(ToolNexusContentDbContext dbCont
                         group.Key,
                         healthScore,
                         incidentCount,
-                        group.Max(item => item.LastOccurredUtc).UtcDateTime,
+                        DateTime.SpecifyKind(group.Max(item => item.LastOccurredUtc), DateTimeKind.Utc),
                         dominantError);
                 })
                 .OrderBy(x => x.HealthScore)
