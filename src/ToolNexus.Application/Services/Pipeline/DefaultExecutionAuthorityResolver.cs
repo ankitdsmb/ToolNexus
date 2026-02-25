@@ -13,7 +13,7 @@ public sealed class DefaultExecutionAuthorityResolver(IOptions<ExecutionAuthorit
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(request);
 
-        var riskTier = ResolveRiskTier(context, request);
+        var riskTier = ResolveRiskTier(context);
 
         if (_options.EnableShadowMode
             && IsMatch(request.Language, _options.ShadowLanguages)
@@ -33,24 +33,9 @@ public sealed class DefaultExecutionAuthorityResolver(IOptions<ExecutionAuthorit
         return ExecutionAuthority.LegacyAuthoritative;
     }
 
-    private string? ResolveRiskTier(ToolExecutionContext context, UniversalToolExecutionRequest request)
+    private static string? ResolveRiskTier(ToolExecutionContext context)
     {
-        if (!string.IsNullOrWhiteSpace(_options.RiskTierOptionKey)
-            && request.Options is not null
-            && request.Options.TryGetValue(_options.RiskTierOptionKey, out var requestRiskTier)
-            && !string.IsNullOrWhiteSpace(requestRiskTier))
-        {
-            return requestRiskTier.Trim();
-        }
-
-        if (!string.IsNullOrWhiteSpace(_options.RiskTierOptionKey)
-            && context.Options.TryGetValue(_options.RiskTierOptionKey, out var contextRiskTier)
-            && !string.IsNullOrWhiteSpace(contextRiskTier))
-        {
-            return contextRiskTier.Trim();
-        }
-
-        return null;
+        return context.Manifest?.SecurityLevel.ToString();
     }
 
     private static bool IsRiskTierMatch(string? value, IReadOnlyCollection<string> configuredValues)

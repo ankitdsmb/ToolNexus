@@ -43,7 +43,15 @@ public sealed class DefaultExecutionAuthorityResolverTests
         });
 
         var context = CreateContext();
-        context.Options["riskTier"] = "high";
+        context.Manifest = new ToolManifest
+        {
+            Slug = "json",
+            Version = "1.0.0",
+            Description = "JSON formatter",
+            Category = "json",
+            SupportedActions = ["format"],
+            SecurityLevel = ToolSecurityLevel.High
+        };
 
         var result = resolver.ResolveAuthority(
             context,
@@ -69,7 +77,7 @@ public sealed class DefaultExecutionAuthorityResolverTests
     }
 
     [Fact]
-    public void ResolveAuthority_UsesRequestRiskTierBeforeContextRiskTier()
+    public void ResolveAuthority_IgnoresClientProvidedRiskTierOverrides()
     {
         var resolver = CreateResolver(new ExecutionAuthorityOptions
         {
@@ -79,7 +87,7 @@ public sealed class DefaultExecutionAuthorityResolverTests
         });
 
         var context = CreateContext();
-        context.Options["riskTier"] = "low";
+        context.Options["riskTier"] = "high";
 
         var request = CreateRequest(
             language: ToolRuntimeLanguage.Python,
@@ -90,7 +98,7 @@ public sealed class DefaultExecutionAuthorityResolverTests
 
         var result = resolver.ResolveAuthority(context, request);
 
-        Assert.Equal(ExecutionAuthority.ShadowOnly, result);
+        Assert.Equal(ExecutionAuthority.LegacyAuthoritative, result);
     }
 
     private static DefaultExecutionAuthorityResolver CreateResolver(ExecutionAuthorityOptions options)
