@@ -74,6 +74,22 @@ public sealed class DefaultExecutionConformanceValidatorTests
         Assert.True(conformance.WasNormalized);
     }
 
+
+
+    [Fact]
+    public void Validate_ValidResult_DoesNotNormalize()
+    {
+        var validator = new DefaultExecutionConformanceValidator();
+        var result = CreateResult(status: "Succeeded", metrics: new Dictionary<string, string>(), incidents: Array.Empty<string>());
+
+        var conformance = validator.Validate(result, Request);
+
+        Assert.True(conformance.IsValid);
+        Assert.False(conformance.WasNormalized);
+        Assert.Equal("Succeeded", conformance.NormalizedStatus);
+        Assert.Empty(conformance.ConformanceIssues);
+    }
+
     private static UniversalToolExecutionResult CreateResult(string? status, IDictionary<string, string>? metrics, IReadOnlyList<string>? incidents)
     {
         return new UniversalToolExecutionResult(

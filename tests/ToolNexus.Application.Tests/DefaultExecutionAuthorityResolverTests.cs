@@ -52,6 +52,47 @@ public sealed class DefaultExecutionAuthorityResolverTests
         Assert.Equal(ExecutionAuthority.ShadowOnly, result);
     }
 
+    [Fact]
+    public void ResolveAuthority_PrefersShadow_WhenBothShadowAndUnifiedMatch()
+    {
+        var resolver = CreateResolver(new ExecutionAuthorityOptions
+        {
+            EnableShadowMode = true,
+            EnableUnifiedAuthority = true,
+            ShadowLanguages = [ToolRuntimeLanguage.Python.Value],
+            UnifiedAuthorityLanguages = [ToolRuntimeLanguage.Python.Value]
+        });
+
+        var result = resolver.ResolveAuthority(CreateContext(), CreateRequest(language: ToolRuntimeLanguage.Python));
+
+        Assert.Equal(ExecutionAuthority.ShadowOnly, result);
+    }
+
+    [Fact]
+    public void ResolveAuthority_UsesRequestRiskTierBeforeContextRiskTier()
+    {
+        var resolver = CreateResolver(new ExecutionAuthorityOptions
+        {
+            EnableShadowMode = true,
+            ShadowLanguages = [ToolRuntimeLanguage.Python.Value],
+            ShadowRiskTiers = ["high"]
+        });
+
+        var context = CreateContext();
+        context.Options["riskTier"] = "low";
+
+        var request = CreateRequest(
+            language: ToolRuntimeLanguage.Python,
+            options: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["riskTier"] = "high"
+            });
+
+        var result = resolver.ResolveAuthority(context, request);
+
+        Assert.Equal(ExecutionAuthority.ShadowOnly, result);
+    }
+
     private static DefaultExecutionAuthorityResolver CreateResolver(ExecutionAuthorityOptions options)
     {
         return new DefaultExecutionAuthorityResolver(Microsoft.Extensions.Options.Options.Create(options));
@@ -64,7 +105,8 @@ public sealed class DefaultExecutionAuthorityResolverTests
 
     private static UniversalToolExecutionRequest CreateRequest(
         ToolRuntimeLanguage? language = null,
-        ToolExecutionCapability? capability = null)
+        ToolExecutionCapability? capability = null,
+        IDictionary<string, string>? options = null)
     {
         return new UniversalToolExecutionRequest(
             "json",
@@ -78,6 +120,6 @@ public sealed class DefaultExecutionAuthorityResolverTests
             null,
             null,
             capability ?? ToolExecutionCapability.Standard,
-            null);
+            options);
     }
 }
