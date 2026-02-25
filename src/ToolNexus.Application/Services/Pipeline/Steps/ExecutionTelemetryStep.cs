@@ -48,8 +48,23 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             WorkerLeaseState = ResolveTag(context, UniversalExecutionEngine.WorkerLeaseStateContextKey, WorkerLeaseState.Released.ToString()),
             OrchestratorUsed = ResolveTag(context, UniversalExecutionEngine.WorkerOrchestratorUsedContextKey, "false"),
             ExecutionAuthority = ResolveTag(context, UniversalExecutionEngine.ExecutionAuthorityContextKey, ExecutionAuthority.LegacyAuthoritative.ToString()),
-            ShadowExecution = ResolveTag(context, UniversalExecutionEngine.ShadowExecutionContextKey, "false")
+            ShadowExecution = ResolveTag(context, UniversalExecutionEngine.ShadowExecutionContextKey, "false"),
+            ConformanceValid = ResolveTag(context, UniversalExecutionEngine.ConformanceValidContextKey, "true"),
+            ConformanceNormalized = ResolveTag(context, UniversalExecutionEngine.ConformanceNormalizedContextKey, "false"),
+            ConformanceIssueCount = ResolveIntTag(context, UniversalExecutionEngine.ConformanceIssueCountContextKey, 0)
         };
+    }
+
+    private static int ResolveIntTag(ToolExecutionContext context, string key, int defaultValue)
+    {
+        if (context.Items.TryGetValue(key, out var value)
+            && value is string tag
+            && int.TryParse(tag, out var parsed))
+        {
+            return parsed;
+        }
+
+        return defaultValue;
     }
 
     private static string ResolveTag(ToolExecutionContext context, string key, string defaultValue)

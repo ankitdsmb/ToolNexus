@@ -5,7 +5,8 @@ namespace ToolNexus.Application.Services.Pipeline;
 public sealed class UniversalExecutionEngine(
     IEnumerable<ILanguageExecutionAdapter> adapters,
     IApiToolExecutionStrategy legacyExecutionStrategy,
-    IExecutionAuthorityResolver authorityResolver) : IUniversalExecutionEngine
+    IExecutionAuthorityResolver authorityResolver,
+    IExecutionConformanceValidator conformanceValidator) : IUniversalExecutionEngine
 {
     public const string LanguageContextKey = "runtime.language";
     public const string AdapterNameContextKey = "runtime.adapterName";
@@ -17,6 +18,9 @@ public sealed class UniversalExecutionEngine(
     public const string WorkerOrchestratorUsedContextKey = "runtime.workerOrchestratorUsed";
     public const string ExecutionAuthorityContextKey = "runtime.executionAuthority";
     public const string ShadowExecutionContextKey = "runtime.shadowExecution";
+    public const string ConformanceValidContextKey = "runtime.conformanceValid";
+    public const string ConformanceNormalizedContextKey = "runtime.conformanceNormalized";
+    public const string ConformanceIssueCountContextKey = "runtime.conformanceIssueCount";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -37,6 +41,9 @@ public sealed class UniversalExecutionEngine(
         context.Items[WorkerLeaseStateContextKey] = WorkerLeaseState.Released.ToString();
         context.Items[WorkerOrchestratorUsedContextKey] = "false";
         context.Items[ShadowExecutionContextKey] = "false";
+        context.Items[ConformanceValidContextKey] = "true";
+        context.Items[ConformanceNormalizedContextKey] = "false";
+        context.Items[ConformanceIssueCountContextKey] = "0";
 
         var authority = authorityResolver.ResolveAuthority(context, request);
         context.Items[ExecutionAuthorityContextKey] = authority.ToString();
@@ -86,6 +93,13 @@ public sealed class UniversalExecutionEngine(
         context.Items[AdapterNameContextKey] = adapter.GetType().Name;
         context.Items[AdapterResolutionStatusContextKey] = "resolved";
 
-        return await adapter.ExecuteAsync(request with { RuntimeLanguage = language }, context, cancellationToken);
+        var adapterResult = await adapter.ExecuteAsync(request with { RuntimeLanguage = language }, context, cancellationToken);
+        var conformance = conformanceValidator.Validate(adapterResult, request);
+
+        context.Items[ConformanceValidContextKey] = conformance.IsValid ? "true" : "false";
+        context.Items[ConformanceNormalizedContextKey] = conformance.WasNormalized ? "true" : "false";
+        context.Items[ConformanceIssueCountContextKey] = conformance.ConformanceIssues.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        return conformance.NormalizedResult;
     }
 }

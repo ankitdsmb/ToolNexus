@@ -25,7 +25,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver);
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
@@ -44,6 +44,9 @@ public sealed class UniversalExecutionEngineTests
         Assert.Equal("resolved", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
         Assert.Equal(ExecutionAuthority.UnifiedAuthoritative.ToString(), context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey]);
         Assert.Equal("false", context.Items[UniversalExecutionEngine.ShadowExecutionContextKey]);
+        Assert.Equal("true", context.Items[UniversalExecutionEngine.ConformanceValidContextKey]);
+        Assert.Equal("false", context.Items[UniversalExecutionEngine.ConformanceNormalizedContextKey]);
+        Assert.Equal("0", context.Items[UniversalExecutionEngine.ConformanceIssueCountContextKey]);
     }
 
     [Fact]
@@ -51,7 +54,7 @@ public sealed class UniversalExecutionEngineTests
     {
         var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
         var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
-        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver);
+        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -66,6 +69,50 @@ public sealed class UniversalExecutionEngineTests
         Assert.Contains("No execution adapter registered", result.Error, StringComparison.Ordinal);
         Assert.Equal("missing", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
         Assert.Equal(0, legacyStrategy.Calls);
+    }
+
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAdapterResultRequiresNormalization_SetsConformanceTelemetry()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
+            true,
+            "ok",
+            null,
+            false,
+            "json",
+            "1.0.0",
+            "dotnet",
+            "format",
+            null,
+            null,
+            5,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null));
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
+
+        var context = new ToolExecutionContext("json", "format", "{}", null)
+        {
+            Policy = new StubPolicy()
+        };
+
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
+            context,
+            CancellationToken.None);
+
+        Assert.Equal("Failed", result.Status);
+        Assert.NotNull(result.Metrics);
+        Assert.NotNull(result.Incidents);
+        Assert.Equal("false", context.Items[UniversalExecutionEngine.ConformanceValidContextKey]);
+        Assert.Equal("true", context.Items[UniversalExecutionEngine.ConformanceNormalizedContextKey]);
+        Assert.Equal("3", context.Items[UniversalExecutionEngine.ConformanceIssueCountContextKey]);
     }
 
     [Fact]
@@ -87,7 +134,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver);
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -124,7 +171,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver);
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
