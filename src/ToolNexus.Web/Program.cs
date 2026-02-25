@@ -138,8 +138,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseResponseCompression();
-app.UseCors();
+
+if (app.Environment.IsProduction())
+{
+    app.UseResponseCompression();
+}
 
 /* =========================================================
    STATIC FILES (Precompressed Support)
@@ -231,6 +234,7 @@ else
    ========================================================= */
 
 app.UseRouting();
+app.UseCors();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
