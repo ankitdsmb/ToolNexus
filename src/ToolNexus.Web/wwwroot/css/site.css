@@ -1842,3 +1842,15 @@ RESPONSIVE
     transition: none;
   }
 }
+
+
+.tool-shell-page__mount-demo {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.tool-shell-page__mount-demo-host {
+  position: relative;
+  min-height: 0;
+}

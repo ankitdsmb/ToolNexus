@@ -17,6 +17,7 @@ import { classifyRuntimeError } from './runtime/error-classification-engine.js';
 import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
 import { createAutoToolRuntimeModule } from './runtime/tool-auto-runtime.js';
 import { useUnifiedToolControl as useUnifiedControlAdapter } from './runtime/tool-unified-control-runtime.js';
+import { createToolContainerManager, normalizeToolMountMode } from './runtime/tool-container-manager.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -58,6 +59,14 @@ function isDevelopmentRuntime() {
 
   return Boolean(window.ToolNexusLogging?.runtimeDebugEnabled);
 }
+
+const TOOL_MOUNT_MODES = Object.freeze({
+  FULLSCREEN: 'fullscreen',
+  PANEL: 'panel',
+  INLINE: 'inline',
+  POPOVER: 'popover',
+  COMMAND: 'command'
+});
 
 function scheduleNonCriticalTask(task) {
   if (typeof task !== 'function') {
@@ -110,7 +119,8 @@ export function createToolRuntime({
   healRuntime = async () => false,
   now = () => (globalThis.performance?.now?.() ?? Date.now()),
   createToolStateRegistry = defaultCreateToolStateRegistry,
-  createRuntimeObservability = defaultCreateRuntimeObservability
+  createRuntimeObservability = defaultCreateRuntimeObservability,
+  containerManager = createToolContainerManager({ doc: document })
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -394,6 +404,104 @@ export function createToolRuntime({
     runtimeApi.getObservabilitySnapshot = () => observability.getSnapshot();
     runtimeApi.getMigrationInsights = () => observability.getMigrationInsights();
     runtimeApi.getDashboardContract = () => observability.getDashboardContract();
+    runtimeApi.getActiveMounts = () => containerManager.getActiveMounts();
+    runtimeApi.unmountTool = async (mountId) => {
+      if (!mountId || mountId === 'fullscreen-root') {
+        return false;
+      }
+
+      return containerManager.unmount(mountId);
+    };
+    runtimeApi.invokeTool = async (toolId, options = {}) => {
+      const slug = String(toolId ?? '').trim();
+      if (!slug) {
+        throw new Error('toolId is required for invokeTool');
+      }
+
+      const mounted = await mountInvocationTarget({ toolId: slug, options, defaults: { mountMode: TOOL_MOUNT_MODES.FULLSCREEN } });
+      mounted.root.dataset.toolSlug = slug;
+      mounted.root.dataset.mountMode = mounted.mountMode;
+      if (options.contextMetadata && typeof options.contextMetadata === 'object') {
+        mounted.root.dataset.contextMetadata = JSON.stringify(options.contextMetadata);
+      }
+
+      await safeMountTool({ root: mounted.root, slug });
+
+      if (options.initialInput !== undefined) {
+        const editor = mounted.root.querySelector('#inputEditor, textarea, input[type="text"], [data-field="payload"]');
+        if (editor && 'value' in editor) {
+          editor.value = typeof options.initialInput === 'string'
+            ? options.initialInput
+            : JSON.stringify(options.initialInput);
+        }
+      }
+
+      if (mounted.mountId !== 'fullscreen-root') {
+        containerManager.setCleanup(mounted.mountId, mounted.root[RUNTIME_CLEANUP_KEY]);
+      }
+
+      return {
+        mountId: mounted.mountId,
+        mountMode: mounted.mountMode,
+        root: mounted.root,
+        unmount: async () => {
+          if (mounted.mountId === 'fullscreen-root') {
+            await mounted.cleanup();
+            return true;
+          }
+
+          return containerManager.unmount(mounted.mountId);
+        }
+      };
+    };
+  }
+
+
+  function buildInvocationConfig({ options = {}, defaults = {} } = {}) {
+    const mountMode = normalizeToolMountMode(options.mountMode ?? defaults.mountMode ?? TOOL_MOUNT_MODES.FULLSCREEN);
+    return {
+      mountMode,
+      initialInput: options.initialInput ?? null,
+      contextMetadata: options.contextMetadata ?? {}
+    };
+  }
+
+  async function mountInvocationTarget({ toolId, options = {}, defaults = {} } = {}) {
+    const invocation = buildInvocationConfig({ options, defaults });
+    if (invocation.mountMode === TOOL_MOUNT_MODES.FULLSCREEN) {
+      const root = getRoot();
+      if (!root) {
+        throw new Error('runtime assertion failed: root missing for invocation');
+      }
+
+      await runPreviousCleanup(root);
+      root.dataset.mountMode = TOOL_MOUNT_MODES.FULLSCREEN;
+
+      return {
+        mountId: 'fullscreen-root',
+        root,
+        mountMode: invocation.mountMode,
+        async cleanup() {
+          await runPreviousCleanup(root);
+        }
+      };
+    }
+
+    const host = options.host ?? getRoot()?.parentElement ?? document.body;
+    const mounted = containerManager.mount({
+      host,
+      toolId,
+      mountMode: invocation.mountMode
+    });
+
+    return {
+      mountId: mounted.mountId,
+      root: mounted.root,
+      mountMode: mounted.mountMode,
+      async cleanup() {
+        await containerManager.unmount(mounted.mountId);
+      }
+    };
   }
 
   function detectToolClassification({ hasManifest, lifecycleContract, modulePath, legacyBridgeUsed, mountError }) {
@@ -987,6 +1095,7 @@ export function createToolRuntime({
       }
 
       logger.info(`Bootstrapping tool runtime for "${slug}".`);
+      root.dataset.mountMode = TOOL_MOUNT_MODES.FULLSCREEN;
 
       try {
         await safeMountTool({ root, slug });
@@ -1006,6 +1115,14 @@ export function createToolRuntime({
 
   return {
     bootstrapToolRuntime,
+    invokeTool: async (toolId, options = {}) => {
+      const runtimeApi = (window.ToolNexus ??= {}).runtime;
+      if (runtimeApi?.invokeTool) {
+        return runtimeApi.invokeTool(toolId, options);
+      }
+
+      throw new Error('runtime API unavailable');
+    },
     getLastError: () => lastError,
     getDiagnostics: () => ({
       ...runtimeMetrics,
