@@ -100,6 +100,8 @@ public sealed class ExecutionTelemetryStepTests
 
         var evt = Assert.Single(recorder.Events);
         Assert.Equal("dotnet", evt.Language);
+        Assert.Equal("dotnet", evt.RuntimeLanguage);
+        Assert.Equal("json", evt.ToolId);
         Assert.Equal("DotNetExecutionAdapter", evt.AdapterName);
         Assert.Equal("resolved", evt.AdapterResolutionStatus);
         Assert.Equal("sandboxed", evt.Capability);

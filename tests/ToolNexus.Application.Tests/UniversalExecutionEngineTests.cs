@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services.Pipeline;
 using ToolNexus.Application.Services.Policies;
@@ -25,7 +26,11 @@ public sealed class UniversalExecutionEngineTests
             null,
             5,
             null,
-            null));
+            null,
+            null,
+            "Succeeded",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            Array.Empty<string>()));
         var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder(), new StubAdmissionController());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
@@ -315,6 +320,66 @@ public sealed class UniversalExecutionEngineTests
         Assert.False(result.Success);
         Assert.Equal("CapabilityBlocked", context.Items[UniversalExecutionEngine.AdmissionReasonContextKey]);
         Assert.Equal(0, adapter.Calls);
+    }
+
+
+    [Fact]
+    public async Task ExecuteAsync_PythonTextAnalyzer_UsesAdapterAndReturnsRuntimeDisabledPreview()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
+        var orchestrator = new WorkerExecutionOrchestrator(new NoOpWorkerPoolCoordinator(), new NoOpWorkerRuntimeManager());
+        var pythonAdapter = new PythonExecutionAdapter(orchestrator);
+        var engine = new UniversalExecutionEngine(
+            [pythonAdapter],
+            legacyStrategy,
+            authorityResolver,
+            new DefaultExecutionConformanceValidator(),
+            new DefaultExecutionSnapshotBuilder(),
+            new StubAdmissionController());
+
+        var inputPayload = "{\"text\":\"ToolNexus delivers deterministic tooling. Tooling improves developer quality.\"}";
+        var context = new ToolExecutionContext("text-intelligence-analyzer", "analyze", inputPayload, null)
+        {
+            Policy = new StubPolicy()
+        };
+
+        var request = new UniversalToolExecutionRequest(
+            "text-intelligence-analyzer",
+            "1.0.0",
+            ToolRuntimeLanguage.Python,
+            "analyze",
+            inputPayload,
+            null,
+            null,
+            1_000,
+            null,
+            null,
+            ToolExecutionCapability.Sandboxed);
+
+        var result = await engine.ExecuteAsync(request, context, CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.Equal(0, legacyStrategy.Calls);
+        Assert.Equal("resolved", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
+        Assert.Equal(ExecutionAuthority.UnifiedAuthoritative.ToString(), context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey]);
+        Assert.True(context.Items.ContainsKey(UniversalExecutionEngine.ExecutionSnapshotIdContextKey));
+        Assert.Equal("true", context.Items[UniversalExecutionEngine.ConformanceValidContextKey]);
+        Assert.Equal("python", context.Items[UniversalExecutionEngine.LanguageContextKey]);
+
+        using var output = JsonDocument.Parse(result.Output);
+        Assert.Equal("runtime-not-enabled", output.RootElement.GetProperty("status").GetString());
+
+        var preview = output.RootElement.GetProperty("analysisPreview");
+        Assert.True(preview.TryGetProperty("wordCount", out _));
+        Assert.True(preview.TryGetProperty("sentenceCount", out _));
+        Assert.True(preview.TryGetProperty("avgWordLength", out _));
+        Assert.True(preview.TryGetProperty("topKeywords", out _));
+        Assert.True(preview.TryGetProperty("readabilityScore", out _));
+
+        Assert.Equal("Succeeded", result.Status);
+        Assert.NotNull(result.Metrics);
+        Assert.NotNull(result.Incidents);
     }
 
     private sealed class StubAdapter(ToolRuntimeLanguage language, UniversalToolExecutionResult result) : ILanguageExecutionAdapter

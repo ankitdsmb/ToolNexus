@@ -15,6 +15,7 @@ public static class ToolExecutorRegistration
         services.AddSingleton<IToolExecutor, HtmlToolExecutor>();
         services.AddSingleton<IToolExecutor, JsonToolExecutor>();
         services.AddSingleton<IToolExecutor, JsonValidatorToolExecutor>();
+        services.AddSingleton<IToolExecutor, JsonToolkitProToolExecutor>();
         services.AddSingleton<IToolExecutor, MinifierToolExecutor>();
         services.AddSingleton<IToolExecutor, XmlToolExecutor>();
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("json-to-xml"));
@@ -36,6 +37,7 @@ public static class ToolExecutorRegistration
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("yaml-to-json"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("json-to-yaml"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("file-merge"));
+        services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("text-intelligence-analyzer"));
 
         return services;
     }

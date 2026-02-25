@@ -31,6 +31,14 @@ const PREVIEW_ACTIONS = [
   CASE_ACTIONS.KEBAB_CASE
 ];
 
+const VALID_ACTIONS = new Set(Object.values(CASE_ACTIONS));
+
+function resolveAction(action) {
+  const normalizedAction = String(action ?? DEFAULT_ACTION).trim().toLowerCase();
+  const aliasedAction = ACTION_ALIASES[normalizedAction] ?? normalizedAction;
+  return VALID_ACTIONS.has(aliasedAction) ? aliasedAction : DEFAULT_ACTION;
+}
+
 const Utils = {
   normalizeLineEndings(value) {
     return (value ?? '').replace(/\r\n?/g, '\n');
@@ -95,8 +103,7 @@ const Parser = {
 
 const Engine = {
   convert(action, input) {
-    const normalizedAction = String(action ?? DEFAULT_ACTION).trim().toLowerCase();
-    const resolvedAction = ACTION_ALIASES[normalizedAction] ?? normalizedAction ?? DEFAULT_ACTION;
+    const resolvedAction = resolveAction(action);
     const normalizedInput = Normalizer.normalizeInput(input);
     const lines = normalizedInput.split('\n');
 
@@ -428,8 +435,7 @@ class CaseConverterUi {
 
 export async function runTool(action, input) {
   try {
-    const normalizedAction = String(action ?? DEFAULT_ACTION).trim().toLowerCase();
-    const resolvedAction = ACTION_ALIASES[normalizedAction] ?? normalizedAction ?? DEFAULT_ACTION;
+    const resolvedAction = resolveAction(action);
     return Engine.convert(resolvedAction, input);
   } catch (error) {
     return ErrorHandler.handle(error);
