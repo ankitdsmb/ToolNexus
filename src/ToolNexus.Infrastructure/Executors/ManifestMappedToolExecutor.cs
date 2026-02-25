@@ -31,7 +31,8 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
         ["html-entities"] = ["encode", "decode"],
         ["yaml-to-json"] = ["convert"],
         ["json-to-yaml"] = ["convert"],
-        ["file-merge"] = ["merge"]
+        ["file-merge"] = ["merge"],
+        ["text-intelligence-analyzer"] = ["analyze"]
     };
 
     public override string Slug { get; } = slug;
@@ -85,10 +86,51 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
             ("yaml-to-json", "convert") => YamlToJson(request.Input),
             ("json-to-yaml", "convert") => JsonToYaml(request.Input),
             ("file-merge", "merge") => request.Input,
+            ("text-intelligence-analyzer", "analyze") => TextIntelligenceFallback(request.Input),
             _ => throw new InvalidOperationException($"Unsupported route: {Slug}/{action}")
         };
 
         return Task.FromResult(ToolResult.Ok(output));
+    }
+
+
+    private static string TextIntelligenceFallback(string input)
+    {
+        var content = input?.Trim() ?? string.Empty;
+        var words = Regex.Matches(content, @"\b[\p{L}\p{Nd}']+\b", RegexOptions.CultureInvariant);
+        var sentences = Regex.Matches(content, @"[.!?]+", RegexOptions.CultureInvariant).Count;
+        if (sentences == 0 && words.Count > 0)
+        {
+            sentences = 1;
+        }
+
+        var avgWordLength = words.Count == 0 ? 0d : words.Average(x => x.Value.Length);
+        var keywords = words
+            .Select(x => x.Value.ToLowerInvariant())
+            .Where(x => x.Length >= 4)
+            .GroupBy(x => x, StringComparer.Ordinal)
+            .OrderByDescending(g => g.Count())
+            .ThenBy(g => g.Key, StringComparer.Ordinal)
+            .Take(5)
+            .Select(g => g.Key)
+            .ToArray();
+
+        var readability = sentences == 0
+            ? 0d
+            : Math.Round((double)words.Count / sentences + avgWordLength, 2, MidpointRounding.AwayFromZero);
+
+        return JsonSerializer.Serialize(new
+        {
+            status = "runtime-not-enabled",
+            analysisPreview = new
+            {
+                wordCount = words.Count,
+                sentenceCount = sentences,
+                avgWordLength = Math.Round(avgWordLength, 2, MidpointRounding.AwayFromZero),
+                topKeywords = keywords,
+                readabilityScore = readability
+            }
+        });
     }
 
     private static string JsonToXml(string input) => JsonToXmlConverter.Convert(input);
