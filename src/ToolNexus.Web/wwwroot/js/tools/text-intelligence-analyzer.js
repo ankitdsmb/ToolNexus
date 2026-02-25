@@ -1,143 +1,205 @@
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+const TOOL_SLUG = 'text-intelligence-analyzer';
+const ACTION = 'analyze';
+const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
 
-const TOOL_ID = 'text-intelligence-analyzer';
+export const toolRuntimeType = 'mount';
+
+function normalizePathPrefix(pathPrefix) {
+  const normalized = (pathPrefix ?? '').toString().trim();
+  if (!normalized) {
+    return DEFAULT_EXECUTION_PATH_PREFIX;
+  }
+
+  return `/${normalized.replace(/^\/+/, '').replace(/\/+$/, '')}`;
+}
 
 function resolveRoot() {
-  return document.querySelector(`.tool-page[data-slug="${TOOL_ID}"]`) ?? document.getElementById('tool-root');
+  return document.querySelector(`[data-tool="${TOOL_SLUG}"]`) ?? document.querySelector('.tool-page');
 }
 
-function resolveRootFromContext(rootOrContext) {
-  if (rootOrContext instanceof Element) {
-    return rootOrContext;
-  }
+function createRuntimeNodes(doc = document) {
+  const container = doc.createElement('section');
+  container.className = 'tool-panel tool-panel--runtime';
+  container.dataset.runtimeContainer = TOOL_SLUG;
 
-  if (rootOrContext?.root instanceof Element) {
-    return rootOrContext.root;
-  }
+  const title = doc.createElement('h2');
+  title.textContent = 'Text Intelligence Analyzer';
 
-  if (rootOrContext?.toolRoot instanceof Element) {
-    return rootOrContext.toolRoot;
-  }
+  const inputLabel = doc.createElement('label');
+  inputLabel.htmlFor = `${TOOL_SLUG}-input`;
+  inputLabel.textContent = 'Input text';
 
-  return resolveRoot();
+  const textarea = doc.createElement('textarea');
+  textarea.id = `${TOOL_SLUG}-input`;
+  textarea.rows = 10;
+  textarea.placeholder = 'Paste text to analyze...';
+
+  const analyzeButton = doc.createElement('button');
+  analyzeButton.type = 'button';
+  analyzeButton.className = 'tool-btn tool-btn--primary';
+  analyzeButton.textContent = 'Analyze';
+
+  const status = doc.createElement('p');
+  status.className = 'result-indicator result-indicator--idle';
+  status.setAttribute('role', 'status');
+  status.textContent = 'Ready';
+
+  const result = doc.createElement('pre');
+  result.className = 'tool-runtime-output';
+  result.setAttribute('aria-live', 'polite');
+  result.textContent = 'No output yet.';
+
+  container.append(title, inputLabel, textarea, analyzeButton, status, result);
+
+  return { container, textarea, analyzeButton, status, result };
 }
 
-function resolveExecutionUrl() {
-  const apiBaseUrl = window.ToolNexusConfig?.apiBaseUrl ?? '';
-  const pathPrefix = window.ToolNexusConfig?.toolExecutionPathPrefix ?? '/api/v1/tools';
-  return `${apiBaseUrl}${pathPrefix}/${TOOL_ID}/analyze`;
+async function executeAnalysis(text) {
+  const apiBase = (window.ToolNexusConfig?.apiBaseUrl ?? '').trim().replace(/\/$/, '');
+  const pathPrefix = normalizePathPrefix(window.ToolNexusConfig?.toolExecutionPathPrefix);
+  const endpointPath = `${pathPrefix}/${encodeURIComponent(TOOL_SLUG)}/${encodeURIComponent(ACTION)}`;
+  const endpoint = apiBase ? `${apiBase}${endpointPath}` : endpointPath;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: JSON.stringify({ text }) })
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error('Invalid response from execution API.');
+  }
+
+  if (!response.ok) {
+    const detail = payload?.error ?? payload?.detail ?? 'Execution failed.';
+    throw new Error(detail);
+  }
+
+  return payload;
 }
 
-class TextIntelligenceAnalyzerRuntime {
-  constructor(root) {
-    this.root = root;
-    this.abortController = new AbortController();
-    this.run = this.run.bind(this);
-  }
-
-  init() {
-    try {
-      const inputPanel = this.root.querySelector('[data-tool-input]');
-      const outputPanel = this.root.querySelector('[data-tool-output]');
-      const actionsPanel = this.root.querySelector('[data-tool-actions]');
-
-      if (!inputPanel || !outputPanel || !actionsPanel) {
-        throw new Error('Required runtime panels are missing.');
-      }
-
-      inputPanel.innerHTML = `
-        <label for="textAnalyzerInput" class="tool-label">Text input</label>
-        <textarea id="textAnalyzerInput" class="tool-textarea" rows="14" placeholder="Paste text to analyze"></textarea>
-      `;
-
-      outputPanel.innerHTML = `
-        <label for="textAnalyzerOutput" class="tool-label">Insights</label>
-        <pre id="textAnalyzerOutput" class="tool-output" aria-live="polite"></pre>
-      `;
-
-      actionsPanel.innerHTML = `
-        <button id="textAnalyzerRun" type="button" class="tool-btn">Analyze</button>
-      `;
-
-      this.input = this.root.querySelector('#textAnalyzerInput');
-      this.output = this.root.querySelector('#textAnalyzerOutput');
-      this.runButton = this.root.querySelector('#textAnalyzerRun');
-
-      this.input.value = 'ToolNexus provides stable developer tooling.';
-      this.runButton.addEventListener('click', this.run, { signal: this.abortController.signal });
-    } catch (error) {
-      console.error('tool mount error', error);
-      throw error;
-    }
-  }
-
-  async run() {
-    try {
-      this.runButton.disabled = true;
-      this.output.textContent = 'Running...';
-
-      const response = await fetch(resolveExecutionUrl(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: this.input.value ?? '' })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Execution failed (${response.status})`);
-      }
-
-      const result = await response.json();
-      const value = result?.output ?? result?.result ?? result;
-      this.output.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
-    } catch (error) {
-      console.error('tool mount error', error);
-      this.output.textContent = error?.message ?? String(error);
-    } finally {
-      this.runButton.disabled = false;
-    }
-  }
-
-  destroy() {
-    this.abortController.abort();
+function renderPayload(resultNode, payload) {
+  try {
+    resultNode.textContent = JSON.stringify(payload, null, 2);
+  } catch {
+    resultNode.textContent = 'Invalid response payload.';
   }
 }
 
-export function create(rootOrContext = resolveRoot()) {
-  const root = resolveRootFromContext(rootOrContext);
+export function create(root = resolveRoot()) {
   if (!root) {
     return null;
   }
 
-  return getToolPlatformKernel().registerTool({
-    id: TOOL_ID,
-    root,
-    init: () => {
-      const app = new TextIntelligenceAnalyzerRuntime(root);
-      app.init();
-      return app;
-    },
-    destroy: (app) => app?.destroy?.()
-  });
-}
-
-export function init(rootOrContext = resolveRoot()) {
-  try {
-    const handle = create(rootOrContext);
-    handle?.init();
-    return handle;
-  } catch (error) {
-    console.error('tool mount error', error);
-    throw error;
+  const existing = root.querySelector(`[data-runtime-container="${TOOL_SLUG}"]`);
+  if (existing) {
+    return { root, mounted: true, nodes: null, removeListeners: () => {} };
   }
+
+  const nodes = createRuntimeNodes(root.ownerDocument || document);
+  root.appendChild(nodes.container);
+
+  return {
+    root,
+    nodes,
+    mounted: false,
+    removeListeners: () => {}
+  };
 }
 
-export function destroy(root = resolveRoot()) {
-  if (!root) {
+export function mount(context = create()) {
+  if (!context?.root || !context?.nodes || context.mounted) {
+    return context ?? null;
+  }
+
+  const { textarea, analyzeButton, status, result } = context.nodes;
+
+  const onAnalyze = async () => {
+    const text = textarea.value?.trim() ?? '';
+    if (!text) {
+      status.textContent = 'Please provide text before analyzing.';
+      result.textContent = 'Execution failed: input is empty.';
+      return;
+    }
+
+    analyzeButton.disabled = true;
+    status.textContent = 'Analyzing…';
+
+    try {
+      const payload = await executeAnalysis(text);
+      const runtimeStatus = payload?.output && typeof payload.output === 'string'
+        ? (() => {
+            try {
+              return JSON.parse(payload.output)?.status;
+            } catch {
+              return null;
+            }
+          })()
+        : null;
+
+      if (runtimeStatus === 'runtime-not-enabled') {
+        status.textContent = 'Runtime disabled: showing fallback analysis.';
+      } else {
+        status.textContent = 'Analysis completed.';
+      }
+
+      renderPayload(result, payload);
+    } catch (error) {
+      status.textContent = 'Execution failed.';
+      result.textContent = error?.message || 'Execution failed.';
+    } finally {
+      analyzeButton.disabled = false;
+    }
+  };
+
+  analyzeButton.addEventListener('click', onAnalyze);
+
+  return {
+    ...context,
+    mounted: true,
+    removeListeners: () => analyzeButton.removeEventListener('click', onAnalyze)
+  };
+}
+
+export function init(root = resolveRoot()) {
+  const created = create(root);
+  if (!created) {
+    return null;
+  }
+
+  return mount(created);
+}
+
+export function destroy(context = null, root = resolveRoot()) {
+  const effectiveRoot = context?.root ?? root;
+  context?.removeListeners?.();
+
+  if (!effectiveRoot) {
     return;
   }
 
-  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+  const container = effectiveRoot.querySelector(`[data-runtime-container="${TOOL_SLUG}"]`);
+  container?.remove();
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => init(), { once: true });
+  } else {
+    init();
+  }
 }
 
 window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[TOOL_ID] = { create, init, destroy };
+window.ToolNexusModules[TOOL_SLUG] = {
+  toolRuntimeType,
+  create,
+  mount,
+  init,
+  destroy,
+  runtime: { toolRuntimeType }
+};
