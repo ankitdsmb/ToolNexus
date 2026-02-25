@@ -46,7 +46,9 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             WorkerManagerUsed = ResolveTag(context, UniversalExecutionEngine.WorkerManagerUsedContextKey, "false"),
             LeaseAcquired = ResolveTag(context, UniversalExecutionEngine.WorkerLeaseAcquiredContextKey, "false"),
             WorkerLeaseState = ResolveTag(context, UniversalExecutionEngine.WorkerLeaseStateContextKey, WorkerLeaseState.Released.ToString()),
-            OrchestratorUsed = ResolveTag(context, UniversalExecutionEngine.WorkerOrchestratorUsedContextKey, "false")
+            OrchestratorUsed = ResolveTag(context, UniversalExecutionEngine.WorkerOrchestratorUsedContextKey, "false"),
+            ExecutionAuthority = ResolveTag(context, UniversalExecutionEngine.ExecutionAuthorityContextKey, ExecutionAuthority.LegacyAuthoritative.ToString()),
+            ShadowExecution = ResolveTag(context, UniversalExecutionEngine.ShadowExecutionContextKey, "false")
         };
     }
 

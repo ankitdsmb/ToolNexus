@@ -17,4 +17,6 @@ public sealed class ToolExecutionEvent
     public string LeaseAcquired { get; init; } = string.Empty;
     public string WorkerLeaseState { get; init; } = string.Empty;
     public string OrchestratorUsed { get; init; } = string.Empty;
+    public string ExecutionAuthority { get; init; } = string.Empty;
+    public string ShadowExecution { get; init; } = string.Empty;
 }
