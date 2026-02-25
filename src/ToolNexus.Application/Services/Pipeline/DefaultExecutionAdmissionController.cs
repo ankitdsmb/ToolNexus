@@ -1,10 +1,13 @@
 using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
+using ToolNexus.Application.Services;
 
 namespace ToolNexus.Application.Services.Pipeline;
 
-public sealed class DefaultExecutionAdmissionController(IOptions<ExecutionAdmissionOptions> options) : IExecutionAdmissionController
+public sealed class DefaultExecutionAdmissionController(
+    IOptions<ExecutionAdmissionOptions> options,
+    IToolQualityScoreRepository qualityScoreRepository) : IExecutionAdmissionController
 {
     private const string DecisionSourceName = "DefaultExecutionAdmissionController";
     private readonly ExecutionAdmissionOptions _options = options.Value;
@@ -35,6 +38,18 @@ public sealed class DefaultExecutionAdmissionController(IOptions<ExecutionAdmiss
         if (IsCapabilityBlocked(snapshot.ExecutionCapability.Value))
         {
             return new ExecutionAdmissionDecision(false, "CapabilityBlocked", DecisionSourceName, metadata);
+        }
+
+        var latestQualityScore = qualityScoreRepository
+            .GetLatestByToolIdAsync(context.ToolId, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+
+        if (latestQualityScore is not null && latestQualityScore.Score < _options.MinimumQualityScore)
+        {
+            metadata["qualityScore"] = latestQualityScore.Score.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            metadata["minimumQualityScore"] = _options.MinimumQualityScore.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            return new ExecutionAdmissionDecision(false, "LowQualityScore", DecisionSourceName, metadata);
         }
 
         return new ExecutionAdmissionDecision(true, "Allowed", DecisionSourceName, metadata);

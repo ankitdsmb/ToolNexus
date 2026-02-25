@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
+using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Pipeline;
 using Xunit;
 
@@ -55,8 +56,21 @@ public sealed class DefaultExecutionAdmissionControllerTests
         Assert.Equal("CapabilityBlocked", decision.ReasonCode);
     }
 
-    private static DefaultExecutionAdmissionController CreateController(ExecutionAdmissionOptions options)
-        => new(Microsoft.Extensions.Options.Options.Create(options));
+    [Fact]
+    public void Evaluate_DeniesLowQualityScore()
+    {
+        var options = new ExecutionAdmissionOptions { MinimumQualityScore = 75m };
+        var score = new ToolQualityScoreRecord("json", 60m, 58m, 63m, 59m, DateTime.UtcNow);
+        var controller = CreateController(options, score);
+
+        var decision = controller.Evaluate(CreateSnapshot(), CreateContext());
+
+        Assert.False(decision.IsAllowed);
+        Assert.Equal("LowQualityScore", decision.ReasonCode);
+    }
+
+    private static DefaultExecutionAdmissionController CreateController(ExecutionAdmissionOptions options, ToolQualityScoreRecord? score = null)
+        => new(Microsoft.Extensions.Options.Options.Create(options), new FakeToolQualityScoreRepository(score));
 
     private static ExecutionSnapshot CreateSnapshot(
         ExecutionAuthority authority = ExecutionAuthority.UnifiedAuthoritative,
@@ -82,4 +96,15 @@ public sealed class DefaultExecutionAdmissionControllerTests
 
     private static ToolExecutionContext CreateContext()
         => new("json", "format", "{}", null);
+
+    private sealed class FakeToolQualityScoreRepository(ToolQualityScoreRecord? score) : IToolQualityScoreRepository
+    {
+        public Task AddAsync(ToolQualityScoreRecord inputScore, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task<ToolQualityScoreDashboard> GetDashboardAsync(ToolQualityScoreQuery query, CancellationToken cancellationToken)
+            => Task.FromResult(new ToolQualityScoreDashboard([], []));
+
+        public Task<ToolQualityScoreRecord?> GetLatestByToolIdAsync(string toolId, CancellationToken cancellationToken)
+            => Task.FromResult(score);
+    }
 }

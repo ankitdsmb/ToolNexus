@@ -28,6 +28,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<ExecutionConformanceResultEntity> ExecutionConformanceResults => Set<ExecutionConformanceResultEntity>();
     public DbSet<ExecutionAuthorityDecisionEntity> ExecutionAuthorityDecisions => Set<ExecutionAuthorityDecisionEntity>();
     public DbSet<GovernanceDecisionEntity> GovernanceDecisions => Set<GovernanceDecisionEntity>();
+    public DbSet<ToolQualityScoreEntity> ToolQualityScores => Set<ToolQualityScoreEntity>();
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -320,6 +321,20 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_governance_decisions_tool_id");
             entity.HasIndex(x => x.PolicyVersion).HasDatabaseName("idx_governance_decisions_policy_version");
             entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_governance_decisions_timestamp_utc");
+        });
+
+        modelBuilder.Entity<ToolQualityScoreEntity>(entity =>
+        {
+            entity.ToTable("tool_quality_scores");
+            entity.HasKey(x => new { x.ToolId, x.TimestampUtc });
+            entity.Property(x => x.ToolId).HasColumnName("tool_id").HasMaxLength(120);
+            entity.Property(x => x.Score).HasColumnName("score").HasPrecision(5, 2);
+            entity.Property(x => x.ArchitectureScore).HasColumnName("architecture_score").HasPrecision(5, 2);
+            entity.Property(x => x.TestCoverageScore).HasColumnName("test_coverage_score").HasPrecision(5, 2);
+            entity.Property(x => x.CraftScore).HasColumnName("craft_score").HasPrecision(5, 2);
+            entity.Property(x => x.TimestampUtc).HasColumnName("timestamp_utc").HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_tool_quality_scores_tool_id");
+            entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_tool_quality_scores_timestamp_utc");
         });
 
         modelBuilder.Entity<ExecutionConformanceResultEntity>(entity =>
