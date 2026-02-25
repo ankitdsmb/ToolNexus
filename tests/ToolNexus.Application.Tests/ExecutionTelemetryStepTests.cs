@@ -26,6 +26,8 @@ public sealed class ExecutionTelemetryStepTests
         Assert.True(evt.Success);
         Assert.Equal("json", evt.ToolSlug);
         Assert.Equal("server", evt.ExecutionMode);
+        Assert.Equal(ExecutionAuthority.LegacyAuthoritative.ToString(), evt.ExecutionAuthority);
+        Assert.Equal("false", evt.ShadowExecution);
     }
 
     [Fact]
@@ -78,6 +80,8 @@ public sealed class ExecutionTelemetryStepTests
         context.Items[UniversalExecutionEngine.WorkerLeaseAcquiredContextKey] = "true";
         context.Items[UniversalExecutionEngine.WorkerLeaseStateContextKey] = WorkerLeaseState.Busy.ToString();
         context.Items[UniversalExecutionEngine.WorkerOrchestratorUsedContextKey] = "true";
+        context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey] = ExecutionAuthority.ShadowOnly.ToString();
+        context.Items[UniversalExecutionEngine.ShadowExecutionContextKey] = "true";
 
         await step.InvokeAsync(
             context,
@@ -93,6 +97,8 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Equal("true", evt.LeaseAcquired);
         Assert.Equal(WorkerLeaseState.Busy.ToString(), evt.WorkerLeaseState);
         Assert.Equal("true", evt.OrchestratorUsed);
+        Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), evt.ExecutionAuthority);
+        Assert.Equal("true", evt.ShadowExecution);
     }
 
     [Fact]

@@ -34,6 +34,10 @@ public static class DependencyInjection
             .Validate(x => x.DailyMetricsSnapshotsTtlSeconds > 0, "PlatformCache:DailyMetricsSnapshotsTtlSeconds must be greater than zero.")
             .ValidateOnStart();
 
+        services
+            .AddOptions<ExecutionAuthorityOptions>()
+            .Bind(configuration.GetSection(ExecutionAuthorityOptions.SectionName));
+
         services.AddToolExecutionPipeline();
         services.AddHttpContextAccessor();
         services.AddSingleton<IToolExecutionEventService, NoOpToolExecutionEventService>();

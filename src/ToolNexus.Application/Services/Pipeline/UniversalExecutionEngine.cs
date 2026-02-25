@@ -2,7 +2,10 @@ using ToolNexus.Application.Models;
 
 namespace ToolNexus.Application.Services.Pipeline;
 
-public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapter> adapters) : IUniversalExecutionEngine
+public sealed class UniversalExecutionEngine(
+    IEnumerable<ILanguageExecutionAdapter> adapters,
+    IApiToolExecutionStrategy legacyExecutionStrategy,
+    IExecutionAuthorityResolver authorityResolver) : IUniversalExecutionEngine
 {
     public const string LanguageContextKey = "runtime.language";
     public const string AdapterNameContextKey = "runtime.adapterName";
@@ -12,6 +15,8 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
     public const string WorkerLeaseAcquiredContextKey = "runtime.workerLeaseAcquired";
     public const string WorkerLeaseStateContextKey = "runtime.workerLeaseState";
     public const string WorkerOrchestratorUsedContextKey = "runtime.workerOrchestratorUsed";
+    public const string ExecutionAuthorityContextKey = "runtime.executionAuthority";
+    public const string ShadowExecutionContextKey = "runtime.shadowExecution";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -31,6 +36,30 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
         context.Items[WorkerLeaseAcquiredContextKey] = "false";
         context.Items[WorkerLeaseStateContextKey] = WorkerLeaseState.Released.ToString();
         context.Items[WorkerOrchestratorUsedContextKey] = "false";
+        context.Items[ShadowExecutionContextKey] = "false";
+
+        var authority = authorityResolver.ResolveAuthority(context, request);
+        context.Items[ExecutionAuthorityContextKey] = authority.ToString();
+
+        if (authority == ExecutionAuthority.LegacyAuthoritative)
+        {
+            context.Items[AdapterNameContextKey] = "LegacyDotNetStrategy";
+            context.Items[AdapterResolutionStatusContextKey] = "legacy";
+
+            var response = await legacyExecutionStrategy.ExecuteAsync(
+                request.ToolId,
+                request.Operation,
+                request.InputPayload,
+                context.Policy,
+                cancellationToken);
+
+            return UniversalToolExecutionResult.FromToolExecutionResponse(response, request, durationMs: 0);
+        }
+
+        if (authority == ExecutionAuthority.ShadowOnly)
+        {
+            context.Items[ShadowExecutionContextKey] = "true";
+        }
 
         if (!_adaptersByLanguage.TryGetValue(language.Value, out var adapter))
         {

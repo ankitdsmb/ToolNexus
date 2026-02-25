@@ -9,6 +9,8 @@ public sealed class UniversalExecutionEngineTests
     [Fact]
     public async Task ExecuteAsync_UsesRegisteredAdapterByLanguage()
     {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
         var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
             true,
             "ok",
@@ -23,7 +25,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter]);
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver);
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
@@ -38,13 +40,18 @@ public sealed class UniversalExecutionEngineTests
         Assert.True(result.Success);
         Assert.Equal("ok", result.Output);
         Assert.Equal(1, adapter.Calls);
+        Assert.Equal(0, legacyStrategy.Calls);
         Assert.Equal("resolved", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
+        Assert.Equal(ExecutionAuthority.UnifiedAuthoritative.ToString(), context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey]);
+        Assert.Equal("false", context.Items[UniversalExecutionEngine.ShadowExecutionContextKey]);
     }
 
     [Fact]
     public async Task ExecuteAsync_ReturnsNormalizedFailureWhenAdapterIsMissing()
     {
-        var engine = new UniversalExecutionEngine([]);
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
+        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver);
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -58,6 +65,82 @@ public sealed class UniversalExecutionEngineTests
         Assert.False(result.Success);
         Assert.Contains("No execution adapter registered", result.Error, StringComparison.Ordinal);
         Assert.Equal("missing", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
+        Assert.Equal(0, legacyStrategy.Calls);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAuthorityIsLegacy_UsesLegacyExecutionPath()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.LegacyAuthoritative);
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
+            true,
+            "adapter-ok",
+            null,
+            false,
+            "json",
+            "1.0.0",
+            "dotnet",
+            "format",
+            null,
+            null,
+            5,
+            null,
+            null));
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver);
+        var context = new ToolExecutionContext("json", "format", "{}", null)
+        {
+            Policy = new StubPolicy()
+        };
+
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
+            context,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.Equal("legacy-ok", result.Output);
+        Assert.Equal(1, legacyStrategy.Calls);
+        Assert.Equal(0, adapter.Calls);
+        Assert.Equal("legacy", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAuthorityIsShadow_SetsShadowMetadataAndUsesAdapter()
+    {
+        var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
+        var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.ShadowOnly);
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
+            true,
+            "shadow-ok",
+            null,
+            false,
+            "json",
+            "1.0.0",
+            "dotnet",
+            "format",
+            null,
+            null,
+            5,
+            null,
+            null));
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver);
+        var context = new ToolExecutionContext("json", "format", "{}", null)
+        {
+            Policy = new StubPolicy()
+        };
+
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
+            context,
+            CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.Equal("shadow-ok", result.Output);
+        Assert.Equal(1, adapter.Calls);
+        Assert.Equal(0, legacyStrategy.Calls);
+        Assert.Equal("true", context.Items[UniversalExecutionEngine.ShadowExecutionContextKey]);
+        Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey]);
     }
 
     private sealed class StubAdapter(ToolRuntimeLanguage language, UniversalToolExecutionResult result) : ILanguageExecutionAdapter
@@ -69,6 +152,30 @@ public sealed class UniversalExecutionEngineTests
         {
             Calls++;
             return Task.FromResult(result);
+        }
+    }
+
+    private sealed class StubAuthorityResolver(ExecutionAuthority authority) : IExecutionAuthorityResolver
+    {
+        public ExecutionAuthority ResolveAuthority(ToolExecutionContext context, UniversalToolExecutionRequest request)
+        {
+            return authority;
+        }
+    }
+
+    private sealed class StubLegacyStrategy(ToolExecutionResponse response) : IApiToolExecutionStrategy
+    {
+        public int Calls { get; private set; }
+
+        public Task<ToolExecutionResponse> ExecuteAsync(
+            string toolId,
+            string action,
+            string input,
+            IToolExecutionPolicy? policy,
+            CancellationToken cancellationToken = default)
+        {
+            Calls++;
+            return Task.FromResult(response);
         }
     }
 
