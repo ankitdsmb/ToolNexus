@@ -73,6 +73,7 @@ public static class DependencyInjection
                 sp.GetRequiredService<IPlatformCacheService>(),
                 sp.GetRequiredService<IOptions<PlatformCacheOptions>>()));
         services.AddScoped<IToolIntelligenceService, ToolIntelligenceService>();
+        services.AddScoped<ICapabilityMarketplaceService, CapabilityMarketplaceService>();
         services.AddScoped<AdminAnalyticsService>();
         services.AddScoped<IAdminAnalyticsService>(sp =>
             new CachingAdminAnalyticsService(
