@@ -20,6 +20,21 @@ import { useUnifiedToolControl as useUnifiedControlAdapter } from './runtime/too
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
+const RUNTIME_RESOLUTION_MODES = Object.freeze({
+  AUTO_EXPLICIT: 'auto_explicit',
+  AUTO_FALLBACK: 'auto_fallback',
+  CUSTOM_ACTIVE: 'custom_active',
+  CUSTOM_FAILED: 'custom_failed'
+});
+
+function isDevelopmentRuntime() {
+  const environment = String(window.ToolNexusConfig?.runtimeEnvironment ?? window.ToolNexusConfig?.environment ?? '').trim().toLowerCase();
+  if (environment) {
+    return environment === 'development';
+  }
+
+  return Boolean(window.ToolNexusLogging?.runtimeDebugEnabled);
+}
 
 function scheduleNonCriticalTask(task) {
   if (typeof task !== 'function') {
@@ -437,6 +452,27 @@ export function createToolRuntime({
       }
     });
 
+    const runtimeResolution = {
+      mode: RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT,
+      reason: 'auto_mode_selected'
+    };
+
+    function setRuntimeResolution(mode, reason) {
+      runtimeResolution.mode = mode;
+      runtimeResolution.reason = reason;
+      executionContext.runtimeMetadata = {
+        ...(executionContext.runtimeMetadata ?? {}),
+        runtimeResolutionMode: mode,
+        runtimeResolutionReason: reason
+      };
+      executionContext.manifest.runtimeResolutionMode = mode;
+      executionContext.manifest.runtimeResolutionReason = reason;
+      if (root?.dataset) {
+        root.dataset.runtimeResolutionMode = mode;
+        root.dataset.runtimeResolutionReason = reason;
+      }
+    }
+
     const capabilitiesAtStart = detectToolCapabilities({ slug, manifest, root });
     const mountPlan = safeDomMount(root, capabilitiesAtStart.mountMode);
 
@@ -506,6 +542,7 @@ export function createToolRuntime({
     const safeResolveLifecycle = async () => {
       let module = {};
       if (!modulePath) {
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_mode_no_module_path');
         return { module, importFailed: false, autoSelected: true };
       }
 
@@ -535,12 +572,31 @@ export function createToolRuntime({
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
         importFailed = true;
         setLastError('module-import', error, slug, { modulePath });
+        const importReason = `custom_module_import_failed:${error?.message ?? 'unknown_error'}`;
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED, importReason);
         emit('module_import_failure', {
           toolSlug: slug,
           duration: now() - moduleImportStartedAt,
           error: error?.message ?? String(error),
-          metadata: { modulePath }
+          metadata: {
+            modulePath,
+            runtimeResolutionMode: RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED,
+            runtimeResolutionReason: importReason
+          }
         });
+        emit('runtime_resolution', {
+          toolSlug: slug,
+          metadata: {
+            runtimeResolutionMode: RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED,
+            runtimeResolutionReason: importReason
+          }
+        });
+        if (isDevelopmentRuntime()) {
+          console.warn(`[ToolRuntime] Custom runtime import failed for "${slug}". Falling back to auto runtime.`, {
+            modulePath,
+            error: error?.message ?? String(error)
+          });
+        }
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
@@ -550,9 +606,36 @@ export function createToolRuntime({
     const { module: loadedModule, importFailed } = await safeResolveLifecycle();
     const enforceCustomForTier = complexityTier >= 4;
     const shouldUseAutoModule = uiMode === 'auto' || importFailed || !modulePath;
+    if (shouldUseAutoModule) {
+      if (importFailed) {
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_FALLBACK, 'auto_loaded_after_custom_runtime_failure');
+      } else {
+        const reason = uiMode === 'auto' ? 'auto_mode_selected' : 'auto_loaded_without_custom_module_path';
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, reason);
+      }
+    } else {
+      setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE, 'custom_runtime_loaded');
+    }
+
+    emit('runtime_resolution', {
+      toolSlug: slug,
+      metadata: {
+        runtimeResolutionMode: runtimeResolution.mode,
+        runtimeResolutionReason: runtimeResolution.reason
+      }
+    });
+
     const module = shouldUseAutoModule
       ? createAutoToolRuntimeModule({
-        manifest: { ...manifest, uiMode, complexityTier, operationSchema: window.ToolNexusConfig?.tool?.operationSchema },
+        manifest: {
+          ...manifest,
+          uiMode,
+          complexityTier,
+          operationSchema: window.ToolNexusConfig?.tool?.operationSchema,
+          runtimeResolutionMode: runtimeResolution.mode,
+          runtimeResolutionReason: runtimeResolution.reason,
+          runtimeIsDevelopment: isDevelopmentRuntime()
+        },
         slug
       })
       : loadedModule;
@@ -678,7 +761,9 @@ export function createToolRuntime({
         emit('mount_success', {
           toolSlug: slug,
           duration: now() - mountStartedAt,
-          modeUsed: legacyBridgeUsed ? 'legacy' : 'modern'
+          modeUsed: legacyBridgeUsed ? 'legacy' : 'modern',
+          runtimeResolutionMode: runtimeResolution.mode,
+          runtimeResolutionReason: runtimeResolution.reason
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
         stateRegistry.setPhase(stateKey, 'mounted');
@@ -707,6 +792,8 @@ export function createToolRuntime({
           duration: now() - mountStartedAt,
           error: error?.message ?? String(error),
           modeUsed: legacyBridgeUsed ? 'legacy' : 'fallback',
+          runtimeResolutionMode: runtimeResolution.mode,
+          runtimeResolutionReason: runtimeResolution.reason,
           errorCategory: classifyRuntimeError({ stage: 'mount', message: error?.message, eventName: 'mount_failure' })
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;

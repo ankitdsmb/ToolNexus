@@ -266,3 +266,15 @@ ENTERPRISE UI SYSTEM
   padding: 6px 8px;
   font-size: 0.78rem;
 }
+
+
+:where(.tool-auto-runtime__resolution-warning) {
+  margin: 4px 0 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--warning, #f8cc86) 45%, transparent);
+  background: color-mix(in srgb, var(--warning-soft, rgba(248, 204, 134, 0.2)) 70%, transparent);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  width: fit-content;
+}

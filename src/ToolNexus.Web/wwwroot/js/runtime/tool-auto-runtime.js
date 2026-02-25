@@ -204,6 +204,14 @@ function buildFieldGroups(doc, fields) {
   return groups;
 }
 
+
+function renderFallbackWarningBadge(doc, unifiedControl) {
+  const badge = doc.createElement('p');
+  badge.className = 'tool-auto-runtime__resolution-warning';
+  badge.textContent = 'Auto runtime loaded due to custom runtime failure';
+  unifiedControl.shell.append(badge);
+}
+
 function renderTierError(root, tier, uiMode) {
   root.innerHTML = '';
   const panel = document.createElement('section');
@@ -231,6 +239,10 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
       });
       unifiedControl.shell.dataset.uiMode = uiMode;
       unifiedControl.shell.dataset.complexityTier = String(complexityTier);
+
+      if (manifest?.runtimeResolutionMode === 'auto_fallback' && manifest?.runtimeIsDevelopment) {
+        renderFallbackWarningBadge(doc, unifiedControl);
+      }
 
       const controls = [];
       if (!fields.length) {

@@ -109,6 +109,7 @@
             },
             runtimeUiMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeUiMode)),
             runtimeComplexityTier: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeComplexityTier)),
+            runtimeEnvironment: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>().EnvironmentName)),
             runtimeLogEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint)),
             runtimeRoutes: {
                 clientLogEndpoints: [@Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint))]

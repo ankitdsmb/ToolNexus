@@ -81,6 +81,8 @@ export function createRuntimeObservability({ now = () => Date.now(), maxEntries 
       mountStatus: payload.mountStatus ?? null,
       durationMs: payload.duration,
       errorCategory: payload.errorCategory ?? null,
+      runtimeResolutionMode: payload.runtimeResolutionMode ?? payload.metadata?.runtimeResolutionMode ?? null,
+      runtimeResolutionReason: payload.runtimeResolutionReason ?? payload.metadata?.runtimeResolutionReason ?? null,
       metadata: payload.metadata ?? {}
     };
 
