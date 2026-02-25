@@ -33,6 +33,11 @@ public sealed class UniversalExecutionEngine(
     public const string AdmissionAllowedContextKey = "runtime.admissionAllowed";
     public const string AdmissionReasonContextKey = "runtime.admissionReason";
     public const string AdmissionDecisionSourceContextKey = "runtime.admissionDecisionSource";
+    public const string GovernanceDecisionIdContextKey = "runtime.governanceDecisionId";
+    public const string GovernancePolicyVersionContextKey = "runtime.governancePolicyVersion";
+    public const string GovernanceDecisionStatusContextKey = "runtime.governanceDecisionStatus";
+    public const string GovernanceDecisionReasonContextKey = "runtime.governanceDecisionReason";
+    public const string GovernanceApprovedByContextKey = "runtime.governanceApprovedBy";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -76,6 +81,36 @@ public sealed class UniversalExecutionEngine(
         context.Items[AdmissionAllowedContextKey] = admissionDecision.IsAllowed ? "true" : "false";
         context.Items[AdmissionReasonContextKey] = admissionDecision.ReasonCode;
         context.Items[AdmissionDecisionSourceContextKey] = admissionDecision.DecisionSource;
+
+        var governanceStatus = admissionDecision.IsAllowed
+            ? GovernanceDecisionStatus.Approved
+            : (string.Equals(admissionDecision.ReasonCode, "Override", StringComparison.OrdinalIgnoreCase)
+                ? GovernanceDecisionStatus.Override
+                : GovernanceDecisionStatus.Denied);
+
+        var governanceDecisionId = Guid.NewGuid();
+        var policyVersion = context.Policy?.Slug ?? "unknown";
+        var approvedBy = "server";
+        executionSnapshot = executionSnapshot with
+        {
+            GovernanceDecisionId = governanceDecisionId,
+            GovernancePolicyVersion = policyVersion,
+            GovernanceStatus = governanceStatus,
+            GovernanceDecisionReason = admissionDecision.ReasonCode,
+            GovernanceApprovedBy = approvedBy
+        };
+
+        if (executionSnapshot.GovernanceDecisionId == Guid.Empty)
+        {
+            throw new InvalidOperationException("Execution governance decision reference is required.");
+        }
+
+        context.Items[ExecutionSnapshotContextKey] = executionSnapshot;
+        context.Items[GovernanceDecisionIdContextKey] = executionSnapshot.GovernanceDecisionId.ToString("D");
+        context.Items[GovernancePolicyVersionContextKey] = executionSnapshot.GovernancePolicyVersion;
+        context.Items[GovernanceDecisionStatusContextKey] = executionSnapshot.GovernanceStatus.ToString();
+        context.Items[GovernanceDecisionReasonContextKey] = executionSnapshot.GovernanceDecisionReason;
+        context.Items[GovernanceApprovedByContextKey] = executionSnapshot.GovernanceApprovedBy;
 
         if (!admissionDecision.IsAllowed)
         {

@@ -66,6 +66,11 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             SnapshotTimestampUtc = ResolveSnapshotTimestamp(context, timestampUtc),
             SnapshotConformanceVersion = ResolveSnapshotConformanceVersion(context),
             SnapshotPolicyJson = ResolveSnapshotPolicyJson(context),
+            GovernanceDecisionId = ResolveGuidTag(context, UniversalExecutionEngine.GovernanceDecisionIdContextKey),
+            GovernancePolicyVersion = ResolveTag(context, UniversalExecutionEngine.GovernancePolicyVersionContextKey, "unknown"),
+            GovernanceDecisionStatus = ResolveTag(context, UniversalExecutionEngine.GovernanceDecisionStatusContextKey, "Denied"),
+            GovernanceDecisionReason = ResolveTag(context, UniversalExecutionEngine.GovernanceDecisionReasonContextKey, "MissingDecision"),
+            GovernanceApprovedBy = ResolveTag(context, UniversalExecutionEngine.GovernanceApprovedByContextKey, "server"),
             ConformanceNormalizedStatus = ResolveTag(context, UniversalExecutionEngine.ConformanceStatusContextKey, "unknown"),
             ConformanceIssuesJson = ResolveTag(context, UniversalExecutionEngine.ConformanceIssuesContextKey, "[]")
         };
@@ -96,6 +101,17 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
         }
 
         return null;
+    }
+
+
+    private static Guid ResolveGuidTag(ToolExecutionContext context, string key)
+    {
+        if (context.Items.TryGetValue(key, out var value) && value is string tag && Guid.TryParse(tag, out var parsed))
+        {
+            return parsed;
+        }
+
+        throw new InvalidOperationException("Execution telemetry requires governance decision reference.");
     }
 
     private static int ResolveIntTag(ToolExecutionContext context, string key, int defaultValue)

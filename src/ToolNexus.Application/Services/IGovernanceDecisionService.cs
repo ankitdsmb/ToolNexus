@@ -1,0 +1,9 @@
+using ToolNexus.Application.Models;
+
+namespace ToolNexus.Application.Services;
+
+public interface IGovernanceDecisionService
+{
+    Task<GovernanceDecisionPage> GetDecisionsAsync(GovernanceDecisionQuery query, CancellationToken cancellationToken);
+    Task<GovernanceDecisionRecord?> GetByIdAsync(Guid decisionId, CancellationToken cancellationToken);
+}

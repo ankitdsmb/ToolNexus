@@ -27,6 +27,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<ExecutionSnapshotEntity> ExecutionSnapshots => Set<ExecutionSnapshotEntity>();
     public DbSet<ExecutionConformanceResultEntity> ExecutionConformanceResults => Set<ExecutionConformanceResultEntity>();
     public DbSet<ExecutionAuthorityDecisionEntity> ExecutionAuthorityDecisions => Set<ExecutionAuthorityDecisionEntity>();
+    public DbSet<GovernanceDecisionEntity> GovernanceDecisions => Set<GovernanceDecisionEntity>();
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -295,8 +296,30 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.TimestampUtc).HasColumnName("timestamp_utc").HasColumnType("timestamp with time zone");
             entity.Property(x => x.ConformanceVersion).HasColumnName("conformance_version").HasMaxLength(40);
             entity.Property(x => x.PolicySnapshotJson).HasColumnName("policy_snapshot_json").HasColumnType("jsonb");
+            entity.Property(x => x.GovernanceDecisionId).HasColumnName("governance_decision_id");
             entity.HasIndex(x => x.SnapshotId).HasDatabaseName("idx_execution_snapshots_snapshot_id");
+            entity.HasIndex(x => x.GovernanceDecisionId).HasDatabaseName("idx_execution_snapshots_governance_decision_id");
             entity.HasOne(x => x.ExecutionRun).WithOne(x => x.Snapshot).HasForeignKey<ExecutionSnapshotEntity>(x => x.ExecutionRunId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.GovernanceDecision).WithMany(x => x.ExecutionSnapshots).HasForeignKey(x => x.GovernanceDecisionId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+
+        modelBuilder.Entity<GovernanceDecisionEntity>(entity =>
+        {
+            entity.ToTable("governance_decisions");
+            entity.HasKey(x => x.DecisionId);
+            entity.Property(x => x.DecisionId).HasColumnName("decision_id");
+            entity.Property(x => x.ToolId).HasColumnName("tool_id").HasMaxLength(120);
+            entity.Property(x => x.CapabilityId).HasColumnName("capability_id").HasMaxLength(120);
+            entity.Property(x => x.Authority).HasColumnName("authority").HasMaxLength(64);
+            entity.Property(x => x.ApprovedBy).HasColumnName("approved_by").HasMaxLength(120);
+            entity.Property(x => x.DecisionReason).HasColumnName("decision_reason").HasMaxLength(2000);
+            entity.Property(x => x.PolicyVersion).HasColumnName("policy_version").HasMaxLength(64);
+            entity.Property(x => x.TimestampUtc).HasColumnName("timestamp_utc").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(20);
+            entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_governance_decisions_tool_id");
+            entity.HasIndex(x => x.PolicyVersion).HasDatabaseName("idx_governance_decisions_policy_version");
+            entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_governance_decisions_timestamp_utc");
         });
 
         modelBuilder.Entity<ExecutionConformanceResultEntity>(entity =>

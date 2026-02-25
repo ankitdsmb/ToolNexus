@@ -72,7 +72,12 @@ public sealed class DefaultExecutionAdmissionControllerTests
             "tenant-1",
             DateTime.UtcNow,
             "v1",
-            null);
+            null,
+            Guid.NewGuid(),
+            "policy-v1",
+            GovernanceDecisionStatus.Approved,
+            "Allowed",
+            "server");
     }
 
     private static ToolExecutionContext CreateContext()

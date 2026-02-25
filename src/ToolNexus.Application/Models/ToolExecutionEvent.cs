@@ -36,6 +36,11 @@ public sealed class ToolExecutionEvent
     public DateTime SnapshotTimestampUtc { get; init; }
     public string SnapshotConformanceVersion { get; init; } = string.Empty;
     public string? SnapshotPolicyJson { get; init; }
+    public Guid GovernanceDecisionId { get; init; }
+    public string GovernancePolicyVersion { get; init; } = string.Empty;
+    public string GovernanceDecisionStatus { get; init; } = string.Empty;
+    public string GovernanceDecisionReason { get; init; } = string.Empty;
+    public string GovernanceApprovedBy { get; init; } = string.Empty;
     public string ConformanceNormalizedStatus { get; init; } = string.Empty;
     public string ConformanceIssuesJson { get; init; } = "[]";
     public string RuntimeLanguage => Language;

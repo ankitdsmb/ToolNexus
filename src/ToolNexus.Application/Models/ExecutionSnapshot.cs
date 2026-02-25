@@ -11,4 +11,9 @@ public sealed record ExecutionSnapshot(
     string? TenantId,
     DateTime TimestampUtc,
     string ConformanceVersion,
-    object? PolicySnapshot);
+    object? PolicySnapshot,
+    Guid GovernanceDecisionId,
+    string GovernancePolicyVersion,
+    GovernanceDecisionStatus GovernanceStatus,
+    string GovernanceDecisionReason,
+    string GovernanceApprovedBy);

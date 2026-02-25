@@ -38,7 +38,22 @@ public sealed class TelemetryEventProcessor(
             return;
         }
 
+        if (executionEvent.GovernanceDecisionId == Guid.Empty)
+        {
+            throw new InvalidOperationException("Execution event missing required governance decision reference.");
+        }
+
         dbContext.ToolExecutionEvents.Add(Map(executionEvent));
+
+        var governanceDecision = await dbContext.GovernanceDecisions
+            .FirstOrDefaultAsync(x => x.DecisionId == executionEvent.GovernanceDecisionId, cancellationToken);
+
+        if (governanceDecision is null)
+        {
+            governanceDecision = MapGovernanceDecision(executionEvent);
+            dbContext.GovernanceDecisions.Add(governanceDecision);
+        }
+
         dbContext.ExecutionRuns.Add(MapExecutionRun(executionEvent));
         await metricsAggregator.UpdateAsync(dbContext, executionEvent, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -96,7 +111,8 @@ public sealed class TelemetryEventProcessor(
                 TenantId = executionEvent.TenantId,
                 TimestampUtc = DateTime.SpecifyKind(executionEvent.SnapshotTimestampUtc, DateTimeKind.Utc),
                 ConformanceVersion = executionEvent.SnapshotConformanceVersion,
-                PolicySnapshotJson = executionEvent.SnapshotPolicyJson
+                PolicySnapshotJson = executionEvent.SnapshotPolicyJson,
+                GovernanceDecisionId = executionEvent.GovernanceDecisionId
             },
             Conformance = new ExecutionConformanceResultEntity
             {
@@ -119,4 +135,21 @@ public sealed class TelemetryEventProcessor(
             }
         };
     }
+
+    private static GovernanceDecisionEntity MapGovernanceDecision(ToolExecutionEvent executionEvent)
+    {
+        return new GovernanceDecisionEntity
+        {
+            DecisionId = executionEvent.GovernanceDecisionId,
+            ToolId = executionEvent.ToolId,
+            CapabilityId = executionEvent.SnapshotCapability,
+            Authority = executionEvent.SnapshotAuthority,
+            ApprovedBy = executionEvent.GovernanceApprovedBy,
+            DecisionReason = executionEvent.GovernanceDecisionReason,
+            PolicyVersion = executionEvent.GovernancePolicyVersion,
+            TimestampUtc = DateTime.SpecifyKind(executionEvent.SnapshotTimestampUtc, DateTimeKind.Utc),
+            Status = executionEvent.GovernanceDecisionStatus
+        };
+    }
+
 }
