@@ -58,6 +58,27 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
 
     [Theory]
     [ClassData(typeof(ProviderTheoryData))]
+    public async Task MissingRuntimeIncidentColumns_ReturnsSafeIncidents(TestDatabaseProvider provider)
+    {
+        await using var db = await TestDatabaseInstance.CreateAsync(provider);
+        await using (var context = db.CreateContext())
+        {
+            await DropRuntimeIncidentSeverityColumnAsync(context, provider);
+        }
+
+        await using var verifyContext = db.CreateContext();
+        var repository = new EfAdminExecutionMonitoringRepository(verifyContext);
+
+        var incidents = await repository.GetIncidentSnapshotsAsync(1, 20, CancellationToken.None);
+
+        Assert.Equal(1, incidents.Page);
+        Assert.Equal(20, incidents.PageSize);
+        Assert.Equal(0, incidents.TotalItems);
+        Assert.Empty(incidents.Items);
+    }
+
+    [Theory]
+    [ClassData(typeof(ProviderTheoryData))]
     public async Task IncidentsQuery_IncludesRuntimeIncidents(TestDatabaseProvider provider)
     {
         await using var db = await TestDatabaseInstance.CreateAsync(provider);
@@ -89,6 +110,17 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
 
     private static async Task DropRuntimeIncidentTableAsync(DbContext context)
         => await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS \"RuntimeIncidents\";");
+
+    private static async Task DropRuntimeIncidentSeverityColumnAsync(DbContext context, TestDatabaseProvider provider)
+    {
+        if (provider == TestDatabaseProvider.PostgreSql)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"ALTER TABLE ""RuntimeIncidents"" DROP COLUMN IF EXISTS ""Severity"";");
+            return;
+        }
+
+        await context.Database.ExecuteSqlRawAsync(@"ALTER TABLE ""RuntimeIncidents"" DROP COLUMN ""Severity"";");
+    }
 
     private static async Task DropAuditTablesAsync(DbContext context, TestDatabaseProvider provider)
     {

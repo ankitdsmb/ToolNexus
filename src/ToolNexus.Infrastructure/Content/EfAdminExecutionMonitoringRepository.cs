@@ -184,7 +184,19 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
     {
         try
         {
-            _ = await dbContext.RuntimeIncidents.AsNoTracking().Select(x => x.Id).Take(1).AnyAsync(cancellationToken);
+            _ = await dbContext.RuntimeIncidents
+                .AsNoTracking()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.ToolSlug,
+                    x.Severity,
+                    x.Message,
+                    x.Count,
+                    x.LastOccurredUtc
+                })
+                .Take(1)
+                .AnyAsync(cancellationToken);
             return true;
         }
         catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
