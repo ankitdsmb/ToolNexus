@@ -26,4 +26,7 @@ public sealed class ToolExecutionEvent
     public string SnapshotAuthority { get; init; } = string.Empty;
     public string SnapshotLanguage { get; init; } = string.Empty;
     public string SnapshotCapability { get; init; } = string.Empty;
+    public string AdmissionAllowed { get; init; } = string.Empty;
+    public string AdmissionReason { get; init; } = string.Empty;
+    public string AdmissionDecisionSource { get; init; } = string.Empty;
 }

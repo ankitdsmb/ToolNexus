@@ -7,7 +7,8 @@ public sealed class UniversalExecutionEngine(
     IApiToolExecutionStrategy legacyExecutionStrategy,
     IExecutionAuthorityResolver authorityResolver,
     IExecutionConformanceValidator conformanceValidator,
-    IExecutionSnapshotBuilder executionSnapshotBuilder) : IUniversalExecutionEngine
+    IExecutionSnapshotBuilder executionSnapshotBuilder,
+    IExecutionAdmissionController executionAdmissionController) : IUniversalExecutionEngine
 {
     public const string LanguageContextKey = "runtime.language";
     public const string AdapterNameContextKey = "runtime.adapterName";
@@ -27,6 +28,9 @@ public sealed class UniversalExecutionEngine(
     public const string SnapshotAuthorityContextKey = "runtime.snapshotAuthority";
     public const string SnapshotLanguageContextKey = "runtime.snapshotLanguage";
     public const string SnapshotCapabilityContextKey = "runtime.snapshotCapability";
+    public const string AdmissionAllowedContextKey = "runtime.admissionAllowed";
+    public const string AdmissionReasonContextKey = "runtime.admissionReason";
+    public const string AdmissionDecisionSourceContextKey = "runtime.admissionDecisionSource";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -50,6 +54,9 @@ public sealed class UniversalExecutionEngine(
         context.Items[ConformanceValidContextKey] = "true";
         context.Items[ConformanceNormalizedContextKey] = "false";
         context.Items[ConformanceIssueCountContextKey] = "0";
+        context.Items[AdmissionAllowedContextKey] = "true";
+        context.Items[AdmissionReasonContextKey] = "Allowed";
+        context.Items[AdmissionDecisionSourceContextKey] = string.Empty;
 
         var authority = authorityResolver.ResolveAuthority(context, request);
         context.Items[ExecutionAuthorityContextKey] = authority.ToString();
@@ -60,6 +67,41 @@ public sealed class UniversalExecutionEngine(
         context.Items[SnapshotAuthorityContextKey] = executionSnapshot.Authority.ToString();
         context.Items[SnapshotLanguageContextKey] = executionSnapshot.RuntimeLanguage.Value;
         context.Items[SnapshotCapabilityContextKey] = executionSnapshot.ExecutionCapability.Value;
+
+        var admissionDecision = executionAdmissionController.Evaluate(executionSnapshot, context);
+        context.Items[AdmissionAllowedContextKey] = admissionDecision.IsAllowed ? "true" : "false";
+        context.Items[AdmissionReasonContextKey] = admissionDecision.ReasonCode;
+        context.Items[AdmissionDecisionSourceContextKey] = admissionDecision.DecisionSource;
+
+        if (!admissionDecision.IsAllowed)
+        {
+            context.Items[AdapterNameContextKey] = "none";
+            context.Items[AdapterResolutionStatusContextKey] = "admission_denied";
+
+            return new UniversalToolExecutionResult(
+                false,
+                string.Empty,
+                $"Execution admission denied: {admissionDecision.ReasonCode}.",
+                false,
+                request.ToolId,
+                request.ToolVersion,
+                language.Value,
+                request.Operation,
+                request.ExecutionPolicyId,
+                request.ResourceClass,
+                0,
+                request.TenantId,
+                request.CorrelationId,
+                null,
+                "Failed",
+                new Dictionary<string, string>(admissionDecision.Metadata, StringComparer.OrdinalIgnoreCase)
+                {
+                    ["admissionAllowed"] = "false",
+                    ["admissionReason"] = admissionDecision.ReasonCode,
+                    ["admissionDecisionSource"] = admissionDecision.DecisionSource
+                },
+                Array.Empty<string>());
+        }
 
         if (authority == ExecutionAuthority.LegacyAuthoritative)
         {

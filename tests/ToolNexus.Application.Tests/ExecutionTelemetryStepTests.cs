@@ -89,6 +89,9 @@ public sealed class ExecutionTelemetryStepTests
         context.Items[UniversalExecutionEngine.SnapshotAuthorityContextKey] = ExecutionAuthority.ShadowOnly.ToString();
         context.Items[UniversalExecutionEngine.SnapshotLanguageContextKey] = "dotnet";
         context.Items[UniversalExecutionEngine.SnapshotCapabilityContextKey] = "sandboxed";
+        context.Items[UniversalExecutionEngine.AdmissionAllowedContextKey] = "false";
+        context.Items[UniversalExecutionEngine.AdmissionReasonContextKey] = "CapabilityBlocked";
+        context.Items[UniversalExecutionEngine.AdmissionDecisionSourceContextKey] = "DefaultExecutionAdmissionController";
 
         await step.InvokeAsync(
             context,
@@ -113,6 +116,9 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), evt.SnapshotAuthority);
         Assert.Equal("dotnet", evt.SnapshotLanguage);
         Assert.Equal("sandboxed", evt.SnapshotCapability);
+        Assert.Equal("false", evt.AdmissionAllowed);
+        Assert.Equal("CapabilityBlocked", evt.AdmissionReason);
+        Assert.Equal("DefaultExecutionAdmissionController", evt.AdmissionDecisionSource);
     }
 
     [Fact]
