@@ -1,3 +1,5 @@
+import { createUnifiedToolControl } from './tool-unified-control-runtime.js';
+
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
 
 function normalizePathPrefix(pathPrefix) {
@@ -220,34 +222,15 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
       const doc = root?.ownerDocument ?? document;
       const schema = defaultSchemaFromManifest(manifest);
       const fields = flattenFields(schema);
-
-      const autoShell = doc.createElement('section');
-      autoShell.className = 'tool-auto-runtime tn-tool-shell';
-      autoShell.dataset.uiMode = uiMode;
-      autoShell.dataset.complexityTier = String(complexityTier);
-      autoShell.innerHTML = '<header class="tn-tool-header"><h2>Auto-generated tool UI</h2></header>';
-
-      const body = doc.createElement('section');
-      body.className = 'tn-tool-body tool-auto-runtime__body';
-      const inputPanel = doc.createElement('section');
-      inputPanel.className = 'tn-tool-panel tool-auto-runtime__input';
-      const outputPanel = doc.createElement('section');
-      outputPanel.className = 'tn-tool-panel tool-auto-runtime__output';
-
-      const runButton = doc.createElement('button');
-      runButton.type = 'button';
-      runButton.className = 'tool-btn tool-btn--primary';
-      runButton.textContent = 'Run tool';
-
-      const status = doc.createElement('p');
-      status.className = 'tool-auto-runtime__status';
-      status.textContent = 'Ready';
-      status.setAttribute('role', 'status');
-
-      const output = doc.createElement('pre');
-      output.className = 'tool-auto-runtime__result';
-      output.textContent = 'No output yet.';
-      outputPanel.append(output);
+      const unifiedControl = createUnifiedToolControl({
+        root,
+        doc,
+        slug,
+        manifest,
+        subtitle: 'Auto-generated from runtime schema'
+      });
+      unifiedControl.shell.dataset.uiMode = uiMode;
+      unifiedControl.shell.dataset.complexityTier = String(complexityTier);
 
       const controls = [];
       if (!fields.length) {
@@ -261,7 +244,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           hint: ''
         };
         const control = buildInputControl(doc, fallback);
-        inputPanel.append(control.row);
+        unifiedControl.inputArea.append(control.row);
         controls.push({ field: fallback, input: control.input });
       } else if (complexityTier >= 2) {
         for (const group of buildFieldGroups(doc, fields)) {
@@ -270,30 +253,20 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             group.section.append(control.row);
             controls.push({ field, input: control.input });
           }
-          inputPanel.append(group.section);
+          unifiedControl.inputArea.append(group.section);
         }
       } else {
         for (const field of fields) {
           const control = buildInputControl(doc, field);
-          inputPanel.append(control.row);
+          unifiedControl.inputArea.append(control.row);
           controls.push({ field, input: control.input });
         }
       }
 
-      const form = doc.createElement('div');
-      form.className = 'tool-auto-runtime__actions';
-      form.append(runButton, status);
-      inputPanel.append(form);
-
-      body.append(inputPanel, outputPanel);
-      autoShell.append(body);
-
-      const errorZone = doc.createElement('div');
-      errorZone.className = 'tool-auto-runtime__errors';
-      autoShell.append(errorZone);
+      const runButton = unifiedControl.runButton;
 
       const run = async () => {
-        errorZone.replaceChildren();
+        unifiedControl.clearErrors();
 
         const payload = {};
         try {
@@ -308,20 +281,20 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             }
           }
         } catch (error) {
-          errorZone.append(createExecutionError(doc, error?.message ?? 'Invalid input.'));
+          unifiedControl.showError(error?.message ?? 'Invalid input.');
           return;
         }
 
         runButton.disabled = true;
-        status.textContent = 'Running…';
+        unifiedControl.setStatus('Running…');
 
         try {
           const result = await executeTool({ slug, payload });
-          output.textContent = safeStringify(result);
-          status.textContent = 'Completed';
+          unifiedControl.renderResult(result);
+          unifiedControl.setStatus('Completed');
         } catch (error) {
-          status.textContent = 'Execution failed';
-          errorZone.append(createExecutionError(doc, error?.message ?? 'Execution failed.'));
+          unifiedControl.setStatus('Execution failed');
+          unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;
         }
@@ -330,10 +303,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
       runButton.addEventListener('click', run);
       runtimeContext.addCleanup?.(() => runButton.removeEventListener('click', run));
 
-      root.innerHTML = '';
-      root.append(autoShell);
-
-      return { controls, runButton, output, status };
+      return { controls, runButton, output: unifiedControl.result, status: unifiedControl.status };
     },
     create(root) {
       if (!root) {

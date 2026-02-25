@@ -28,6 +28,7 @@ describe('tool auto runtime', () => {
     module.init(state, host, { addCleanup() {} });
 
     expect(host.querySelector('.tool-auto-runtime')).not.toBeNull();
+    expect(host.querySelector('.tn-unified-tool-control')).not.toBeNull();
     expect(host.querySelector('[data-field="payload"]')).not.toBeNull();
   });
 
@@ -84,8 +85,9 @@ describe('tool auto runtime', () => {
     const [, request] = fetchMock.mock.calls[0];
     expect(JSON.parse(request.body).input).toBe('{"text":"hello","enabled":true}');
 
-    const output = host.querySelector('.tool-auto-runtime__result');
+    const output = host.querySelector('.tn-unified-tool-control__result');
     expect(output.textContent).toContain('<script>alert(1)</script>');
     expect(output.innerHTML).not.toContain('<script>');
+    expect(host.querySelector('.tn-unified-tool-control__preview').textContent).toContain('<script>alert(1)</script>');
   });
 });
