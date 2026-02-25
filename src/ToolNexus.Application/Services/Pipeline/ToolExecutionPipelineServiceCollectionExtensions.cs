@@ -17,6 +17,7 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddScoped<IExecutionAuthorityResolver, DefaultExecutionAuthorityResolver>();
         services.AddScoped<IExecutionConformanceValidator, DefaultExecutionConformanceValidator>();
         services.AddScoped<IExecutionSnapshotBuilder, DefaultExecutionSnapshotBuilder>();
+        services.AddScoped<IExecutionAdmissionController, DefaultExecutionAdmissionController>();
         services.AddScoped<IUniversalExecutionEngine, UniversalExecutionEngine>();
         services.AddScoped<UniversalExecutionRequestMapper>();
         services.AddScoped<IWorkerRuntimeManager, NoOpWorkerRuntimeManager>();
