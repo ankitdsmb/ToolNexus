@@ -350,6 +350,71 @@
       "clientSafeActions": [
         "merge"
       ]
+    },
+    {
+      "slug": "json-toolkit-pro",
+      "title": "JSON Toolkit Pro",
+      "category": "json",
+      "actions": [
+        "execute"
+      ],
+      "clientSafeActions": [
+        "execute"
+      ],
+      "seoTitle": "JSON Toolkit Pro | ToolNexus",
+      "seoDescription": "Normalize, pretty-print, and analyze JSON documents with deterministic, developer-grade output.",
+      "exampleInput": "{\"operation\":\"analyze\",\"json\":\"{\\\"user\\\":{\\\"name\\\":\\\"Ada\\\"}}\"}",
+      "runtimeLanguage": "dotnet",
+      "executionCapability": "standard",
+      "operationSchema": {
+        "type": "object",
+        "required": [
+          "operation",
+          "json"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "normalize",
+              "pretty",
+              "analyze"
+            ]
+          },
+          "json": {
+            "type": "string",
+            "description": "Raw JSON text to process."
+          }
+        }
+      }
+    },
+    {
+      "slug": "text-intelligence-analyzer",
+      "title": "Text Intelligence Analyzer",
+      "category": "text",
+      "actions": [
+        "analyze"
+      ],
+      "clientSafeActions": [
+        "analyze"
+      ],
+      "seoTitle": "Text Intelligence Analyzer | ToolNexus",
+      "seoDescription": "Analyze text with deterministic readability and keyword insights without external dependencies.",
+      "exampleInput": "{\"text\":\"ToolNexus provides stable developer tooling.\"}",
+      "runtimeLanguage": "python",
+      "executionCapability": "sandboxed",
+      "operationSchema": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     }
   ]
 }

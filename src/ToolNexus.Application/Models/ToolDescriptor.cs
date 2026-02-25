@@ -17,4 +17,7 @@ public sealed class ToolDescriptor
     public string SecurityLevel { get; init; } = "Medium";
     public bool RequiresAuthentication { get; init; } = true;
     public bool IsDeprecated { get; init; }
+    public string RuntimeLanguage { get; init; } = "dotnet";
+    public string ExecutionCapability { get; init; } = "standard";
+    public Dictionary<string, object>? OperationSchema { get; init; }
 }

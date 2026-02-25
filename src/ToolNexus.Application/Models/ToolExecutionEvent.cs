@@ -29,4 +29,7 @@ public sealed class ToolExecutionEvent
     public string AdmissionAllowed { get; init; } = string.Empty;
     public string AdmissionReason { get; init; } = string.Empty;
     public string AdmissionDecisionSource { get; init; } = string.Empty;
+    public string RuntimeLanguage => Language;
+    public string ToolId => ToolSlug;
+
 }
