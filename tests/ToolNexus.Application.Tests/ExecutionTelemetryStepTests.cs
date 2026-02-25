@@ -63,6 +63,28 @@ public sealed class ExecutionTelemetryStepTests
         Assert.True(evt.DurationMs >= 30);
     }
 
+
+    [Fact]
+    public async Task InvokeAsync_IncludesAdapterTelemetryTags()
+    {
+        var recorder = new BufferingExecutionEventService();
+        var step = new ExecutionTelemetryStep(recorder);
+        var context = CreateContext();
+        context.Items[UniversalExecutionEngine.LanguageContextKey] = "dotnet";
+        context.Items[UniversalExecutionEngine.AdapterNameContextKey] = "DotNetExecutionAdapter";
+        context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey] = "resolved";
+
+        await step.InvokeAsync(
+            context,
+            (_, _) => Task.FromResult(new ToolExecutionResponse(true, "ok")),
+            CancellationToken.None);
+
+        var evt = Assert.Single(recorder.Events);
+        Assert.Equal("dotnet", evt.Language);
+        Assert.Equal("DotNetExecutionAdapter", evt.AdapterName);
+        Assert.Equal("resolved", evt.AdapterResolutionStatus);
+    }
+
     [Fact]
     public async Task InvokeAsync_AsyncLogging_DoesNotBlockExecutionFlow()
     {

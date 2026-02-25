@@ -4,9 +4,7 @@ namespace ToolNexus.Application.Services.Pipeline;
 
 public sealed class PythonExecutionAdapter : ILanguageExecutionAdapter
 {
-    public const string PythonLanguage = "python";
-
-    public string Language => PythonLanguage;
+    public ToolRuntimeLanguage Language => ToolRuntimeLanguage.Python;
 
     public Task<UniversalToolExecutionResult> ExecuteAsync(
         UniversalToolExecutionRequest request,

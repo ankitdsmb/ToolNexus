@@ -4,8 +4,12 @@ namespace ToolNexus.Application.Services.Pipeline;
 
 public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapter> adapters) : IUniversalExecutionEngine
 {
+    public const string LanguageContextKey = "runtime.language";
+    public const string AdapterNameContextKey = "runtime.adapterName";
+    public const string AdapterResolutionStatusContextKey = "runtime.adapterResolutionStatus";
+
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
-        .ToDictionary(adapter => adapter.Language, StringComparer.OrdinalIgnoreCase);
+        .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
 
     public async Task<UniversalToolExecutionResult> ExecuteAsync(
         UniversalToolExecutionRequest request,
@@ -15,17 +19,34 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(context);
 
-        var language = request.Language.Trim();
-        if (string.IsNullOrWhiteSpace(language))
+        var language = ToolRuntimeLanguage.From(request.Language, ToolRuntimeLanguage.DotNet);
+        context.Items[LanguageContextKey] = language.Value;
+
+        if (!_adaptersByLanguage.TryGetValue(language.Value, out var adapter))
         {
-            throw new InvalidOperationException("Execution language is required.");
+            context.Items[AdapterNameContextKey] = "none";
+            context.Items[AdapterResolutionStatusContextKey] = "missing";
+
+            return new UniversalToolExecutionResult(
+                false,
+                string.Empty,
+                $"No execution adapter registered for language '{language.Value}'.",
+                false,
+                request.ToolId,
+                request.ToolVersion,
+                language.Value,
+                request.Operation,
+                request.ExecutionPolicyId,
+                request.ResourceClass,
+                0,
+                request.TenantId,
+                request.CorrelationId,
+                null);
         }
 
-        if (!_adaptersByLanguage.TryGetValue(language, out var adapter))
-        {
-            throw new InvalidOperationException($"No execution adapter registered for language '{language}'.");
-        }
+        context.Items[AdapterNameContextKey] = adapter.GetType().Name;
+        context.Items[AdapterResolutionStatusContextKey] = "resolved";
 
-        return await adapter.ExecuteAsync(request, context, cancellationToken);
+        return await adapter.ExecuteAsync(request with { RuntimeLanguage = language }, context, cancellationToken);
     }
 }

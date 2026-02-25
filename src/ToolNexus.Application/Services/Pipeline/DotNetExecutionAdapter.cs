@@ -5,9 +5,7 @@ namespace ToolNexus.Application.Services.Pipeline;
 
 public sealed class DotNetExecutionAdapter(IApiToolExecutionStrategy strategy) : ILanguageExecutionAdapter
 {
-    public const string DotNetLanguage = "dotnet";
-
-    public string Language => DotNetLanguage;
+    public ToolRuntimeLanguage Language => ToolRuntimeLanguage.DotNet;
 
     public async Task<UniversalToolExecutionResult> ExecuteAsync(
         UniversalToolExecutionRequest request,

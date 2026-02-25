@@ -38,7 +38,20 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             Success = success,
             ErrorType = errorType,
             PayloadSize = Encoding.UTF8.GetByteCount(context.Input),
-            ExecutionMode = context.Policy?.ExecutionMode ?? "unknown"
+            ExecutionMode = context.Policy?.ExecutionMode ?? "unknown",
+            Language = ResolveTag(context, UniversalExecutionEngine.LanguageContextKey, "unknown"),
+            AdapterName = ResolveTag(context, UniversalExecutionEngine.AdapterNameContextKey, "unknown"),
+            AdapterResolutionStatus = ResolveTag(context, UniversalExecutionEngine.AdapterResolutionStatusContextKey, "unknown")
         };
+    }
+
+    private static string ResolveTag(ToolExecutionContext context, string key, string defaultValue)
+    {
+        if (context.Items.TryGetValue(key, out var value) && value is string tag && !string.IsNullOrWhiteSpace(tag))
+        {
+            return tag;
+        }
+
+        return defaultValue;
     }
 }

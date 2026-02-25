@@ -15,6 +15,7 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddScoped<IApiToolExecutionStrategy, ApiToolExecutionStrategy>();
         services.AddScoped<IClientToolExecutionStrategy, NoOpClientExecutionStrategy>();
         services.AddScoped<IUniversalExecutionEngine, UniversalExecutionEngine>();
+        services.AddScoped<UniversalExecutionRequestMapper>();
         services.AddScoped<ILanguageExecutionAdapter, DotNetExecutionAdapter>();
         services.AddScoped<ILanguageExecutionAdapter, PythonExecutionAdapter>();
 

@@ -7,7 +7,7 @@ namespace ToolNexus.Application.Models;
 public sealed record UniversalToolExecutionRequest(
     string ToolId,
     string ToolVersion,
-    string Language,
+    ToolRuntimeLanguage RuntimeLanguage,
     string Operation,
     string InputPayload,
     string? ExecutionPolicyId,
@@ -17,6 +17,8 @@ public sealed record UniversalToolExecutionRequest(
     string? CorrelationId,
     IDictionary<string, string>? Options = null)
 {
+    public string Language => RuntimeLanguage.Value;
+
     public ToolExecutionRequest ToToolExecutionRequest()
     {
         return new ToolExecutionRequest(ToolId, Operation, InputPayload, Options);
@@ -25,6 +27,27 @@ public sealed record UniversalToolExecutionRequest(
     public static UniversalToolExecutionRequest FromToolExecutionRequest(
         ToolExecutionRequest request,
         string language,
+        string toolVersion,
+        int timeoutBudgetMs,
+        string? executionPolicyId = null,
+        string? resourceClass = null,
+        string? tenantId = null,
+        string? correlationId = null)
+    {
+        return FromToolExecutionRequest(
+            request,
+            ToolRuntimeLanguage.From(language, ToolRuntimeLanguage.DotNet),
+            toolVersion,
+            timeoutBudgetMs,
+            executionPolicyId,
+            resourceClass,
+            tenantId,
+            correlationId);
+    }
+
+    public static UniversalToolExecutionRequest FromToolExecutionRequest(
+        ToolExecutionRequest request,
+        ToolRuntimeLanguage language,
         string toolVersion,
         int timeoutBudgetMs,
         string? executionPolicyId = null,

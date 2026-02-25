@@ -9,7 +9,7 @@ public sealed class UniversalExecutionEngineTests
     [Fact]
     public async Task ExecuteAsync_UsesRegisteredAdapterByLanguage()
     {
-        var adapter = new StubAdapter("dotnet", new UniversalToolExecutionResult(
+        var adapter = new StubAdapter(ToolRuntimeLanguage.DotNet, new UniversalToolExecutionResult(
             true,
             "ok",
             null,
@@ -31,17 +31,18 @@ public sealed class UniversalExecutionEngineTests
         };
 
         var result = await engine.ExecuteAsync(
-            new UniversalToolExecutionRequest("json", "1.0.0", "dotnet", "format", "{}", null, null, 1000, null, null),
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null),
             context,
             CancellationToken.None);
 
         Assert.True(result.Success);
         Assert.Equal("ok", result.Output);
         Assert.Equal(1, adapter.Calls);
+        Assert.Equal("resolved", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ThrowsWhenAdapterIsMissing()
+    public async Task ExecuteAsync_ReturnsNormalizedFailureWhenAdapterIsMissing()
     {
         var engine = new UniversalExecutionEngine([]);
         var context = new ToolExecutionContext("json", "format", "{}", null)
@@ -49,19 +50,20 @@ public sealed class UniversalExecutionEngineTests
             Policy = new StubPolicy()
         };
 
-        var act = () => engine.ExecuteAsync(
-            new UniversalToolExecutionRequest("json", "1.0.0", "dotnet", "format", "{}", null, null, 1000, null, null),
+        var result = await engine.ExecuteAsync(
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null),
             context,
             CancellationToken.None);
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(act);
-        Assert.Contains("No execution adapter registered", exception.Message, StringComparison.Ordinal);
+        Assert.False(result.Success);
+        Assert.Contains("No execution adapter registered", result.Error, StringComparison.Ordinal);
+        Assert.Equal("missing", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
     }
 
-    private sealed class StubAdapter(string language, UniversalToolExecutionResult result) : ILanguageExecutionAdapter
+    private sealed class StubAdapter(ToolRuntimeLanguage language, UniversalToolExecutionResult result) : ILanguageExecutionAdapter
     {
         public int Calls { get; private set; }
-        public string Language => language;
+        public ToolRuntimeLanguage Language => language;
 
         public Task<UniversalToolExecutionResult> ExecuteAsync(UniversalToolExecutionRequest request, ToolExecutionContext context, CancellationToken cancellationToken)
         {
