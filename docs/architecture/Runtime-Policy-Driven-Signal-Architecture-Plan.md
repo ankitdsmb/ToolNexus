@@ -343,3 +343,27 @@ If ToolNexus keeps the current console-authority model:
 - Regression detection quality will degrade as tests remain tied to fragile console semantics.
 - On-call triage time will increase due to conflicting signals.
 - Future platform changes (new adapters, telemetry modernization, stricter compliance reporting) will become significantly more expensive because core signaling contracts remain implicit instead of explicit.
+
+---
+
+# SECTION 11 — Implementation Kickoff Checklist (First 30 Days)
+
+## 11.1 Week 1: Governance and baselining
+- Nominate workstream owners (runtime, QA, backend ingestion, SRE).
+- Freeze baseline behavior snapshots for startup, fallback, and incident suppression flows.
+- Publish ADR stub and circulate event taxonomy draft for sign-off.
+
+## 11.2 Week 2: Scaffolding readiness gates
+- Land `RuntimeEventBus` skeleton behind `runtime.signals.mode=hybrid` default in non-production.
+- Add no-throw contract tests for bus publish and adapter isolation semantics.
+- Enable dual-write counters in dashboards (legacy vs bus parity).
+
+## 11.3 Week 3: First migration slice
+- Route one critical runtime error path through bus + console adapter while preserving output format.
+- Add correlation IDs from runtime event to incident API payload in a backward-compatible field set.
+- Migrate one high-value QA smoke suite to `runtimeEventRecorder` assertions.
+
+## 11.4 Week 4: Canary decision point
+- Compare parity metrics for missing events, duplicated incidents, and severity drift.
+- If parity SLOs pass, expand hybrid coverage to additional runtime paths.
+- If parity SLOs fail, execute rollback-to-legacy config path and capture diff artifacts for remediation.
