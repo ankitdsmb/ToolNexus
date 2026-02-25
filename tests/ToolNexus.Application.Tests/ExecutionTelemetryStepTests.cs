@@ -85,6 +85,10 @@ public sealed class ExecutionTelemetryStepTests
         context.Items[UniversalExecutionEngine.ConformanceValidContextKey] = "false";
         context.Items[UniversalExecutionEngine.ConformanceNormalizedContextKey] = "true";
         context.Items[UniversalExecutionEngine.ConformanceIssueCountContextKey] = "2";
+        context.Items[UniversalExecutionEngine.ExecutionSnapshotIdContextKey] = "snap-123";
+        context.Items[UniversalExecutionEngine.SnapshotAuthorityContextKey] = ExecutionAuthority.ShadowOnly.ToString();
+        context.Items[UniversalExecutionEngine.SnapshotLanguageContextKey] = "dotnet";
+        context.Items[UniversalExecutionEngine.SnapshotCapabilityContextKey] = "sandboxed";
 
         await step.InvokeAsync(
             context,
@@ -105,6 +109,10 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Equal("false", evt.ConformanceValid);
         Assert.Equal("true", evt.ConformanceNormalized);
         Assert.Equal(2, evt.ConformanceIssueCount);
+        Assert.Equal("snap-123", evt.ExecutionSnapshotId);
+        Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), evt.SnapshotAuthority);
+        Assert.Equal("dotnet", evt.SnapshotLanguage);
+        Assert.Equal("sandboxed", evt.SnapshotCapability);
     }
 
     [Fact]

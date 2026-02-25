@@ -51,7 +51,11 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             ShadowExecution = ResolveTag(context, UniversalExecutionEngine.ShadowExecutionContextKey, "false"),
             ConformanceValid = ResolveTag(context, UniversalExecutionEngine.ConformanceValidContextKey, "true"),
             ConformanceNormalized = ResolveTag(context, UniversalExecutionEngine.ConformanceNormalizedContextKey, "false"),
-            ConformanceIssueCount = ResolveIntTag(context, UniversalExecutionEngine.ConformanceIssueCountContextKey, 0)
+            ConformanceIssueCount = ResolveIntTag(context, UniversalExecutionEngine.ConformanceIssueCountContextKey, 0),
+            ExecutionSnapshotId = ResolveTag(context, UniversalExecutionEngine.ExecutionSnapshotIdContextKey, string.Empty),
+            SnapshotAuthority = ResolveTag(context, UniversalExecutionEngine.SnapshotAuthorityContextKey, ExecutionAuthority.LegacyAuthoritative.ToString()),
+            SnapshotLanguage = ResolveTag(context, UniversalExecutionEngine.SnapshotLanguageContextKey, "unknown"),
+            SnapshotCapability = ResolveTag(context, UniversalExecutionEngine.SnapshotCapabilityContextKey, "standard")
         };
     }
 

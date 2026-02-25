@@ -25,7 +25,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
@@ -47,6 +47,11 @@ public sealed class UniversalExecutionEngineTests
         Assert.Equal("true", context.Items[UniversalExecutionEngine.ConformanceValidContextKey]);
         Assert.Equal("false", context.Items[UniversalExecutionEngine.ConformanceNormalizedContextKey]);
         Assert.Equal("0", context.Items[UniversalExecutionEngine.ConformanceIssueCountContextKey]);
+        Assert.True(context.Items.ContainsKey(UniversalExecutionEngine.ExecutionSnapshotContextKey));
+        Assert.False(string.IsNullOrWhiteSpace(context.Items[UniversalExecutionEngine.ExecutionSnapshotIdContextKey]?.ToString()));
+        Assert.Equal(ExecutionAuthority.UnifiedAuthoritative.ToString(), context.Items[UniversalExecutionEngine.SnapshotAuthorityContextKey]);
+        Assert.Equal(ToolRuntimeLanguage.DotNet.Value, context.Items[UniversalExecutionEngine.SnapshotLanguageContextKey]);
+        Assert.Equal(ToolExecutionCapability.Standard.Value, context.Items[UniversalExecutionEngine.SnapshotCapabilityContextKey]);
     }
 
     [Fact]
@@ -54,7 +59,7 @@ public sealed class UniversalExecutionEngineTests
     {
         var legacyStrategy = new StubLegacyStrategy(new ToolExecutionResponse(true, "legacy-ok"));
         var authorityResolver = new StubAuthorityResolver(ExecutionAuthority.UnifiedAuthoritative);
-        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
+        var engine = new UniversalExecutionEngine([], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -95,7 +100,7 @@ public sealed class UniversalExecutionEngineTests
             null,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
 
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
@@ -134,7 +139,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -171,7 +176,7 @@ public sealed class UniversalExecutionEngineTests
             5,
             null,
             null));
-        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator());
+        var engine = new UniversalExecutionEngine([adapter], legacyStrategy, authorityResolver, new DefaultExecutionConformanceValidator(), new DefaultExecutionSnapshotBuilder());
         var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new StubPolicy()
@@ -188,6 +193,7 @@ public sealed class UniversalExecutionEngineTests
         Assert.Equal(0, legacyStrategy.Calls);
         Assert.Equal("true", context.Items[UniversalExecutionEngine.ShadowExecutionContextKey]);
         Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey]);
+        Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), context.Items[UniversalExecutionEngine.SnapshotAuthorityContextKey]);
     }
 
     private sealed class StubAdapter(ToolRuntimeLanguage language, UniversalToolExecutionResult result) : ILanguageExecutionAdapter

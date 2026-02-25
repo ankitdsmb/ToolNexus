@@ -6,7 +6,8 @@ public sealed class UniversalExecutionEngine(
     IEnumerable<ILanguageExecutionAdapter> adapters,
     IApiToolExecutionStrategy legacyExecutionStrategy,
     IExecutionAuthorityResolver authorityResolver,
-    IExecutionConformanceValidator conformanceValidator) : IUniversalExecutionEngine
+    IExecutionConformanceValidator conformanceValidator,
+    IExecutionSnapshotBuilder executionSnapshotBuilder) : IUniversalExecutionEngine
 {
     public const string LanguageContextKey = "runtime.language";
     public const string AdapterNameContextKey = "runtime.adapterName";
@@ -21,6 +22,11 @@ public sealed class UniversalExecutionEngine(
     public const string ConformanceValidContextKey = "runtime.conformanceValid";
     public const string ConformanceNormalizedContextKey = "runtime.conformanceNormalized";
     public const string ConformanceIssueCountContextKey = "runtime.conformanceIssueCount";
+    public const string ExecutionSnapshotContextKey = "runtime.executionSnapshot";
+    public const string ExecutionSnapshotIdContextKey = "runtime.executionSnapshotId";
+    public const string SnapshotAuthorityContextKey = "runtime.snapshotAuthority";
+    public const string SnapshotLanguageContextKey = "runtime.snapshotLanguage";
+    public const string SnapshotCapabilityContextKey = "runtime.snapshotCapability";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -47,6 +53,13 @@ public sealed class UniversalExecutionEngine(
 
         var authority = authorityResolver.ResolveAuthority(context, request);
         context.Items[ExecutionAuthorityContextKey] = authority.ToString();
+
+        var executionSnapshot = executionSnapshotBuilder.BuildSnapshot(request, context, authority);
+        context.Items[ExecutionSnapshotContextKey] = executionSnapshot;
+        context.Items[ExecutionSnapshotIdContextKey] = executionSnapshot.SnapshotId;
+        context.Items[SnapshotAuthorityContextKey] = executionSnapshot.Authority.ToString();
+        context.Items[SnapshotLanguageContextKey] = executionSnapshot.RuntimeLanguage.Value;
+        context.Items[SnapshotCapabilityContextKey] = executionSnapshot.ExecutionCapability.Value;
 
         if (authority == ExecutionAuthority.LegacyAuthoritative)
         {
