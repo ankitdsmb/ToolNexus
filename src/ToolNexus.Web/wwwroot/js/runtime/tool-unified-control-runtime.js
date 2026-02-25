@@ -105,7 +105,17 @@ export function createUnifiedToolControl({
   status.textContent = 'Ready';
   status.setAttribute('role', 'status');
 
-  actions.append(runButton, status);
+  const suggestionBadge = doc.createElement('button');
+  suggestionBadge.type = 'button';
+  suggestionBadge.className = 'tool-btn tn-unified-tool-control__suggestion-badge';
+  suggestionBadge.textContent = '⚡ Suggested Tool';
+  suggestionBadge.hidden = true;
+
+  const suggestionReason = doc.createElement('span');
+  suggestionReason.className = 'tn-unified-tool-control__suggestion-reason';
+  suggestionReason.hidden = true;
+
+  actions.append(runButton, status, suggestionBadge, suggestionReason);
 
   const output = doc.createElement('section');
   output.className = 'tn-unified-tool-control__output';
@@ -136,6 +146,8 @@ export function createUnifiedToolControl({
     inputArea,
     actions,
     runButton,
+    suggestionBadge,
+    suggestionReason,
     status,
     preview,
     details,
@@ -153,6 +165,26 @@ export function createUnifiedToolControl({
     },
     clearErrors() {
       errors.replaceChildren();
+    },
+    hideSuggestion() {
+      suggestionBadge.hidden = true;
+      suggestionBadge.dataset.toolId = '';
+      suggestionBadge.dataset.contextType = '';
+      suggestionReason.hidden = true;
+      suggestionReason.textContent = '';
+    },
+    showSuggestion({ toolId, reason, contextType, confidence } = {}) {
+      if (!toolId) {
+        this.hideSuggestion();
+        return;
+      }
+
+      suggestionBadge.hidden = false;
+      suggestionBadge.dataset.toolId = toolId;
+      suggestionBadge.dataset.contextType = contextType ?? '';
+      suggestionBadge.dataset.confidence = confidence ? String(confidence) : '';
+      suggestionReason.hidden = !reason;
+      suggestionReason.textContent = reason ?? '';
     },
     renderResult(payload) {
       const serialized = safeStringify(payload);

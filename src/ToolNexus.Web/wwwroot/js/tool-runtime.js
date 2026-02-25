@@ -579,7 +579,8 @@ export function createToolRuntime({
           slug,
           manifest,
           ...options
-        })
+        }),
+        emitTelemetry: (eventName, payload = {}) => emit(eventName, payload)
       }
     });
 

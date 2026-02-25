@@ -1,4 +1,5 @@
 import { createUnifiedToolControl } from './tool-unified-control-runtime.js';
+import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
 
@@ -116,6 +117,104 @@ function buildInputControl(doc, field) {
   }
 
   return { row, input };
+}
+
+
+
+function getRuntimeApi() {
+  return globalThis.window?.ToolNexus?.runtime ?? null;
+}
+
+function emitSuggestionTelemetry(runtimeContext, eventName, { slug, suggestion } = {}) {
+  const payload = {
+    toolSlug: slug,
+    metadata: {
+      suggestedToolId: suggestion?.toolId ?? null,
+      contextType: suggestion?.contextType ?? null,
+      confidence: suggestion?.confidence ?? null
+    }
+  };
+
+  try {
+    runtimeContext?.adapters?.emitTelemetry?.(eventName, payload);
+  } catch {
+    // telemetry is best-effort
+  }
+}
+
+function attachPredictiveSuggestion({ controls, unifiedControl, runtimeContext, slug }) {
+  const analyzableControl = controls.find(({ input }) => {
+    if (!input) {
+      return false;
+    }
+
+    return input.tagName === 'TEXTAREA' || input.type === 'text' || input.dataset.fieldType === 'json';
+  });
+
+  if (!analyzableControl) {
+    return;
+  }
+
+  const analyzer = createToolContextAnalyzer();
+  const runtimeApi = getRuntimeApi();
+  let activeSuggestion = null;
+
+  const renderSuggestion = (suggestions = []) => {
+    const nextSuggestion = suggestions[0] ?? null;
+
+    if (!nextSuggestion) {
+      if (activeSuggestion) {
+        emitSuggestionTelemetry(runtimeContext, 'suggestion_dismissed', { slug, suggestion: activeSuggestion });
+      }
+
+      activeSuggestion = null;
+      unifiedControl.hideSuggestion();
+      return;
+    }
+
+    const changed = !activeSuggestion
+      || activeSuggestion.toolId !== nextSuggestion.toolId
+      || activeSuggestion.contextType !== nextSuggestion.contextType;
+
+    activeSuggestion = nextSuggestion;
+    unifiedControl.showSuggestion(activeSuggestion);
+
+    if (changed) {
+      emitSuggestionTelemetry(runtimeContext, 'suggestion_shown', { slug, suggestion: activeSuggestion });
+    }
+  };
+
+  const onInput = () => {
+    analyzer.run(analyzableControl.input.value, renderSuggestion);
+  };
+
+  const onAccept = async () => {
+    if (!activeSuggestion || !runtimeApi?.invokeTool) {
+      return;
+    }
+
+    emitSuggestionTelemetry(runtimeContext, 'suggestion_accepted', { slug, suggestion: activeSuggestion });
+
+    await runtimeApi.invokeTool(activeSuggestion.toolId, {
+      mountMode: 'inline',
+      initialInput: analyzableControl.input.value,
+      contextMetadata: {
+        contextType: activeSuggestion.contextType,
+        confidence: activeSuggestion.confidence,
+        sourceTool: slug
+      }
+    });
+  };
+
+  unifiedControl.suggestionBadge.addEventListener('click', onAccept);
+  analyzableControl.input.addEventListener('input', onInput);
+  onInput();
+
+  runtimeContext.addCleanup?.(() => {
+    analyzer.dispose();
+    unifiedControl.suggestionBadge.removeEventListener('click', onAccept);
+    analyzableControl.input.removeEventListener('input', onInput);
+  });
 }
 
 function createExecutionError(doc, message) {
@@ -315,7 +414,9 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
       runButton.addEventListener('click', run);
       runtimeContext.addCleanup?.(() => runButton.removeEventListener('click', run));
 
-      return { controls, runButton, output: unifiedControl.result, status: unifiedControl.status };
+      attachPredictiveSuggestion({ controls, unifiedControl, runtimeContext, slug });
+
+      return { controls, runButton, output: unifiedControl.result, status: unifiedControl.status, suggestionBadge: unifiedControl.suggestionBadge };
     },
     create(root) {
       if (!root) {
