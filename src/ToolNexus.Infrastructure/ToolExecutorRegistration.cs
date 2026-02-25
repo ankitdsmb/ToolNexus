@@ -8,8 +8,7 @@ public static class ToolExecutorRegistration
 {
     public static IServiceCollection AddToolExecutors(this IServiceCollection services)
     {
-        // Explicit module registration to avoid broad reflection-based scanning.
-        // Executors are stateless and reused by singleton startup validators.
+        // Explicit core executor registration remains deterministic.
         services.AddSingleton<IToolExecutor, Base64ToolExecutor>();
         services.AddSingleton<IToolExecutor, CsvToolExecutor>();
         services.AddSingleton<IToolExecutor, HtmlToolExecutor>();
@@ -18,6 +17,8 @@ public static class ToolExecutorRegistration
         services.AddSingleton<IToolExecutor, JsonToolkitProToolExecutor>();
         services.AddSingleton<IToolExecutor, MinifierToolExecutor>();
         services.AddSingleton<IToolExecutor, XmlToolExecutor>();
+
+        // Existing route-mapped executors remain backward compatible.
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("json-to-xml"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("xml-to-json"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("csv-to-json"));
@@ -39,6 +40,27 @@ public static class ToolExecutorRegistration
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("file-merge"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("text-intelligence-analyzer"));
 
+        RegisterGeneratedExecutors(services);
         return services;
+    }
+
+    private static void RegisterGeneratedExecutors(IServiceCollection services)
+    {
+        var generatedExecutors = typeof(ToolExecutorRegistration).Assembly
+            .GetTypes()
+            .Where(type =>
+                !type.IsAbstract
+                && !type.IsInterface
+                && type.Namespace is not null
+                && type.Namespace.StartsWith("ToolNexus.Infrastructure.Executors.Generated", StringComparison.Ordinal)
+                && typeof(IToolExecutor).IsAssignableFrom(type)
+                && type.GetConstructor(Type.EmptyTypes) is not null)
+            .OrderBy(type => type.Name, StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var generatedExecutor in generatedExecutors)
+        {
+            services.AddSingleton(typeof(IToolExecutor), generatedExecutor);
+        }
     }
 }
