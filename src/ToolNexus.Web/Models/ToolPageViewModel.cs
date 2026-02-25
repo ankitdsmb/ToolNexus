@@ -10,6 +10,8 @@ public sealed class ToolPageViewModel
     public required ToolSeoMetadata Seo { get; init; }
     public string? RuntimeModulePath { get; init; }
     public string? RuntimeCssPath { get; init; }
+    public string RuntimeUiMode { get; init; } = "auto";
+    public int RuntimeComplexityTier { get; init; } = 1;
     public ToolContent? Content { get; init; }
     public IReadOnlyCollection<RelatedToolViewModel> RelatedTools { get; init; } = [];
     public IReadOnlyCollection<RelatedToolViewModel> SameCategoryTools { get; init; } = [];
