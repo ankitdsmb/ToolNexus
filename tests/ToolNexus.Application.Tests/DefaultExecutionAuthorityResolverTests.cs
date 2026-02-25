@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services.Pipeline;
+using Xunit;
 
 namespace ToolNexus.Application.Tests;
 
@@ -53,7 +54,7 @@ public sealed class DefaultExecutionAuthorityResolverTests
 
     private static DefaultExecutionAuthorityResolver CreateResolver(ExecutionAuthorityOptions options)
     {
-        return new DefaultExecutionAuthorityResolver(Options.Create(options));
+        return new DefaultExecutionAuthorityResolver(Microsoft.Extensions.Options.Options.Create(options));
     }
 
     private static ToolExecutionContext CreateContext()

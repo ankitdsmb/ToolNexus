@@ -1,5 +1,6 @@
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services.Pipeline;
+using Xunit;
 
 namespace ToolNexus.Application.Tests;
 
