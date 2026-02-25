@@ -53,7 +53,7 @@ public sealed class DefaultExecutionAuthorityResolverTests
 
     private static DefaultExecutionAuthorityResolver CreateResolver(ExecutionAuthorityOptions options)
     {
-        return new DefaultExecutionAuthorityResolver(Options.Create(options));
+        return new DefaultExecutionAuthorityResolver(Microsoft.Extensions.Options.Options.Create(options));
     }
 
     private static ToolExecutionContext CreateContext()
