@@ -9,6 +9,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const runtime = page.querySelector('.tool-shell-page__runtime');
   const runtimeShell = page.querySelector('[data-runtime-zone-shell="true"]');
   const momentumLoop = page.querySelector('[data-momentum-loop="true"]');
+  const inlineMountTrigger = page.querySelector('[data-inline-mount-trigger="true"]');
+  const inlineMountHost = page.querySelector('[data-inline-mount-host="true"]');
+
+
+  if (inlineMountTrigger && inlineMountHost) {
+    inlineMountTrigger.addEventListener('click', async () => {
+      const runtimeApi = window.ToolNexus?.runtime;
+      const toolSlug = runtime?.dataset?.toolSlug;
+      if (!runtimeApi?.invokeTool || !toolSlug) {
+        return;
+      }
+
+      inlineMountTrigger.disabled = true;
+      inlineMountTrigger.textContent = 'Launching inline runtime…';
+
+      try {
+        await runtimeApi.invokeTool(toolSlug, {
+          mountMode: 'inline',
+          host: inlineMountHost,
+          initialInput: window.ToolNexusConfig?.tool?.exampleInput ?? '',
+          contextMetadata: { source: 'tool-shell-demo' }
+        });
+        inlineMountTrigger.textContent = 'Inline runtime mounted';
+      } catch {
+        inlineMountTrigger.disabled = false;
+        inlineMountTrigger.textContent = 'Open inline runtime demo';
+      }
+    });
+  }
 
   cards.forEach((card) => {
     card.addEventListener('mouseenter', () => card.classList.add('is-emphasized'));

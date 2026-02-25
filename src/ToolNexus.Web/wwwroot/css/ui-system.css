@@ -278,3 +278,43 @@ ENTERPRISE UI SYSTEM
   font-size: 0.72rem;
   width: fit-content;
 }
+
+
+:where(.tool-container) {
+  width: 100%;
+}
+
+:where(.tool-container--inline) {
+  margin-top: var(--space-sm);
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--color-border));
+  border-radius: var(--radius-panel);
+  padding: var(--space-xs);
+  background: color-mix(in srgb, var(--panel-bg) 92%, black 8%);
+}
+
+:where(.tool-container--panel) {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-sm);
+  background: var(--panel-bg);
+  box-shadow: var(--elevation-1);
+}
+
+:where(.tool-container--popover) {
+  position: absolute;
+  inset: auto var(--space-sm) var(--space-sm) auto;
+  width: min(540px, calc(100vw - (var(--space-sm) * 2)));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--panel-bg);
+  box-shadow: var(--elevation-3);
+  padding: var(--space-xs);
+  z-index: 20;
+}
+
+:where(.tool-container--command) {
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--color-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel-bg) 80%, var(--accent-soft));
+  padding: var(--space-xs);
+}
