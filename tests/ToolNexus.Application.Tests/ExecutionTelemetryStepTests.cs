@@ -138,12 +138,35 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Single(recorder.Events);
     }
 
-    private static ToolExecutionContext CreateContext()
+
+    [Fact]
+    public async Task InvokeAsync_WithoutGovernanceDecisionReference_Throws()
     {
-        return new ToolExecutionContext("json", "format", "{\"name\":\"toolnexus\"}", null)
+        var recorder = new BufferingExecutionEventService();
+        var step = new ExecutionTelemetryStep(recorder);
+        var context = new ToolExecutionContext("json", "format", "{}", null)
         {
             Policy = new TestPolicy()
         };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            step.InvokeAsync(context, (_, _) => Task.FromResult(new ToolExecutionResponse(true, "ok")), CancellationToken.None));
+    }
+
+    private static ToolExecutionContext CreateContext()
+    {
+        var context = new ToolExecutionContext("json", "format", "{\"name\":\"toolnexus\"}", null)
+        {
+            Policy = new TestPolicy()
+        };
+
+        context.Items[UniversalExecutionEngine.GovernanceDecisionIdContextKey] = Guid.NewGuid().ToString("D");
+        context.Items[UniversalExecutionEngine.GovernancePolicyVersionContextKey] = "policy-v1";
+        context.Items[UniversalExecutionEngine.GovernanceDecisionStatusContextKey] = GovernanceDecisionStatus.Approved.ToString();
+        context.Items[UniversalExecutionEngine.GovernanceDecisionReasonContextKey] = "Allowed";
+        context.Items[UniversalExecutionEngine.GovernanceApprovedByContextKey] = "server";
+
+        return context;
     }
 
     private sealed class BufferingExecutionEventService : IToolExecutionEventService

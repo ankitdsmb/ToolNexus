@@ -89,7 +89,8 @@ public sealed class EfExecutionLedgerRepository(ToolNexusContentDbContext dbCont
                     x.Snapshot.TenantId,
                     x.Snapshot.TimestampUtc,
                     x.Snapshot.ConformanceVersion,
-                    x.Snapshot.PolicySnapshotJson),
+                    x.Snapshot.PolicySnapshotJson,
+                    x.Snapshot.GovernanceDecisionId),
                 new ExecutionLedgerConformance(
                     x.Conformance.IsValid,
                     x.Conformance.NormalizedStatus,
@@ -118,7 +119,8 @@ public sealed class EfExecutionLedgerRepository(ToolNexusContentDbContext dbCont
                 x.TenantId,
                 x.TimestampUtc,
                 x.ConformanceVersion,
-                x.PolicySnapshotJson))
+                x.PolicySnapshotJson,
+                x.GovernanceDecisionId))
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = "Governance Decision History";
+}
+
+<h2>Governance Decision History</h2>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-3">
+        <label class="form-label" for="tool-filter">Tool</label>
+        <input class="form-control" id="tool-filter" placeholder="tool id" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label" for="policy-filter">Policy version</label>
+        <input class="form-control" id="policy-filter" placeholder="policy version" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label" for="start-date">Start date</label>
+        <input class="form-control" id="start-date" type="date" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label" for="end-date">End date</label>
+        <input class="form-control" id="end-date" type="date" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button id="apply-filters" class="btn btn-primary w-100" type="button">Apply filters</button>
+    </div>
+</div>
+
+<table class="table table-sm" id="governance-decisions-table">
+    <thead>
+    <tr>
+        <th>Timestamp (UTC)</th>
+        <th>Tool</th>
+        <th>Capability</th>
+        <th>Policy Version</th>
+        <th>Status</th>
+        <th>Authority</th>
+        <th>Approved By</th>
+        <th>Reason</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section Scripts {
+<script>
+(async function () {
+  const tableBody = document.querySelector('#governance-decisions-table tbody');
+  const applyButton = document.querySelector('#apply-filters');
+
+  async function load() {
+    const params = new URLSearchParams({ page: '1', pageSize: '100' });
+    const toolId = document.querySelector('#tool-filter').value.trim();
+    const policyVersion = document.querySelector('#policy-filter').value.trim();
+    const startDate = document.querySelector('#start-date').value;
+    const endDate = document.querySelector('#end-date').value;
+
+    if (toolId) params.append('toolId', toolId);
+    if (policyVersion) params.append('policyVersion', policyVersion);
+    if (startDate) params.append('startDateUtc', new Date(startDate).toISOString());
+    if (endDate) params.append('endDateUtc', new Date(endDate + 'T23:59:59Z').toISOString());
+
+    const response = await fetch(`/api/admin/governance/decisions?${params.toString()}`);
+    if (!response.ok) {
+      tableBody.innerHTML = '<tr><td colspan="8">Failed to load decisions.</td></tr>';
+      return;
+    }
+
+    const page = await response.json();
+    tableBody.innerHTML = '';
+
+    if (!page.items || page.items.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="8">No decisions found.</td></tr>';
+      return;
+    }
+
+    for (const item of page.items) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.timestampUtc}</td><td>${item.toolId}</td><td>${item.capabilityId}</td><td>${item.policyVersion}</td><td>${item.status}</td><td>${item.authority}</td><td>${item.approvedBy}</td><td>${item.decisionReason}</td>`;
+      tableBody.appendChild(tr);
+    }
+  }
+
+  applyButton.addEventListener('click', load);
+  await load();
+})();
+</script>
+}

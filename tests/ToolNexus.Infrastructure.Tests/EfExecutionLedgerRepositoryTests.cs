@@ -16,6 +16,20 @@ public sealed class EfExecutionLedgerRepositoryTests
         await using (var seed = database.CreateContext())
         {
             var runId = Guid.NewGuid();
+            var decisionId = Guid.NewGuid();
+            seed.GovernanceDecisions.Add(new GovernanceDecisionEntity
+            {
+                DecisionId = decisionId,
+                ToolId = "json-formatter",
+                CapabilityId = "format",
+                Authority = "LegacyAuthoritative",
+                ApprovedBy = "server",
+                DecisionReason = "Allowed",
+                PolicyVersion = "json",
+                TimestampUtc = DateTime.UtcNow,
+                Status = "Approved"
+            });
+
             seed.ExecutionRuns.Add(new ExecutionRunEntity
             {
                 Id = runId,
@@ -33,7 +47,7 @@ public sealed class EfExecutionLedgerRepositoryTests
                 CorrelationId = "corr-1",
                 TenantId = "tenant-a",
                 TraceId = "trace-1",
-                Snapshot = new ExecutionSnapshotEntity { Id = Guid.NewGuid(), SnapshotId = "snap-1", Authority = "LegacyAuthoritative", RuntimeLanguage = "dotnet", ExecutionCapability = "format", TimestampUtc = DateTime.UtcNow, ConformanceVersion = "v1" },
+                Snapshot = new ExecutionSnapshotEntity { Id = Guid.NewGuid(), SnapshotId = "snap-1", Authority = "LegacyAuthoritative", RuntimeLanguage = "dotnet", ExecutionCapability = "format", TimestampUtc = DateTime.UtcNow, ConformanceVersion = "v1", GovernanceDecisionId = decisionId },
                 Conformance = new ExecutionConformanceResultEntity { Id = Guid.NewGuid(), IsValid = true, NormalizedStatus = "ok", WasNormalized = false, IssueCount = 0, IssuesJson = "[]" },
                 AuthorityDecision = new ExecutionAuthorityDecisionEntity { Id = Guid.NewGuid(), Authority = "LegacyAuthoritative", AdmissionAllowed = true, AdmissionReason = "Allowed", DecisionSource = "policy" }
             });
@@ -64,6 +78,20 @@ public sealed class EfExecutionLedgerRepositoryTests
 
         await using var _ = database;
         await using var context = database.CreateContext();
+        var decisionId = Guid.NewGuid();
+        context.GovernanceDecisions.Add(new GovernanceDecisionEntity
+        {
+            DecisionId = decisionId,
+            ToolId = "json-validator",
+            CapabilityId = "validate",
+            Authority = "UnifiedAuthoritative",
+            ApprovedBy = "server",
+            DecisionReason = "Allowed",
+            PolicyVersion = "json",
+            TimestampUtc = DateTime.UtcNow,
+            Status = "Approved"
+        });
+
         var run = new ExecutionRunEntity
         {
             Id = Guid.NewGuid(),
@@ -81,7 +109,7 @@ public sealed class EfExecutionLedgerRepositoryTests
             CorrelationId = "corr-pg",
             TenantId = "tenant-pg",
             TraceId = "trace-pg",
-            Snapshot = new ExecutionSnapshotEntity { Id = Guid.NewGuid(), SnapshotId = "snap-pg", Authority = "UnifiedAuthoritative", RuntimeLanguage = "python", ExecutionCapability = "validate", TimestampUtc = DateTime.UtcNow, ConformanceVersion = "v1" },
+            Snapshot = new ExecutionSnapshotEntity { Id = Guid.NewGuid(), SnapshotId = "snap-pg", Authority = "UnifiedAuthoritative", RuntimeLanguage = "python", ExecutionCapability = "validate", TimestampUtc = DateTime.UtcNow, ConformanceVersion = "v1", GovernanceDecisionId = decisionId },
             Conformance = new ExecutionConformanceResultEntity { Id = Guid.NewGuid(), IsValid = false, NormalizedStatus = "failed", WasNormalized = true, IssueCount = 1, IssuesJson = "[\"invalid\"]" },
             AuthorityDecision = new ExecutionAuthorityDecisionEntity { Id = Guid.NewGuid(), Authority = "UnifiedAuthoritative", AdmissionAllowed = true, AdmissionReason = "Allowed", DecisionSource = "admission-controller" }
         };

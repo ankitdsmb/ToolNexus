@@ -36,7 +36,8 @@ public sealed record ExecutionLedgerSnapshot(
     string? TenantId,
     DateTime TimestampUtc,
     string ConformanceVersion,
-    string? PolicySnapshotJson);
+    string? PolicySnapshotJson,
+    Guid GovernanceDecisionId);
 
 public sealed record ExecutionLedgerDetail(
     Guid Id,

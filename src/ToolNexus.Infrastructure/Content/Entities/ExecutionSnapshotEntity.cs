@@ -13,6 +13,8 @@ public sealed class ExecutionSnapshotEntity
     public DateTime TimestampUtc { get; set; }
     public string ConformanceVersion { get; set; } = string.Empty;
     public string? PolicySnapshotJson { get; set; }
+    public Guid GovernanceDecisionId { get; set; }
 
     public ExecutionRunEntity ExecutionRun { get; set; } = null!;
+    public GovernanceDecisionEntity GovernanceDecision { get; set; } = null!;
 }

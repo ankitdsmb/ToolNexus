@@ -24,7 +24,12 @@ public sealed class DefaultExecutionSnapshotBuilder : IExecutionSnapshotBuilder
             TenantId: request.TenantId,
             TimestampUtc: DateTime.UtcNow,
             ConformanceVersion: DefaultConformanceVersion,
-            PolicySnapshot: CreatePolicySnapshot(context.Policy));
+            PolicySnapshot: CreatePolicySnapshot(context.Policy),
+            GovernanceDecisionId: Guid.Empty,
+            GovernancePolicyVersion: context.Policy?.Slug ?? "unknown",
+            GovernanceStatus: GovernanceDecisionStatus.Denied,
+            GovernanceDecisionReason: "Uninitialized",
+            GovernanceApprovedBy: "server");
     }
 
     private static object CreatePolicySnapshot(IToolExecutionPolicy? policy)

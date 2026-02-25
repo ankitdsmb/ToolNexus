@@ -37,6 +37,7 @@ public sealed class DefaultExecutionSnapshotBuilderTests
         Assert.Equal("corr-1", snapshot.CorrelationId);
         Assert.Equal("tenant-1", snapshot.TenantId);
         Assert.Equal("v1", snapshot.ConformanceVersion);
+        Assert.Equal(Guid.Empty, snapshot.GovernanceDecisionId);
     }
 
 
@@ -78,7 +79,12 @@ public sealed class DefaultExecutionSnapshotBuilderTests
             "tenant",
             DateTime.UtcNow,
             "v1",
-            new { mode = "server" });
+            new { mode = "server" },
+            Guid.NewGuid(),
+            "policy-v1",
+            GovernanceDecisionStatus.Approved,
+            "Allowed",
+            "server");
 
         var updated = snapshot with { SnapshotId = "updated" };
 

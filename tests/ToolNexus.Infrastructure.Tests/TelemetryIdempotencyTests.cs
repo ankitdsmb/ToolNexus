@@ -40,7 +40,32 @@ public sealed class TelemetryIdempotencyTests
             DurationMs = 11,
             Success = true,
             PayloadSize = 16,
-            ExecutionMode = "Local"
+            ExecutionMode = "Local",
+            Language = "dotnet",
+            AdapterName = "Legacy",
+            AdapterResolutionStatus = "legacy",
+            Capability = "format",
+            ExecutionAuthority = "UnifiedAuthoritative",
+            ShadowExecution = "false",
+            ConformanceValid = "true",
+            ConformanceNormalized = "false",
+            ConformanceIssueCount = 0,
+            ExecutionSnapshotId = "snap-1",
+            SnapshotAuthority = "UnifiedAuthoritative",
+            SnapshotLanguage = "dotnet",
+            SnapshotCapability = "format",
+            AdmissionAllowed = "true",
+            AdmissionReason = "Allowed",
+            AdmissionDecisionSource = "test",
+            SnapshotTimestampUtc = DateTime.UtcNow,
+            SnapshotConformanceVersion = "v1",
+            ConformanceNormalizedStatus = "ok",
+            ConformanceIssuesJson = "[]",
+            GovernanceDecisionId = Guid.NewGuid(),
+            GovernancePolicyVersion = "policy-v1",
+            GovernanceDecisionStatus = "Approved",
+            GovernanceDecisionReason = "Allowed",
+            GovernanceApprovedBy = "server"
         };
 
         await processor.ProcessAsync(telemetryEvent, CancellationToken.None);

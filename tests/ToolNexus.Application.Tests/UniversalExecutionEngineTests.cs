@@ -58,6 +58,9 @@ public sealed class UniversalExecutionEngineTests
         Assert.Equal(ExecutionAuthority.UnifiedAuthoritative.ToString(), context.Items[UniversalExecutionEngine.SnapshotAuthorityContextKey]);
         Assert.Equal(ToolRuntimeLanguage.DotNet.Value, context.Items[UniversalExecutionEngine.SnapshotLanguageContextKey]);
         Assert.Equal(ToolExecutionCapability.Standard.Value, context.Items[UniversalExecutionEngine.SnapshotCapabilityContextKey]);
+        Assert.True(Guid.TryParse(context.Items[UniversalExecutionEngine.GovernanceDecisionIdContextKey]?.ToString(), out _));
+        Assert.Equal("json", context.Items[UniversalExecutionEngine.GovernancePolicyVersionContextKey]);
+        Assert.Equal(GovernanceDecisionStatus.Approved.ToString(), context.Items[UniversalExecutionEngine.GovernanceDecisionStatusContextKey]);
     }
 
     [Fact]
