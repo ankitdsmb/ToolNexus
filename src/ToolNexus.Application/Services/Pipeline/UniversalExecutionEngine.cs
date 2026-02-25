@@ -23,6 +23,8 @@ public sealed class UniversalExecutionEngine(
     public const string ConformanceValidContextKey = "runtime.conformanceValid";
     public const string ConformanceNormalizedContextKey = "runtime.conformanceNormalized";
     public const string ConformanceIssueCountContextKey = "runtime.conformanceIssueCount";
+    public const string ConformanceStatusContextKey = "runtime.conformanceStatus";
+    public const string ConformanceIssuesContextKey = "runtime.conformanceIssues";
     public const string ExecutionSnapshotContextKey = "runtime.executionSnapshot";
     public const string ExecutionSnapshotIdContextKey = "runtime.executionSnapshotId";
     public const string SnapshotAuthorityContextKey = "runtime.snapshotAuthority";
@@ -54,6 +56,8 @@ public sealed class UniversalExecutionEngine(
         context.Items[ConformanceValidContextKey] = "true";
         context.Items[ConformanceNormalizedContextKey] = "false";
         context.Items[ConformanceIssueCountContextKey] = "0";
+        context.Items[ConformanceStatusContextKey] = "unknown";
+        context.Items[ConformanceIssuesContextKey] = "[]";
         context.Items[AdmissionAllowedContextKey] = "true";
         context.Items[AdmissionReasonContextKey] = "Allowed";
         context.Items[AdmissionDecisionSourceContextKey] = string.Empty;
@@ -154,6 +158,8 @@ public sealed class UniversalExecutionEngine(
         context.Items[ConformanceValidContextKey] = conformance.IsValid ? "true" : "false";
         context.Items[ConformanceNormalizedContextKey] = conformance.WasNormalized ? "true" : "false";
         context.Items[ConformanceIssueCountContextKey] = conformance.ConformanceIssues.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        context.Items[ConformanceStatusContextKey] = conformance.NormalizedStatus;
+        context.Items[ConformanceIssuesContextKey] = System.Text.Json.JsonSerializer.Serialize(conformance.ConformanceIssues);
 
         return conformance.NormalizedResult;
     }

@@ -39,6 +39,7 @@ public sealed class TelemetryEventProcessor(
         }
 
         dbContext.ToolExecutionEvents.Add(Map(executionEvent));
+        dbContext.ExecutionRuns.Add(MapExecutionRun(executionEvent));
         await metricsAggregator.UpdateAsync(dbContext, executionEvent, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -58,6 +59,64 @@ public sealed class TelemetryEventProcessor(
             ErrorType = executionEvent.ErrorType,
             PayloadSize = executionEvent.PayloadSize,
             ExecutionMode = executionEvent.ExecutionMode
+        };
+    }
+
+    private static ExecutionRunEntity MapExecutionRun(ToolExecutionEvent executionEvent)
+    {
+        var runId = executionEvent.ExecutionRunId == Guid.Empty ? Guid.NewGuid() : executionEvent.ExecutionRunId;
+        return new ExecutionRunEntity
+        {
+            Id = runId,
+            ToolId = executionEvent.ToolId,
+            ExecutedAtUtc = DateTime.SpecifyKind(executionEvent.TimestampUtc, DateTimeKind.Utc),
+            Success = executionEvent.Success,
+            DurationMs = executionEvent.DurationMs,
+            ErrorType = executionEvent.ErrorType,
+            PayloadSize = executionEvent.PayloadSize,
+            ExecutionMode = executionEvent.ExecutionMode,
+            RuntimeLanguage = executionEvent.RuntimeLanguage,
+            AdapterName = executionEvent.AdapterName,
+            AdapterResolutionStatus = executionEvent.AdapterResolutionStatus,
+            Capability = executionEvent.Capability,
+            Authority = executionEvent.ExecutionAuthority,
+            ShadowExecution = string.Equals(executionEvent.ShadowExecution, "true", StringComparison.OrdinalIgnoreCase),
+            CorrelationId = executionEvent.CorrelationId,
+            TenantId = executionEvent.TenantId,
+            TraceId = executionEvent.TraceId,
+            Snapshot = new ExecutionSnapshotEntity
+            {
+                Id = Guid.NewGuid(),
+                ExecutionRunId = runId,
+                SnapshotId = executionEvent.ExecutionSnapshotId,
+                Authority = executionEvent.SnapshotAuthority,
+                RuntimeLanguage = executionEvent.SnapshotLanguage,
+                ExecutionCapability = executionEvent.SnapshotCapability,
+                CorrelationId = executionEvent.CorrelationId,
+                TenantId = executionEvent.TenantId,
+                TimestampUtc = DateTime.SpecifyKind(executionEvent.SnapshotTimestampUtc, DateTimeKind.Utc),
+                ConformanceVersion = executionEvent.SnapshotConformanceVersion,
+                PolicySnapshotJson = executionEvent.SnapshotPolicyJson
+            },
+            Conformance = new ExecutionConformanceResultEntity
+            {
+                Id = Guid.NewGuid(),
+                ExecutionRunId = runId,
+                IsValid = string.Equals(executionEvent.ConformanceValid, "true", StringComparison.OrdinalIgnoreCase),
+                NormalizedStatus = executionEvent.ConformanceNormalizedStatus,
+                WasNormalized = string.Equals(executionEvent.ConformanceNormalized, "true", StringComparison.OrdinalIgnoreCase),
+                IssueCount = executionEvent.ConformanceIssueCount,
+                IssuesJson = executionEvent.ConformanceIssuesJson
+            },
+            AuthorityDecision = new ExecutionAuthorityDecisionEntity
+            {
+                Id = Guid.NewGuid(),
+                ExecutionRunId = runId,
+                Authority = executionEvent.ExecutionAuthority,
+                AdmissionAllowed = string.Equals(executionEvent.AdmissionAllowed, "true", StringComparison.OrdinalIgnoreCase),
+                AdmissionReason = executionEvent.AdmissionReason,
+                DecisionSource = executionEvent.AdmissionDecisionSource
+            }
         };
     }
 }

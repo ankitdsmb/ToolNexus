@@ -2,6 +2,7 @@ namespace ToolNexus.Application.Models;
 
 public sealed class ToolExecutionEvent
 {
+    public Guid ExecutionRunId { get; init; } = Guid.NewGuid();
     public string ToolSlug { get; init; } = string.Empty;
     public DateTime TimestampUtc { get; init; }
     public long DurationMs { get; init; }
@@ -29,6 +30,14 @@ public sealed class ToolExecutionEvent
     public string AdmissionAllowed { get; init; } = string.Empty;
     public string AdmissionReason { get; init; } = string.Empty;
     public string AdmissionDecisionSource { get; init; } = string.Empty;
+    public string? CorrelationId { get; init; }
+    public string? TenantId { get; init; }
+    public string? TraceId { get; init; }
+    public DateTime SnapshotTimestampUtc { get; init; }
+    public string SnapshotConformanceVersion { get; init; } = string.Empty;
+    public string? SnapshotPolicyJson { get; init; }
+    public string ConformanceNormalizedStatus { get; init; } = string.Empty;
+    public string ConformanceIssuesJson { get; init; } = "[]";
     public string RuntimeLanguage => Language;
     public string ToolId => ToolSlug;
 
