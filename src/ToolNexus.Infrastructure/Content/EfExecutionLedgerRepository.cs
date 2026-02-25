@@ -80,6 +80,12 @@ public sealed class EfExecutionLedgerRepository(ToolNexusContentDbContext dbCont
                 x.CorrelationId,
                 x.TenantId,
                 x.TraceId,
+                new RuntimeIdentity(
+                    x.RuntimeLanguage,
+                    x.AdapterName,
+                    x.RuntimeLanguage + ":" + x.Capability,
+                    x.AdapterResolutionStatus == "legacy" || x.AdapterResolutionStatus == "admission_denied" || x.AdapterResolutionStatus == "missing",
+                    x.Authority),
                 new ExecutionLedgerSnapshot(
                     x.Snapshot.SnapshotId,
                     x.Snapshot.Authority,

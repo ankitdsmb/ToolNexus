@@ -21,11 +21,12 @@ public sealed record UniversalToolExecutionResult(
     ToolInsightResult? Insight = null,
     string? Status = null,
     IDictionary<string, string>? Metrics = null,
-    IReadOnlyList<string>? Incidents = null)
+    IReadOnlyList<string>? Incidents = null,
+    RuntimeIdentity? RuntimeIdentity = null)
 {
     public ToolExecutionResponse ToToolExecutionResponse()
     {
-        return new ToolExecutionResponse(Success, Output, Error, NotFound, Insight);
+        return new ToolExecutionResponse(Success, Output, Error, NotFound, Insight, RuntimeIdentity);
     }
 
     public static UniversalToolExecutionResult FromToolExecutionResponse(
@@ -50,6 +51,7 @@ public sealed record UniversalToolExecutionResult(
             response.Insight,
             response.Success ? "Succeeded" : "Failed",
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
-            Array.Empty<string>());
+            Array.Empty<string>(),
+            response.RuntimeIdentity);
     }
 }

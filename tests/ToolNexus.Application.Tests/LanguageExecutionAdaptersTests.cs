@@ -44,6 +44,7 @@ public sealed class LanguageExecutionAdaptersTests
         Assert.Equal("true", context.Items[UniversalExecutionEngine.WorkerLeaseAcquiredContextKey]);
         Assert.Equal(WorkerLeaseState.Busy.ToString(), context.Items[UniversalExecutionEngine.WorkerLeaseStateContextKey]);
         Assert.Equal("true", context.Items[UniversalExecutionEngine.WorkerOrchestratorUsedContextKey]);
+        Assert.Equal("python:sandboxed", context.Items[UniversalExecutionEngine.WorkerTypeContextKey]);
     }
 
     [Fact]

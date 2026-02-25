@@ -18,6 +18,7 @@ public sealed class UniversalExecutionEngine(
     public const string WorkerLeaseAcquiredContextKey = "runtime.workerLeaseAcquired";
     public const string WorkerLeaseStateContextKey = "runtime.workerLeaseState";
     public const string WorkerOrchestratorUsedContextKey = "runtime.workerOrchestratorUsed";
+    public const string WorkerTypeContextKey = "runtime.workerType";
     public const string ExecutionAuthorityContextKey = "runtime.executionAuthority";
     public const string ShadowExecutionContextKey = "runtime.shadowExecution";
     public const string ConformanceValidContextKey = "runtime.conformanceValid";
@@ -57,6 +58,7 @@ public sealed class UniversalExecutionEngine(
         context.Items[WorkerLeaseAcquiredContextKey] = "false";
         context.Items[WorkerLeaseStateContextKey] = WorkerLeaseState.Released.ToString();
         context.Items[WorkerOrchestratorUsedContextKey] = "false";
+        context.Items[WorkerTypeContextKey] = WorkerType.Create(language, request.ExecutionCapability).ToString();
         context.Items[ShadowExecutionContextKey] = "false";
         context.Items[ConformanceValidContextKey] = "true";
         context.Items[ConformanceNormalizedContextKey] = "false";
@@ -117,7 +119,7 @@ public sealed class UniversalExecutionEngine(
             context.Items[AdapterNameContextKey] = "none";
             context.Items[AdapterResolutionStatusContextKey] = "admission_denied";
 
-            return new UniversalToolExecutionResult(
+            return AttachRuntimeIdentity(context, new UniversalToolExecutionResult(
                 false,
                 string.Empty,
                 $"Execution admission denied: {admissionDecision.ReasonCode}.",
@@ -139,7 +141,7 @@ public sealed class UniversalExecutionEngine(
                     ["admissionReason"] = admissionDecision.ReasonCode,
                     ["admissionDecisionSource"] = admissionDecision.DecisionSource
                 },
-                Array.Empty<string>());
+                Array.Empty<string>()));
         }
 
         if (authority == ExecutionAuthority.LegacyAuthoritative)
@@ -154,7 +156,7 @@ public sealed class UniversalExecutionEngine(
                 context.Policy,
                 cancellationToken);
 
-            return UniversalToolExecutionResult.FromToolExecutionResponse(response, request, durationMs: 0);
+            return AttachRuntimeIdentity(context, UniversalToolExecutionResult.FromToolExecutionResponse(response, request, durationMs: 0));
         }
 
         if (authority == ExecutionAuthority.ShadowOnly)
@@ -167,7 +169,7 @@ public sealed class UniversalExecutionEngine(
             context.Items[AdapterNameContextKey] = "none";
             context.Items[AdapterResolutionStatusContextKey] = "missing";
 
-            return new UniversalToolExecutionResult(
+            return AttachRuntimeIdentity(context, new UniversalToolExecutionResult(
                 false,
                 string.Empty,
                 $"No execution adapter registered for language '{language.Value}'.",
@@ -181,7 +183,7 @@ public sealed class UniversalExecutionEngine(
                 0,
                 request.TenantId,
                 request.CorrelationId,
-                null);
+                null));
         }
 
         context.Items[AdapterNameContextKey] = adapter.GetType().Name;
@@ -196,6 +198,37 @@ public sealed class UniversalExecutionEngine(
         context.Items[ConformanceStatusContextKey] = conformance.NormalizedStatus;
         context.Items[ConformanceIssuesContextKey] = System.Text.Json.JsonSerializer.Serialize(conformance.ConformanceIssues);
 
-        return conformance.NormalizedResult;
+        return AttachRuntimeIdentity(context, conformance.NormalizedResult);
+    }
+
+    private static UniversalToolExecutionResult AttachRuntimeIdentity(ToolExecutionContext context, UniversalToolExecutionResult result)
+    {
+        var runtimeIdentity = BuildRuntimeIdentity(context);
+        context.Items["runtime.identity"] = runtimeIdentity;
+        return result with { RuntimeIdentity = runtimeIdentity };
+    }
+
+    private static RuntimeIdentity BuildRuntimeIdentity(ToolExecutionContext context)
+    {
+        var runtimeType = ResolveTag(context, LanguageContextKey, "unknown");
+        var adapter = ResolveTag(context, AdapterNameContextKey, "unknown");
+        var workerType = ResolveTag(context, WorkerTypeContextKey, "unknown");
+        var authority = ResolveTag(context, ExecutionAuthorityContextKey, ExecutionAuthority.LegacyAuthoritative.ToString());
+        var adapterResolutionStatus = ResolveTag(context, AdapterResolutionStatusContextKey, "unknown");
+        var fallbackUsed = string.Equals(adapterResolutionStatus, "legacy", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(adapterResolutionStatus, "admission_denied", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(adapterResolutionStatus, "missing", StringComparison.OrdinalIgnoreCase);
+
+        return new RuntimeIdentity(runtimeType, adapter, workerType, fallbackUsed, authority);
+    }
+
+    private static string ResolveTag(ToolExecutionContext context, string key, string defaultValue)
+    {
+        if (context.Items.TryGetValue(key, out var value) && value is string tag && !string.IsNullOrWhiteSpace(tag))
+        {
+            return tag;
+        }
+
+        return defaultValue;
     }
 }

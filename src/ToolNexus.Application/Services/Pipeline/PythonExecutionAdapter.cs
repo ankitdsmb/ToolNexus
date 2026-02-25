@@ -28,6 +28,7 @@ public sealed class PythonExecutionAdapter(WorkerExecutionOrchestrator workerExe
         var workerType = WorkerType.Create(request.RuntimeLanguage, request.ExecutionCapability);
         var orchestration = await workerExecutionOrchestrator.PrepareExecutionAsync(envelope, workerType, cancellationToken);
 
+        context.Items[UniversalExecutionEngine.WorkerTypeContextKey] = workerType.ToString();
         context.Items[UniversalExecutionEngine.WorkerManagerUsedContextKey] = "true";
         context.Items[UniversalExecutionEngine.WorkerLeaseAcquiredContextKey] = orchestration.LeaseAcquired.ToString().ToLowerInvariant();
         context.Items[UniversalExecutionEngine.WorkerLeaseStateContextKey] = orchestration.WorkerLeaseState.ToString();

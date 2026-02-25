@@ -57,6 +57,7 @@ public sealed record ExecutionLedgerDetail(
     string? CorrelationId,
     string? TenantId,
     string? TraceId,
+    RuntimeIdentity RuntimeIdentity,
     ExecutionLedgerSnapshot Snapshot,
     ExecutionLedgerConformance Conformance,
     ExecutionLedgerAuthorityDecision AuthorityDecision);
