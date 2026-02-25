@@ -84,6 +84,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminExecutionMonitoringService>(sp => sp.GetRequiredService<AdminExecutionMonitoringService>());
         services.AddScoped<IExecutionLedgerService, ExecutionLedgerService>();
         services.AddScoped<IGovernanceDecisionService, GovernanceDecisionService>();
+        services.AddScoped<IToolQualityScoreService, ToolQualityScoreService>();
         services.AddScoped<IRuntimeIncidentService, RuntimeIncidentService>();
         services.AddSingleton<IStartupPhaseService, ManifestStartupValidator>();
         services.AddSingleton<IStartupPhaseService, PlatformCacheWarmupHostedService>();

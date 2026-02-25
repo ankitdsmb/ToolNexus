@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Tool Quality Scores";
+}
+
+<h2>Tool Quality Scores</h2>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-4">
+        <label class="form-label" for="tool-filter">Tool</label>
+        <input class="form-control" id="tool-filter" placeholder="tool id" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label" for="start-date">Start date</label>
+        <input class="form-control" id="start-date" type="date" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label" for="end-date">End date</label>
+        <input class="form-control" id="end-date" type="date" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button id="apply-filters" class="btn btn-primary w-100" type="button">Apply filters</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <h4>Latest Score by Tool</h4>
+        <table class="table table-sm" id="latest-quality-table">
+            <thead>
+            <tr>
+                <th>Tool</th>
+                <th>Score</th>
+                <th>Architecture</th>
+                <th>Coverage</th>
+                <th>Craft</th>
+                <th>Timestamp (UTC)</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="col-lg-6">
+        <h4>Recent Score Events</h4>
+        <table class="table table-sm" id="quality-events-table">
+            <thead>
+            <tr>
+                <th>Tool</th>
+                <th>Score</th>
+                <th>Architecture</th>
+                <th>Coverage</th>
+                <th>Craft</th>
+                <th>Timestamp (UTC)</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(async function () {
+  const latestBody = document.querySelector('#latest-quality-table tbody');
+  const eventsBody = document.querySelector('#quality-events-table tbody');
+  const applyButton = document.querySelector('#apply-filters');
+
+  function renderRows(body, rows) {
+    body.innerHTML = '';
+
+    if (!rows || rows.length === 0) {
+      body.innerHTML = '<tr><td colspan="6">No quality scores found.</td></tr>';
+      return;
+    }
+
+    for (const item of rows) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.toolId}</td><td>${item.score}</td><td>${item.architectureScore}</td><td>${item.testCoverageScore}</td><td>${item.craftScore}</td><td>${item.timestampUtc}</td>`;
+      body.appendChild(tr);
+    }
+  }
+
+  async function load() {
+    const params = new URLSearchParams({ limit: '100' });
+    const toolId = document.querySelector('#tool-filter').value.trim();
+    const startDate = document.querySelector('#start-date').value;
+    const endDate = document.querySelector('#end-date').value;
+
+    if (toolId) params.append('toolId', toolId);
+    if (startDate) params.append('startDateUtc', new Date(startDate).toISOString());
+    if (endDate) params.append('endDateUtc', new Date(endDate + 'T23:59:59Z').toISOString());
+
+    const response = await fetch(`/api/admin/governance/quality-scores?${params.toString()}`);
+    if (!response.ok) {
+      latestBody.innerHTML = '<tr><td colspan="6">Failed to load quality scores.</td></tr>';
+      eventsBody.innerHTML = '<tr><td colspan="6">Failed to load quality scores.</td></tr>';
+      return;
+    }
+
+    const dashboard = await response.json();
+    renderRows(latestBody, dashboard.latestByTool);
+    renderRows(eventsBody, dashboard.items);
+  }
+
+  applyButton.addEventListener('click', load);
+  await load();
+})();
+</script>
+}

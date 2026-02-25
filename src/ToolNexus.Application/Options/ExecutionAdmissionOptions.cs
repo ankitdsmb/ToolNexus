@@ -7,4 +7,6 @@ public sealed class ExecutionAdmissionOptions
     public string[] SupportedRuntimeLanguages { get; set; } = ["dotnet", "python"];
 
     public string[] BlockedCapabilities { get; set; } = [];
+
+    public decimal MinimumQualityScore { get; set; } = 60m;
 }
