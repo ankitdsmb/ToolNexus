@@ -1,119 +1,135 @@
 # ToolNexus Strict Platform Completeness Audit
 
 ## Scope and method
-- Repository-scoped static audit across backend (`src/ToolNexus.Application`, `src/ToolNexus.Infrastructure`, `src/ToolNexus.Api`), admin/web (`src/ToolNexus.Web`), tests (`tests/*`), and docs (`docs/*`).
-- Evidence-driven only: each verdict is based on concrete code/doc presence, not roadmap intent.
-- **Strict rule applied**: any partial integration marks feature as **FAIL**.
+- Audit performed from repository evidence only (code, tests, migrations, docs).
+- Mandatory architecture context files requested by audit prompt were checked first:
+  - `docs/ARCHITECTURE-MASTER-CONTEXT.md` (**missing** in repository).
+  - `docs/ToolNexus-UI-UX-Platform-Blueprint.md` (**missing** in repository).
+- PostgreSQL evidence validated from Npgsql provider configuration and Postgres migration/table types.
 
-## Step 1 — Full feature inventory (requested feature set)
-| Feature | Inventory result |
-|---|---|
-| execution engine | Implemented (Universal execution pipeline/services present). |
-| authority resolver | Implemented (default resolver + options + tests). |
-| snapshots | Implemented (execution snapshot model + builder) but not fully wired to persistence. |
-| conformance | Implemented (conformance validator + normalization + tests). |
-| runtime identity | Implemented in frontend runtime telemetry; backend runtime fingerprint/identity flow incomplete. |
-| auto runtime | Implemented (auto runtime module + schema-driven UI + tests). |
-| unified control UI | Implemented (unified control runtime component + usage in auto runtime). |
-| invisible UI | Not implemented as a first-class runtime mode/feature. |
-| predictive suggestions | Implemented in auto runtime via context analyzer + suggestion telemetry + tests. |
-| capability marketplace | Implemented in application service layer + tests; missing API/admin/UI/db persistence integration. |
-| AI capability factory | Missing (no concrete service/api/persistence/admin pipeline; architecture intent only). |
-| craft layer | Missing (no concrete module/service/API/db identified). |
+## Step 1 — Feature inventory with concrete evidence
 
-## Step 2 — Integration completeness check
-Legend: **FULL / PARTIAL / MISSING**
+| Feature | Evidence found | Responsible layer | Inventory result |
+|---|---|---|---|
+| execution engine | `UniversalExecutionEngine` resolves authority, builds snapshot, performs admission, executes adapter, validates conformance, sets runtime identity. | Application pipeline | Present |
+| authority resolver | `DefaultExecutionAuthorityResolver` uses configured shadow/unified authority and risk tiers. | Application pipeline + options | Present |
+| execution snapshots | Snapshot model created in engine and persisted via telemetry processor into `execution_snapshots`. | Application + Infrastructure persistence | Present |
+| conformance validator | `DefaultExecutionConformanceValidator` normalizes result status/metrics/incidents. | Application pipeline | Present |
+| runtime identity | `RuntimeIdentity` attached by execution engine and surfaced from execution ledger detail. | Application + repository projections | Present |
+| auto runtime | Web runtime auto module (`tool-auto-runtime.js`) with schema-driven controls and execution payload sanitization. | Web runtime JS | Present |
+| unified control UI | Unified control runtime (`tool-unified-control-runtime.js`) creates shared shell/action/status/suggestion controls. | Web runtime JS | Present |
+| invisible UI | No explicit “invisible/headless UI” subsystem found as a first-class feature (only generic mount modes/silent flags). | N/A | Not evidenced as implemented feature |
+| predictive suggestions | Predictive suggestion wiring exists in auto runtime + unified control suggestion badge API. | Web runtime JS | Present |
+| capability marketplace | Application service exists (`CapabilityMarketplaceService`) building `CapabilityRegistryEntry` from tool catalog/policy/authority/snapshot. | Application service | Present (service-layer) |
+| AI capability factory | No API/controller/service/repository/migration implementing AI capability generation pipeline was found. | N/A | Missing |
+| craft layer | “Craft” appears as a **quality score dimension** (`craft_score`) and admin display column, not as independent platform layer. | Quality scoring persistence + UI | Partial semantic presence |
 
-| Feature | Backend implementation | API integration | DB persistence | Admin UI visibility | Telemetry exposure | Configuration controls | Tests coverage | Documentation | Status |
+## Step 2 — Integration completeness matrix (all required layers)
+
+Legend: FULL only if all required layers are implemented. Any missing required layer = FAIL.
+
+| Feature | Backend | API | PostgreSQL persistence (entity+migration+repo) | Admin UI visibility | Telemetry exposure | Config controls | Tests | Docs | Classification |
 |---|---|---|---|---|---|---|---|---|---|
-| execution engine | FULL | FULL | PARTIAL | PARTIAL | PARTIAL | FULL | FULL | FULL | **FAIL (PARTIAL)** |
-| authority resolver | FULL | PARTIAL | MISSING | MISSING | PARTIAL | FULL | FULL | PARTIAL | **FAIL (PARTIAL)** |
-| snapshots | FULL | PARTIAL | MISSING | MISSING | PARTIAL | PARTIAL | FULL | PARTIAL | **FAIL (PARTIAL)** |
-| conformance | FULL | PARTIAL | MISSING | MISSING | PARTIAL | PARTIAL | FULL | PARTIAL | **FAIL (PARTIAL)** |
-| runtime identity | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | MISSING | PARTIAL | PARTIAL | **FAIL (PARTIAL)** |
-| auto runtime | FULL | FULL | MISSING | PARTIAL | PARTIAL | PARTIAL | FULL | PARTIAL | **FAIL (PARTIAL)** |
-| unified control UI | FULL | PARTIAL | MISSING | PARTIAL | PARTIAL | MISSING | PARTIAL | PARTIAL | **FAIL (PARTIAL)** |
-| invisible UI | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | **FAIL (MISSING)** |
-| predictive suggestions | FULL | PARTIAL | MISSING | MISSING | PARTIAL | MISSING | FULL | PARTIAL | **FAIL (PARTIAL)** |
-| capability marketplace | PARTIAL | MISSING | MISSING | MISSING | MISSING | PARTIAL | PARTIAL | PARTIAL | **FAIL (PARTIAL)** |
-| AI capability factory | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | PARTIAL | **FAIL (MISSING)** |
-| craft layer | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | **FAIL (MISSING)** |
+| execution engine | FULL | PARTIAL (indirect via execution endpoint path, no dedicated engine admin API) | FULL (execution run/snapshot/conformance/authority entities + migrations + repos) | PARTIAL (execution ledger/monitoring views, no engine control plane) | FULL | PARTIAL (options types exist; no appsettings defaults found) | FULL | PARTIAL | FAIL |
+| authority resolver | FULL | PARTIAL (indirect only) | FULL (authority persisted in run/snapshot/authority decision tables) | PARTIAL | FULL | PARTIAL (options class exists, no concrete bound defaults found) | FULL | PARTIAL | FAIL |
+| execution snapshots | FULL | FULL (`/api/admin/executions/{id}/snapshot`) | FULL | FULL (execution ledger detail/snapshot) | FULL | PARTIAL | FULL | PARTIAL | FAIL |
+| conformance validator | FULL | PARTIAL (exposed through ledger projections, no direct conformance API) | FULL | PARTIAL (visible via execution ledger fields, no dedicated conformance dashboard) | FULL | PARTIAL | FULL | PARTIAL | FAIL |
+| runtime identity | FULL | PARTIAL (embedded in execution detail) | PARTIAL (reconstructed/projection from run fields; no dedicated runtime identity table) | PARTIAL | PARTIAL (indirect through telemetry fields) | PARTIAL | PARTIAL | PARTIAL | FAIL |
+| auto runtime | FULL (web runtime module) | PARTIAL (calls tool execution APIs; not its own API) | MISSING | MISSING (no admin observability for auto-runtime behavior) | PARTIAL (client runtime tests/logging, no clear admin telemetry view) | PARTIAL | FULL (JS runtime tests) | PARTIAL | FAIL |
+| unified control UI | FULL | PARTIAL | MISSING | MISSING | PARTIAL | MISSING | FULL (runtime tests) | PARTIAL | FAIL |
+| invisible UI | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | FAIL |
+| predictive suggestions | PARTIAL (UI badge plumbing, context analyzer hooks) | MISSING (no prediction service endpoint) | MISSING | MISSING | MISSING | MISSING | PARTIAL (runtime suggestion tests) | PARTIAL | FAIL |
+| capability marketplace | PARTIAL (service exists) | MISSING (no marketplace controller/endpoint found) | MISSING (no capability registry entity/migration/repository) | MISSING (no admin marketplace UI) | MISSING | MISSING | PARTIAL (service tests) | PARTIAL (architecture doc) | FAIL |
+| AI capability factory | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | FAIL |
+| craft layer | PARTIAL (only score component) | PARTIAL (quality score API includes craft score field) | FULL (`tool_quality_scores.craft_score`) | FULL (quality score admin UI column) | PARTIAL | MISSING | PARTIAL | PARTIAL | FAIL |
 
-## Step 3 — Admin system audit
-| Required admin capability | Exists? | Finding |
+## Step 3 — Admin platform audit
+
+| Admin capability | Evidence | Status |
 |---|---|---|
-| capability registry UI | PARTIAL | Tool workspace exists for tool definitions/policies, but no capability-level registry and lifecycle surface. |
-| governance controls | PARTIAL | Admin tool execution policy controls exist, but no explicit governance workflow/quorum/escalation controls. |
-| AI generation approval queue | MISSING | No admin queue/workflow for AI capability generation approvals found. |
-| runtime diagnostics dashboard | FULL | Dashboard + execution monitoring + incident pages are present. |
-| quality score visibility | PARTIAL | Tool health score appears in dashboard context; no dedicated quality scoring framework/surface for capabilities/AI outputs. |
+| capability registry UI | No admin controller/view for marketplace registry entries found. | MISSING |
+| governance controls | Governance decisions read UI + API exists; no approval action/override workflow UI evidenced. | PARTIAL |
+| AI generation approval queue | No queue model/table/controller/view found. | MISSING |
+| runtime diagnostics dashboard | Execution monitoring dashboard exists with health/workers/incidents. | PARTIAL (diagnostics present but not full runtime governance cockpit) |
+| quality score visibility | Admin quality score page + API + repository present. | FULL |
 
-## Step 4 — Database audit
-| Required persistence domain | Exists? | Finding |
+## Step 4 — Database audit (PostgreSQL strict)
+
+| Persistence target | Entity model | PostgreSQL migration | Repository/service usage | Result |
+|---|---|---|---|---|
+| capabilities | No `Capability*Entity`/DbSet for marketplace registry state. | None found. | `CapabilityMarketplaceService` computes from catalog/policy at runtime only. | PARTIAL (runtime model only, no storage) |
+| execution snapshots | `ExecutionSnapshotEntity` + DbSet + mapping to `execution_snapshots` (`jsonb`, `timestamp with time zone`). | Execution ledger/governance domain migrations include snapshot columns + FK. | `TelemetryEventProcessor` writes snapshot; `EfExecutionLedgerRepository` reads snapshot. | FULL |
+| governance decisions | `GovernanceDecisionEntity` + DbSet/table mapping. | Governance decision domain migration creates `governance_decisions`. | `TelemetryEventProcessor` creates missing decisions; `EfGovernanceDecisionRepository` queries. | FULL |
+| AI generation outputs | No entity/table/repository found for AI-generated capability artifacts. | None found. | None found. | MISSING |
+| quality scores | `ToolQualityScoreEntity` + DbSet/table mapping. | `AddToolQualityScores` creates `tool_quality_scores` with numeric score columns. | `EfToolQualityScoreRepository`, quality score service/API/admin UI consume it. | FULL |
+
+## Step 5 — Test matrix audit
+
+| Test type | Evidence | Result |
 |---|---|---|
-| capabilities | PARTIAL | Tool definitions/policies persisted; no dedicated capability lifecycle state machine persistence.
-| execution snapshots | MISSING | No execution snapshot entity/table/repository storing snapshot records by snapshot ID.
-| governance decisions | PARTIAL | Audit/outbox/dead-letter and admin logs exist, but no explicit governance decision aggregate with approval lineage.
-| AI generation outputs | MISSING | No entities/tables for generated capabilities or generation artifacts.
-| quality scores | PARTIAL | Daily metrics + anomaly snapshots + dashboard health scores exist, but no first-class persisted quality-score domain model.
+| unit tests | Extensive .NET unit tests in Application/Infrastructure/Web test projects. | PRESENT |
+| runtime tests | JS runtime-focused test suites under `tests/js/runtime` and `tests/runtime`. | PRESENT |
+| browser tests | Playwright specs under `tests/playwright/**`. | PRESENT |
+| integration tests | API integration tests under `tests/ToolNexus.Api.IntegrationTests`. | PRESENT |
 
-## Step 5 — Test matrix check
-| Test class | Status | Evidence |
-|---|---|---|
-| unit tests | FULL | Extensive application/infrastructure/web unit coverage exists.
-| runtime tests | FULL | JS runtime test suite covers lifecycle, observability, safety, contract validation.
-| browser tests | FULL | Playwright runtime, smoke, and visual regression specs exist.
-| integration tests | FULL | Provider parity, migration/concurrency, and API/controller contract tests exist.
-
-### Missing tests added
-- None added in this audit pass.
-- Rationale: test *categories* required by the matrix are present; gaps are architectural/integration completeness, not absent test harness types.
+### Required tests list for missing/partial features
+1. Capability marketplace end-to-end tests covering API + persistence + admin UI (currently service-level only).
+2. Predictive suggestion integration tests proving telemetry/logging, admin visibility, and backend recommendation source.
+3. Invisible UI contract tests (or explicit removal from architecture scope if intentionally unsupported).
+4. AI capability factory workflow tests (generation, review/approval, persistence, publication) once feature exists.
+5. Governance bypass-negative tests for every public execution entrypoint (ensure no alternate bypass path).
 
 ## Step 6 — Architecture safety audit
-| Safety requirement | Verdict | Evidence-based assessment |
+
+| Safety rule | Evidence-based assessment | Risk |
 |---|---|---|
-| client cannot influence authority | PARTIAL | Frontend strips authority/policy fields from payload, but API accepts arbitrary `options` and authority resolver reads risk tier from request/context options.
-| runtime fallback observable | FULL | Runtime observability tracks fallback counts/rates and exposes diagnostics telemetry.
-| governance cannot be bypassed | PARTIAL | Policy enforcement step exists, but no immutable governance approval gate across capability lifecycle / marketplace / AI generation paths.
+| Client cannot influence authority | Request mapper strips authority/runtime/capability override fields and logs blocked keys; server resolver uses server-side policy/options. | PASS |
+| Runtime fallback is observable | Engine marks adapter resolution (`legacy`, `missing`, `admission_denied`) and computes `RuntimeIdentity.FallbackUsed`; telemetry persists adapter resolution + authority + snapshot. | PASS |
+| Governance cannot be bypassed | Execution engine always creates governance decision id; telemetry step throws when governance decision id missing; processor throws if event lacks governance reference. However, breadth across all possible entrypoints is not fully proven by a dedicated bypass matrix. | PARTIAL / HIGH RISK |
+| Canonical lifecycle enforced (Request → Authority → Snapshot → Execution → Conformance → Telemetry) | Request mapping and execution step path enforce Authority/Snapshot/Admission in engine, conformance after adapter execution, telemetry step records context tags. | PASS on primary pipeline |
 
-## Step 7 — Final strict completeness matrix
+## Step 7 — Final strict report
 
-| Feature | Backend | Admin UI | DB | Tests | Docs | Status |
-|---|---|---|---|---|---|---|
-| execution engine | FULL | PARTIAL | PARTIAL | FULL | FULL | **FAIL** |
-| authority resolver | FULL | MISSING | MISSING | FULL | PARTIAL | **FAIL** |
-| snapshots | FULL | MISSING | MISSING | FULL | PARTIAL | **FAIL** |
-| conformance | FULL | MISSING | MISSING | FULL | PARTIAL | **FAIL** |
-| runtime identity | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | **FAIL** |
-| auto runtime | FULL | PARTIAL | MISSING | FULL | PARTIAL | **FAIL** |
-| unified control UI | FULL | PARTIAL | MISSING | PARTIAL | PARTIAL | **FAIL** |
-| invisible UI | MISSING | MISSING | MISSING | MISSING | MISSING | **FAIL** |
-| predictive suggestions | FULL | MISSING | MISSING | FULL | PARTIAL | **FAIL** |
-| capability marketplace | PARTIAL | MISSING | MISSING | PARTIAL | PARTIAL | **FAIL** |
-| AI capability factory | MISSING | MISSING | MISSING | MISSING | PARTIAL | **FAIL** |
-| craft layer | MISSING | MISSING | MISSING | MISSING | MISSING | **FAIL** |
+### A. STRICT COMPLETENESS MATRIX
 
-## Blocking gaps
-1. No persisted execution snapshot ledger despite snapshot generation in execution flow.
-2. No dedicated capability marketplace/API/admin workflow beyond service-layer query composition.
-3. No implementation for AI capability factory, approval queue, or craft layer.
-4. Governance decisions are not modeled as a first-class persisted approval artifact.
-5. Invisible UI mode is absent as a defined runtime feature.
+Feature | Backend | API | DB | Admin UI | Telemetry | Config | Tests | Docs | Status
+---|---|---|---|---|---|---|---|---|---
+execution engine | FULL | PARTIAL | FULL | PARTIAL | FULL | PARTIAL | FULL | PARTIAL | FAIL
+authority resolver | FULL | PARTIAL | FULL | PARTIAL | FULL | PARTIAL | FULL | PARTIAL | FAIL
+execution snapshots | FULL | FULL | FULL | FULL | FULL | PARTIAL | FULL | PARTIAL | FAIL
+conformance validator | FULL | PARTIAL | FULL | PARTIAL | FULL | PARTIAL | FULL | PARTIAL | FAIL
+runtime identity | FULL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | PARTIAL | FAIL
+auto runtime | FULL | PARTIAL | MISSING | MISSING | PARTIAL | PARTIAL | FULL | PARTIAL | FAIL
+unified control UI | FULL | PARTIAL | MISSING | MISSING | PARTIAL | MISSING | FULL | PARTIAL | FAIL
+invisible UI | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | FAIL
+predictive suggestions | PARTIAL | MISSING | MISSING | MISSING | MISSING | MISSING | PARTIAL | PARTIAL | FAIL
+capability marketplace | PARTIAL | MISSING | MISSING | MISSING | MISSING | MISSING | PARTIAL | PARTIAL | FAIL
+AI capability factory | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | MISSING | FAIL
+craft layer | PARTIAL | PARTIAL | FULL | FULL | PARTIAL | MISSING | PARTIAL | PARTIAL | FAIL
 
-## High-risk partial integrations
-1. Authority boundary is partially defended: payload sanitization exists, but request options can still influence authority resolution inputs.
-2. Runtime identity is fragmented across frontend telemetry and incident fingerprinting without a unified backend runtime identity contract.
-3. Quality scoring is implied via health metrics but lacks canonical persisted quality-score entities and governance linkage.
+### B. BLOCKING GAPS
+1. Capability marketplace has no API, no persistence, no admin registry UI, and no telemetry exposure.
+2. AI capability factory is absent across backend/API/DB/admin/tests/docs.
+3. No first-class invisible UI implementation is evidenced.
+4. Predictive suggestions lack backend recommendation service, persistence, governance visibility, and observability controls.
+5. Mandatory architecture context documents requested for immutable-rule validation are not present in repository path provided by audit prompt.
 
-## Required fixes before production completeness
-1. Add immutable execution snapshot persistence (entity + repository + API/admin query surface + telemetry joins).
-2. Introduce governance decision domain model with non-bypassable approval gates and auditable lineage.
-3. Ship capability marketplace end-to-end (API + DB + admin registry/approval UX + telemetry).
-4. Implement AI capability factory pipeline + approval queue + output persistence + rollback controls.
-5. Define and implement craft layer explicitly (contracts, persistence, admin visibility, tests).
-6. Close authority-boundary loophole by server-side allowlisting/ignoring authority-affecting request options from clients.
+### C. HIGH-RISK PARTIAL INTEGRATIONS
+1. Service-layer-only marketplace implementation can drift from governance/admin operations because it is non-persistent and non-observable.
+2. UI-only predictive suggestions can create behavior not governed by backend policy/audit trails.
+3. Runtime identity is reconstructed from execution rows rather than persisted as a dedicated identity aggregate, increasing projection inconsistency risk.
+4. Governance enforcement is strong in the primary pipeline, but lack of exhaustive bypass tests leaves residual risk across alternate execution entrypoints.
 
-## Overall verdict
-**PLATFORM COMPLETENESS AUDIT RESULT: FAIL**
+### D. REQUIRED FIXES BEFORE PRODUCTION
+1. Implement capability marketplace end-to-end: persisted registry schema (Postgres), API, admin registry UI, telemetry, config, and integration tests.
+2. Implement AI capability factory domain: generation records, approval queue, governance controls, persistence, APIs, admin UX, telemetry, and full test suite.
+3. Define and implement (or formally de-scope) invisible UI architecture with explicit contracts, observability, and tests.
+4. Move predictive suggestions to governed backend-assisted model with auditable recommendation events and admin diagnostics.
+5. Add explicit appsettings-backed config surfaces for execution authority/admission and operational docs for runtime governance toggles.
+6. Add governance bypass matrix tests across all execution entrypoints.
+7. Restore or relocate required architecture master context documents referenced by audit process.
 
-Reason: multiple requested features are **PARTIAL** or **MISSING**; strict zero-partial rule not satisfied.
+### E. FINAL VERDICT
+PLATFORM COMPLETENESS: FAIL
+
+Reason: multiple required platform features are missing or only partially wired; strict completeness rule requires every required layer (backend, API, PostgreSQL persistence, admin visibility, telemetry, config, tests, docs) and that condition is not met for numerous audited features.
