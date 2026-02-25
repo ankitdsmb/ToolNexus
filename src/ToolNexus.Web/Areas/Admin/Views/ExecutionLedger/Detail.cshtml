@@ -18,6 +18,7 @@
   const detail = await detailRes.json();
   const snapshot = snapshotRes.ok ? await snapshotRes.json() : null;
   document.getElementById('detail-json').textContent = JSON.stringify({
+    runtimeIdentity: detail.runtimeIdentity,
     authority: detail.authorityDecision,
     snapshotMetadata: snapshot,
     conformanceResult: detail.conformance,

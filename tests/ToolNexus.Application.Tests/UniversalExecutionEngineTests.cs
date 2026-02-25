@@ -61,6 +61,12 @@ public sealed class UniversalExecutionEngineTests
         Assert.True(Guid.TryParse(context.Items[UniversalExecutionEngine.GovernanceDecisionIdContextKey]?.ToString(), out _));
         Assert.Equal("json", context.Items[UniversalExecutionEngine.GovernancePolicyVersionContextKey]);
         Assert.Equal(GovernanceDecisionStatus.Approved.ToString(), context.Items[UniversalExecutionEngine.GovernanceDecisionStatusContextKey]);
+        Assert.NotNull(result.RuntimeIdentity);
+        Assert.Equal("dotnet", result.RuntimeIdentity!.RuntimeType);
+        Assert.Equal(nameof(StubAdapter), result.RuntimeIdentity.Adapter);
+        Assert.Equal("dotnet:standard", result.RuntimeIdentity.WorkerType);
+        Assert.False(result.RuntimeIdentity.FallbackUsed);
+        Assert.Equal(ExecutionAuthority.UnifiedAuthoritative.ToString(), result.RuntimeIdentity.ExecutionAuthority);
     }
 
     [Fact]
@@ -83,6 +89,9 @@ public sealed class UniversalExecutionEngineTests
         Assert.Contains("No execution adapter registered", result.Error, StringComparison.Ordinal);
         Assert.Equal("missing", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
         Assert.Equal(0, legacyStrategy.Calls);
+        Assert.NotNull(result.RuntimeIdentity);
+        Assert.Equal("none", result.RuntimeIdentity!.Adapter);
+        Assert.True(result.RuntimeIdentity.FallbackUsed);
     }
 
 
@@ -164,6 +173,10 @@ public sealed class UniversalExecutionEngineTests
         Assert.Equal(1, legacyStrategy.Calls);
         Assert.Equal(0, adapter.Calls);
         Assert.Equal("legacy", context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey]);
+        Assert.NotNull(result.RuntimeIdentity);
+        Assert.Equal("LegacyDotNetStrategy", result.RuntimeIdentity!.Adapter);
+        Assert.True(result.RuntimeIdentity.FallbackUsed);
+        Assert.Equal(ExecutionAuthority.LegacyAuthoritative.ToString(), result.RuntimeIdentity.ExecutionAuthority);
     }
 
     [Fact]
@@ -381,6 +394,10 @@ public sealed class UniversalExecutionEngineTests
         Assert.True(preview.TryGetProperty("readabilityScore", out _));
 
         Assert.Equal("Succeeded", result.Status);
+        Assert.NotNull(result.RuntimeIdentity);
+        Assert.Equal("python:sandboxed", result.RuntimeIdentity!.WorkerType);
+        Assert.Equal(nameof(PythonExecutionAdapter), result.RuntimeIdentity.Adapter);
+        Assert.False(result.RuntimeIdentity.FallbackUsed);
         Assert.NotNull(result.Metrics);
         Assert.NotNull(result.Incidents);
     }
