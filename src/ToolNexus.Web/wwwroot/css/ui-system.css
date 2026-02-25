@@ -121,3 +121,99 @@ ENTERPRISE UI SYSTEM
     padding: var(--space-xs);
   }
 }
+
+:where(.tn-unified-tool) {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid color-mix(in oklab, var(--line) 78%, transparent);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 92%, transparent), var(--panel));
+  padding: 0.85rem;
+}
+
+:where(.tn-unified-tool__header) {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+:where(.tn-unified-tool__icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: color-mix(in oklab, var(--accent) 24%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+:where(.tn-unified-tool__title) {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+:where(.tn-unified-tool__subtitle) {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.78;
+}
+
+:where(.tn-unified-tool__body) {
+  display: grid;
+  gap: 0.5rem;
+}
+
+:where(.tn-unified-tool__input-label, .tn-unified-tool__output-title) {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+:where(.tn-unified-tool__controls) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+:where(.tn-unified-tool__input) {
+  width: 100%;
+  min-height: 10rem;
+  resize: vertical;
+}
+
+:where(.tn-unified-tool__run) {
+  align-self: stretch;
+  min-height: 2.4rem;
+  white-space: nowrap;
+}
+
+:where(.tn-unified-tool__output) {
+  display: grid;
+  gap: 0.35rem;
+}
+
+:where(.tn-unified-tool__inline, .tn-unified-tool__expanded) {
+  margin: 0;
+  border-radius: 0.65rem;
+  border: 1px solid color-mix(in oklab, var(--line) 82%, transparent);
+  background: color-mix(in oklab, var(--panel-2) 92%, transparent);
+  padding: 0.6rem;
+  max-height: 16rem;
+  overflow: auto;
+  font-size: 0.78rem;
+}
+
+:where(.tn-unified-tool__details summary) {
+  cursor: pointer;
+  font-size: 0.76rem;
+  opacity: 0.88;
+}

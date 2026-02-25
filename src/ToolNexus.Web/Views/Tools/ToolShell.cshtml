@@ -103,7 +103,8 @@
                 title: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Title)),
                 seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.SeoDescription)),
                 exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
-                clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions))
+                clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions)),
+                icon: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Icon))
             },
             runtimeLogEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint)),
             runtimeRoutes: {

@@ -5,6 +5,7 @@ public sealed class ToolDescriptor
     public required string Slug { get; init; }
     public required string Title { get; init; }
     public required string Category { get; init; }
+    public string Icon { get; init; } = string.Empty;
     public required List<string> Actions { get; init; }
     public required string SeoTitle { get; init; }
     public required string SeoDescription { get; init; }

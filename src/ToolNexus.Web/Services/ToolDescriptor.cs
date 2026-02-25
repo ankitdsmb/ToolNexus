@@ -10,4 +10,5 @@ public sealed class ToolDescriptor
     public string[] Styles { get; init; } = [];
     public string? CssPath => Styles.FirstOrDefault();
     public string Category { get; init; } = string.Empty;
+    public string Icon { get; init; } = string.Empty;
 }

@@ -59,7 +59,8 @@ public sealed class ToolsController(
             templatePath = descriptor.TemplatePath,
             dependencies = descriptor.Dependencies,
             styles = descriptor.Styles,
-            cssPath = descriptor.CssPath
+            cssPath = descriptor.CssPath,
+            icon = descriptor.Icon
         });
     }
 

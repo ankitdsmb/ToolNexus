@@ -1,3 +1,5 @@
+import { createUnifiedToolControlRuntime } from './tool-unified-control-runtime.js';
+
 const templateCache = new Map();
 
 function isGenericLoadingTemplate(template, slug) {
@@ -6,28 +8,16 @@ function isGenericLoadingTemplate(template, slug) {
   return normalized.includes('tool-generic-template') && normalized.includes(expected);
 }
 
-function buildGenericContractTemplate(slug) {
-  return `
-    <section class="tool-page" data-slug="${slug}" data-template-contract="generic">
-      <div class="tool-layout">
-        <section class="tool-layout__panel">
-          <textarea id="inputEditor" class="tool-editor"></textarea>
-        </section>
-        <section class="tool-panel--output">
-          <textarea id="outputField" class="tool-editor"></textarea>
-        </section>
-      </div>
-    </section>
-  `;
-}
-
 function validateGenericTemplateContract(root) {
-  if (!root.querySelector('.tool-layout__panel')) {
+  const hasLegacyPanels = Boolean(root.querySelector('.tool-layout__panel'));
+  const hasUnifiedContract = Boolean(root.querySelector('[data-template-contract="unified-control"]'));
+
+  if (!hasLegacyPanels && !hasUnifiedContract) {
     throw new Error('Template contract violation.');
   }
 }
 
-export async function loadToolTemplate(slug, root, { fetchImpl = fetch, templatePath } = {}) {
+export async function loadToolTemplate(slug, root, { fetchImpl = fetch, templatePath, manifest, config = window.ToolNexusConfig } = {}) {
   if (!slug) {
     throw new Error('tool-template-loader: missing tool slug.');
   }
@@ -58,14 +48,16 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
   }
 
   const usedLegacyFallback = isGenericLoadingTemplate(rawTemplate, slug);
-  const template = usedLegacyFallback
-    ? buildGenericContractTemplate(slug)
-    : rawTemplate;
+  const template = rawTemplate;
 
   templateCache.set(slug, template);
-  root.innerHTML = template;
+  if (usedLegacyFallback) {
+    createUnifiedToolControlRuntime({ root, slug, manifest, config });
+  } else {
+    root.innerHTML = template;
+  }
 
-  if (usedLegacyFallback || root.querySelector('[data-template-contract="generic"]')) {
+  if (usedLegacyFallback || root.querySelector('[data-template-contract="generic"]') || root.querySelector('[data-template-contract="unified-control"]')) {
     validateGenericTemplateContract(root);
   }
 

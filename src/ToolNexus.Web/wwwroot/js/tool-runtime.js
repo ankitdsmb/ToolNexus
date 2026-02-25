@@ -15,6 +15,7 @@ import { createToolStateRegistry as defaultCreateToolStateRegistry } from './run
 import { createRuntimeObservability as defaultCreateRuntimeObservability } from './runtime/runtime-observability.js';
 import { classifyRuntimeError } from './runtime/error-classification-engine.js';
 import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
+import { createUnifiedToolControlRuntime } from './runtime/tool-unified-control-runtime.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -409,6 +410,25 @@ export function createToolRuntime({
 
     const executionContext = createToolExecutionContext({ slug, root, manifest });
 
+    const runtimeControl = createUnifiedToolControlRuntime({
+      root,
+      slug,
+      manifest,
+      config: window.ToolNexusConfig,
+      render: false
+    });
+
+    executionContext.adapters = {
+      ...(executionContext.adapters ?? {}),
+      useUnifiedToolControl: (options = {}) => runtimeControl?.useUnifiedToolControl?.(options),
+      applyUnifiedOutput: (result) => runtimeControl?.applyOutput?.(result)
+    };
+
+    window.ToolNexus = window.ToolNexus || {};
+    window.ToolNexus.runtime = window.ToolNexus.runtime || {};
+    window.ToolNexus.runtime.useUnifiedToolControl = (options = {}) =>
+      executionContext.adapters.useUnifiedToolControl(options);
+
     const capabilitiesAtStart = detectToolCapabilities({ slug, manifest, root });
     const mountPlan = safeDomMount(root, capabilitiesAtStart.mountMode);
 
@@ -424,7 +444,7 @@ export function createToolRuntime({
       const templateStartedAt = now();
       emit('template_load_start', { toolSlug: slug });
       try {
-        await templateLoader(slug, root, { templatePath: manifest.templatePath });
+        await templateLoader(slug, root, { templatePath: manifest.templatePath, manifest, config: window.ToolNexusConfig });
         emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
         return true;
       } catch (error) {
