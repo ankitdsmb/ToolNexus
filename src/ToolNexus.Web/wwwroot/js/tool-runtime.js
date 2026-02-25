@@ -643,6 +643,9 @@ export function createToolRuntime({
         runtimeIdentity: { ...runtimeIdentity },
         telemetryTags
       };
+      executionContext.manifest = executionContext.manifest && typeof executionContext.manifest === 'object'
+        ? executionContext.manifest
+        : {};
       executionContext.manifest.runtimeResolutionMode = runtimeResolution.mode;
       executionContext.manifest.runtimeResolutionReason = runtimeResolution.reason;
       executionContext.manifest.runtimeIdentity = { ...runtimeIdentity };
