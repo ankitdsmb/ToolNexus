@@ -73,6 +73,8 @@ public sealed class ExecutionTelemetryStepTests
         context.Items[UniversalExecutionEngine.LanguageContextKey] = "dotnet";
         context.Items[UniversalExecutionEngine.AdapterNameContextKey] = "DotNetExecutionAdapter";
         context.Items[UniversalExecutionEngine.AdapterResolutionStatusContextKey] = "resolved";
+        context.Items[UniversalExecutionEngine.CapabilityContextKey] = "sandboxed";
+        context.Items[UniversalExecutionEngine.WorkerManagerUsedContextKey] = "true";
 
         await step.InvokeAsync(
             context,
@@ -83,6 +85,8 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Equal("dotnet", evt.Language);
         Assert.Equal("DotNetExecutionAdapter", evt.AdapterName);
         Assert.Equal("resolved", evt.AdapterResolutionStatus);
+        Assert.Equal("sandboxed", evt.Capability);
+        Assert.Equal("true", evt.WorkerManagerUsed);
     }
 
     [Fact]

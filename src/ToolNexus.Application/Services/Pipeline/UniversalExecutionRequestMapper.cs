@@ -11,6 +11,7 @@ public sealed class UniversalExecutionRequestMapper
     private const string ResourceClassOptionKey = "resourceClass";
     private const string TenantIdOptionKey = "tenantId";
     private const string CorrelationIdOptionKey = "correlationId";
+    private const string ExecutionCapabilityOptionKey = "executionCapability";
 
     public UniversalToolExecutionRequest Map(ToolExecutionContext context)
     {
@@ -23,6 +24,7 @@ public sealed class UniversalExecutionRequestMapper
         var tenantId = ResolveOption(context.Options, TenantIdOptionKey);
         var correlationId = ResolveOption(context.Options, CorrelationIdOptionKey);
         var timeoutBudgetMs = context.Policy is null ? 0 : checked(context.Policy.TimeoutSeconds * 1000);
+        var executionCapability = ToolExecutionCapability.From(ResolveOption(context.Options, ExecutionCapabilityOptionKey), ToolExecutionCapability.Standard);
 
         var legacyRequest = new ToolExecutionRequest(context.ToolId, context.Action, context.Input, context.Options);
         return UniversalToolExecutionRequest.FromToolExecutionRequest(
@@ -33,7 +35,8 @@ public sealed class UniversalExecutionRequestMapper
             executionPolicyId,
             resourceClass,
             tenantId,
-            correlationId);
+            correlationId,
+            executionCapability);
     }
 
     private static string ResolveOption(IDictionary<string, string> options, string key, string defaultValue)
