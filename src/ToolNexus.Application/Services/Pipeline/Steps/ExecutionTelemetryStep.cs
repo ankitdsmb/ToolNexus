@@ -41,7 +41,9 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             ExecutionMode = context.Policy?.ExecutionMode ?? "unknown",
             Language = ResolveTag(context, UniversalExecutionEngine.LanguageContextKey, "unknown"),
             AdapterName = ResolveTag(context, UniversalExecutionEngine.AdapterNameContextKey, "unknown"),
-            AdapterResolutionStatus = ResolveTag(context, UniversalExecutionEngine.AdapterResolutionStatusContextKey, "unknown")
+            AdapterResolutionStatus = ResolveTag(context, UniversalExecutionEngine.AdapterResolutionStatusContextKey, "unknown"),
+            Capability = ResolveTag(context, UniversalExecutionEngine.CapabilityContextKey, "standard"),
+            WorkerManagerUsed = ResolveTag(context, UniversalExecutionEngine.WorkerManagerUsedContextKey, "false")
         };
     }
 

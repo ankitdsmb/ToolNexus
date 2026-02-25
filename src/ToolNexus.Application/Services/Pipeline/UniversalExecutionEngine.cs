@@ -7,6 +7,8 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
     public const string LanguageContextKey = "runtime.language";
     public const string AdapterNameContextKey = "runtime.adapterName";
     public const string AdapterResolutionStatusContextKey = "runtime.adapterResolutionStatus";
+    public const string CapabilityContextKey = "runtime.capability";
+    public const string WorkerManagerUsedContextKey = "runtime.workerManagerUsed";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -21,6 +23,8 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
 
         var language = ToolRuntimeLanguage.From(request.Language, ToolRuntimeLanguage.DotNet);
         context.Items[LanguageContextKey] = language.Value;
+        context.Items[CapabilityContextKey] = request.Capability;
+        context.Items[WorkerManagerUsedContextKey] = "false";
 
         if (!_adaptersByLanguage.TryGetValue(language.Value, out var adapter))
         {

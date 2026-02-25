@@ -31,7 +31,7 @@ public sealed class UniversalExecutionEngineTests
         };
 
         var result = await engine.ExecuteAsync(
-            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null),
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
             context,
             CancellationToken.None);
 
@@ -51,7 +51,7 @@ public sealed class UniversalExecutionEngineTests
         };
 
         var result = await engine.ExecuteAsync(
-            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null),
+            new UniversalToolExecutionRequest("json", "1.0.0", ToolRuntimeLanguage.DotNet, "format", "{}", null, null, 1000, null, null, ToolExecutionCapability.Standard),
             context,
             CancellationToken.None);
 

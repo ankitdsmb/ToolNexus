@@ -42,6 +42,18 @@ public sealed class UniversalExecutionRequestMapperTests
         Assert.Equal("tenant-a", mapped.TenantId);
     }
 
+
+    [Fact]
+    public void Map_DefaultsExecutionCapabilityToStandard()
+    {
+        var mapper = new UniversalExecutionRequestMapper();
+        var context = new ToolExecutionContext("json-formatter", "execute", "{}", new Dictionary<string, string>());
+
+        var mapped = mapper.Map(context);
+
+        Assert.Equal(ToolExecutionCapability.Standard, mapped.ExecutionCapability);
+    }
+
     private sealed class StubPolicy : IToolExecutionPolicy
     {
         public string Slug => "json";
