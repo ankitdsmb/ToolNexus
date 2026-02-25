@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services.Pipeline;
+using Xunit;
 
 namespace ToolNexus.Application.Tests;
 
@@ -55,7 +56,7 @@ public sealed class DefaultExecutionAdmissionControllerTests
     }
 
     private static DefaultExecutionAdmissionController CreateController(ExecutionAdmissionOptions options)
-        => new(Options.Create(options));
+        => new(Microsoft.Extensions.Options.Options.Create(options));
 
     private static ExecutionSnapshot CreateSnapshot(
         ExecutionAuthority authority = ExecutionAuthority.UnifiedAuthoritative,
