@@ -43,7 +43,10 @@ public sealed class ExecutionTelemetryStep(IToolExecutionEventService executionE
             AdapterName = ResolveTag(context, UniversalExecutionEngine.AdapterNameContextKey, "unknown"),
             AdapterResolutionStatus = ResolveTag(context, UniversalExecutionEngine.AdapterResolutionStatusContextKey, "unknown"),
             Capability = ResolveTag(context, UniversalExecutionEngine.CapabilityContextKey, "standard"),
-            WorkerManagerUsed = ResolveTag(context, UniversalExecutionEngine.WorkerManagerUsedContextKey, "false")
+            WorkerManagerUsed = ResolveTag(context, UniversalExecutionEngine.WorkerManagerUsedContextKey, "false"),
+            LeaseAcquired = ResolveTag(context, UniversalExecutionEngine.WorkerLeaseAcquiredContextKey, "false"),
+            WorkerLeaseState = ResolveTag(context, UniversalExecutionEngine.WorkerLeaseStateContextKey, WorkerLeaseState.Released.ToString()),
+            OrchestratorUsed = ResolveTag(context, UniversalExecutionEngine.WorkerOrchestratorUsedContextKey, "false")
         };
     }
 

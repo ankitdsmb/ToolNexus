@@ -9,6 +9,9 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
     public const string AdapterResolutionStatusContextKey = "runtime.adapterResolutionStatus";
     public const string CapabilityContextKey = "runtime.capability";
     public const string WorkerManagerUsedContextKey = "runtime.workerManagerUsed";
+    public const string WorkerLeaseAcquiredContextKey = "runtime.workerLeaseAcquired";
+    public const string WorkerLeaseStateContextKey = "runtime.workerLeaseState";
+    public const string WorkerOrchestratorUsedContextKey = "runtime.workerOrchestratorUsed";
 
     private readonly IReadOnlyDictionary<string, ILanguageExecutionAdapter> _adaptersByLanguage = adapters
         .ToDictionary(adapter => adapter.Language.Value, StringComparer.OrdinalIgnoreCase);
@@ -25,6 +28,9 @@ public sealed class UniversalExecutionEngine(IEnumerable<ILanguageExecutionAdapt
         context.Items[LanguageContextKey] = language.Value;
         context.Items[CapabilityContextKey] = request.Capability;
         context.Items[WorkerManagerUsedContextKey] = "false";
+        context.Items[WorkerLeaseAcquiredContextKey] = "false";
+        context.Items[WorkerLeaseStateContextKey] = WorkerLeaseState.Released.ToString();
+        context.Items[WorkerOrchestratorUsedContextKey] = "false";
 
         if (!_adaptersByLanguage.TryGetValue(language.Value, out var adapter))
         {

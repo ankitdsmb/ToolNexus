@@ -14,4 +14,7 @@ public sealed class ToolExecutionEvent
     public string AdapterResolutionStatus { get; init; } = string.Empty;
     public string Capability { get; init; } = string.Empty;
     public string WorkerManagerUsed { get; init; } = string.Empty;
+    public string LeaseAcquired { get; init; } = string.Empty;
+    public string WorkerLeaseState { get; init; } = string.Empty;
+    public string OrchestratorUsed { get; init; } = string.Empty;
 }

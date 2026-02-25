@@ -17,6 +17,8 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddScoped<IUniversalExecutionEngine, UniversalExecutionEngine>();
         services.AddScoped<UniversalExecutionRequestMapper>();
         services.AddScoped<IWorkerRuntimeManager, NoOpWorkerRuntimeManager>();
+        services.AddScoped<IWorkerPoolCoordinator, NoOpWorkerPoolCoordinator>();
+        services.AddScoped<WorkerExecutionOrchestrator>();
         services.AddScoped<ILanguageExecutionAdapter, DotNetExecutionAdapter>();
         services.AddScoped<ILanguageExecutionAdapter, PythonExecutionAdapter>();
 
