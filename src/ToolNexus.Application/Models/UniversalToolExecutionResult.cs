@@ -18,7 +18,10 @@ public sealed record UniversalToolExecutionResult(
     int DurationMs,
     string? TenantId,
     string? CorrelationId,
-    ToolInsightResult? Insight = null)
+    ToolInsightResult? Insight = null,
+    string? Status = null,
+    IDictionary<string, string>? Metrics = null,
+    IReadOnlyList<string>? Incidents = null)
 {
     public ToolExecutionResponse ToToolExecutionResponse()
     {
@@ -44,6 +47,9 @@ public sealed record UniversalToolExecutionResult(
             durationMs,
             request.TenantId,
             request.CorrelationId,
-            response.Insight);
+            response.Insight,
+            response.Success ? "Succeeded" : "Failed",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            Array.Empty<string>());
     }
 }

@@ -82,6 +82,9 @@ public sealed class ExecutionTelemetryStepTests
         context.Items[UniversalExecutionEngine.WorkerOrchestratorUsedContextKey] = "true";
         context.Items[UniversalExecutionEngine.ExecutionAuthorityContextKey] = ExecutionAuthority.ShadowOnly.ToString();
         context.Items[UniversalExecutionEngine.ShadowExecutionContextKey] = "true";
+        context.Items[UniversalExecutionEngine.ConformanceValidContextKey] = "false";
+        context.Items[UniversalExecutionEngine.ConformanceNormalizedContextKey] = "true";
+        context.Items[UniversalExecutionEngine.ConformanceIssueCountContextKey] = "2";
 
         await step.InvokeAsync(
             context,
@@ -99,6 +102,9 @@ public sealed class ExecutionTelemetryStepTests
         Assert.Equal("true", evt.OrchestratorUsed);
         Assert.Equal(ExecutionAuthority.ShadowOnly.ToString(), evt.ExecutionAuthority);
         Assert.Equal("true", evt.ShadowExecution);
+        Assert.Equal("false", evt.ConformanceValid);
+        Assert.Equal("true", evt.ConformanceNormalized);
+        Assert.Equal(2, evt.ConformanceIssueCount);
     }
 
     [Fact]

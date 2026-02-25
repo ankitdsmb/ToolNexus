@@ -19,4 +19,7 @@ public sealed class ToolExecutionEvent
     public string OrchestratorUsed { get; init; } = string.Empty;
     public string ExecutionAuthority { get; init; } = string.Empty;
     public string ShadowExecution { get; init; } = string.Empty;
+    public string ConformanceValid { get; init; } = string.Empty;
+    public string ConformanceNormalized { get; init; } = string.Empty;
+    public int ConformanceIssueCount { get; init; }
 }

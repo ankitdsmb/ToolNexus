@@ -15,6 +15,7 @@ public static class ToolExecutionPipelineServiceCollectionExtensions
         services.AddScoped<IApiToolExecutionStrategy, ApiToolExecutionStrategy>();
         services.AddScoped<IClientToolExecutionStrategy, NoOpClientExecutionStrategy>();
         services.AddScoped<IExecutionAuthorityResolver, DefaultExecutionAuthorityResolver>();
+        services.AddScoped<IExecutionConformanceValidator, DefaultExecutionConformanceValidator>();
         services.AddScoped<IUniversalExecutionEngine, UniversalExecutionEngine>();
         services.AddScoped<UniversalExecutionRequestMapper>();
         services.AddScoped<IWorkerRuntimeManager, NoOpWorkerRuntimeManager>();
