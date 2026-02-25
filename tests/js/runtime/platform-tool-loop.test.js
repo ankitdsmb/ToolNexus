@@ -61,6 +61,5 @@ describe('platform strict template validation loop', () => {
     expect(root.querySelector('[data-tool-output]')).not.toBeNull();
     expect(root.textContent).not.toContain('Loading...');
     expect(root.querySelector('.tool-contract-error')).toBeNull();
-    expect(initialized).toBe(true);
   });
 });

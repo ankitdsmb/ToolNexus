@@ -32,6 +32,24 @@ describe('tool auto runtime', () => {
     expect(host.querySelector('[data-field="payload"]')).not.toBeNull();
   });
 
+
+
+  test('tier 3 with auto mode is supported without configuration error', () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: { uiMode: 'auto', complexityTier: 3, operationSchema: null }
+    });
+
+    const state = module.create(host);
+    module.init(state, host, { addCleanup() {} });
+
+    expect(host.querySelector('.tool-auto-runtime')).not.toBeNull();
+    expect(host.textContent).not.toContain('requires custom UI');
+  });
+
   test('tier 4 with auto mode shows descriptive UI error', () => {
     const host = document.createElement('div');
     document.body.append(host);
