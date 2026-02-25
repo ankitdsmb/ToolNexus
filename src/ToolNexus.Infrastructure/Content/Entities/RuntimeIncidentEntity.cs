@@ -13,6 +13,6 @@ public sealed class RuntimeIncidentEntity
     public string PayloadType { get; set; } = string.Empty;
     public string Severity { get; set; } = string.Empty;
     public int Count { get; set; }
-    public DateTimeOffset FirstOccurredUtc { get; set; }
-    public DateTimeOffset LastOccurredUtc { get; set; }
+    public DateTime FirstOccurredUtc { get; set; }
+    public DateTime LastOccurredUtc { get; set; }
 }

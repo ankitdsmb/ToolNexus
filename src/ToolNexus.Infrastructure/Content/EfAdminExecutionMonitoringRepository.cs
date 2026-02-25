@@ -154,7 +154,7 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
                         "runtime_incident",
                         x.Severity,
                         x.ToolSlug,
-                        x.LastOccurredUtc.UtcDateTime,
+                        DateTime.SpecifyKind(x.LastOccurredUtc, DateTimeKind.Utc),
                         x.Message,
                         x.Count))
                     .ToListAsync(cancellationToken);
