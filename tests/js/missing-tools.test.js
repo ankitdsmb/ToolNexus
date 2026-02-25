@@ -72,6 +72,15 @@ describe('remaining tools runTool coverage', () => {
     });
   });
 
+
+  test('case-converter falls back to lowercase for unsupported actions', async () => {
+    const input = 'Hello API-Response';
+    const expected = await settle(runCaseConverter, 'lowercase', input);
+    const actual = await settle(runCaseConverter, 'unsupported-action', input);
+
+    expect(actual).toBe(expected);
+    expect(actual).toBe('hello api-response');
+  });
   test.each(TOOL_CASES)('$name should complete large payload processing', async ({ runTool, action, largeInput }) => {
     const started = Date.now();
     const result = await settle(runTool, action, largeInput);

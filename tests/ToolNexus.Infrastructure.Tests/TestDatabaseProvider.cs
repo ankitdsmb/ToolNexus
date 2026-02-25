@@ -1,4 +1,5 @@
 using Xunit;
+using Xunit.Sdk;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using ToolNexus.Infrastructure.Data;
@@ -112,13 +113,21 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
         }
 
         var databaseName = $"toolnexus_tests_{Guid.NewGuid():N}";
-        await using var admin = new NpgsqlConnection(adminConnection);
-        await admin.OpenAsync();
 
-        await using (var create = admin.CreateCommand())
+        try
         {
-            create.CommandText = $"CREATE DATABASE \"{databaseName}\"";
-            await create.ExecuteNonQueryAsync();
+            await using var admin = new NpgsqlConnection(adminConnection);
+            await admin.OpenAsync();
+
+            await using (var create = admin.CreateCommand())
+            {
+                create.CommandText = $"CREATE DATABASE \"{databaseName}\"";
+                await create.ExecuteNonQueryAsync();
+            }
+        }
+        catch (Exception ex) when (ex is NpgsqlException or InvalidOperationException)
+        {
+            throw new SkipException($"Skipping PostgreSQL-backed tests. Could not provision ephemeral database using TOOLNEXUS_TEST_POSTGRES_CONNECTION. {ex.Message}");
         }
 
         var builder = new NpgsqlConnectionStringBuilder(adminConnection)
@@ -165,22 +174,33 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
             return;
         }
 
-        await using var admin = new NpgsqlConnection(adminConnectionString);
-        await admin.OpenAsync();
-
-        await using (var terminate = admin.CreateCommand())
+        try
         {
-            terminate.CommandText = """
-                SELECT pg_terminate_backend(pid)
-                FROM pg_stat_activity
-                WHERE datname = @databaseName AND pid <> pg_backend_pid();
-                """;
-            terminate.Parameters.AddWithValue("databaseName", databaseName!);
-            await terminate.ExecuteNonQueryAsync();
-        }
+            await using var admin = new NpgsqlConnection(adminConnectionString);
+            await admin.OpenAsync();
 
-        await using var drop = admin.CreateCommand();
-        drop.CommandText = $"DROP DATABASE IF EXISTS \"{databaseName}\"";
-        await drop.ExecuteNonQueryAsync();
+            await using (var terminate = admin.CreateCommand())
+            {
+                terminate.CommandText = """
+                    SELECT pg_terminate_backend(pid)
+                    FROM pg_stat_activity
+                    WHERE datname = @databaseName AND pid <> pg_backend_pid();
+                    """;
+                terminate.Parameters.AddWithValue("databaseName", databaseName!);
+                await terminate.ExecuteNonQueryAsync();
+            }
+
+            await using var drop = admin.CreateCommand();
+            drop.CommandText = $"DROP DATABASE IF EXISTS \"{databaseName}\"";
+            await drop.ExecuteNonQueryAsync();
+        }
+        catch (NpgsqlException)
+        {
+            // Best-effort cleanup for restricted/shared PostgreSQL environments.
+        }
+        catch (InvalidOperationException)
+        {
+            // Best-effort cleanup for restricted/shared PostgreSQL environments.
+        }
     }
 }
