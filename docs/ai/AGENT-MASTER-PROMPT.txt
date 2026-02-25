@@ -25,3 +25,18 @@ Delivery Guardrails
 - Prioritize reliability, observability, and maintainability.
 - Keep changes cohesive and traceable to requirements.
 - Avoid hidden behavior changes; document all externally visible impacts.
+
+Required Delivery Output (for architecture-sensitive tasks)
+1) Architecture understanding summary
+   - Existing layers, ownership boundaries, and execution flow touched by the change.
+2) Proposed implementation approach
+   - Minimal extension strategy and why it aligns with current architecture.
+3) Exact code changes (minimal scope)
+   - File-by-file summary with rationale and compatibility notes.
+4) Risks or edge cases
+   - Operational, security, and regression risks with mitigations.
+5) Suggested tests
+   - Targeted checks across impacted layers (server/client/runtime/QA as applicable).
+
+This output contract keeps platform work reviewable by architects and maintainers,
+and should be used unless a task explicitly requires a different reporting format.
