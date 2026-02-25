@@ -121,3 +121,148 @@ ENTERPRISE UI SYSTEM
     padding: var(--space-xs);
   }
 }
+
+:where(.tn-unified-tool-control) {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--panel-bg);
+  box-shadow: var(--elevation-1);
+  padding: 12px;
+  gap: 10px;
+}
+
+:where(.tn-unified-tool-control__header) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+:where(.tn-unified-tool-control__icon) {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 24%, var(--panel-bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+:where(.tn-unified-tool-control__title-wrap h2) {
+  font-size: 1rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+:where(.tn-unified-tool-control__title-wrap p) {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+:where(.tn-unified-tool-control__body) {
+  display: grid;
+  gap: 8px;
+}
+
+:where(.tn-unified-tool-control__actions) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:where(.tn-unified-tool-control__status) {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+:where(.tn-unified-tool-control__output) {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px;
+  background: color-mix(in srgb, var(--panel-bg) 88%, black 12%);
+  display: grid;
+  gap: 6px;
+}
+
+:where(.tn-unified-tool-control__preview, .tn-unified-tool-control__result) {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+:where(.tn-unified-tool-control__details > summary) {
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+:where(.tn-unified-tool-control__errors) {
+  display: grid;
+  gap: 6px;
+}
+
+:where(.tool-auto-runtime__group) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 6px;
+}
+
+:where(.tool-auto-runtime__group h3) {
+  margin: 2px 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+:where(.tool-auto-runtime__field) {
+  display: grid;
+  gap: 4px;
+}
+
+:where(.tool-auto-runtime__field label) {
+  font-size: 0.8rem;
+  color: var(--text-secondary, var(--text-muted));
+}
+
+:where(.tool-auto-runtime__field input[type="text"],
+  .tool-auto-runtime__field input[type="number"],
+  .tool-auto-runtime__field textarea) {
+  width: 100%;
+  min-height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  padding: 8px 10px;
+}
+
+:where(.tool-auto-runtime__field textarea) {
+  resize: vertical;
+  min-height: 110px;
+}
+
+:where(.tool-auto-runtime__hint) {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+:where(.tool-auto-runtime__error) {
+  border: 1px solid color-mix(in srgb, #d73a49 50%, transparent);
+  background: color-mix(in srgb, #d73a49 10%, var(--panel-bg));
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+}

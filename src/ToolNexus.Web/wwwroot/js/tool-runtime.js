@@ -16,6 +16,7 @@ import { createRuntimeObservability as defaultCreateRuntimeObservability } from 
 import { classifyRuntimeError } from './runtime/error-classification-engine.js';
 import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
 import { createAutoToolRuntimeModule } from './runtime/tool-auto-runtime.js';
+import { useUnifiedToolControl as useUnifiedControlAdapter } from './runtime/tool-unified-control-runtime.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -423,7 +424,18 @@ export function createToolRuntime({
 
     const { manifest, hasManifest } = await safeLoadManifest();
 
-    const executionContext = createToolExecutionContext({ slug, root, manifest });
+    const executionContext = createToolExecutionContext({
+      slug,
+      root,
+      manifest,
+      adapters: {
+        useUnifiedToolControl: (options = {}) => useUnifiedControlAdapter(root, {
+          slug,
+          manifest,
+          ...options
+        })
+      }
+    });
 
     const capabilitiesAtStart = detectToolCapabilities({ slug, manifest, root });
     const mountPlan = safeDomMount(root, capabilitiesAtStart.mountMode);
