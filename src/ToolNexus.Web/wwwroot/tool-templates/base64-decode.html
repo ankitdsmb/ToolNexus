@@ -1,3 +1,4 @@
+<div data-runtime-container>
 <article class="tool-page" data-slug="" data-client-safe-actions="" data-tool-root>
     <header class="tool-page__heading" data-tool-header>
         <div>
@@ -11,7 +12,9 @@
         </div>
     </header>
 
-    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace" data-runtime-container data-tool-body>
+    <section data-tool-actions hidden></section>
+
+    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace" data-tool-body>
         <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading" data-tool-input>
             <div class="panel-header">
                 <h2 id="toolInputHeading">Input</h2>
@@ -29,7 +32,7 @@
                 </div>
             </div>
 
-            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions" data-tool-actions>
+            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
                 <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
                     <span class="spinner" aria-hidden="true"></span>
                     <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Decode">Decode</span>
@@ -805,3 +808,4 @@
         }
     }
 </style>
+</div>

@@ -1,3 +1,4 @@
+<div data-runtime-container>
 <article data-tool-root class="tool-yaml-json" data-slug="">
     <header data-tool-header class="tool-yaml-json__header">
         <div>
@@ -7,7 +8,7 @@
         <span class="tool-yaml-json__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-yaml-json__controls" aria-label="YAML to JSON options">
+    <section class="tool-yaml-json__controls" aria-label="YAML to JSON options" data-tool-actions>
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy JSON</button>
@@ -31,8 +32,7 @@
 
     <p class="tool-yaml-json__status" id="statusText">Ready</p>
 
-    <section class="tool-yaml-json__workspace" aria-label="YAML to JSON workspace" data-runtime-container data-tool-body>
-        <section data-tool-actions hidden></section>
+    <section class="tool-yaml-json__workspace" aria-label="YAML to JSON workspace" data-tool-body>
         <section class="tool-yaml-json__panel" data-tool-input>
             <div class="tool-yaml-json__panel-header">
                 <h2>YAML input</h2>
@@ -55,4 +55,4 @@
         <p id="errorDetail"></p>
     </section>
 </article>
-
+</div>
