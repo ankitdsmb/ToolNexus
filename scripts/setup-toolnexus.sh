@@ -1,72 +1,55 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== ToolNexus Setup (PostgreSQL + .NET8 + Node) ==="
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
-# ---------------------------------------------------------
-# 1. SYSTEM PACKAGES
-# ---------------------------------------------------------
+echo "=== ToolNexus Setup (PostgreSQL + .NET 8 + Node) ==="
+
+CONNECTION_STRING="${TOOLNEXUS_DB_CONNECTION:-${ConnectionStrings__DefaultConnection:-}}"
+
+echo "[Setup] Installing platform prerequisites..."
 apt-get update
-apt-get install -y dotnet-sdk-8.0 nodejs npm postgresql-client
+apt-get install -y dotnet-sdk-8.0 postgresql-client nodejs npm
 
-# ---------------------------------------------------------
-# 2. DOTNET RESTORE
-# ---------------------------------------------------------
-if compgen -G "*.sln" >/dev/null || compgen -G "*.csproj" >/dev/null; then
-  echo "[Setup] Restoring .NET solution..."
-  dotnet restore ToolNexus.sln
-else
-  echo "[Setup] No .NET solution found."
-fi
+echo "[Setup] Restoring .NET solution dependencies..."
+dotnet restore ToolNexus.sln --nologo
 
-# ---------------------------------------------------------
-# 3. DOTNET TOOL MANIFEST
-# ---------------------------------------------------------
 if [ -f ".config/dotnet-tools.json" ]; then
-  echo "[Setup] Restoring dotnet tools..."
+  echo "[Setup] Restoring local dotnet tools..."
   dotnet tool restore
 else
-  echo "[Setup] WARNING: missing .config/dotnet-tools.json"
+  echo "[Setup] WARNING: .config/dotnet-tools.json not found; skipping tool restore."
 fi
 
-# ---------------------------------------------------------
-# 4. NODE PACKAGES
-# ---------------------------------------------------------
-if [ -f "package.json" ]; then
-  echo "[Setup] Installing npm dependencies..."
+if [ -f "package-lock.json" ]; then
+  echo "[Setup] Restoring npm dependencies with lockfile..."
   npm ci
+elif [ -f "package.json" ]; then
+  echo "[Setup] WARNING: package-lock.json not found; running npm install."
+  npm install
 fi
 
-# ---------------------------------------------------------
-# 5. DATABASE SAFETY VALIDATION (POSTGRES ONLY)
-# ---------------------------------------------------------
-echo "[Setup] Validating PostgreSQL connection..."
-
-if [ -z "${TOOLNEXUS_DB_CONNECTION:-}" ]; then
-  echo "ERROR: TOOLNEXUS_DB_CONNECTION not defined."
-  echo "Set PostgreSQL connection before setup."
+if [ -z "$CONNECTION_STRING" ]; then
+  echo "ERROR: TOOLNEXUS_DB_CONNECTION or ConnectionStrings__DefaultConnection must be set."
   exit 1
 fi
 
-# ---------------------------------------------------------
-# 6. SAFE MIGRATION CHECK
-# Prevents startup crash later
-# ---------------------------------------------------------
-echo "[Setup] Running EF migration check..."
+if ! command -v pg_isready >/dev/null 2>&1; then
+  echo "ERROR: pg_isready not found after postgresql-client install."
+  exit 1
+fi
 
-dotnet ef database update \
-  --project src/ToolNexus.Infrastructure \
-  --startup-project src/ToolNexus.Api \
-  || {
-    echo "ERROR: Migration failed during setup."
-    echo "Fix migration BEFORE running application."
-    exit 1
-  }
+echo "[Setup] Verifying PostgreSQL connectivity..."
+if ! pg_isready -d "$CONNECTION_STRING" >/dev/null 2>&1; then
+  echo "ERROR: PostgreSQL connection is not ready using provided connection string."
+  exit 1
+fi
 
-# ---------------------------------------------------------
-# 7. BUILD VALIDATION
-# ---------------------------------------------------------
-echo "[Setup] Building solution..."
-dotnet build ToolNexus.sln -c Debug --no-restore
+echo "[Setup] Running safe migration pre-check..."
+./scripts/bootstrap-validation.sh
 
-echo "=== ToolNexus Setup Completed Successfully ==="
+echo "[Setup] Building solution baseline..."
+dotnet build ToolNexus.sln -c Debug --no-restore --nologo
+
+echo "=== ToolNexus setup completed successfully ==="

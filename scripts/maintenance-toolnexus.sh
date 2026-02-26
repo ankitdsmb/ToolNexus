@@ -1,61 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== ToolNexus Maintenance (Strict Mode) ==="
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
-# ---------------------------------------------------------
-# 1. CLEAN CACHES (prevents branch conflicts)
-# ---------------------------------------------------------
-echo "[Maintenance] Cleaning NuGet cache..."
-dotnet nuget locals all --clear || true
+echo "=== ToolNexus Maintenance (Strict Stabilization Mode) ==="
 
-# ---------------------------------------------------------
-# 2. RESTORE
-# ---------------------------------------------------------
-echo "[Maintenance] Restoring solution..."
-dotnet restore ToolNexus.sln
+CONNECTION_STRING="${TOOLNEXUS_DB_CONNECTION:-${ConnectionStrings__DefaultConnection:-}}"
+if [ -z "$CONNECTION_STRING" ]; then
+  echo "ERROR: TOOLNEXUS_DB_CONNECTION or ConnectionStrings__DefaultConnection must be set."
+  exit 1
+fi
 
-# ---------------------------------------------------------
-# 3. RESTORE LOCAL TOOLS
-# ---------------------------------------------------------
+echo "[Maintenance] Deterministic .NET package restore..."
+dotnet restore ToolNexus.sln --nologo /p:RestoreUseStaticGraphEvaluation=true /p:ContinuousIntegrationBuild=true
+
 if [ -f ".config/dotnet-tools.json" ]; then
+  echo "[Maintenance] Restoring local dotnet tools..."
   dotnet tool restore
 fi
 
-# ---------------------------------------------------------
-# 4. VERIFY MIGRATION CONSISTENCY
-# CRITICAL: catches missing FK issue BEFORE startup
-# ---------------------------------------------------------
-echo "[Maintenance] Validating EF migrations..."
+if [ -f "package-lock.json" ]; then
+  echo "[Maintenance] Deterministic npm restore..."
+  npm ci
+fi
 
+echo "[Maintenance] Lightweight build validation..."
+dotnet build ToolNexus.sln -c Debug --no-restore --nologo /p:ContinuousIntegrationBuild=true /p:Deterministic=true
+
+echo "[Maintenance] EF migration safety validation..."
 dotnet ef migrations list \
   --project src/ToolNexus.Infrastructure \
-  --startup-project src/ToolNexus.Api
+  --startup-project src/ToolNexus.Api \
+  -- --ConnectionStrings:DefaultConnection="$CONNECTION_STRING"
 
-# ---------------------------------------------------------
-# 5. APPLY MIGRATIONS SAFELY
-# ---------------------------------------------------------
-dotnet ef database update \
+echo "[Maintenance] EF migration drift check..."
+dotnet ef migrations has-pending-model-changes \
   --project src/ToolNexus.Infrastructure \
   --startup-project src/ToolNexus.Api
 
-# ---------------------------------------------------------
-# 6. QUICK BUILD
-# ---------------------------------------------------------
-dotnet build ToolNexus.sln -c Debug --no-restore
+echo "[Maintenance] Bootstrap gate (must pass before tests)..."
+./scripts/bootstrap-validation.sh
 
-# ---------------------------------------------------------
-# 7. JS TEST BASELINE
-# ---------------------------------------------------------
+echo "[Maintenance] Running ordered test pipeline..."
+dotnet test ToolNexus.sln -c Debug --no-build --verbosity minimal
 npm test
+npm run test:playwright:smoke
 
-# ---------------------------------------------------------
-# 8. PLAYWRIGHT SAFE CHECK
-# (skip if DB not ready)
-# ---------------------------------------------------------
-echo "[Maintenance] Running Playwright smoke..."
-
-npm run test:playwright:smoke || \
-echo "WARNING: Playwright skipped due to environment startup constraints."
-
-echo "=== Maintenance Complete ==="
+echo "=== ToolNexus maintenance completed successfully ==="
