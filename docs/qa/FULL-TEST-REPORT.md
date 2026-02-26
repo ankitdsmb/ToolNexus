@@ -3,7 +3,7 @@
 ## Environment Preparation
 - `dotnet restore ToolNexus.sln` ✅
 - `npm ci` ✅
-- `dotnet tool restore` ⚠️ (no default dotnet tool manifest found)
+- `dotnet tool restore` ✅
 
 ## Baseline Validation
 - `dotnet build ToolNexus.sln -c Release` ✅
