@@ -108,16 +108,16 @@ namespace ToolNexus.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_execution_snapshots_governance_decisions_governance_decision_id",
-                table: "execution_snapshots");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "execution_snapshots",
+                constraintName: "FK_execution_snapshots_governance_decisions_governance_decision_id");
 
             migrationBuilder.DropTable(
                 name: "governance_decisions");
 
-            migrationBuilder.DropIndex(
-                name: "idx_execution_snapshots_governance_decision_id",
-                table: "execution_snapshots");
+            migrationBuilder.SafeDropIndexIfExists(
+                tableName: "execution_snapshots",
+                indexName: "idx_execution_snapshots_governance_decision_id");
 
             migrationBuilder.DropColumn(
                 name: "governance_decision_id",

@@ -37,7 +37,16 @@ public sealed class AuditOutboxWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Audit outbox worker waiting for database initialization readiness.");
-        await initializationState.WaitForReadyAsync(stoppingToken);
+        try
+        {
+            await initializationState.WaitForReadyAsync(stoppingToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Audit outbox worker will not start because database initialization did not reach ready state.");
+            return;
+        }
+
         logger.LogInformation("Audit outbox worker detected database readiness and is starting.");
 
         while (!stoppingToken.IsCancellationRequested)
