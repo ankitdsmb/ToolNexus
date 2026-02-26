@@ -13,7 +13,7 @@ public sealed class AdminExecutionMonitoringControllerTests
     public async Task GetHealth_ReturnsOkPayload()
     {
         var expected = new ExecutionHealthSummary(1, 2, 3, 4.5, true, true);
-        var controller = new ExecutionMonitoringController(new StubService(health: expected), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(health: expected), new StubControlPlaneService(), new StubAutonomousInsightsService(), new StubPlatformOptimizationService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetHealth(CancellationToken.None);
 
@@ -25,7 +25,7 @@ public sealed class AdminExecutionMonitoringControllerTests
     public async Task GetExecutionStream_ReturnsOkPayload()
     {
         var expected = new List<ExecutionStreamItem> { new(Guid.NewGuid(), "json", "unified", "auto", "dotnet:auto", "admitted", "success", 24, DateTime.UtcNow) };
-        var controller = new ExecutionMonitoringController(new StubService(stream: expected), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(stream: expected), new StubControlPlaneService(), new StubAutonomousInsightsService(), new StubPlatformOptimizationService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetExecutionStream(10, CancellationToken.None);
 
@@ -37,16 +37,27 @@ public sealed class AdminExecutionMonitoringControllerTests
     [Fact]
     public async Task GetAutonomousInsights_ReturnsOkPayload()
     {
-        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), new StubPlatformOptimizationService(), NullLogger<ExecutionMonitoringController>.Instance);
         var action = await controller.GetAutonomousInsights(10, CancellationToken.None);
         var ok = Assert.IsType<OkObjectResult>(action.Result);
         Assert.IsType<AutonomousInsightsPanel>(ok.Value);
     }
 
+
+
+    [Fact]
+    public async Task GetOptimizationDashboard_ReturnsOkPayload()
+    {
+        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), new StubPlatformOptimizationService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var action = await controller.GetOptimizationDashboard(10, CancellationToken.None);
+        var ok = Assert.IsType<OkObjectResult>(action.Result);
+        Assert.IsType<OptimizationDashboard>(ok.Value);
+    }
+
     [Fact]
     public async Task ResetCaches_ReturnsOperationPayload()
     {
-        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), new StubPlatformOptimizationService(), NullLogger<ExecutionMonitoringController>.Instance);
         var action = await controller.ResetCaches(new OperatorCommandRequest("incident", "runtime", "operator", null, "manual rollback"), CancellationToken.None);
         var ok = Assert.IsType<OkObjectResult>(action.Result);
         Assert.IsType<AdminControlPlaneOperationResult>(ok.Value);
@@ -65,6 +76,23 @@ public sealed class AdminExecutionMonitoringControllerTests
     }
 
 
+
+
+
+    private sealed class StubPlatformOptimizationService : IPlatformOptimizationService
+    {
+        public Task<OptimizationDashboard> GetDashboardAsync(int takePerDomain, CancellationToken cancellationToken)
+            => Task.FromResult(new OptimizationDashboard([], [], [], [], []));
+
+        public Task<bool> ApproveAsync(Guid recommendationId, OptimizationDecisionRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(true);
+
+        public Task<bool> RejectAsync(Guid recommendationId, OptimizationDecisionRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(true);
+
+        public Task<bool> ScheduleRolloutAsync(Guid recommendationId, OptimizationDecisionRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(true);
+    }
 
     private sealed class StubAutonomousInsightsService : IAutonomousInsightsService
     {

@@ -36,6 +36,10 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<PlatformSignalEntity> PlatformSignals => Set<PlatformSignalEntity>();
     public DbSet<PlatformInsightEntity> PlatformInsights => Set<PlatformInsightEntity>();
     public DbSet<OperatorApprovedActionEntity> OperatorApprovedActions => Set<OperatorApprovedActionEntity>();
+    public DbSet<OptimizationRecommendationEntity> OptimizationRecommendations => Set<OptimizationRecommendationEntity>();
+    public DbSet<OptimizationSimulationEntity> OptimizationSimulations => Set<OptimizationSimulationEntity>();
+    public DbSet<OptimizationApplicationEntity> OptimizationApplications => Set<OptimizationApplicationEntity>();
+    public DbSet<OptimizationOutcomeEntity> OptimizationOutcomes => Set<OptimizationOutcomeEntity>();
     public DbSet<AiGenerationSignalEntity> AiGenerationSignals => Set<AiGenerationSignalEntity>();
     public DbSet<ToolGenerationDraftEntity> ToolGenerationDrafts => Set<ToolGenerationDraftEntity>();
     public DbSet<GenerationValidationReportEntity> GenerationValidationReports => Set<GenerationValidationReportEntity>();
@@ -299,6 +303,78 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.TimestampUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_operator_approved_actions_correlation");
             entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_operator_approved_actions_timestamp").IsDescending();
+        });
+
+
+        modelBuilder.Entity<OptimizationRecommendationEntity>(entity =>
+        {
+            entity.ToTable("optimization_recommendations");
+            entity.HasKey(x => x.RecommendationId);
+            entity.Property(x => x.RecommendationId).HasColumnName("recommendation_id");
+            entity.Property(x => x.Domain).HasColumnName("domain").HasMaxLength(64);
+            entity.Property(x => x.TargetNodeId).HasColumnName("target_node_id").HasMaxLength(120);
+            entity.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(2000);
+            entity.Property(x => x.ConfidenceScore).HasColumnName("confidence_score").HasPrecision(5, 4);
+            entity.Property(x => x.SuggestedChange).HasColumnName("suggested_change").HasMaxLength(2000);
+            entity.Property(x => x.RiskImpact).HasColumnName("risk_impact").HasMaxLength(2000);
+            entity.Property(x => x.ExpectedBenefit).HasColumnName("expected_benefit").HasMaxLength(2000);
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasColumnName("tenant_id").HasMaxLength(120);
+            entity.Property(x => x.RollbackMetadata).HasColumnName("rollback_metadata").HasColumnType("jsonb");
+            entity.Property(x => x.GeneratedAtUtc).HasColumnName("generated_at_utc").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(32);
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_optimization_recommendations_correlation");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_optimization_recommendations_tenant");
+            entity.HasIndex(x => x.GeneratedAtUtc).HasDatabaseName("idx_optimization_recommendations_generated_at").IsDescending();
+        });
+
+        modelBuilder.Entity<OptimizationSimulationEntity>(entity =>
+        {
+            entity.ToTable("optimization_simulations");
+            entity.HasKey(x => x.SimulationId);
+            entity.Property(x => x.SimulationId).HasColumnName("simulation_id");
+            entity.Property(x => x.RecommendationId).HasColumnName("recommendation_id");
+            entity.Property(x => x.SimulationSummary).HasColumnName("simulation_summary").HasMaxLength(3000);
+            entity.Property(x => x.ProjectedRiskDelta).HasColumnName("projected_risk_delta").HasPrecision(8, 4);
+            entity.Property(x => x.ProjectedBenefitDelta).HasColumnName("projected_benefit_delta").HasPrecision(8, 4);
+            entity.Property(x => x.ApprovedForReview).HasColumnName("approved_for_review");
+            entity.Property(x => x.SourceSnapshotIds).HasColumnName("source_snapshot_ids").HasColumnType("jsonb");
+            entity.Property(x => x.SyntheticWorkloadRef).HasColumnName("synthetic_workload_ref").HasMaxLength(200);
+            entity.Property(x => x.GovernanceReplayRef).HasColumnName("governance_replay_ref").HasMaxLength(200);
+            entity.Property(x => x.SimulatedAtUtc).HasColumnName("simulated_at_utc").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.RecommendationId).HasDatabaseName("idx_optimization_simulations_recommendation");
+            entity.HasIndex(x => x.SimulatedAtUtc).HasDatabaseName("idx_optimization_simulations_simulated_at").IsDescending();
+        });
+
+        modelBuilder.Entity<OptimizationApplicationEntity>(entity =>
+        {
+            entity.ToTable("optimization_applications");
+            entity.HasKey(x => x.ApplicationId);
+            entity.Property(x => x.ApplicationId).HasColumnName("application_id");
+            entity.Property(x => x.RecommendationId).HasColumnName("recommendation_id");
+            entity.Property(x => x.ActionType).HasColumnName("action_type").HasMaxLength(32);
+            entity.Property(x => x.OperatorId).HasColumnName("operator_id").HasMaxLength(120);
+            entity.Property(x => x.AuthorityContext).HasColumnName("authority_context").HasMaxLength(120);
+            entity.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(2000);
+            entity.Property(x => x.ScheduledForUtc).HasColumnName("scheduled_for_utc");
+            entity.Property(x => x.AppliedAtUtc).HasColumnName("applied_at_utc").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.RecommendationId).HasDatabaseName("idx_optimization_applications_recommendation");
+            entity.HasIndex(x => x.AppliedAtUtc).HasDatabaseName("idx_optimization_applications_applied_at").IsDescending();
+        });
+
+        modelBuilder.Entity<OptimizationOutcomeEntity>(entity =>
+        {
+            entity.ToTable("optimization_outcomes");
+            entity.HasKey(x => x.OutcomeId);
+            entity.Property(x => x.OutcomeId).HasColumnName("outcome_id");
+            entity.Property(x => x.RecommendationId).HasColumnName("recommendation_id");
+            entity.Property(x => x.OutcomeStatus).HasColumnName("outcome_status").HasMaxLength(64);
+            entity.Property(x => x.BenefitRealized).HasColumnName("benefit_realized").HasPrecision(8, 4);
+            entity.Property(x => x.RiskRealized).HasColumnName("risk_realized").HasPrecision(8, 4);
+            entity.Property(x => x.MeasuredBy).HasColumnName("measured_by").HasMaxLength(120);
+            entity.Property(x => x.MeasuredAtUtc).HasColumnName("measured_at_utc").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.RecommendationId).HasDatabaseName("idx_optimization_outcomes_recommendation");
+            entity.HasIndex(x => x.MeasuredAtUtc).HasDatabaseName("idx_optimization_outcomes_measured_at").IsDescending();
         });
 
         modelBuilder.Entity<AuditDeadLetterEntity>(entity =>
