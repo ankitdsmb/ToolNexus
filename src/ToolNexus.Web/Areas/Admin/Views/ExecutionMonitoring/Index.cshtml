@@ -1,180 +1,76 @@
 @{
-    ViewData["Title"] = "Execution Monitoring";
+    ViewData["Title"] = "Operator Command Center";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <h2 class="mb-0">Execution Monitoring</h2>
-    <div class="d-flex gap-2">
-        <button class="btn btn-sm btn-outline-secondary" id="jump-workers">Workers</button>
-        <button class="btn btn-sm btn-outline-secondary" id="jump-incidents">Incidents</button>
-        <button class="btn btn-sm btn-outline-warning" id="reset-caches">Reset Caches</button>
-        <button class="btn btn-sm btn-outline-warning" id="drain-queue">Drain Queue</button>
-        <button class="btn btn-sm btn-outline-warning" id="replay-queue">Replay Dead Letters</button>
-        <button class="btn btn-sm btn-primary" id="refresh-monitoring">Refresh</button>
-    </div>
-</div>
-<div class="row g-3 mb-3">
-    <div class="col-md-3"><div class="card"><div class="card-body"><small>Pending Items</small><h3 id="pending-count">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small>Retry Count</small><h3 id="retry-count">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small>Dead Letters</small><h3 id="dead-letter-count">-</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><small>Oldest Pending</small><h3 id="oldest-pending">-</h3></div></div></div>
+    <h2 class="mb-0">Operator Command Center</h2>
+    <button class="btn btn-sm btn-primary" id="refresh-monitoring">Refresh</button>
 </div>
 
-<div class="card mb-3" id="workers-panel">
-    <div class="card-body">
-        <h4 class="card-title d-flex justify-content-between align-items-center">
-            <span>Worker Status</span>
-            <span id="worker-warning" class="badge bg-yellow-lt d-none">Worker stale</span>
-        </h4>
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead><tr><th>Worker Instance ID</th><th>Last Heartbeat</th><th class="text-end">Active Jobs</th><th class="text-end">Recent Errors</th><th>Status</th></tr></thead>
-                <tbody id="workers-body"></tbody>
-            </table>
-        </div>
-    </div>
+<div class="row g-2 mb-2" id="global-runtime-status">
+    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Environment</small><div id="env-status">production</div></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Health</small><div id="pending-count">-</div></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Alerts</small><div id="dead-letter-count">-</div></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Queue</small><div id="retry-count">-</div></div></div></div>
 </div>
 
-<div class="card" id="incidents-panel">
-    <div class="card-body">
-        <h4 class="card-title">Incident Timeline</h4>
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead><tr><th>Last Occurrence (UTC)</th><th>Severity / Type</th><th>Tool Slug</th><th>Error Message</th><th class="text-end">Count</th></tr></thead>
-                <tbody id="incidents-body"></tbody>
-            </table>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-            <button class="btn btn-sm btn-outline-secondary" id="prev-page">Prev</button>
-            <span class="align-self-center text-secondary" id="paging-label">Page 1</span>
-            <button class="btn btn-sm btn-outline-secondary" id="next-page">Next</button>
-        </div>
+<div class="card mb-2" id="stream-panel"><div class="card-body py-2">
+    <h4 class="card-title">Live Execution Stream</h4>
+    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>When</th><th>Tool</th><th>Authority</th><th>Adapter</th><th>Runtime</th><th>Governance</th><th>Duration</th><th>Status</th></tr></thead><tbody id="stream-body"></tbody></table></div>
+</div></div>
+
+<div class="card mb-2" id="controls-panel"><div class="card-body py-2">
+    <h4 class="card-title">Operator Action Zone</h4>
+    <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm btn-outline-warning" data-command="cache-reset" data-risk="medium">Reset Cache</button>
+        <button class="btn btn-sm btn-outline-warning" data-command="queue-drain" data-risk="high">Drain Queue</button>
+        <button class="btn btn-sm btn-outline-warning" data-command="queue-replay" data-risk="medium">Reprocess Failed Jobs</button>
     </div>
+    <small class="text-secondary">All commands require reason, explicit confirmation, and audit emission.</small>
+</div></div>
+
+<div class="row g-2 mb-2" id="domain-grid">
+    <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Governance</h5><div id="governance-summary">-</div></div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Capability Lifecycle</h5><div id="capability-summary">-</div><a href="/admin/capabilities/marketplace" class="btn btn-sm btn-outline-secondary mt-1">Open Editor</a></div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Quality Intelligence</h5><div id="quality-summary">-</div></div></div></div>
 </div>
+
+<div class="card" id="incidents-panel"><div class="card-body py-2">
+    <h4 class="card-title">Incident + Diagnostics</h4>
+    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Last Occurrence (UTC)</th><th>Severity/Type</th><th>Tool</th><th>Error Message</th><th class="text-end">Count</th></tr></thead><tbody id="incidents-body"></tbody></table></div>
+</div></div>
 
 <script>
-(async function() {
-    let page = 1;
-    const pageSize = 15;
-    const params = new URLSearchParams(window.location.search);
+(async function(){
+  const page=1,pageSize=15;
+  const statusClass=s=>s==='success'?'bg-green-lt':(s==='blocked'?'bg-red-lt':(s==='failed'?'bg-orange-lt':'bg-yellow-lt'));
+  const sevClass=s=>s==='critical'?'bg-red-lt':(s==='warning'?'bg-yellow-lt':'bg-secondary-lt');
 
-    async function loadHealth() {
-        const res = await fetch('/admin/execution/health');
-        if (!res.ok) return;
-        const health = await res.json();
-        document.getElementById('pending-count').textContent = health.pendingItems;
-        document.getElementById('retry-count').textContent = health.retryCount;
-        document.getElementById('dead-letter-count').textContent = health.deadLetterCount;
-        document.getElementById('oldest-pending').textContent = health.oldestPendingAgeMinutes == null ? '-' : `${health.oldestPendingAgeMinutes} min`;
+  async function loadHealth(){const r=await fetch('/admin/execution/health'); if(!r.ok)return; const h=await r.json();
+    document.getElementById('pending-count').textContent=`pending ${h.pendingItems}`; document.getElementById('retry-count').textContent=`retry ${h.retryCount}`; document.getElementById('dead-letter-count').textContent=`dead ${h.deadLetterCount}`;
+  }
+  async function loadStream(){const r=await fetch('/admin/execution/stream?take=25'); if(!r.ok)return; const items=await r.json(); document.getElementById('stream-body').innerHTML='';
+    (items||[]).forEach(x=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${x.executedAtUtc}</td><td>${x.toolId}</td><td>${x.authority}</td><td>${x.adapter}</td><td>${x.runtimeIdentity}</td><td>${x.governanceResult}</td><td>${x.durationMs}ms</td><td><span class="badge ${statusClass(x.status)}">${x.status}</span></td>`; document.getElementById('stream-body').appendChild(tr);});
+  }
+  async function loadGovernance(){const r=await fetch('/admin/execution/governance'); if(!r.ok)return; const g=await r.json(); document.getElementById('governance-summary').textContent=`Approved ${g.approvedDecisions} · Blocked ${g.blockedExecutions} · Review ${g.requiresApproval}`;}
+  async function loadCapability(){const r=await fetch('/admin/execution/capability-lifecycle'); if(!r.ok)return; const c=await r.json(); document.getElementById('capability-summary').textContent=`Draft ${c.draft} · Review ${c.review} · Approved ${c.approved} · Active ${c.active} · Deprecated ${c.deprecated}`;}
+  async function loadQuality(){const r=await fetch('/admin/execution/quality'); if(!r.ok)return; const q=await r.json(); document.getElementById('quality-summary').textContent=`Score ${q.averageQualityScore} · Conformance failures ${q.conformanceFailures} · Instability ${q.runtimeInstabilitySignals} · Anomalies ${q.anomalyAlerts}`;}
+  async function loadIncidents(){const r=await fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`); if(!r.ok)return; const data=await r.json(); document.getElementById('incidents-body').innerHTML='';
+    (data.items||[]).forEach(i=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${i.occurredAtUtc}</td><td><span class="badge ${sevClass(i.severity)}">${i.severity}/${i.eventType}</span></td><td>${i.destination}</td><td>${i.summary}</td><td class="text-end">${i.attemptCount}</td>`; document.getElementById('incidents-body').appendChild(tr);});
+  }
 
-        if (health.hasDeadLetters || health.backlogIncreasing) {
-            document.getElementById('dead-letter-count').closest('.card-body').classList.add('bg-yellow-lt');
-        }
-    }
+  async function runCommand(command){
+    const reason=prompt(`Confirm ${command}. Enter reason:`); if(!reason) return;
+    const risk=document.querySelector(`[data-command="${command}"]`)?.dataset.risk ?? 'medium';
+    const confirmation=prompt(`Risk level ${risk.toUpperCase()}. Type CONFIRM to execute ${command}.`); if(confirmation!=='CONFIRM') return;
+    await fetch(`/admin/execution/operations/${command}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason,impactScope:'global-runtime',authorityContext:'operator',rollbackPlan:'Use queue replay or manual restore'})});
+    await refresh();
+  }
 
-    async function loadWorkers() {
-        const res = await fetch('/admin/execution/workers');
-        if (!res.ok) return;
-        const data = await res.json();
-        const body = document.getElementById('workers-body');
-        body.innerHTML = '';
-
-        let staleFound = false;
-        (data.workers || []).forEach(worker => {
-            staleFound = staleFound || worker.isStale;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${worker.workerInstanceId}</td><td>${worker.lastHeartbeatUtc ?? '-'}</td><td class="text-end">${worker.activeJobs}</td><td class="text-end">${worker.recentErrors}</td><td><span class="badge ${worker.isStale ? 'bg-yellow-lt' : 'bg-green-lt'}">${worker.isStale ? 'stale' : 'healthy'}</span></td>`;
-            body.appendChild(tr);
-        });
-
-        if (!body.children.length) {
-            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No active workers discovered.</td></tr>';
-        }
-
-        document.getElementById('worker-warning').classList.toggle('d-none', !staleFound);
-    }
-
-
-    async function runOperation(endpoint) {
-        const res = await fetch(endpoint, { method: 'POST' });
-        if (!res.ok) {
-            alert('Operation failed. Check permissions and logs.');
-            return;
-        }
-        await loadHealth();
-        await loadIncidents();
-    }
-
-    function severityClass(severity) {
-        if (severity === 'critical') return 'bg-red-lt';
-        if (severity === 'warning') return 'bg-yellow-lt';
-        return 'bg-secondary-lt';
-    }
-
-    async function loadIncidents() {
-        const res = await fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`);
-        if (!res.ok) return;
-        const result = await res.json();
-        const body = document.getElementById('incidents-body');
-        body.innerHTML = '';
-        (result.items || []).forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${item.occurredAtUtc}</td><td><span class="badge ${severityClass(item.severity)}">${item.severity} / ${item.eventType}</span></td><td>${item.destination}</td><td>${item.summary}</td><td class="text-end">${item.attemptCount}</td>`;
-            body.appendChild(tr);
-        });
-
-        if (!body.children.length) {
-            body.innerHTML = '<tr><td colspan="5" class="text-secondary">No incidents found.</td></tr>';
-        }
-
-        const maxPage = Math.max(1, Math.ceil((result.totalItems || 0) / pageSize));
-        document.getElementById('paging-label').textContent = `Page ${page} / ${maxPage}`;
-        document.getElementById('prev-page').disabled = page <= 1;
-        document.getElementById('next-page').disabled = page >= maxPage;
-    }
-
-    document.getElementById('prev-page').addEventListener('click', async () => { page = Math.max(1, page - 1); await loadIncidents(); });
-    document.getElementById('next-page').addEventListener('click', async () => { page += 1; await loadIncidents(); });
-
-    document.getElementById('jump-workers').addEventListener('click', () => {
-        document.getElementById('workers-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    document.getElementById('jump-incidents').addEventListener('click', () => {
-        document.getElementById('incidents-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    document.getElementById('reset-caches').addEventListener('click', async () => runOperation('/admin/execution/operations/cache-reset'));
-    document.getElementById('drain-queue').addEventListener('click', async () => runOperation('/admin/execution/operations/queue-drain'));
-    document.getElementById('replay-queue').addEventListener('click', async () => runOperation('/admin/execution/operations/queue-replay'));
-
-    document.getElementById('refresh-monitoring').addEventListener('click', async () => {
-        await loadHealth();
-        await loadWorkers();
-        await loadIncidents();
-    });
-
-    document.addEventListener('keydown', async (event) => {
-        const ctrl = event.ctrlKey || event.metaKey;
-        if (ctrl && event.key.toLowerCase() === 'r') {
-            event.preventDefault();
-            await loadHealth();
-            await loadWorkers();
-            await loadIncidents();
-        }
-
-        if (event.altKey && event.key.toLowerCase() === 'i') {
-            event.preventDefault();
-            document.getElementById('incidents-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    });
-
-    if ((params.get('focus') || '').toLowerCase() === 'incidents') {
-        requestAnimationFrame(() => document.getElementById('incidents-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-    }
-
-    await loadHealth();
-    await loadWorkers();
-    await loadIncidents();
+  async function refresh(){await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents()]);}
+  document.querySelectorAll('[data-command]').forEach(b=>b.addEventListener('click',()=>runCommand(b.dataset.command)));
+  document.getElementById('refresh-monitoring').addEventListener('click',refresh);
+  setInterval(()=>{loadHealth();loadStream();},5000);
+  await refresh();
 })();
 </script>

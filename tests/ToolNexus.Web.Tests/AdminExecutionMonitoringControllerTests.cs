@@ -22,62 +22,43 @@ public sealed class AdminExecutionMonitoringControllerTests
     }
 
     [Fact]
-    public async Task GetWorkers_ReturnsOkPayload()
+    public async Task GetExecutionStream_ReturnsOkPayload()
     {
-        var expected = new ExecutionWorkersResponse([
-            new ExecutionWorkerStatus("worker-1", DateTime.UtcNow, 2, 1, false)
-        ]);
-        var controller = new ExecutionMonitoringController(new StubService(workers: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var expected = new List<ExecutionStreamItem> { new(Guid.NewGuid(), "json", "unified", "auto", "dotnet:auto", "admitted", "success", 24, DateTime.UtcNow) };
+        var controller = new ExecutionMonitoringController(new StubService(stream: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
 
-        var action = await controller.GetWorkers(CancellationToken.None);
+        var action = await controller.GetExecutionStream(10, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(action.Result);
         Assert.Same(expected, ok.Value);
     }
-
-    [Fact]
-    public async Task GetIncidents_ReturnsOkPayload()
-    {
-        var expected = new ExecutionIncidentPage(2, 10, 22,
-        [
-            new ExecutionIncident("retry", "warning", "siem", DateTime.UtcNow, "retry", 1)
-        ]);
-        var controller = new ExecutionMonitoringController(new StubService(incidents: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
-
-        var action = await controller.GetIncidents(2, 10, CancellationToken.None);
-
-        var ok = Assert.IsType<OkObjectResult>(action.Result);
-        Assert.Same(expected, ok.Value);
-    }
-
-    
 
     [Fact]
     public async Task ResetCaches_ReturnsOperationPayload()
     {
         var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
-        var action = await controller.ResetCaches(CancellationToken.None);
+        var action = await controller.ResetCaches(new OperatorCommandRequest("incident", "runtime", "operator", null, "manual rollback"), CancellationToken.None);
         var ok = Assert.IsType<OkObjectResult>(action.Result);
         Assert.IsType<AdminControlPlaneOperationResult>(ok.Value);
     }
 
-
     private sealed class StubControlPlaneService : IAdminControlPlaneService
     {
-        public Task<AdminControlPlaneOperationResult> ResetCachesAsync(CancellationToken cancellationToken)
-            => Task.FromResult(new AdminControlPlaneOperationResult("cache_reset", "success", "ok", 0));
+        public Task<AdminControlPlaneOperationResult> ResetCachesAsync(OperatorCommandRequest commandRequest, CancellationToken cancellationToken)
+            => Task.FromResult(new AdminControlPlaneOperationResult("cache_reset", "success", "ok", 0, "c1", commandRequest.ImpactScope, commandRequest.AuthorityContext, commandRequest.RollbackPlan));
 
-        public Task<AdminControlPlaneOperationResult> DrainAuditQueueAsync(CancellationToken cancellationToken)
-            => Task.FromResult(new AdminControlPlaneOperationResult("queue_drain", "success", "ok", 1));
+        public Task<AdminControlPlaneOperationResult> DrainAuditQueueAsync(OperatorCommandRequest commandRequest, CancellationToken cancellationToken)
+            => Task.FromResult(new AdminControlPlaneOperationResult("queue_drain", "success", "ok", 1, "c1", commandRequest.ImpactScope, commandRequest.AuthorityContext, commandRequest.RollbackPlan));
 
-        public Task<AdminControlPlaneOperationResult> ReplayAuditDeadLettersAsync(CancellationToken cancellationToken)
-            => Task.FromResult(new AdminControlPlaneOperationResult("queue_replay", "success", "ok", 1));
+        public Task<AdminControlPlaneOperationResult> ReplayAuditDeadLettersAsync(OperatorCommandRequest commandRequest, CancellationToken cancellationToken)
+            => Task.FromResult(new AdminControlPlaneOperationResult("queue_replay", "success", "ok", 1, "c1", commandRequest.ImpactScope, commandRequest.AuthorityContext, commandRequest.RollbackPlan));
     }
 
     private sealed class StubService(
         ExecutionHealthSummary? health = null,
         ExecutionWorkersResponse? workers = null,
-        ExecutionIncidentPage? incidents = null) : IAdminExecutionMonitoringService
+        ExecutionIncidentPage? incidents = null,
+        IReadOnlyList<ExecutionStreamItem>? stream = null) : IAdminExecutionMonitoringService
     {
         public Task<ExecutionHealthSummary> GetHealthAsync(CancellationToken cancellationToken)
             => Task.FromResult(health ?? new ExecutionHealthSummary(0, 0, 0, null, false, false));
@@ -87,5 +68,20 @@ public sealed class AdminExecutionMonitoringControllerTests
 
         public Task<ExecutionIncidentPage> GetIncidentsAsync(int page, int pageSize, CancellationToken cancellationToken)
             => Task.FromResult(incidents ?? new ExecutionIncidentPage(page, pageSize, 0, []));
+
+        public Task<IReadOnlyList<ExecutionStreamItem>> GetExecutionStreamAsync(int take, CancellationToken cancellationToken)
+            => Task.FromResult(stream ?? []);
+
+        public Task<GovernanceVisibilitySummary> GetGovernanceVisibilityAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new GovernanceVisibilitySummary(0, 0, 0, new Dictionary<string, int>()));
+
+        public Task<CapabilityLifecycleSummary> GetCapabilityLifecycleAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new CapabilityLifecycleSummary(0, 0, 0, 0, 0));
+
+        public Task<QualityIntelligenceSummary> GetQualityIntelligenceAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new QualityIntelligenceSummary(0, 0, 0, 0));
+
+        public async Task<OperatorCommandCenterSnapshot> GetCommandCenterSnapshotAsync(int incidentPage, int incidentPageSize, int streamTake, CancellationToken cancellationToken)
+            => new(await GetHealthAsync(cancellationToken), await GetWorkersAsync(cancellationToken), await GetIncidentsAsync(incidentPage, incidentPageSize, cancellationToken), await GetExecutionStreamAsync(streamTake, cancellationToken), await GetGovernanceVisibilityAsync(cancellationToken), await GetCapabilityLifecycleAsync(cancellationToken), await GetQualityIntelligenceAsync(cancellationToken));
     }
 }

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
@@ -70,6 +71,27 @@ public sealed class EfAdminControlPlaneRepository(
         };
 
         dbContext.Add(item);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+
+    public async Task RecordOperatorCommandAsync(string commandType, OperatorCommandRequest request, string resultStatus, string correlationId, string? rollbackInfo, CancellationToken cancellationToken)
+    {
+        var entity = new OperatorCommandEntity
+        {
+            Id = Guid.NewGuid(),
+            Command = commandType,
+            ExecutedBy = ResolveActorId(),
+            Reason = request.Reason,
+            TimestampUtc = DateTime.UtcNow,
+            Result = resultStatus,
+            RollbackInfo = rollbackInfo,
+            ImpactScope = request.ImpactScope,
+            CorrelationId = correlationId,
+            AuthorityContext = request.AuthorityContext
+        };
+
+        dbContext.Add(entity);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

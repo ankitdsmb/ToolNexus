@@ -33,27 +33,47 @@ public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringServi
         return Ok(await service.GetIncidentsAsync(page, pageSize, cancellationToken));
     }
 
+    [HttpGet("stream")]
+    public async Task<ActionResult<IReadOnlyList<ExecutionStreamItem>>> GetExecutionStream([FromQuery] int take = 25, CancellationToken cancellationToken = default)
+        => Ok(await service.GetExecutionStreamAsync(take, cancellationToken));
+
+    [HttpGet("governance")]
+    public async Task<ActionResult<GovernanceVisibilitySummary>> GetGovernance(CancellationToken cancellationToken)
+        => Ok(await service.GetGovernanceVisibilityAsync(cancellationToken));
+
+    [HttpGet("capability-lifecycle")]
+    public async Task<ActionResult<CapabilityLifecycleSummary>> GetCapabilityLifecycle(CancellationToken cancellationToken)
+        => Ok(await service.GetCapabilityLifecycleAsync(cancellationToken));
+
+    [HttpGet("quality")]
+    public async Task<ActionResult<QualityIntelligenceSummary>> GetQuality(CancellationToken cancellationToken)
+        => Ok(await service.GetQualityIntelligenceAsync(cancellationToken));
+
+    [HttpGet("command-center")]
+    public async Task<ActionResult<OperatorCommandCenterSnapshot>> GetCommandCenter(CancellationToken cancellationToken)
+        => Ok(await service.GetCommandCenterSnapshotAsync(1, 15, 25, cancellationToken));
+
     [HttpPost("operations/cache-reset")]
     [Authorize(Policy = AdminPolicyNames.AdminWrite)]
-    public async Task<ActionResult<AdminControlPlaneOperationResult>> ResetCaches(CancellationToken cancellationToken)
+    public async Task<ActionResult<AdminControlPlaneOperationResult>> ResetCaches([FromBody] OperatorCommandRequest request, CancellationToken cancellationToken)
     {
         logger.LogWarning("Admin control-plane cache reset requested.");
-        return Ok(await controlPlaneService.ResetCachesAsync(cancellationToken));
+        return Ok(await controlPlaneService.ResetCachesAsync(request, cancellationToken));
     }
 
     [HttpPost("operations/queue-drain")]
     [Authorize(Policy = AdminPolicyNames.AdminWrite)]
-    public async Task<ActionResult<AdminControlPlaneOperationResult>> DrainQueue(CancellationToken cancellationToken)
+    public async Task<ActionResult<AdminControlPlaneOperationResult>> DrainQueue([FromBody] OperatorCommandRequest request, CancellationToken cancellationToken)
     {
         logger.LogWarning("Admin control-plane queue drain requested.");
-        return Ok(await controlPlaneService.DrainAuditQueueAsync(cancellationToken));
+        return Ok(await controlPlaneService.DrainAuditQueueAsync(request, cancellationToken));
     }
 
     [HttpPost("operations/queue-replay")]
     [Authorize(Policy = AdminPolicyNames.AdminWrite)]
-    public async Task<ActionResult<AdminControlPlaneOperationResult>> ReplayDeadLetters(CancellationToken cancellationToken)
+    public async Task<ActionResult<AdminControlPlaneOperationResult>> ReplayDeadLetters([FromBody] OperatorCommandRequest request, CancellationToken cancellationToken)
     {
         logger.LogWarning("Admin control-plane dead-letter replay requested.");
-        return Ok(await controlPlaneService.ReplayAuditDeadLettersAsync(cancellationToken));
+        return Ok(await controlPlaneService.ReplayAuditDeadLettersAsync(request, cancellationToken));
     }
 }
