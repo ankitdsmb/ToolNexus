@@ -13,9 +13,8 @@ namespace ToolNexus.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.SafeDropConstraintIfExists(
-                tableName: "audit_dead_letter",
-                constraintName: "FK_audit_dead_letter_audit_events_AuditEventId");
+            migrationBuilder.Sql(
+                "ALTER TABLE audit_dead_letter DROP CONSTRAINT IF EXISTS \"FK_audit_dead_letter_audit_events_AuditEventId\";");
 
             migrationBuilder.SafeDropConstraintIfExists(
                 tableName: "audit_dead_letter",
