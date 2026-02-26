@@ -132,63 +132,79 @@ public sealed class DatabaseInitializationHostedService(
             throw;
         }
     }
-
-    private async Task AlignMigrationHistoryForExistingSchemaAsync(DbContext dbContext, CancellationToken cancellationToken)
+    private async Task AlignMigrationHistoryForExistingSchemaAsync(
+    DbContext dbContext,
+    CancellationToken cancellationToken)
     {
         if (dbContext is not ToolNexusContentDbContext)
-        {
             return;
-        }
 
-        if (!string.Equals(dbContext.Database.ProviderName, "Npgsql.EntityFrameworkCore.PostgreSQL", StringComparison.Ordinal))
-        {
+        if (!string.Equals(
+                dbContext.Database.ProviderName,
+                "Npgsql.EntityFrameworkCore.PostgreSQL",
+                StringComparison.Ordinal))
             return;
-        }
 
-        var schemaLooksBootstrapped = await dbContext.Database.SqlQueryRaw<bool>("""
-            SELECT (
-                to_regclass('execution_runs') IS NOT NULL
-                AND to_regclass('execution_snapshots') IS NOT NULL
-            );
-            """).SingleAsync(cancellationToken);
+        // EF SqlQueryRaw<T> expects column alias "Value"
+        var schemaLooksBootstrapped =
+            await dbContext.Database
+                .SqlQueryRaw<bool>(
+                    """
+                SELECT (
+                    to_regclass('execution_runs') IS NOT NULL
+                    AND to_regclass('execution_snapshots') IS NOT NULL
+                ) AS "Value"
+                """
+                )
+                .SingleAsync(cancellationToken);
 
         if (!schemaLooksBootstrapped)
-        {
             return;
-        }
 
-        await dbContext.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
-                "MigrationId" character varying(150) NOT NULL,
-                "ProductVersion" character varying(32) NOT NULL,
-                CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
-            );
-            """, cancellationToken);
+        await dbContext.Database.ExecuteSqlRawAsync(
+            """
+        CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+            "MigrationId" character varying(150) NOT NULL,
+            "ProductVersion" character varying(32) NOT NULL,
+            CONSTRAINT "PK___EFMigrationsHistory"
+                PRIMARY KEY ("MigrationId")
+        )
+        """,
+            cancellationToken);
 
-        var historyCount = await dbContext.Database.SqlQueryRaw<int>("""
-            SELECT COUNT(*) FROM "__EFMigrationsHistory";
-            """).SingleAsync(cancellationToken);
+        // EF SqlQueryRaw<T> requires AS "Value"
+        var historyCount =
+            await dbContext.Database
+                .SqlQueryRaw<int>(
+                    """
+                SELECT COUNT(*) AS "Value"
+                FROM "__EFMigrationsHistory"
+                """
+                )
+                .SingleAsync(cancellationToken);
+
         if (historyCount > 0)
-        {
             return;
-        }
 
         const string ProductVersion = "8.0.0";
         var allMigrations = dbContext.Database.GetMigrations().ToArray();
+
         foreach (var migrationId in allMigrations)
         {
-            await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
-                INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-                VALUES ({migrationId}, {ProductVersion})
-                ON CONFLICT ("MigrationId") DO NOTHING;
-                """, cancellationToken);
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+            INSERT INTO "__EFMigrationsHistory"
+                ("MigrationId", "ProductVersion")
+            VALUES ({migrationId}, {ProductVersion})
+            ON CONFLICT ("MigrationId") DO NOTHING
+            """,
+                cancellationToken);
         }
 
         logger.LogInformation(
             "Aligned migration history for existing schema by marking all content migrations as applied. MigrationCount: {MigrationCount}",
             allMigrations.Length);
     }
-
 
     private void LogLegacyAliasColumnDrift(string migrationName, PostgresException? postgresException)
     {
