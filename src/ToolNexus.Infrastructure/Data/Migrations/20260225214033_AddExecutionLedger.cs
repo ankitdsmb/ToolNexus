@@ -598,13 +598,9 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldType: "TEXT",
                 oldMaxLength: 120);
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "Success",
-                table: "ToolExecutionEvents",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
+            migrationBuilder.SafeConvertColumnToBoolean(
+                tableName: "ToolExecutionEvents",
+                columnName: "Success");
 
             migrationBuilder.AlterColumn<int>(
                 name: "PayloadSize",

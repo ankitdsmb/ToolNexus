@@ -125,8 +125,8 @@ internal static class PostgresMigrationSafety
 
                EXECUTE format(
                    'UPDATE %I SET %I = CASE
-                        WHEN lower(%I::text) IN (''true'',''1'',''yes'',''y'') THEN TRUE
-                        WHEN lower(%I::text) IN (''false'',''0'',''no'',''n'') THEN FALSE
+                        WHEN lower(%I::text) IN (''true'',''1'',''yes'',''y'',''success'') THEN TRUE
+                        WHEN lower(%I::text) IN (''false'',''0'',''no'',''n'',''fail'',''failed'') THEN FALSE
                         ELSE FALSE
                     END',
                    '{EscapeSqlLiteral(tableName)}',
@@ -148,11 +148,13 @@ internal static class PostgresMigrationSafety
                IF default_expression IS NOT NULL THEN
                    EXECUTE format(
                        'ALTER TABLE %I ALTER COLUMN %I SET DEFAULT CASE
-                            WHEN lower((%s)::text) IN (''true'',''1'',''yes'',''y'') THEN TRUE
+                            WHEN lower((%s)::text) IN (''true'',''1'',''yes'',''y'',''success'') THEN TRUE
+                            WHEN lower((%s)::text) IN (''false'',''0'',''no'',''n'',''fail'',''failed'') THEN FALSE
                             ELSE FALSE
                         END',
                        '{EscapeSqlLiteral(tableName)}',
                        '{EscapeSqlLiteral(columnName)}',
+                       default_expression,
                        default_expression);
                END IF;
 
