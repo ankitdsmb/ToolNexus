@@ -1,0 +1,52 @@
+@{
+    ViewData["Title"] = "AI Capability Factory";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">AI Capability Factory</h2>
+    <small class="text-secondary">Governed AI tool generation queue for operator-reviewed onboarding.</small>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6"><div class="card"><div class="card-header">Draft Queue</div><div class="card-body"><ul id="draft-queue" class="mb-0"></ul></div></div></div>
+    <div class="col-lg-6"><div class="card"><div class="card-header">Validation Reports</div><div class="card-body"><ul id="validation-reports" class="mb-0"></ul></div></div></div>
+    <div class="col-lg-6"><div class="card"><div class="card-header">Sandbox Results</div><div class="card-body"><ul id="sandbox-results" class="mb-0"></ul></div></div></div>
+    <div class="col-lg-6"><div class="card"><div class="card-header">Approval Workflow</div><div class="card-body"><ul id="approval-workflow" class="mb-0"></ul></div></div></div>
+    <div class="col-12"><div class="card"><div class="card-header">Generated Tool Performance</div><div class="card-body"><ul id="generated-performance" class="mb-0"></ul></div></div></div>
+</div>
+
+<script>
+(() => {
+  const render = (id, items, formatter) => {
+    const list = document.getElementById(id);
+    list.innerHTML = '';
+    if (!items?.length) {
+      list.innerHTML = '<li class="text-secondary">No records yet.</li>';
+      return;
+    }
+
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'mb-1';
+      li.textContent = formatter(item);
+      list.appendChild(li);
+    });
+  };
+
+  const load = async () => {
+    const response = await fetch('/admin/ai-capability-factory/dashboard?take=25');
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    render('draft-queue', data.draftQueue, x => `${x.toolSlug} · ${x.status} · quality ${x.draftQualityScore}`);
+    render('validation-reports', data.validationReports, x => `${x.draftId} · passed=${x.passed}`);
+    render('sandbox-results', data.sandboxResults, x => `${x.draftId} · ${x.executionBehavior} · ${x.conformanceCompliance}`);
+    render('approval-workflow', data.approvalWorkflow, x => `${x.operatorId} · ${x.action} · ${x.telemetryEventName}`);
+    render('generated-performance', data.generatedToolPerformance, x => `${x.toolSlug} · ${x.status} · ${x.riskLevel}`);
+  };
+
+  load();
+})();
+</script>

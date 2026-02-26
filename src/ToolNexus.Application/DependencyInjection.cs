@@ -96,6 +96,7 @@ public static class DependencyInjection
         services.AddScoped<IGovernanceDecisionService, GovernanceDecisionService>();
         services.AddScoped<IToolQualityScoreService, ToolQualityScoreService>();
         services.AddScoped<IRuntimeIncidentService, RuntimeIncidentService>();
+        services.AddScoped<IAiCapabilityFactoryService, AiCapabilityFactoryService>();
         services.AddSingleton<IStartupPhaseService, ManifestStartupValidator>();
         services.AddSingleton<IStartupPhaseService, PlatformCacheWarmupHostedService>();
         services.AddSingleton<IStartupPhaseService, ManifestExecutorAlignmentValidator>();
