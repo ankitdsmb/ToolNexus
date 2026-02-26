@@ -70,7 +70,7 @@ public sealed class MigrationDriftSafetyTests
 
         await migrator.MigrateAsync("20260222173745_InitialContentBaseline");
 
-        await context.Database.ExecuteSqlRawAsync(@"""
+        await context.Database.ExecuteSqlRawAsync("""
             DO $$
             BEGIN
                 IF EXISTS (
@@ -91,6 +91,22 @@ public sealed class MigrationDriftSafetyTests
         await context.Database.MigrateAsync();
 
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
+
+    [Fact]
+    public async Task InitialContentBaseline_CleanDatabase_MigratesSuccessfully()
+    {
+        await using var database = await CreatePostgresDatabaseOrSkipAsync();
+        await using var context = database.CreateContext();
+
+        var migrator = context.Database.GetService<IMigrator>();
+
+        await migrator.MigrateAsync("20260222173745_InitialContentBaseline");
+
+        Assert.DoesNotContain(
+            "20260222173745_InitialContentBaseline",
+            await context.Database.GetPendingMigrationsAsync());
     }
 
     [Fact]
