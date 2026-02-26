@@ -35,6 +35,10 @@ public sealed class CapabilityMarketplaceService(
         return await repository.GetDashboardAsync(normalizedQuery, cancellationToken);
     }
 
+
+    public Task<CapabilityRegistryEntry?> GetByCapabilityIdAsync(string capabilityId, CancellationToken cancellationToken = default)
+        => repository.GetByCapabilityIdAsync(capabilityId, cancellationToken);
+
     public async Task<IReadOnlyCollection<CapabilityRegistryEntry>> GetInstalledCapabilities(CancellationToken cancellationToken = default)
     {
         var tools = toolCatalogService.GetAllTools();
@@ -79,6 +83,9 @@ public sealed class CapabilityMarketplaceService(
                 tool.Version,
                 tool.Slug,
                 request.RuntimeLanguage,
+                ToolExecutionCapability.From(tool.ExecutionCapability, ToolExecutionCapability.Standard),
+                ResolveUiRenderingType(tool),
+                ResolveActivationState(installationState),
                 ResolveComplexityTier(tool),
                 permissions,
                 status,
@@ -113,6 +120,26 @@ public sealed class CapabilityMarketplaceService(
             CapabilityInstallationState.Enabled => CapabilityRegistryStatus.Installed,
             _ => CapabilityRegistryStatus.Installed
         };
+
+    private static CapabilityActivationState ResolveActivationState(CapabilityInstallationState state)
+        => state switch
+        {
+            CapabilityInstallationState.Enabled => CapabilityActivationState.Active,
+            CapabilityInstallationState.Deprecated => CapabilityActivationState.Deprecated,
+            _ => CapabilityActivationState.Inactive
+        };
+
+    private static CapabilityUiRenderingType ResolveUiRenderingType(ToolDescriptor tool)
+    {
+        if (tool.OperationSchema is not null)
+        {
+            return CapabilityUiRenderingType.SchemaDriven;
+        }
+
+        return tool.ClientSafeActions.Count > 0
+            ? CapabilityUiRenderingType.AutoRuntime
+            : CapabilityUiRenderingType.Custom;
+    }
 
     private static CapabilityComplexityTier ResolveComplexityTier(ToolDescriptor tool)
     {

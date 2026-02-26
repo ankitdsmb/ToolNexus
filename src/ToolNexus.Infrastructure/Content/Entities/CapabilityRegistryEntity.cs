@@ -8,6 +8,9 @@ public sealed class CapabilityRegistryEntity
     public string Version { get; set; } = string.Empty;
     public string ToolId { get; set; } = string.Empty;
     public string RuntimeLanguage { get; set; } = string.Empty;
+    public string ExecutionCapabilityType { get; set; } = string.Empty;
+    public int UiRenderingType { get; set; }
+    public int ActivationState { get; set; }
     public int ComplexityTier { get; set; }
     public string PermissionsJson { get; set; } = "[]";
     public int Status { get; set; }

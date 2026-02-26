@@ -27,7 +27,8 @@ public sealed class CapabilityMarketplaceServiceTests
                 RuntimeLanguage = "python",
                 IsCpuIntensive = true,
                 RequiresAuthentication = true,
-                ExecutionCapability = "sandboxed"
+                ExecutionCapability = "sandboxed",
+                ClientSafeActions = ["format"]
             }
         ], enabledSlugs: ["json-formatter"]);
 
@@ -38,6 +39,9 @@ public sealed class CapabilityMarketplaceServiceTests
         Assert.Equal("toolnexus.core", entry.Provider);
         Assert.Equal("json-formatter", entry.ToolId);
         Assert.Equal(ToolRuntimeLanguage.Python, entry.RuntimeLanguage);
+        Assert.Equal(ToolExecutionCapability.Sandboxed, entry.ExecutionCapabilityType);
+        Assert.Equal(CapabilityUiRenderingType.AutoRuntime, entry.UiRenderingType);
+        Assert.Equal(CapabilityActivationState.Active, entry.ActivationState);
         Assert.Equal(CapabilityComplexityTier.Advanced, entry.ComplexityTier);
         Assert.Contains("tool.execute.authenticated", entry.Permissions);
         Assert.Equal(CapabilityRegistryStatus.Installed, entry.Status);
@@ -84,12 +88,15 @@ public sealed class CapabilityMarketplaceServiceTests
 
         Assert.Equal(CapabilityInstallationState.Enabled, enabled.InstallationState);
         Assert.Equal(CapabilityRegistryStatus.Installed, enabled.Status);
+        Assert.Equal(CapabilityActivationState.Active, enabled.ActivationState);
 
         Assert.Equal(CapabilityInstallationState.Disabled, disabled.InstallationState);
         Assert.Equal(CapabilityRegistryStatus.Disabled, disabled.Status);
+        Assert.Equal(CapabilityActivationState.Inactive, disabled.ActivationState);
 
         Assert.Equal(CapabilityInstallationState.Deprecated, deprecated.InstallationState);
         Assert.Equal(CapabilityRegistryStatus.Deprecated, deprecated.Status);
+        Assert.Equal(CapabilityActivationState.Deprecated, deprecated.ActivationState);
     }
 
     private static CapabilityMarketplaceService CreateService(
@@ -138,6 +145,9 @@ public sealed class CapabilityMarketplaceServiceTests
     {
         public Task<CapabilityMarketplaceDashboard> GetDashboardAsync(CapabilityMarketplaceQuery query, CancellationToken cancellationToken)
             => Task.FromResult(new CapabilityMarketplaceDashboard(DateTime.UtcNow, Array.Empty<CapabilityRegistryEntry>()));
+
+        public Task<CapabilityRegistryEntry?> GetByCapabilityIdAsync(string capabilityId, CancellationToken cancellationToken)
+            => Task.FromResult<CapabilityRegistryEntry?>(null);
 
         public Task UpsertAsync(IReadOnlyCollection<CapabilityRegistryEntry> entries, DateTime syncedAtUtc, CancellationToken cancellationToken)
             => Task.CompletedTask;

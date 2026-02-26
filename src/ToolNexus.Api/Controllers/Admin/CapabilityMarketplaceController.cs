@@ -15,14 +15,24 @@ public sealed class CapabilityMarketplaceController(ICapabilityMarketplaceServic
     public async Task<ActionResult<CapabilityMarketplaceDashboard>> Get(
         [FromQuery] int limit = 100,
         [FromQuery] string? toolId = null,
+        [FromQuery] string? capabilityId = null,
         [FromQuery] CapabilityRegistryStatus? status = null,
         [FromQuery] DateTime? syncedAfterUtc = null,
         CancellationToken cancellationToken = default)
     {
         var dashboard = await service.GetDashboardAsync(
-            new CapabilityMarketplaceQuery(limit, toolId, status, syncedAfterUtc),
+            new CapabilityMarketplaceQuery(limit, toolId, capabilityId, status, syncedAfterUtc),
             cancellationToken);
 
         return Ok(dashboard);
+    }
+
+    [HttpGet("{capabilityId}")]
+    public async Task<ActionResult<CapabilityRegistryEntry>> GetByCapabilityId(
+        string capabilityId,
+        CancellationToken cancellationToken = default)
+    {
+        var entry = await service.GetByCapabilityIdAsync(capabilityId, cancellationToken);
+        return entry is null ? NotFound() : Ok(entry);
     }
 }

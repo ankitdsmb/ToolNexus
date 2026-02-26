@@ -6,4 +6,5 @@ public interface ICapabilityMarketplaceService
 {
     Task<IReadOnlyCollection<CapabilityRegistryEntry>> GetInstalledCapabilities(CancellationToken cancellationToken = default);
     Task<CapabilityMarketplaceDashboard> GetDashboardAsync(CapabilityMarketplaceQuery query, CancellationToken cancellationToken = default);
+    Task<CapabilityRegistryEntry?> GetByCapabilityIdAsync(string capabilityId, CancellationToken cancellationToken = default);
 }
