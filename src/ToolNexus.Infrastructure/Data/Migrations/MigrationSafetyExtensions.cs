@@ -12,7 +12,7 @@ internal static class MigrationSafetyExtensions
             return;
         }
 
-        migrationBuilder.Sql(PostgresMigrationSafety.EnsureIdentityColumn(tableName, columnName));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeIdentityNoOpIfExists(tableName, columnName));
     }
 
     public static void SafeEnsureIdentityByDefaultIfMissing(this MigrationBuilder migrationBuilder, string tableName, string columnName = "Id")

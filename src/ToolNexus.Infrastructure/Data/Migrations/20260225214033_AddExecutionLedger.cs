@@ -639,14 +639,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
 
-            migrationBuilder.AlterColumn<long>(
-                name: "Id",
-                table: "ToolExecutionEvents",
-                type: "bigint",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER")
-                .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+            migrationBuilder.Sql(PostgresMigrationSafety.SafeIdentityNoOpIfExists("ToolExecutionEvents", "Id"));
 
             migrationBuilder.AlterColumn<int>(
                 name: "ToolContentId",
