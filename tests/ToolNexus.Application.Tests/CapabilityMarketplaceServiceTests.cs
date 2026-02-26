@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
@@ -100,7 +101,7 @@ public sealed class CapabilityMarketplaceServiceTests
         var resolver = new DefaultExecutionAuthorityResolver(Microsoft.Extensions.Options.Options.Create(new ExecutionAuthorityOptions()));
         var snapshotBuilder = new DefaultExecutionSnapshotBuilder();
 
-        return new CapabilityMarketplaceService(catalog, policyService, resolver, snapshotBuilder);
+        return new CapabilityMarketplaceService(catalog, policyService, resolver, snapshotBuilder, new StubCapabilityMarketplaceRepository(), TimeProvider.System, Microsoft.Extensions.Options.Options.Create(new CapabilityMarketplaceOptions()), NullLogger<CapabilityMarketplaceService>.Instance);
     }
 
     private static ToolDescriptor BuildDescriptor(string slug, bool requiresAuthentication = true, bool isDeprecated = false)
@@ -131,6 +132,15 @@ public sealed class CapabilityMarketplaceServiceTests
         public IReadOnlyCollection<ToolDescriptor> GetByCategory(string category) => tools.Where(x => x.Category == category).ToArray();
 
         public bool CategoryExists(string category) => tools.Any(x => x.Category == category);
+    }
+
+    private sealed class StubCapabilityMarketplaceRepository : ICapabilityMarketplaceRepository
+    {
+        public Task<CapabilityMarketplaceDashboard> GetDashboardAsync(CapabilityMarketplaceQuery query, CancellationToken cancellationToken)
+            => Task.FromResult(new CapabilityMarketplaceDashboard(DateTime.UtcNow, Array.Empty<CapabilityRegistryEntry>()));
+
+        public Task UpsertAsync(IReadOnlyCollection<CapabilityRegistryEntry> entries, DateTime syncedAtUtc, CancellationToken cancellationToken)
+            => Task.CompletedTask;
     }
 
     private sealed class StubExecutionPolicyService(IReadOnlyCollection<string> enabledSlugs) : IExecutionPolicyService

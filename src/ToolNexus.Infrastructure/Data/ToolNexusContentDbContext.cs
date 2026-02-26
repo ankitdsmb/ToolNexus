@@ -29,6 +29,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<ExecutionAuthorityDecisionEntity> ExecutionAuthorityDecisions => Set<ExecutionAuthorityDecisionEntity>();
     public DbSet<GovernanceDecisionEntity> GovernanceDecisions => Set<GovernanceDecisionEntity>();
     public DbSet<ToolQualityScoreEntity> ToolQualityScores => Set<ToolQualityScoreEntity>();
+    public DbSet<CapabilityRegistryEntity> CapabilityRegistry => Set<CapabilityRegistryEntity>();
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -321,6 +322,33 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_governance_decisions_tool_id");
             entity.HasIndex(x => x.PolicyVersion).HasDatabaseName("idx_governance_decisions_policy_version");
             entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_governance_decisions_timestamp_utc");
+        });
+
+        modelBuilder.Entity<CapabilityRegistryEntity>(entity =>
+        {
+            entity.ToTable("capability_registry");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.CapabilityId).HasColumnName("capability_id").HasMaxLength(300);
+            entity.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(120);
+            entity.Property(x => x.Version).HasColumnName("version").HasMaxLength(40);
+            entity.Property(x => x.ToolId).HasColumnName("tool_id").HasMaxLength(160);
+            entity.Property(x => x.RuntimeLanguage).HasColumnName("runtime_language").HasMaxLength(40);
+            entity.Property(x => x.ComplexityTier).HasColumnName("complexity_tier");
+            entity.Property(x => x.PermissionsJson).HasColumnName("permissions_json").HasColumnType("jsonb");
+            entity.Property(x => x.Status).HasColumnName("status");
+            entity.Property(x => x.InstallationState).HasColumnName("installation_state");
+            entity.Property(x => x.Authority).HasColumnName("authority").HasMaxLength(40);
+            entity.Property(x => x.SnapshotId).HasColumnName("snapshot_id").HasMaxLength(120);
+            entity.Property(x => x.PolicyVersionToken).HasColumnName("policy_version_token").HasMaxLength(120);
+            entity.Property(x => x.PolicyExecutionEnabled).HasColumnName("policy_execution_enabled");
+            entity.Property(x => x.SyncedAtUtc).HasColumnName("synced_at_utc");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
+            entity.HasIndex(x => x.CapabilityId).IsUnique().HasDatabaseName("ux_capability_registry_capability_id");
+            entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_capability_registry_tool_id");
+            entity.HasIndex(x => x.SyncedAtUtc).HasDatabaseName("idx_capability_registry_synced_at_utc");
+            entity.Property(x => x.SyncedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.UpdatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<ToolQualityScoreEntity>(entity =>

@@ -1,4 +1,7 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ToolNexus.Application.Models;
+using ToolNexus.Application.Options;
 using ToolNexus.Application.Services.Pipeline;
 using ToolNexus.Application.Services.Policies;
 
@@ -8,9 +11,29 @@ public sealed class CapabilityMarketplaceService(
     IToolCatalogService toolCatalogService,
     IExecutionPolicyService executionPolicyService,
     IExecutionAuthorityResolver executionAuthorityResolver,
-    IExecutionSnapshotBuilder executionSnapshotBuilder) : ICapabilityMarketplaceService
+    IExecutionSnapshotBuilder executionSnapshotBuilder,
+    ICapabilityMarketplaceRepository repository,
+    TimeProvider timeProvider,
+    IOptions<CapabilityMarketplaceOptions> options,
+    ILogger<CapabilityMarketplaceService> logger) : ICapabilityMarketplaceService
 {
     private const string Provider = "toolnexus.core";
+
+
+    public async Task<CapabilityMarketplaceDashboard> GetDashboardAsync(CapabilityMarketplaceQuery query, CancellationToken cancellationToken = default)
+    {
+        var normalizedQuery = query with { Limit = Math.Min(query.Limit, options.Value.MaxDashboardLimit) };
+
+        if (options.Value.SyncOnRead)
+        {
+            var entries = await GetInstalledCapabilities(cancellationToken);
+            var syncedAtUtc = timeProvider.GetUtcNow().UtcDateTime;
+            await repository.UpsertAsync(entries, syncedAtUtc, cancellationToken);
+            logger.LogInformation("Capability marketplace sync completed with {Count} entries at {SyncedAtUtc}.", entries.Count, syncedAtUtc);
+        }
+
+        return await repository.GetDashboardAsync(normalizedQuery, cancellationToken);
+    }
 
     public async Task<IReadOnlyCollection<CapabilityRegistryEntry>> GetInstalledCapabilities(CancellationToken cancellationToken = default)
     {
