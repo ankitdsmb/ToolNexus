@@ -195,6 +195,60 @@ export function createToolRuntime({
   }
 
 
+  function resolveValidationScope(root, phase = 'unspecified') {
+    const toolRootNode = root?.querySelector?.('[data-tool-root]') ?? null;
+    const runtimeContainerNode = root?.querySelector?.('[data-runtime-container]')
+      ?? toolRootNode?.closest?.('[data-runtime-container]')
+      ?? root?.closest?.('[data-runtime-container]')
+      ?? null;
+
+    const scope = runtimeContainerNode ?? toolRootNode ?? root ?? null;
+
+    logger.info('[DomContract] validation scope resolved', {
+      phase,
+      rootTag: String(root?.tagName ?? root?.nodeName ?? '').toLowerCase(),
+      rootId: root?.id ?? '',
+      rootClass: root?.className ?? '',
+      isRootToolRoot: root?.id === 'tool-root',
+      scopeTag: String(scope?.tagName ?? scope?.nodeName ?? '').toLowerCase(),
+      scopeId: scope?.id ?? '',
+      scopeClass: scope?.className ?? '',
+      scopeIsToolRoot: scope?.id === 'tool-root',
+      runtimeContainerTag: String(runtimeContainerNode?.tagName ?? runtimeContainerNode?.nodeName ?? '').toLowerCase(),
+      runtimeContainerId: runtimeContainerNode?.id ?? '',
+      toolRootTag: String(toolRootNode?.tagName ?? toolRootNode?.nodeName ?? '').toLowerCase(),
+      toolRootId: toolRootNode?.id ?? ''
+    });
+
+    return {
+      scope,
+      runtimeContainerNode,
+      toolRootNode
+    };
+  }
+
+  function validateDomAtPhase(root, phase = 'unspecified') {
+    const resolved = resolveValidationScope(root, phase);
+    const validation = normalizeDomValidation(validateDomContract(resolved.scope, { phase }));
+    return {
+      ...resolved,
+      validation
+    };
+  }
+
+  function logPostMountFailureDiagnostics({ root, scope, phase, validation, mountPlan }) {
+    logger.warn('[DomContract] post-mount contract failure diagnostics', {
+      phase,
+      missingNodes: validation?.missingNodes ?? [],
+      detectedLayoutType: validation?.detectedLayoutType ?? 'UNKNOWN_LAYOUT',
+      mountStrategy: mountPlan?.mode ?? 'unknown',
+      scopeTag: String(scope?.tagName ?? scope?.nodeName ?? '').toLowerCase(),
+      scopeId: scope?.id ?? '',
+      scopeClass: scope?.className ?? '',
+      outerHtmlSnippet: String(scope?.outerHTML ?? root?.outerHTML ?? '').slice(0, 500)
+    });
+  }
+
   function normalizeDomValidation(validation) {
     if (validation && typeof validation.isValid === 'boolean') {
       return validation;
@@ -224,8 +278,9 @@ export function createToolRuntime({
   }
 
   function ensureDomContract(root, slug, capability = {}) {
-    logger.info('[DomContract] validating layout', { slug });
-    let validation = normalizeDomValidation(validateDomContract(root));
+    logger.info('[DomContract] validating layout', { slug, phase: 'pre-mount' });
+    let scopedValidation = validateDomAtPhase(root, 'pre-mount');
+    let validation = scopedValidation.validation;
 
     if (validation.isValid) {
       return validation;
@@ -233,17 +288,20 @@ export function createToolRuntime({
 
     logger.info('[DomAdapter] legacy layout detected', {
       slug,
+      phase: 'pre-mount',
       detectedLayoutType: validation.detectedLayoutType,
       missingNodes: validation.missingNodes
     });
 
-    const adapted = adaptDomContract(root, capability);
-    logger.info('[DomAdapter] adapter applied', { slug, ...adapted });
+    const adapted = adaptDomContract(scopedValidation.scope ?? root, capability);
+    logger.info('[DomAdapter] adapter applied', { slug, phase: 'pre-mount', ...adapted });
 
-    validation = normalizeDomValidation(validateDomContract(root));
+    scopedValidation = validateDomAtPhase(root, 'pre-mount-after-adapter');
+    validation = scopedValidation.validation;
     if (!validation.isValid) {
       injectContractFallbackLayout(root, slug);
-      validation = normalizeDomValidation(validateDomContract(root));
+      scopedValidation = validateDomAtPhase(root, 'pre-mount-after-fallback');
+      validation = scopedValidation.validation;
     }
 
     return validation;
@@ -255,7 +313,7 @@ export function createToolRuntime({
     globalDebug.debug.validateDom = () => {
       const currentRoot = rootProvider();
       const currentSlug = (currentRoot?.dataset?.toolSlug || '').trim();
-      const report = normalizeDomValidation(validateDomContract(currentRoot));
+      const report = validateDomAtPhase(currentRoot, 'debug-hook').validation;
       logger.info('[DomContract] report generated via debug hook', report);
       return report;
     };
@@ -860,10 +918,10 @@ export function createToolRuntime({
           runtimeMetrics.initRetriesPerformed += 1;
           emit('init_retry', { toolSlug: slug, metadata: { phase: 'lifecycle-init' } });
 
-          const preRetryValidation = normalizeDomValidation(validateDomContract(root));
+          const preRetryValidation = validateDomAtPhase(root, 'lifecycle-retry-precheck').validation;
           if (!preRetryValidation.isValid) {
-            adaptDomContract(root, capabilities);
-            const retryValidation = normalizeDomValidation(validateDomContract(root));
+            adaptDomContract(resolveValidationScope(root, 'lifecycle-retry-adapter').scope ?? root, capabilities);
+            const retryValidation = validateDomAtPhase(root, 'lifecycle-retry-recheck').validation;
             if (retryValidation.isValid) {
               result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
               logger.info('[DomAdapter] init retry success', { slug });
@@ -931,13 +989,56 @@ export function createToolRuntime({
           emit('mount_fallback_content', { toolSlug: slug });
         }
 
-        const postMountValidation = normalizeDomValidation(validateDomContract(root));
+        const rootBeforePostMount = root;
+        const preValidationRootElement = document.getElementById('tool-root');
+        const postMountScopedValidation = validateDomAtPhase(root, 'post-mount');
+        const postMountValidation = postMountScopedValidation.validation;
+        const rootAfterPostMount = root;
+        const currentToolRootElement = document.getElementById('tool-root');
+        const rootReferenceChanged = rootBeforePostMount !== rootAfterPostMount;
+        const toolRootElementChanged = preValidationRootElement !== currentToolRootElement;
+
+        logger.info('[DomContract] post-mount root integrity', {
+          slug,
+          rootReferenceChanged,
+          toolRootElementChanged,
+          rootIsCurrentToolRoot: root === currentToolRootElement,
+          rootHasChildren: Boolean(root?.firstElementChild)
+        });
+
         if (!postMountValidation.isValid) {
-          const postMountAdaptation = adaptDomContract(root, capabilities);
-          logger.info('[DomAdapter] post-mount adapter applied', { slug, ...postMountAdaptation });
-          const postMountRevalidation = normalizeDomValidation(validateDomContract(root));
-          if (!postMountRevalidation.isValid) {
-            throw new Error(`runtime assertion failed: DOM contract incomplete for "${slug}"`);
+          const mountedSubtreeValidation = normalizeDomValidation(validateDomContract(
+            postMountScopedValidation.toolRootNode ?? postMountScopedValidation.runtimeContainerNode ?? postMountScopedValidation.scope ?? root,
+            { phase: 'post-mount-subtree-recheck' }
+          ));
+
+          if (mountedSubtreeValidation.isValid) {
+            logger.info('[DomAdapter] post-mount adapter skipped', {
+              slug,
+              reason: 'mounted_subtree_already_valid',
+              detectedLayoutType: mountedSubtreeValidation.detectedLayoutType
+            });
+          } else {
+            logger.info('[DomAdapter] legacy layout detected', {
+              slug,
+              phase: 'post-mount',
+              detectedLayoutType: postMountValidation.detectedLayoutType,
+              missingNodes: postMountValidation.missingNodes
+            });
+            const postMountAdaptation = adaptDomContract(postMountScopedValidation.scope ?? root, capabilities);
+            logger.info('[DomAdapter] post-mount adapter applied', { slug, ...postMountAdaptation });
+            const postMountRevalidationScoped = validateDomAtPhase(root, 'post-mount-after-adapter');
+            const postMountRevalidation = postMountRevalidationScoped.validation;
+            if (!postMountRevalidation.isValid) {
+              logPostMountFailureDiagnostics({
+                root,
+                scope: postMountRevalidationScoped.scope,
+                phase: 'post-mount-after-adapter',
+                validation: postMountRevalidation,
+                mountPlan
+              });
+              throw new Error(`runtime assertion failed: DOM contract incomplete for "${slug}"`);
+            }
           }
         }
 
@@ -1012,7 +1113,7 @@ export function createToolRuntime({
 
         let healedByCompatibilityFlow = false;
         try {
-          adaptDomContract(root, detectToolCapabilities({ slug, module, manifest, root }));
+          adaptDomContract(resolveValidationScope(root, 'error-recovery').scope ?? root, detectToolCapabilities({ slug, module, manifest, root }));
           const retried = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities: detectToolCapabilities({ slug, module, manifest, root }) });
           if (retried?.mounted) {
             healedByCompatibilityFlow = true;
