@@ -1,3 +1,5 @@
+> Superseded by `docs/PLATFORM-COMPLETENESS-AUDIT.md` (latest revalidation).
+
 # ToolNexus Strict Platform Completeness Audit (Code-Evidence Only)
 
 ## Scope and Method
