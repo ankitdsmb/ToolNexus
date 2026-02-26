@@ -42,6 +42,15 @@ public static class DependencyInjection
             .AddOptions<ExecutionAdmissionOptions>()
             .Bind(configuration.GetSection(ExecutionAdmissionOptions.SectionName));
 
+
+        services
+            .AddOptions<ArchitectureEvolutionOptions>()
+            .Bind(configuration.GetSection(ArchitectureEvolutionOptions.SectionName))
+            .Validate(x => x.DriftDetectionThreshold > 0m && x.DriftDetectionThreshold <= 1m, "ArchitectureEvolution:DriftDetectionThreshold must be within (0,1].")
+            .Validate(x => x.RecommendationConfidenceThreshold > 0m && x.RecommendationConfidenceThreshold <= 1m, "ArchitectureEvolution:RecommendationConfidenceThreshold must be within (0,1].")
+            .Validate(x => x.LookbackHours > 0, "ArchitectureEvolution:LookbackHours must be greater than zero.")
+            .ValidateOnStart();
+
         services
             .AddOptions<CapabilityMarketplaceOptions>()
             .Bind(configuration.GetSection(CapabilityMarketplaceOptions.SectionName))
@@ -93,6 +102,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminExecutionMonitoringService>(sp => sp.GetRequiredService<AdminExecutionMonitoringService>());
         services.AddScoped<IAutonomousInsightsService, AutonomousInsightsService>();
         services.AddScoped<IPlatformOptimizationService, PlatformOptimizationService>();
+        services.AddScoped<IArchitectureEvolutionService, ArchitectureEvolutionService>();
         services.AddScoped<IExecutionLedgerService, ExecutionLedgerService>();
         services.AddScoped<IGovernanceDecisionService, GovernanceDecisionService>();
         services.AddScoped<IToolQualityScoreService, ToolQualityScoreService>();

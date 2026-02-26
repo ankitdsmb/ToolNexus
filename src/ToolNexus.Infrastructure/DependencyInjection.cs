@@ -58,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminExecutionMonitoringRepository, EfAdminExecutionMonitoringRepository>();
         services.AddScoped<IAutonomousInsightsRepository, EfAutonomousInsightsRepository>();
         services.AddScoped<IPlatformOptimizationRepository, EfPlatformOptimizationRepository>();
+        services.AddScoped<IArchitectureEvolutionRepository, EfArchitectureEvolutionRepository>();
         services.AddScoped<IAdminControlPlaneRepository, EfAdminControlPlaneRepository>();
         services.AddScoped<IExecutionLedgerRepository, EfExecutionLedgerRepository>();
         services.AddScoped<IGovernanceDecisionRepository, EfGovernanceDecisionRepository>();
