@@ -334,6 +334,9 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Version).HasColumnName("version").HasMaxLength(40);
             entity.Property(x => x.ToolId).HasColumnName("tool_id").HasMaxLength(160);
             entity.Property(x => x.RuntimeLanguage).HasColumnName("runtime_language").HasMaxLength(40);
+            entity.Property(x => x.ExecutionCapabilityType).HasColumnName("execution_capability_type").HasMaxLength(40);
+            entity.Property(x => x.UiRenderingType).HasColumnName("ui_rendering_type");
+            entity.Property(x => x.ActivationState).HasColumnName("activation_state");
             entity.Property(x => x.ComplexityTier).HasColumnName("complexity_tier");
             entity.Property(x => x.PermissionsJson).HasColumnName("permissions_json").HasColumnType("jsonb");
             entity.Property(x => x.Status).HasColumnName("status");
@@ -346,6 +349,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
             entity.HasIndex(x => x.CapabilityId).IsUnique().HasDatabaseName("ux_capability_registry_capability_id");
             entity.HasIndex(x => x.ToolId).HasDatabaseName("idx_capability_registry_tool_id");
+            entity.HasIndex(x => x.ActivationState).HasDatabaseName("idx_capability_registry_activation_state");
             entity.HasIndex(x => x.SyncedAtUtc).HasDatabaseName("idx_capability_registry_synced_at_utc");
             entity.Property(x => x.SyncedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.UpdatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");

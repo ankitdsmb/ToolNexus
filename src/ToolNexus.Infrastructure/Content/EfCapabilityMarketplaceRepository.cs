@@ -29,6 +29,9 @@ public sealed class EfCapabilityMarketplaceRepository(ToolNexusContentDbContext 
             entity.Version = entry.Version;
             entity.ToolId = entry.ToolId;
             entity.RuntimeLanguage = entry.RuntimeLanguage.ToString();
+            entity.ExecutionCapabilityType = entry.ExecutionCapabilityType.Value;
+            entity.UiRenderingType = (int)entry.UiRenderingType;
+            entity.ActivationState = (int)entry.ActivationState;
             entity.ComplexityTier = (int)entry.ComplexityTier;
             entity.PermissionsJson = JsonSerializer.Serialize(entry.Permissions);
             entity.Status = (int)entry.Status;
@@ -51,6 +54,8 @@ public sealed class EfCapabilityMarketplaceRepository(ToolNexusContentDbContext 
 
         if (!string.IsNullOrWhiteSpace(query.ToolId))
             baseQuery = baseQuery.Where(x => x.ToolId == query.ToolId);
+        if (!string.IsNullOrWhiteSpace(query.CapabilityId))
+            baseQuery = baseQuery.Where(x => x.CapabilityId == query.CapabilityId);
         if (query.Status.HasValue)
             baseQuery = baseQuery.Where(x => x.Status == (int)query.Status.Value);
         if (query.SyncedAfterUtc.HasValue)
@@ -67,6 +72,16 @@ public sealed class EfCapabilityMarketplaceRepository(ToolNexusContentDbContext 
         return new CapabilityMarketplaceDashboard(lastSyncedUtc, items);
     }
 
+
+    public async Task<CapabilityRegistryEntry?> GetByCapabilityIdAsync(string capabilityId, CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.CapabilityRegistry
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.CapabilityId == capabilityId, cancellationToken);
+
+        return entity is null ? null : Map(entity);
+    }
+
     private static CapabilityRegistryEntry Map(CapabilityRegistryEntity entity)
     {
         var permissions = JsonSerializer.Deserialize<string[]>(entity.PermissionsJson) ?? [];
@@ -78,6 +93,9 @@ public sealed class EfCapabilityMarketplaceRepository(ToolNexusContentDbContext 
             entity.Version,
             entity.ToolId,
             ToolRuntimeLanguage.From(entity.RuntimeLanguage, ToolRuntimeLanguage.DotNet),
+            ToolExecutionCapability.From(entity.ExecutionCapabilityType, ToolExecutionCapability.Standard),
+            (CapabilityUiRenderingType)entity.UiRenderingType,
+            (CapabilityActivationState)entity.ActivationState,
             (CapabilityComplexityTier)entity.ComplexityTier,
             permissions,
             (CapabilityRegistryStatus)entity.Status,

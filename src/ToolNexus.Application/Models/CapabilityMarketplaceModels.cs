@@ -24,6 +24,20 @@ public enum CapabilityComplexityTier
     Advanced = 2
 }
 
+public enum CapabilityUiRenderingType
+{
+    AutoRuntime = 0,
+    SchemaDriven = 1,
+    Custom = 2
+}
+
+public enum CapabilityActivationState
+{
+    Active = 0,
+    Inactive = 1,
+    Deprecated = 2
+}
+
 public sealed record CapabilityToolLink(
     string CapabilityId,
     string ToolId);
@@ -40,6 +54,9 @@ public sealed record CapabilityRegistryEntry(
     string Version,
     string ToolId,
     ToolRuntimeLanguage RuntimeLanguage,
+    ToolExecutionCapability ExecutionCapabilityType,
+    CapabilityUiRenderingType UiRenderingType,
+    CapabilityActivationState ActivationState,
     CapabilityComplexityTier ComplexityTier,
     IReadOnlyCollection<string> Permissions,
     CapabilityRegistryStatus Status,
@@ -50,6 +67,7 @@ public sealed record CapabilityRegistryEntry(
 public sealed record CapabilityMarketplaceQuery(
     int Limit = 100,
     string? ToolId = null,
+    string? CapabilityId = null,
     CapabilityRegistryStatus? Status = null,
     DateTime? SyncedAfterUtc = null);
 
