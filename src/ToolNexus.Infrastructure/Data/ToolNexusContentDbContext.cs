@@ -33,6 +33,9 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
     public DbSet<AdminOperationLedgerEntity> AdminOperationLedger => Set<AdminOperationLedgerEntity>();
     public DbSet<OperatorCommandEntity> OperatorCommands => Set<OperatorCommandEntity>();
+    public DbSet<PlatformSignalEntity> PlatformSignals => Set<PlatformSignalEntity>();
+    public DbSet<PlatformInsightEntity> PlatformInsights => Set<PlatformInsightEntity>();
+    public DbSet<OperatorApprovedActionEntity> OperatorApprovedActions => Set<OperatorApprovedActionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -230,6 +233,64 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.UpdatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.AttemptCount).HasDefaultValue(0);
             entity.Property(x => x.NextAttemptAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+
+        modelBuilder.Entity<PlatformSignalEntity>(entity =>
+        {
+            entity.ToTable("platform_signals");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.SignalType).HasColumnName("signal_type").HasMaxLength(80);
+            entity.Property(x => x.SourceDomain).HasColumnName("source_domain").HasMaxLength(80);
+            entity.Property(x => x.Severity).HasColumnName("severity").HasMaxLength(24);
+            entity.Property(x => x.DetectedAtUtc).HasColumnName("detected_at_utc");
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(100);
+            entity.Property(x => x.RecommendedActionType).HasColumnName("recommended_action_type").HasMaxLength(80);
+            entity.Property(x => x.TenantId).HasColumnName("tenant_id").HasMaxLength(80);
+            entity.Property(x => x.AuthorityContext).HasColumnName("authority_context").HasMaxLength(80);
+            entity.Property(x => x.PayloadJson).HasColumnName("payload_json").HasColumnType("jsonb");
+            entity.Property(x => x.DetectedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_platform_signals_correlation");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_platform_signals_tenant");
+            entity.HasIndex(x => x.DetectedAtUtc).HasDatabaseName("idx_platform_signals_detected_at").IsDescending();
+        });
+
+        modelBuilder.Entity<PlatformInsightEntity>(entity =>
+        {
+            entity.ToTable("platform_insights");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.RelatedSignalIds).HasColumnName("related_signal_ids").HasColumnType("jsonb");
+            entity.Property(x => x.RecommendedAction).HasColumnName("recommended_action").HasMaxLength(400);
+            entity.Property(x => x.ImpactScope).HasColumnName("impact_scope").HasMaxLength(120);
+            entity.Property(x => x.RiskScore).HasColumnName("risk_score");
+            entity.Property(x => x.ConfidenceScore).HasColumnName("confidence_score");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(24);
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(100);
+            entity.Property(x => x.AuthorityContext).HasColumnName("authority_context").HasMaxLength(80);
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.Property(x => x.DecisionedAtUtc).HasColumnName("decisioned_at_utc");
+            entity.Property(x => x.DecisionedBy).HasColumnName("decisioned_by").HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_platform_insights_correlation");
+            entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_platform_insights_created_at").IsDescending();
+            entity.HasIndex(x => x.Status).HasDatabaseName("idx_platform_insights_status");
+        });
+
+        modelBuilder.Entity<OperatorApprovedActionEntity>(entity =>
+        {
+            entity.ToTable("operator_approved_actions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.InsightId).HasColumnName("insight_id");
+            entity.Property(x => x.OperatorId).HasColumnName("operator_id").HasMaxLength(120);
+            entity.Property(x => x.Decision).HasColumnName("decision").HasMaxLength(24);
+            entity.Property(x => x.AuthorityContext).HasColumnName("authority_context").HasMaxLength(80);
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(100);
+            entity.Property(x => x.ActionType).HasColumnName("action_type").HasMaxLength(120);
+            entity.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(1000);
+            entity.Property(x => x.TimestampUtc).HasColumnName("timestamp_utc");
+            entity.Property(x => x.TimestampUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_operator_approved_actions_correlation");
+            entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_operator_approved_actions_timestamp").IsDescending();
         });
 
         modelBuilder.Entity<AuditDeadLetterEntity>(entity =>

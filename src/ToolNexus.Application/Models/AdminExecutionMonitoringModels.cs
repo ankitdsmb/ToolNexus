@@ -76,3 +76,23 @@ public sealed record OperatorCommandRequest(
     string AuthorityContext,
     string? TargetExecutionId,
     string? RollbackPlan);
+
+
+public sealed record AutonomousInsightItem(
+    Guid InsightId,
+    IReadOnlyList<Guid> RelatedSignalIds,
+    string ProposedAction,
+    string ImpactScope,
+    decimal RiskScore,
+    decimal ConfidenceScore,
+    string CorrelationId,
+    string AuthorityContext,
+    DateTime CreatedAtUtc,
+    string Status);
+
+public sealed record AutonomousInsightsPanel(IReadOnlyList<AutonomousInsightItem> Items);
+
+public sealed record AutonomousInsightDecisionRequest(
+    string OperatorId,
+    string AuthorityContext,
+    string? Notes);

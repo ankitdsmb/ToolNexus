@@ -13,7 +13,7 @@ public sealed class AdminExecutionMonitoringControllerTests
     public async Task GetHealth_ReturnsOkPayload()
     {
         var expected = new ExecutionHealthSummary(1, 2, 3, 4.5, true, true);
-        var controller = new ExecutionMonitoringController(new StubService(health: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(health: expected), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetHealth(CancellationToken.None);
 
@@ -25,7 +25,7 @@ public sealed class AdminExecutionMonitoringControllerTests
     public async Task GetExecutionStream_ReturnsOkPayload()
     {
         var expected = new List<ExecutionStreamItem> { new(Guid.NewGuid(), "json", "unified", "auto", "dotnet:auto", "admitted", "success", 24, DateTime.UtcNow) };
-        var controller = new ExecutionMonitoringController(new StubService(stream: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(stream: expected), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetExecutionStream(10, CancellationToken.None);
 
@@ -33,10 +33,20 @@ public sealed class AdminExecutionMonitoringControllerTests
         Assert.Same(expected, ok.Value);
     }
 
+
+    [Fact]
+    public async Task GetAutonomousInsights_ReturnsOkPayload()
+    {
+        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var action = await controller.GetAutonomousInsights(10, CancellationToken.None);
+        var ok = Assert.IsType<OkObjectResult>(action.Result);
+        Assert.IsType<AutonomousInsightsPanel>(ok.Value);
+    }
+
     [Fact]
     public async Task ResetCaches_ReturnsOperationPayload()
     {
-        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), new StubAutonomousInsightsService(), NullLogger<ExecutionMonitoringController>.Instance);
         var action = await controller.ResetCaches(new OperatorCommandRequest("incident", "runtime", "operator", null, "manual rollback"), CancellationToken.None);
         var ok = Assert.IsType<OkObjectResult>(action.Result);
         Assert.IsType<AdminControlPlaneOperationResult>(ok.Value);
@@ -54,6 +64,19 @@ public sealed class AdminExecutionMonitoringControllerTests
             => Task.FromResult(new AdminControlPlaneOperationResult("queue_replay", "success", "ok", 1, "c1", commandRequest.ImpactScope, commandRequest.AuthorityContext, commandRequest.RollbackPlan));
     }
 
+
+
+    private sealed class StubAutonomousInsightsService : IAutonomousInsightsService
+    {
+        public Task<AutonomousInsightsPanel> GetPanelAsync(int take, CancellationToken cancellationToken)
+            => Task.FromResult(new AutonomousInsightsPanel([]));
+
+        public Task<bool> ApproveAsync(Guid insightId, AutonomousInsightDecisionRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(true);
+
+        public Task<bool> RejectAsync(Guid insightId, AutonomousInsightDecisionRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(true);
+    }
     private sealed class StubService(
         ExecutionHealthSummary? health = null,
         ExecutionWorkersResponse? workers = null,

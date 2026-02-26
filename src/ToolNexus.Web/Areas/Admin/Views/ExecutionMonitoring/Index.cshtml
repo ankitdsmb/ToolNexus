@@ -29,6 +29,14 @@
     <small class="text-secondary">All commands require reason, explicit confirmation, and audit emission.</small>
 </div></div>
 
+
+<div class="card mb-2" id="autonomy-panel"><div class="card-body py-2">
+    <h4 class="card-title">AUTONOMOUS INSIGHTS</h4>
+    <small class="text-secondary">AI-generated recommendations. Execution requires explicit operator approval.</small>
+    <div class="table-responsive mt-2"><table class="table table-sm"><thead><tr><th>Action</th><th>Risk</th><th>Confidence</th><th>Impact</th><th>Controls</th></tr></thead><tbody id="autonomy-body"></tbody></table></div>
+</div></div>
+
+
 <div class="row g-2 mb-2" id="domain-grid">
     <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Governance</h5><div id="governance-summary">-</div></div></div></div>
     <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Capability Lifecycle</h5><div id="capability-summary">-</div><a href="/admin/capabilities/marketplace" class="btn btn-sm btn-outline-secondary mt-1">Open Editor</a></div></div></div>
@@ -59,6 +67,21 @@
     (data.items||[]).forEach(i=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${i.occurredAtUtc}</td><td><span class="badge ${sevClass(i.severity)}">${i.severity}/${i.eventType}</span></td><td>${i.destination}</td><td>${i.summary}</td><td class="text-end">${i.attemptCount}</td>`; document.getElementById('incidents-body').appendChild(tr);});
   }
 
+
+  async function decideInsight(id, decision){
+    const operatorId=prompt('Enter operator id for audit:'); if(!operatorId) return;
+    const authorityContext='operator-governed';
+    await fetch(`/admin/execution/autonomous-insights/${id}/${decision}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operatorId,authorityContext,notes:'decision from command center'})});
+    await loadAutonomy();
+  }
+  async function loadAutonomy(){const r=await fetch('/admin/execution/autonomous-insights?take=15'); if(!r.ok)return; const data=await r.json(); const items=data.items||[]; const body=document.getElementById('autonomy-body'); body.innerHTML='';
+    items.forEach(x=>{const tr=document.createElement('tr'); const riskBadge=x.riskScore>=0.8?'bg-red-lt':(x.riskScore>=0.5?'bg-yellow-lt':'bg-green-lt');
+      tr.innerHTML=`<td><span class="badge bg-blue-lt">AI</span> ${x.proposedAction}</td><td><span class="badge ${riskBadge}">${x.riskScore}</span></td><td>${x.confidenceScore}</td><td>${x.impactScope}</td><td><button class="btn btn-sm btn-outline-success me-1" data-ai-id="${x.insightId}" data-ai-decision="approve">Approve</button><button class="btn btn-sm btn-outline-danger" data-ai-id="${x.insightId}" data-ai-decision="reject">Reject</button></td>`;
+      body.appendChild(tr);
+    });
+    document.querySelectorAll('[data-ai-decision]').forEach(b=>b.addEventListener('click',()=>decideInsight(b.dataset.aiId,b.dataset.aiDecision)));
+  }
+
   async function runCommand(command){
     const reason=prompt(`Confirm ${command}. Enter reason:`); if(!reason) return;
     const risk=document.querySelector(`[data-command="${command}"]`)?.dataset.risk ?? 'medium';
@@ -67,7 +90,7 @@
     await refresh();
   }
 
-  async function refresh(){await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents()]);}
+  async function refresh(){await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents(),loadAutonomy()]);}
   document.querySelectorAll('[data-command]').forEach(b=>b.addEventListener('click',()=>runCommand(b.dataset.command)));
   document.getElementById('refresh-monitoring').addEventListener('click',refresh);
   setInterval(()=>{loadHealth();loadStream();},5000);

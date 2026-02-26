@@ -91,6 +91,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminControlPlaneService, AdminControlPlaneService>();
         services.AddScoped<AdminExecutionMonitoringService>();
         services.AddScoped<IAdminExecutionMonitoringService>(sp => sp.GetRequiredService<AdminExecutionMonitoringService>());
+        services.AddScoped<IAutonomousInsightsService, AutonomousInsightsService>();
         services.AddScoped<IExecutionLedgerService, ExecutionLedgerService>();
         services.AddScoped<IGovernanceDecisionService, GovernanceDecisionService>();
         services.AddScoped<IToolQualityScoreService, ToolQualityScoreService>();
