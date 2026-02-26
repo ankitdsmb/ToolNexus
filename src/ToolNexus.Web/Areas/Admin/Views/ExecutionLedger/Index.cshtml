@@ -1,21 +1,42 @@
 @{
     ViewData["Title"] = "Execution History";
 }
+<div class="d-none" data-admin-primary-actions>
+    <button class="btn btn-sm btn-primary" type="button" id="refresh-executions">Refresh</button>
+</div>
+<div class="d-none" data-admin-bulk-actions>
+    <span class="text-secondary small">Bulk execution actions require governance approval.</span>
+</div>
+<div class="d-none" data-admin-filters>
+    <input class="form-control form-control-sm" id="execution-search" placeholder="Search tool/authority" />
+</div>
 <h2>Execution History</h2>
-<table class="table table-sm" id="executions-table">
-    <thead><tr><th>When (UTC)</th><th>Tool</th><th>Authority</th><th>Conformance</th><th>Trace</th><th></th></tr></thead>
+<table class="table table-sm" id="executions-table" data-admin-data-table>
+    <thead><tr><th data-sortable-key="executed">When (UTC)</th><th data-sortable-key="tool">Tool</th><th data-sortable-key="authority">Authority</th><th>Conformance</th><th>Trace</th><th></th></tr></thead>
     <tbody></tbody>
 </table>
 <script>
 (async function() {
+  const searchInput = document.getElementById('execution-search');
+  const refreshButton = document.getElementById('refresh-executions');
   const res = await fetch('/api/admin/executions?page=1&pageSize=50');
   if (!res.ok) return;
   const data = await res.json();
   const tbody = document.querySelector('#executions-table tbody');
   (data.items || []).forEach(item => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${item.executedAtUtc}</td><td>${item.toolId}</td><td>${item.authority}</td><td>${item.conformanceStatus} (${item.conformanceIssueCount})</td><td>${item.traceId ?? '-'}</td><td><a class="btn btn-sm btn-outline-primary" href="/admin/executions/${item.id}">Details</a></td>`;
+    tr.dataset.executed = item.executedAtUtc || ''; tr.dataset.tool = item.toolId || ''; tr.dataset.authority = item.authority || ''; tr.innerHTML = `<td>${item.executedAtUtc}</td><td>${item.toolId}</td><td>${item.authority}</td><td>${item.conformanceStatus} (${item.conformanceIssueCount})</td><td>${item.traceId ?? '-'}</td><td><a class="btn btn-sm btn-outline-primary" href="/admin/executions/${item.id}">Details</a></td>`;
     tbody.appendChild(tr);
   });
+
+  searchInput?.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('#executions-table tbody tr').forEach(row => {
+      const blob = `${row.dataset.tool || ""} ${row.dataset.authority || ""}`.toLowerCase();
+      row.hidden = q.length > 0 && !blob.includes(q);
+    });
+  });
+
+  refreshButton?.addEventListener('click', () => window.location.reload());
 })();
 </script>

@@ -1,0 +1,17 @@
+@{
+    var domain = ViewData["AdminDomain"] as string ?? "Platform Operations";
+    var scope = ViewData["AdminScope"] as string ?? "Global";
+    var risk = ViewData["AdminRisk"] as string ?? "Medium";
+    var runtime = ViewData["AdminRuntimeState"] as string ?? "Observed";
+    var authority = ViewData["AdminAuthority"] as string ?? "Server Governed";
+    var governance = ViewData["AdminGovernanceState"] as string ?? "Policy Gate: Enforced";
+}
+
+<section class="admin-context-strip" aria-label="Admin context strip">
+    <span class="badge bg-blue-lt">Domain: @domain</span>
+    <span class="badge bg-secondary-lt">Scope: @scope</span>
+    <span class="badge bg-orange-lt">Risk: @risk</span>
+    <span class="badge bg-purple-lt">Lifecycle: @runtime</span>
+    <span class="badge bg-azure-lt">Authority: @authority</span>
+    <span class="badge bg-green-lt">@governance</span>
+</section>

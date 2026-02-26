@@ -20,30 +20,15 @@
                         <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><span class="nav-link-title">Dashboard</span></a>
                     </li>
                     <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Tools" asp-action="Index"><span class="nav-link-title">Tools</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="CapabilityMarketplace" asp-action="Index"><span class="nav-link-title">Capabilities</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Governance" asp-action="Index"><span class="nav-link-title">Governance</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="ExecutionLedger" asp-action="Index"><span class="nav-link-title">Executions</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="ExecutionMonitoring" asp-action="Index"><span class="nav-link-title">Runtime Operations</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="QualityScores" asp-action="Index"><span class="nav-link-title">Quality</span></a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Analytics" asp-action="Index"><span class="nav-link-title">Analytics</span></a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="ChangeHistory" asp-action="Index"><span class="nav-link-title">Change History</span></a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="ExecutionMonitoring" asp-action="Index"><span class="nav-link-title">Execution Monitoring</span></a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Governance" asp-action="Index"><span class="nav-link-title">Governance Decisions</span></a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="QualityScores" asp-action="Index"><span class="nav-link-title">Quality Scores</span></a></li>
-<li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="CapabilityMarketplace" asp-action="Index"><span class="nav-link-title">Capability Marketplace</span></a></li>
-                    <li class="nav-item mt-3">
-                        <span class="nav-link disabled" aria-disabled="true">
-                            <span class="nav-link-title">Users</span>
-                            <span class="badge bg-yellow-lt ms-2">Coming soon</span>
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-link disabled" aria-disabled="true">
-                            <span class="nav-link-title">Feature Flags</span>
-                            <span class="badge bg-yellow-lt ms-2">Coming soon</span>
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-link disabled" aria-disabled="true">
-                            <span class="nav-link-title">Settings</span>
-                            <span class="badge bg-yellow-lt ms-2">Coming soon</span>
-                        </span>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Management" asp-action="FeatureFlags"><span class="nav-link-title">Feature Flags</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Management" asp-action="Users"><span class="nav-link-title">Users &amp; Access</span></a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="Admin" asp-controller="Management" asp-action="Settings"><span class="nav-link-title">System Maintenance</span></a></li>
                 </ul>
             </div>
         </div>
@@ -55,7 +40,7 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-command-palette-trigger aria-label="Open command palette">Quick Find ⌘K</button>
                     <button type="button" class="btn btn-primary btn-sm" aria-label="Create item">New</button>
                     <div class="nav-item d-none d-md-flex">
-                        <span class="badge bg-azure-lt">Admin Shell</span>
+                        <span class="badge bg-azure-lt">Control Plane</span>
                     </div>
                 </div>
                 <div class="collapse navbar-collapse" id="navbar-menu">
@@ -67,13 +52,19 @@
         </header>
         <div class="page-body">
             <div class="container-xl">
-                @RenderBody()
+                <partial name="_AdminContextStrip" />
+                <partial name="_AdminActionBar" />
+                <main class="admin-data-workspace">
+                    @RenderBody()
+                </main>
+                <partial name="_AdminAuditBanner" />
             </div>
         </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
 <script type="module" src="~/js/command-palette-loader.js" asp-append-version="true"></script>
+<script type="module" src="~/js/admin-dna.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

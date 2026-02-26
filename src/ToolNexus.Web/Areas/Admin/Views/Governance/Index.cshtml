@@ -4,10 +4,20 @@
 
 <h2>Governance Decision History</h2>
 
+<div class="d-none" data-admin-primary-actions>
+    <button id="apply-filters" class="btn btn-primary btn-sm" type="button">Run Query</button>
+</div>
+<div class="d-none" data-admin-bulk-actions>
+    <span class="text-secondary small">Bulk governance actions require policy gate approval.</span>
+</div>
+<div class="d-none" data-admin-filters>
+    <input class="form-control form-control-sm" id="tool-filter" placeholder="tool id" />
+</div>
+
 <div class="row g-2 mb-3">
     <div class="col-md-3">
-        <label class="form-label" for="tool-filter">Tool</label>
-        <input class="form-control" id="tool-filter" placeholder="tool id" />
+        <label class="form-label" for="tool-filter-inline">Tool</label>
+        <input class="form-control" id="tool-filter-inline" placeholder="tool id" />
     </div>
     <div class="col-md-3">
         <label class="form-label" for="policy-filter">Policy version</label>
@@ -22,11 +32,11 @@
         <input class="form-control" id="end-date" type="date" />
     </div>
     <div class="col-md-2 d-flex align-items-end">
-        <button id="apply-filters" class="btn btn-primary w-100" type="button">Apply filters</button>
+        <button id="apply-filters-inline" class="btn btn-primary w-100" type="button">Apply filters</button>
     </div>
 </div>
 
-<table class="table table-sm" id="governance-decisions-table">
+<table class="table table-sm" id="governance-decisions-table" data-admin-data-table>
     <thead>
     <tr>
         <th>Timestamp (UTC)</th>
@@ -47,10 +57,11 @@
 (async function () {
   const tableBody = document.querySelector('#governance-decisions-table tbody');
   const applyButton = document.querySelector('#apply-filters');
+  const inlineApplyButton = document.querySelector('#apply-filters-inline');
 
   async function load() {
     const params = new URLSearchParams({ page: '1', pageSize: '100' });
-    const toolId = document.querySelector('#tool-filter').value.trim();
+    const toolId = (document.querySelector('#tool-filter')?.value || document.querySelector('#tool-filter-inline')?.value || '').trim();
     const policyVersion = document.querySelector('#policy-filter').value.trim();
     const startDate = document.querySelector('#start-date').value;
     const endDate = document.querySelector('#end-date').value;
@@ -76,12 +87,16 @@
 
     for (const item of page.items) {
       const tr = document.createElement('tr');
+      tr.dataset.timestamp = item.timestampUtc || '';
+      tr.dataset.tool = item.toolId || '';
+      tr.dataset.capability = item.capabilityId || '';
       tr.innerHTML = `<td>${item.timestampUtc}</td><td>${item.toolId}</td><td>${item.capabilityId}</td><td>${item.policyVersion}</td><td>${item.status}</td><td>${item.authority}</td><td>${item.approvedBy}</td><td>${item.decisionReason}</td>`;
       tableBody.appendChild(tr);
     }
   }
 
-  applyButton.addEventListener('click', load);
+  applyButton?.addEventListener('click', load);
+  inlineApplyButton?.addEventListener('click', load);
   await load();
 })();
 </script>
