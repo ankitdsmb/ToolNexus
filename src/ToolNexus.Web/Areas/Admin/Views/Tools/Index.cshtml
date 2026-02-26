@@ -3,6 +3,17 @@
     ViewData["Title"] = "Tool Workspace";
 }
 
+<div class="d-none" data-admin-primary-actions>
+    <a class="btn btn-sm btn-primary" href="#tool-editor-form">New Tool</a>
+</div>
+<div class="d-none" data-admin-bulk-actions>
+    <button type="button" class="btn btn-sm btn-success" data-bulk-action="enable">Enable</button>
+    <button type="button" class="btn btn-sm btn-warning" data-bulk-action="disable">Disable</button>
+</div>
+<div class="d-none" data-admin-filters>
+    
+</div>
+
 <div class="row g-3">
     <div class="col-lg-7">
         <div class="card">
@@ -23,15 +34,15 @@
                 </form>
             </div>
             <div class="table-responsive">
-                <table class="table table-vcenter card-table" id="tools-table">
+                <table class="table table-vcenter card-table" id="tools-table" data-admin-data-table>
                     <thead>
-                        <tr><th><input type="checkbox" id="select-all-tools" aria-label="Select all tools" /></th><th>Name</th><th>Slug</th><th>Category</th><th>Status</th><th>Updated</th><th></th></tr>
+                        <tr><th><input type="checkbox" id="select-all-tools" aria-label="Select all tools" /></th><th data-sortable-key="name">Name</th><th data-sortable-key="slug">Slug</th><th data-sortable-key="category">Category</th><th data-sortable-key="status">Status</th><th data-sortable-key="updated">Updated</th><th></th></tr>
                     </thead>
                     <tbody>
                     @foreach (var tool in Model.Tools)
                     {
                         var isEnabled = tool.Status == "Enabled";
-                        <tr data-tool-row data-tool-status="@(isEnabled ? "enabled" : "disabled")" data-tool-search="@($"{tool.Name} {tool.Slug}".ToLowerInvariant())">
+                        <tr data-tool-row data-tool-status="@(isEnabled ? "enabled" : "disabled")" data-tool-search="@($"{tool.Name} {tool.Slug}".ToLowerInvariant())" data-name="@tool.Name" data-slug="@tool.Slug" data-category="@tool.Category" data-status="@tool.Status" data-updated="@tool.UpdatedAt.ToString("O")">
                             <td><input type="checkbox" class="tool-select" value="@tool.Id" aria-label="Select @tool.Name" /></td>
                             <td>@tool.Name</td>
                             <td><code>@tool.Slug</code></td>
@@ -176,6 +187,7 @@
             bulkEnabledInput.value = enabled ? 'true' : 'false';
             syncBulkInputs();
             bulkStatusForm.submit();
+            window.dispatchEvent(new CustomEvent('admin:mutation-complete', { detail: { domain: 'tools', authority: 'admin-ui' } }));
         });
     });
 
@@ -183,7 +195,10 @@
         formEl.addEventListener('submit', (event) => {
             if (!window.confirm('Confirm status change for this tool?')) {
                 event.preventDefault();
+                return;
             }
+
+            window.dispatchEvent(new CustomEvent('admin:mutation-complete', { detail: { domain: 'tools', authority: 'admin-ui' } }));
         });
     });
 
