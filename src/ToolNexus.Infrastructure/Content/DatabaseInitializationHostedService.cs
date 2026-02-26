@@ -135,7 +135,8 @@ public sealed class DatabaseInitializationHostedService(
             or PostgresErrorCodes.DuplicateTable
             or PostgresErrorCodes.DuplicateObject
             or PostgresErrorCodes.DuplicateColumn
-            or PostgresErrorCodes.InvalidColumnReference;
+            or PostgresErrorCodes.InvalidColumnReference
+            or PostgresErrorCodes.SyntaxError;
     }
 
     private static PostgresException? FindPostgresException(Exception exception)
