@@ -1,6 +1,22 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
 import { normalizeToolExecution } from './tool-execution-normalizer.js';
 
+const EMPTY_LIFECYCLE_RESULT = Object.freeze({
+  mounted: false,
+  cleanup: undefined,
+  mode: 'none',
+  normalized: false,
+  autoDestroyGenerated: false
+});
+
+function toLifecycleResult(result = {}) {
+  return {
+    ...EMPTY_LIFECYCLE_RESULT,
+    ...result,
+    mounted: Boolean(result?.mounted)
+  };
+}
+
 function toCandidates(module) {
   return [
     module,
@@ -60,13 +76,13 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
 
   const executionOnly = normalized.metadata.mode === 'legacy.runTool.execution-only';
 
-  return {
+  return toLifecycleResult({
     mounted: !executionOnly && normalized.metadata.mode !== 'none',
     cleanup: normalized.destroy,
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,
     autoDestroyGenerated: normalized.metadata.autoDestroyGenerated
-  };
+  });
 }
 
 async function tryLegacyFallback({ slug, root, manifest, context, capabilities }) {
@@ -77,26 +93,25 @@ async function tryLegacyFallback({ slug, root, manifest, context, capabilities }
     await normalized.create();
     await normalized.init();
     const executionOnly = normalized.metadata.mode === 'legacy.runTool.execution-only';
-    return {
+    return toLifecycleResult({
       mounted: !executionOnly,
       cleanup: normalized.destroy,
       mode: `window.${normalized.metadata.mode}`,
       normalized: true,
       autoDestroyGenerated: normalized.metadata.autoDestroyGenerated
-    };
+    });
   }
 
   const globalResult = await invokeFirst([window], ['runTool', 'init'], root, manifest);
   if (globalResult.invoked) {
-    return { mounted: true, cleanup: context?.destroy?.bind(context), mode: 'window.global', normalized: true, autoDestroyGenerated: true };
+    return toLifecycleResult({ mounted: true, cleanup: context?.destroy?.bind(context), mode: 'window.global', normalized: true, autoDestroyGenerated: true });
   }
 
-  return { mounted: false, cleanup: undefined, mode: 'none', normalized: false, autoDestroyGenerated: false };
+  return toLifecycleResult();
 }
 
 export async function mountToolLifecycle({ module, slug, root, manifest, context, capabilities }) {
   const logger = createRuntimeMigrationLogger({ channel: 'lifecycle' });
-  const moduleCandidates = toCandidates(module);
 
   const normalizedResult = await mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities });
   if (normalizedResult.mode !== 'none') {
@@ -107,7 +122,7 @@ export async function mountToolLifecycle({ module, slug, root, manifest, context
   if (typeof window.ToolNexusKernel?.initialize === 'function') {
     logger.info(`Using ToolNexusKernel.initialize fallback for "${slug}".`);
     await window.ToolNexusKernel.initialize({ slug, root, manifest, module });
-    return { mounted: true, cleanup: context?.destroy?.bind(context), mode: 'kernel.initialize', normalized: false, autoDestroyGenerated: true };
+    return toLifecycleResult({ mounted: true, cleanup: context?.destroy?.bind(context), mode: 'kernel.initialize', normalized: false, autoDestroyGenerated: true });
   }
 
   logger.warn(`No modern lifecycle found for "${slug}". Switching to legacy fallback.`);
@@ -116,11 +131,11 @@ export async function mountToolLifecycle({ module, slug, root, manifest, context
 
 export async function legacyAutoInit({ slug, root, manifest, context, capabilities }) {
   const result = await tryLegacyFallback({ slug, root, manifest, context, capabilities });
-  return {
+  return toLifecycleResult({
     mounted: result.mounted,
     cleanup: result.cleanup,
     mode: result.mounted ? 'legacy.auto-init' : 'none',
     normalized: result.normalized,
     autoDestroyGenerated: result.autoDestroyGenerated
-  };
+  });
 }
