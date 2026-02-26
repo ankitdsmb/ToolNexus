@@ -121,6 +121,20 @@ public sealed class DatabaseInitializationHostedService(
         return exception is NpgsqlException && exception.InnerException is null;
     }
 
+    private static readonly HashSet<string> NonRetryableSchemaSqlStates =
+    [
+        PostgresErrorCodes.UndefinedObject,
+        PostgresErrorCodes.UndefinedTable,
+        PostgresErrorCodes.UndefinedColumn,
+        PostgresErrorCodes.DuplicateTable,
+        PostgresErrorCodes.DuplicateObject,
+        PostgresErrorCodes.DuplicateColumn,
+        PostgresErrorCodes.InvalidColumnReference,
+        PostgresErrorCodes.SyntaxError,
+        PostgresErrorCodes.DatatypeMismatch,
+        "55000" // object_not_in_prerequisite_state (e.g., identity reconfiguration conflicts).
+    ];
+
     private static bool IsStructuralMigrationException(Exception exception)
     {
         var postgresException = FindPostgresException(exception);
@@ -129,14 +143,7 @@ public sealed class DatabaseInitializationHostedService(
             return false;
         }
 
-        return postgresException.SqlState is PostgresErrorCodes.UndefinedObject
-            or PostgresErrorCodes.UndefinedTable
-            or PostgresErrorCodes.UndefinedColumn
-            or PostgresErrorCodes.DuplicateTable
-            or PostgresErrorCodes.DuplicateObject
-            or PostgresErrorCodes.DuplicateColumn
-            or PostgresErrorCodes.InvalidColumnReference
-            or PostgresErrorCodes.SyntaxError;
+        return NonRetryableSchemaSqlStates.Contains(postgresException.SqlState);
     }
 
     private static PostgresException? FindPostgresException(Exception exception)
