@@ -96,6 +96,25 @@ public sealed class MigrationSafetyExtensionsTests
         Assert.Contains("ADD COLUMN %I boolean NOT NULL DEFAULT false", operation.Sql, StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public void SafeConvertColumnToBoolean_UsesGuardedMultiStepConversionForPostgres()
+    {
+        var migrationBuilder = new MigrationBuilder("Npgsql.EntityFrameworkCore.PostgreSQL");
+
+        InvokeExtension(
+            "SafeConvertColumnToBoolean",
+            migrationBuilder,
+            "ToolExecutionPolicies",
+            "IsExecutionEnabled");
+
+        var operation = Assert.Single(migrationBuilder.Operations.OfType<SqlOperation>());
+        Assert.Contains("ADD COLUMN %I boolean", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("IN ('true','1','yes','y')", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("DROP COLUMN %I", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("RENAME COLUMN %I TO %I", operation.Sql, StringComparison.Ordinal);
+    }
+
     private static void InvokeExtension(string methodName, MigrationBuilder builder, params string[] arguments)
     {
         var type = Type.GetType("ToolNexus.Infrastructure.Data.Migrations.MigrationSafetyExtensions, ToolNexus.Infrastructure", throwOnError: true)!;

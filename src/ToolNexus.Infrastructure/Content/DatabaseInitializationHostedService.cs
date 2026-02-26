@@ -80,12 +80,14 @@ public sealed class DatabaseInitializationHostedService(
             {
                 var postgresException = FindPostgresException(ex);
                 logger.LogCritical(ex,
-                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Startup retry was aborted because schema mismatch errors are non-transient.",
+                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}. Startup retry was aborted because schema mismatch errors are non-transient.",
                     contextName,
                     targetMigration,
                     postgresException?.SqlState ?? "<none>",
                     postgresException?.MessageText ?? ex.Message,
-                    postgresException?.Detail ?? "<none>");
+                    postgresException?.Detail ?? "<none>",
+                    postgresException?.Where ?? "<none>",
+                    postgresException?.Routine ?? "<none>");
 
                 throw;
             }
@@ -110,12 +112,14 @@ public sealed class DatabaseInitializationHostedService(
         {
             var postgresException = FindPostgresException(ex);
             logger.LogError(ex,
-                "Migration execution failed for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Detail: {PostgresDetail}",
+                "Migration execution failed for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}",
                 contextName,
                 targetMigration,
                 postgresException?.SqlState ?? "<none>",
                 postgresException?.MessageText ?? ex.Message,
-                postgresException?.Detail ?? "<none>");
+                postgresException?.Detail ?? "<none>",
+                postgresException?.Where ?? "<none>",
+                postgresException?.Routine ?? "<none>");
             throw;
         }
     }
