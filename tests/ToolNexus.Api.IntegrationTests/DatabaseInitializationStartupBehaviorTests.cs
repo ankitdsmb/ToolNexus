@@ -31,6 +31,21 @@ public sealed class DatabaseInitializationStartupBehaviorTests
         Assert.Contains(payload!.DatabaseInitialization.Status, new[] { "initializing", "failed", "ready" });
     }
 
+    [Fact]
+    public async Task HostStartup_WithPartialSchema_MustNotCrash()
+    {
+        await using var factory = new UnavailableDatabaseFactory();
+
+        using var client = factory.CreateClient();
+        var healthResponse = await client.GetAsync("/health/background");
+
+        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
+
+        var payload = await healthResponse.Content.ReadFromJsonAsync<BackgroundHealthPayload>();
+        Assert.NotNull(payload);
+        Assert.Equal("failed", payload!.DatabaseInitialization.Status);
+    }
+
     private sealed record BackgroundHealthPayload(DatabaseInitializationPayload DatabaseInitialization);
 
     private sealed record DatabaseInitializationPayload(string Status, string? Error);

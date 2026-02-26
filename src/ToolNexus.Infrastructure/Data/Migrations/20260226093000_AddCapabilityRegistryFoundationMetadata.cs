@@ -38,9 +38,9 @@ namespace ToolNexus.Infrastructure.Data.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "idx_capability_registry_activation_state",
-                table: "capability_registry");
+            migrationBuilder.SafeDropIndexIfExists(
+                tableName: "capability_registry",
+                indexName: "idx_capability_registry_activation_state");
 
             migrationBuilder.DropColumn(
                 name: "execution_capability_type",

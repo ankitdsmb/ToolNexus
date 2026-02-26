@@ -16,7 +16,16 @@ public sealed class TelemetryBackgroundWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Telemetry background worker waiting for database initialization readiness.");
-        await initializationState.WaitForReadyAsync(stoppingToken);
+        try
+        {
+            await initializationState.WaitForReadyAsync(stoppingToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Telemetry background worker will not start because database initialization did not reach ready state.");
+            return;
+        }
+
         logger.LogInformation("Telemetry background worker detected database readiness and is starting.");
 
         while (!stoppingToken.IsCancellationRequested)

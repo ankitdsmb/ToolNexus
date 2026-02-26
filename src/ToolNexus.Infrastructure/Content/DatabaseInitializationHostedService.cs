@@ -52,7 +52,6 @@ public sealed class DatabaseInitializationHostedService(
         {
             state.MarkFailed(ex.Message);
             logger.LogError(ex, "Database initialization failed.");
-            throw;
         }
     }
 
@@ -64,6 +63,14 @@ public sealed class DatabaseInitializationHostedService(
             {
                 await dbContext.Database.MigrateAsync(cancellationToken);
                 return;
+            }
+            catch (Exception ex) when (IsStructuralMigrationException(ex))
+            {
+                logger.LogCritical(ex,
+                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Startup retry was aborted because schema mismatch errors are non-transient.",
+                    dbContext.GetType().Name);
+
+                throw;
             }
             catch (Exception ex) when (IsTransientPostgresStartupException(ex) && attempt < MigrationRetryDelays.Length)
             {
@@ -82,8 +89,47 @@ public sealed class DatabaseInitializationHostedService(
 
     private static bool IsTransientPostgresStartupException(Exception exception)
     {
+        if (IsStructuralMigrationException(exception))
+        {
+            return false;
+        }
+
         return exception is TimeoutException
                || exception is NpgsqlException
                || exception.InnerException is NpgsqlException;
+    }
+
+    private static bool IsStructuralMigrationException(Exception exception)
+    {
+        var postgresException = FindPostgresException(exception);
+        if (postgresException is null)
+        {
+            return false;
+        }
+
+        return postgresException.SqlState is PostgresErrorCodes.UndefinedObject
+            or PostgresErrorCodes.UndefinedTable
+            or PostgresErrorCodes.UndefinedColumn
+            or PostgresErrorCodes.DuplicateTable
+            or PostgresErrorCodes.DuplicateObject
+            or PostgresErrorCodes.DuplicateColumn
+            or PostgresErrorCodes.InvalidColumnReference;
+    }
+
+    private static PostgresException? FindPostgresException(Exception exception)
+    {
+        if (exception is PostgresException postgresException)
+        {
+            return postgresException;
+        }
+
+        if (exception is NpgsqlException npgsqlException && npgsqlException.InnerException is PostgresException innerPostgres)
+        {
+            return innerPostgres;
+        }
+
+        return exception.InnerException is null
+            ? null
+            : FindPostgresException(exception.InnerException);
     }
 }
