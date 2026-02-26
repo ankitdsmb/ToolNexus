@@ -11,39 +11,25 @@ namespace ToolNexus.Api.IntegrationTests;
 public sealed class DatabaseInitializationStartupBehaviorTests
 {
     [Fact]
-    public async Task Host_StartsAndServesHealthEndpoint_WhenDatabaseIsUnavailable()
+    public async Task HostStartup_FailsFast_WhenDatabaseIsUnavailable()
     {
         await using var factory = new UnavailableDatabaseFactory();
 
         var startupTimer = Stopwatch.StartNew();
-        using var client = factory.CreateClient();
+        var ex = await Assert.ThrowsAnyAsync<Exception>(() => Task.FromResult(factory.CreateClient()));
         startupTimer.Stop();
 
-        var backgroundHealthResponse = await client.GetAsync("/health/background");
-        var healthResponse = await client.GetAsync("/health");
-
-        Assert.Equal(HttpStatusCode.OK, backgroundHealthResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
+        Assert.Contains("Database initialization failed", ex.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.True(startupTimer.Elapsed < TimeSpan.FromSeconds(5));
-
-        var payload = await backgroundHealthResponse.Content.ReadFromJsonAsync<BackgroundHealthPayload>();
-        Assert.NotNull(payload);
-        Assert.Contains(payload!.DatabaseInitialization.Status, new[] { "initializing", "failed", "ready" });
     }
 
     [Fact]
-    public async Task HostStartup_WithPartialSchema_MustNotCrash()
+    public async Task HostStartup_WithInvalidConnection_StopsDeterministically()
     {
         await using var factory = new UnavailableDatabaseFactory();
 
-        using var client = factory.CreateClient();
-        var healthResponse = await client.GetAsync("/health/background");
-
-        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
-
-        var payload = await healthResponse.Content.ReadFromJsonAsync<BackgroundHealthPayload>();
-        Assert.NotNull(payload);
-        Assert.Equal("failed", payload!.DatabaseInitialization.Status);
+        var ex = await Assert.ThrowsAnyAsync<Exception>(() => Task.FromResult(factory.CreateClient()));
+        Assert.Contains("Database initialization failed", ex.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed record BackgroundHealthPayload(DatabaseInitializationPayload DatabaseInitialization);
