@@ -24,9 +24,14 @@ function emitValidationLog({ phase, scope, missingNodes, detectedLayoutType }) {
     return;
   }
 
+  const scopeInfo = describeScope(scope);
   logger.info('[DomContract] validation diagnostics', {
     phase,
-    scope: describeScope(scope),
+    scopeTag: scopeInfo.tag,
+    scopeId: scopeInfo.id,
+    scopeClass: scopeInfo.className,
+    scopeIsToolRoot: scopeInfo.equalsToolRoot,
+    scope: scopeInfo,
     missingNodes,
     detectedLayoutType
   });
