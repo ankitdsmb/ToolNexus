@@ -52,6 +52,7 @@ public sealed class DatabaseInitializationHostedService(
         {
             state.MarkFailed(ex.Message);
             logger.LogError(ex, "Database initialization failed.");
+            throw;
         }
     }
 
@@ -87,6 +88,18 @@ public sealed class DatabaseInitializationHostedService(
         await dbContext.Database.MigrateAsync(cancellationToken);
     }
 
+    private static readonly HashSet<string> TransientPostgresSqlStates =
+    [
+        PostgresErrorCodes.ConnectionException,
+        PostgresErrorCodes.ConnectionFailure,
+        PostgresErrorCodes.SqlClientUnableToEstablishSqlConnection,
+        PostgresErrorCodes.CannotConnectNow,
+        PostgresErrorCodes.AdminShutdown,
+        PostgresErrorCodes.CrashShutdown,
+        PostgresErrorCodes.SystemError,
+        PostgresErrorCodes.TooManyConnections
+    ];
+
     private static bool IsTransientPostgresStartupException(Exception exception)
     {
         if (IsStructuralMigrationException(exception))
@@ -94,9 +107,18 @@ public sealed class DatabaseInitializationHostedService(
             return false;
         }
 
-        return exception is TimeoutException
-               || exception is NpgsqlException
-               || exception.InnerException is NpgsqlException;
+        if (exception is TimeoutException)
+        {
+            return true;
+        }
+
+        var postgresException = FindPostgresException(exception);
+        if (postgresException is not null)
+        {
+            return TransientPostgresSqlStates.Contains(postgresException.SqlState);
+        }
+
+        return exception is NpgsqlException && exception.InnerException is null;
     }
 
     private static bool IsStructuralMigrationException(Exception exception)
