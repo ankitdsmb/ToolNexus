@@ -6,6 +6,7 @@ import { bindTemplateData as defaultTemplateBinder } from './runtime/tool-templa
 import { bootstrapLegacyTool as defaultLegacyBootstrap } from './runtime/legacy-tool-bootstrap.js';
 import { validateToolDom as defaultDomContractValidator } from './runtime/tool-dom-contract-validator.js';
 import { adaptToolDom as defaultDomAdapter } from './runtime/tool-dom-adapter.js';
+import { LAYOUT_TYPES } from './runtime/tool-dom-contract.js';
 import { createRuntimeMigrationLogger } from './runtime/runtime-migration-logger.js';
 import { detectToolCapabilities as defaultDetectToolCapabilities } from './runtime/tool-capability-matrix.js';
 import { safeDomMount as defaultSafeDomMount } from './runtime/safe-dom-mount.js';
@@ -196,9 +197,12 @@ export function createToolRuntime({
 
 
   function resolveValidationScope(root, phase = 'unspecified') {
-    const toolRootNode = root?.querySelector?.('[data-tool-root]') ?? null;
-    const runtimeContainerNode = root?.querySelector?.('[data-runtime-container]')
-      ?? toolRootNode?.closest?.('[data-runtime-container]')
+    const candidateToolRoots = Array.from(root?.querySelectorAll?.('[data-tool-root]') ?? []);
+    const toolRootNode = candidateToolRoots.find((node) => !node.hasAttribute('hidden'))
+      ?? candidateToolRoots[0]
+      ?? null;
+    const runtimeContainerNode = toolRootNode?.closest?.('[data-runtime-container]')
+      ?? (root?.matches?.('[data-runtime-container]') ? root : null)
       ?? root?.closest?.('[data-runtime-container]')
       ?? null;
 
@@ -278,11 +282,28 @@ export function createToolRuntime({
   }
 
   function ensureDomContract(root, slug, capability = {}) {
-    logger.info('[DomContract] validating layout', { slug, phase: 'pre-mount' });
+    logger.info('[DomContract] validation', { slug, phase: 'pre-mount' });
     let scopedValidation = validateDomAtPhase(root, 'pre-mount');
     let validation = scopedValidation.validation;
 
     if (validation.isValid) {
+      logger.info('[DomAdapter] NO adapter applied', {
+        slug,
+        phase: 'pre-mount',
+        reason: 'dom_contract_valid',
+        detectedLayoutType: validation.detectedLayoutType
+      });
+      return validation;
+    }
+
+    if (validation.detectedLayoutType !== LAYOUT_TYPES.LEGACY_LAYOUT) {
+      logger.info('[DomAdapter] NO adapter applied', {
+        slug,
+        phase: 'pre-mount',
+        reason: 'non_legacy_layout',
+        detectedLayoutType: validation.detectedLayoutType,
+        missingNodes: validation.missingNodes
+      });
       return validation;
     }
 
@@ -920,7 +941,17 @@ export function createToolRuntime({
 
           const preRetryValidation = validateDomAtPhase(root, 'lifecycle-retry-precheck').validation;
           if (!preRetryValidation.isValid) {
-            adaptDomContract(resolveValidationScope(root, 'lifecycle-retry-adapter').scope ?? root, capabilities);
+            if (preRetryValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT) {
+              adaptDomContract(resolveValidationScope(root, 'lifecycle-retry-adapter').scope ?? root, capabilities);
+            } else {
+              logger.info('[DomAdapter] NO adapter applied', {
+                slug,
+                phase: 'lifecycle-retry-adapter',
+                reason: 'non_legacy_layout',
+                detectedLayoutType: preRetryValidation.detectedLayoutType,
+                missingNodes: preRetryValidation.missingNodes
+              });
+            }
             const retryValidation = validateDomAtPhase(root, 'lifecycle-retry-recheck').validation;
             if (retryValidation.isValid) {
               result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
@@ -1018,6 +1049,15 @@ export function createToolRuntime({
               reason: 'mounted_subtree_already_valid',
               detectedLayoutType: mountedSubtreeValidation.detectedLayoutType
             });
+          } else if (postMountValidation.detectedLayoutType !== LAYOUT_TYPES.LEGACY_LAYOUT) {
+            logger.info('[DomAdapter] NO adapter applied', {
+              slug,
+              phase: 'post-mount',
+              reason: 'non_legacy_layout',
+              detectedLayoutType: postMountValidation.detectedLayoutType,
+              missingNodes: postMountValidation.missingNodes
+            });
+            throw new Error(`runtime assertion failed: DOM contract incomplete for "${slug}"`);
           } else {
             logger.info('[DomAdapter] legacy layout detected', {
               slug,
@@ -1058,6 +1098,10 @@ export function createToolRuntime({
           hasModulePath: Boolean(modulePath),
           legacyBridgeUsed,
           lifecycle: lifecycleContract
+        });
+        logger.info(`[Runtime] Runtime classification: ${classification}`, {
+          slug,
+          classification
         });
 
         emit('mount_success', {
@@ -1113,7 +1157,18 @@ export function createToolRuntime({
 
         let healedByCompatibilityFlow = false;
         try {
-          adaptDomContract(resolveValidationScope(root, 'error-recovery').scope ?? root, detectToolCapabilities({ slug, module, manifest, root }));
+          const errorRecoveryValidation = validateDomAtPhase(root, 'error-recovery-precheck').validation;
+          if (errorRecoveryValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT) {
+            adaptDomContract(resolveValidationScope(root, 'error-recovery').scope ?? root, detectToolCapabilities({ slug, module, manifest, root }));
+          } else {
+            logger.info('[DomAdapter] NO adapter applied', {
+              slug,
+              phase: 'error-recovery',
+              reason: 'non_legacy_layout',
+              detectedLayoutType: errorRecoveryValidation.detectedLayoutType,
+              missingNodes: errorRecoveryValidation.missingNodes
+            });
+          }
           const retried = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities: detectToolCapabilities({ slug, module, manifest, root }) });
           if (retried?.mounted) {
             healedByCompatibilityFlow = true;
