@@ -23,7 +23,15 @@ public sealed class AdminIdentitySeedHostedService(
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await initializationState.WaitForReadyAsync(cancellationToken);
+        try
+        {
+            await initializationState.WaitForReadyAsync(cancellationToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Skipping admin identity bootstrap because database initialization did not reach ready state.");
+            return;
+        }
 
         using var scope = serviceProvider.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();

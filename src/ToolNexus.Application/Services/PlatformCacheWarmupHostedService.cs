@@ -15,7 +15,16 @@ public sealed class PlatformCacheWarmupHostedService(
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await initializationState.WaitForReadyAsync(cancellationToken);
+        try
+        {
+            await initializationState.WaitForReadyAsync(cancellationToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Skipping platform cache warmup because database initialization did not reach ready state.");
+            return;
+        }
+
         logger.LogInformation("Platform cache warmup started after database readiness signal.");
 
         using var scope = scopeFactory.CreateScope();

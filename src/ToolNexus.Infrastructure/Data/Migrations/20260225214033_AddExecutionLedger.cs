@@ -13,17 +13,17 @@ namespace ToolNexus.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_audit_dead_letter_audit_events_AuditEventId",
-                table: "audit_dead_letter");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_events_AuditEventId");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_audit_dead_letter_audit_outbox_OutboxId",
-                table: "audit_dead_letter");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_outbox_OutboxId");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_audit_outbox_audit_events_AuditEventId",
-                table: "audit_outbox");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "audit_outbox",
+                constraintName: "FK_audit_outbox_audit_events_AuditEventId");
 
             migrationBuilder.RenameColumn(
                 name: "Destination",
@@ -1759,17 +1759,17 @@ namespace ToolNexus.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_audit_dead_letter_audit_events_audit_event_id",
-                table: "audit_dead_letter");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_events_audit_event_id");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_audit_dead_letter_audit_outbox_outbox_id",
-                table: "audit_dead_letter");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_outbox_outbox_id");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_audit_outbox_audit_events_audit_event_id",
-                table: "audit_outbox");
+            migrationBuilder.SafeDropConstraintIfExists(
+                tableName: "audit_outbox",
+                constraintName: "FK_audit_outbox_audit_events_audit_event_id");
 
             migrationBuilder.DropTable(
                 name: "admin_identity_users");

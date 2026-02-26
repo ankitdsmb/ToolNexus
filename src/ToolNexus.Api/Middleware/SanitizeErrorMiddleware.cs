@@ -15,6 +15,11 @@ public sealed class SanitizeErrorMiddleware(RequestDelegate next)
         }
         catch (InputSanitizationException ex)
         {
+            if (context.Response.HasStarted)
+            {
+                throw;
+            }
+
             await WriteErrorAsync(
                 context,
                 StatusCodes.Status400BadRequest,
@@ -25,7 +30,7 @@ public sealed class SanitizeErrorMiddleware(RequestDelegate next)
         {
             if (context.Response.HasStarted)
             {
-                return;
+                throw;
             }
 
             await WriteErrorAsync(

@@ -21,7 +21,16 @@ public sealed class ToolManifestSynchronizationHostedService(
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await initializationState.WaitForReadyAsync(stoppingToken);
+        try
+        {
+            await initializationState.WaitForReadyAsync(stoppingToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Skipping manifest synchronization because database initialization did not reach ready state.");
+            return;
+        }
+
         logger.LogInformation("[ToolEndpointRegistration] Manifest synchronization started after database readiness signal.");
 
         try

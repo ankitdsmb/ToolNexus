@@ -20,7 +20,15 @@ public sealed class ToolContentSeedStartupPhaseService(
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await initializationState.WaitForReadyAsync(cancellationToken);
+        try
+        {
+            await initializationState.WaitForReadyAsync(cancellationToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Skipping tool content seeding because database initialization did not reach ready state.");
+            return;
+        }
 
         var runSeed = options.Value.RunSeedOnStartup;
         if (!runSeed)
