@@ -42,7 +42,14 @@ public static class DependencyInjection
             .AddOptions<ExecutionAdmissionOptions>()
             .Bind(configuration.GetSection(ExecutionAdmissionOptions.SectionName));
 
+        services
+            .AddOptions<CapabilityMarketplaceOptions>()
+            .Bind(configuration.GetSection(CapabilityMarketplaceOptions.SectionName))
+            .Validate(x => x.MaxDashboardLimit > 0, "CapabilityMarketplace:MaxDashboardLimit must be greater than zero.")
+            .ValidateOnStart();
+
         services.AddToolExecutionPipeline();
+        services.AddSingleton(TimeProvider.System);
         services.AddHttpContextAccessor();
         services.AddSingleton<IToolExecutionEventService, NoOpToolExecutionEventService>();
         services.AddScoped<IToolService, ToolService>();

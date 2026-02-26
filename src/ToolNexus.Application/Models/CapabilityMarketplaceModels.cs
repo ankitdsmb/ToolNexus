@@ -46,3 +46,13 @@ public sealed record CapabilityRegistryEntry(
     CapabilityInstallationState InstallationState,
     CapabilityToolLink ToolLink,
     CapabilityGovernanceMetadata Governance);
+
+public sealed record CapabilityMarketplaceQuery(
+    int Limit = 100,
+    string? ToolId = null,
+    CapabilityRegistryStatus? Status = null,
+    DateTime? SyncedAfterUtc = null);
+
+public sealed record CapabilityMarketplaceDashboard(
+    DateTime LastSyncedUtc,
+    IReadOnlyCollection<CapabilityRegistryEntry> Items);

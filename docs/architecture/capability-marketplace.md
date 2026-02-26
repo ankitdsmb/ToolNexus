@@ -83,3 +83,15 @@ No public marketplace UI is included in this foundation slice.
 - Tool execution pipeline remains unchanged.
 - No behavior changes in runtime adapters, orchestration, or executor dispatch.
 - Capability marketplace layer is additive and read-only metadata infrastructure.
+
+## Full integration (strict completeness update)
+
+Capability marketplace is now integrated across platform layers:
+
+- **Persistence (PostgreSQL):** `capability_registry` stores immutable capability identity and synced governance metadata (`authority`, `snapshot_id`, `policy_version_token`, policy enabled flag), with indexes on `tool_id` and `synced_at_utc`.
+- **Repository:** `ICapabilityMarketplaceRepository` + `EfCapabilityMarketplaceRepository` upsert computed capability metadata and serve admin query dashboards.
+- **API:** `GET /api/admin/capabilities/marketplace` exposes governed capability records for admin diagnostics and filtering (`toolId`, `status`, `syncedAfterUtc`, `limit`).
+- **Admin UI:** `/admin/capabilities/marketplace` adds first-class registry visibility in Admin shell.
+- **Configuration:** `CapabilityMarketplace:SyncOnRead` and `CapabilityMarketplace:MaxDashboardLimit` enforce operational control and bounded dashboard queries.
+
+Execution architecture remains canonical. Capability records are computed from existing governance + authority resolver and never bypass execution admission or conformance pipeline.
