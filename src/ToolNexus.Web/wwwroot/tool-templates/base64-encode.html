@@ -1,5 +1,5 @@
-<article class="tool-page tool base64-tool" data-tool="base64-encode" data-slug="">
-    <header class="base64-tool__header">
+<article class="tool-page tool base64-tool" data-tool="base64-encode" data-slug="" data-tool-root>
+    <header class="base64-tool__header" data-tool-header>
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="tool-page__description">Encode text or files into Base64 with full UTF-8 and binary support.</p>
@@ -7,7 +7,8 @@
         <span class="base64-badge" aria-label="Execution scope">Client-side only</span>
     </header>
 
-    <section class="base64-workspace" aria-label="Base64 workspace">
+    <section class="base64-workspace" aria-label="Base64 workspace" data-runtime-container>
+        <section data-tool-body>
         <section class="tool-panel base64-panel" aria-labelledby="inputHeading" data-tool-input>
             <div class="base64-panel__header">
                 <h2 id="inputHeading">Input</h2>
@@ -65,6 +66,7 @@
                 <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download .txt</button>
             </div>
         </section>
+        </section>
     </section>
 
     @if (Model.Content is not null)
@@ -77,4 +79,3 @@
         </section>
     }
 </article>
-

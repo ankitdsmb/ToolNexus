@@ -1,5 +1,5 @@
-<article class="tool-page tool-json-csv" data-slug="">
-    <header class="tool-json-csv__header">
+<article data-tool-root class="tool-page tool-json-csv" data-slug="">
+    <header data-tool-header class="tool-json-csv__header">
         <div>
             <h1></h1>
             <p class="tool-json-csv__description">Convert JSON to RFC-compliant CSV with deterministic headers and zero server calls.</p>
@@ -41,8 +41,9 @@
 
     <p class="tool-json-csv__status" id="statusText">Ready</p>
 
-    <section class="tool-json-csv__workspace" aria-label="JSON to CSV workspace">
-        <section class="tool-json-csv__panel">
+    <section class="tool-json-csv__workspace" aria-label="JSON to CSV workspace" data-runtime-container data-tool-body>
+        <section data-tool-actions hidden></section>
+        <section class="tool-json-csv__panel" data-tool-input>
             <div class="tool-json-csv__panel-header">
                 <h2>JSON input</h2>
                 <span>Ctrl/Cmd + Enter convert · Ctrl/Cmd + L clear</span>
@@ -50,7 +51,7 @@
             <textarea id="jsonInput" class="tool-json-csv__editor" spellcheck="false" placeholder='[{"name":"Ada","user":{"email":"ada"}}]'></textarea>
         </section>
 
-        <section class="tool-json-csv__panel">
+        <section class="tool-json-csv__panel" data-tool-output>
             <div class="tool-json-csv__panel-header">
                 <h2>CSV output preview</h2>
                 <span id="outputStats">0 row(s) · 0 column(s)</span>

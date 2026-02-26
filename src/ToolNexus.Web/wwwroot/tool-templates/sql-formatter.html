@@ -1,5 +1,5 @@
-<article class="sql-formatter-page tool-page" data-slug="">
-    <header class="sql-formatter-header">
+<article data-tool-root class="sql-formatter-page tool-page" data-slug="">
+    <header data-tool-header class="sql-formatter-header">
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="sql-formatter-description">Beautify SQL safely in your browser with dialect-aware, deterministic formatting.</p>
@@ -7,7 +7,7 @@
         <span class="sql-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="sql-toolbar" role="toolbar" aria-label="SQL formatter actions">
+    <section class="sql-toolbar" role="toolbar" aria-label="SQL formatter actions" data-tool-actions>
         <div class="sql-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="clearBtn" class="tool-btn" type="button">Clear</button>
@@ -67,8 +67,8 @@
         <p id="errorLocation" class="tool-error-location" hidden></p>
     </section>
 
-    <section class="sql-workspace">
-        <section class="sql-panel">
+    <section class="sql-workspace" data-runtime-container data-tool-body>
+        <section class="sql-panel" data-tool-input>
             <div class="panel-header">
                 <h2>Raw SQL input</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
@@ -76,7 +76,7 @@
             <textarea id="sqlInput" class="sql-editor" spellcheck="false" aria-label="SQL input"></textarea>
         </section>
 
-        <section class="sql-panel">
+        <section class="sql-panel" data-tool-output>
             <div class="panel-header">
                 <h2>Formatted SQL output</h2>
                 <p id="resultStatus">Ready for formatting.</p>

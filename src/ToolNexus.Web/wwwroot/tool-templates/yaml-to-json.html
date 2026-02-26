@@ -1,5 +1,5 @@
-<article class="tool-yaml-json" data-slug="">
-    <header class="tool-yaml-json__header">
+<article data-tool-root class="tool-yaml-json" data-slug="">
+    <header data-tool-header class="tool-yaml-json__header">
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="tool-yaml-json__description">Enterprise-safe YAML parsing with deterministic JSON conversion entirely in your browser.</p>
@@ -31,8 +31,9 @@
 
     <p class="tool-yaml-json__status" id="statusText">Ready</p>
 
-    <section class="tool-yaml-json__workspace" aria-label="YAML to JSON workspace">
-        <section class="tool-yaml-json__panel">
+    <section class="tool-yaml-json__workspace" aria-label="YAML to JSON workspace" data-runtime-container data-tool-body>
+        <section data-tool-actions hidden></section>
+        <section class="tool-yaml-json__panel" data-tool-input>
             <div class="tool-yaml-json__panel-header">
                 <h2>YAML input</h2>
                 <span>Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear</span>
@@ -40,7 +41,7 @@
             <textarea id="yamlInput" class="tool-yaml-json__editor" spellcheck="false" placeholder="service: toolnexus" data-bind="tool.exampleInput"></textarea>
         </section>
 
-        <section class="tool-yaml-json__panel">
+        <section class="tool-yaml-json__panel" data-tool-output>
             <div class="tool-yaml-json__panel-header">
                 <h2>JSON output</h2>
                 <span id="metricsText">0 line(s) · 0.0 KB · 0 object(s) · 0 array(s) · 0 primitive(s)</span>

@@ -1,5 +1,5 @@
-<article class="url-decode-tool" data-slug="" aria-label="URL decode tool">
-    <header class="url-decode-tool__header">
+<article data-tool-root class="url-decode-tool" data-slug="" aria-label="URL decode tool">
+    <header data-tool-header class="url-decode-tool__header">
         <div>
             <h1></h1>
             <p class="url-decode-tool__description">Decode URL-encoded text safely with UTF-8 support, tolerant mode, and multiline handling.</p>
@@ -7,8 +7,8 @@
         <span class="url-decode-tool__badge">Client-side processing</span>
     </header>
 
-    <section class="url-decode-tool__workspace" aria-label="URL decode workspace">
-        <section class="tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeInputHeading">
+    <section class="url-decode-tool__workspace" aria-label="URL decode workspace" data-runtime-container data-tool-body>
+        <section class="tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeInputHeading" data-tool-input>
             <div class="url-decode-tool__panel-header">
                 <h2 id="urlDecodeInputHeading">Encoded URL input</h2>
                 <p id="urlDecodeInputCount" class="url-decode-tool__meta">0 chars</p>
@@ -23,14 +23,14 @@
                 <label><input id="strictModeToggle" type="checkbox" checked /> Strict mode</label>
             </div>
 
-            <div class="url-decode-tool__actions">
+            <div class="url-decode-tool__actions" data-tool-actions>
                 <button id="decodeBtn" class="tool-btn tool-btn--primary" type="button">Decode</button>
                 <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
             </div>
             <p class="url-decode-tool__shortcut"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Decode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeOutputHeading">
+        <section class="tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeOutputHeading" data-tool-output>
             <div class="url-decode-tool__panel-header">
                 <h2 id="urlDecodeOutputHeading">Decoded output</h2>
                 <p id="urlDecodeStatus" class="url-decode-tool__meta">Ready</p>

@@ -1,18 +1,18 @@
-<article class="file-merge-tool tool-page" data-slug="">
-    <header class="tool-page__heading">
+<article data-tool-root class="file-merge-tool tool-page" data-slug="">
+    <header data-tool-header class="tool-page__heading">
         <h1></h1>
         <p></p>
     </header>
 
-    <section class="file-merge-layout">
-        <aside class="panel left-panel">
+    <section class="file-merge-layout" data-runtime-container data-tool-body>
+        <aside class="panel left-panel" data-tool-input>
             <h2>Upload</h2>
             <label id="dropzone" class="dropzone" for="fileInput">Drop files or click to select</label>
             <input id="fileInput" type="file" multiple accept=".txt,.md,.log,.ini,.cfg,.conf,.cs,.js,.ts,.html,.css,.scss,.sql,.json,.csv,.xml,.yaml,.yml" hidden />
             <ul id="fileList" class="file-list" aria-label="Uploaded files"></ul>
         </aside>
 
-        <main class="panel center-panel">
+        <main class="panel center-panel" data-tool-output>
             <div class="preview-header">
                 <h2>Preview</h2>
                 <button id="mergeBtn" class="tool-btn tool-btn--primary" type="button">Merge</button>
@@ -33,7 +33,7 @@
             <h3>Export</h3>
             <label>Output name <input id="outputName" type="text" value="merged-output" /></label>
             <label>Extension <select id="outputExtension"><option>txt</option><option>json</option><option>csv</option><option>xml</option><option>yaml</option></select></label>
-            <div class="actions">
+            <div class="actions" data-tool-actions>
                 <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy</button>
                 <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
             </div>
