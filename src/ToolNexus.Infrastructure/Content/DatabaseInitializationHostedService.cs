@@ -60,11 +60,13 @@ public sealed class DatabaseInitializationHostedService(
     {
         var contextName = dbContext.GetType().Name;
         var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+        var targetMigration = pendingMigrations.FirstOrDefault() ?? "<none>";
         logger.LogInformation(
-            "Starting migration execution for context {ContextType}. Pending migrations ({PendingCount}): {MigrationList}",
+            "Starting migration execution for context {ContextType}. Pending migrations ({PendingCount}): {MigrationList}. Next migration: {MigrationName}",
             contextName,
             pendingMigrations.Length,
-            pendingMigrations.Length == 0 ? "<none>" : string.Join(", ", pendingMigrations));
+            pendingMigrations.Length == 0 ? "<none>" : string.Join(", ", pendingMigrations),
+            targetMigration);
 
         for (var attempt = 0; attempt <= MigrationRetryDelays.Length; attempt++)
         {
@@ -78,10 +80,12 @@ public sealed class DatabaseInitializationHostedService(
             {
                 var postgresException = FindPostgresException(ex);
                 logger.LogCritical(ex,
-                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Startup retry was aborted because schema mismatch errors are non-transient.",
+                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Startup retry was aborted because schema mismatch errors are non-transient.",
                     contextName,
+                    targetMigration,
                     postgresException?.SqlState ?? "<none>",
-                    postgresException?.MessageText ?? ex.Message);
+                    postgresException?.MessageText ?? ex.Message,
+                    postgresException?.Detail ?? "<none>");
 
                 throw;
             }
@@ -106,10 +110,12 @@ public sealed class DatabaseInitializationHostedService(
         {
             var postgresException = FindPostgresException(ex);
             logger.LogError(ex,
-                "Migration execution failed for context {ContextType}. SQLSTATE: {SqlState}. Message: {PostgresMessage}",
+                "Migration execution failed for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Detail: {PostgresDetail}",
                 contextName,
+                targetMigration,
                 postgresException?.SqlState ?? "<none>",
-                postgresException?.MessageText ?? ex.Message);
+                postgresException?.MessageText ?? ex.Message,
+                postgresException?.Detail ?? "<none>");
             throw;
         }
     }

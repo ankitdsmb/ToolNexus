@@ -512,7 +512,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldType: "TEXT",
                 oldMaxLength: 2000);
 
-            migrationBuilder.SafeAlterIdentityIfNeeded("ToolFaqs", "Id");
+            migrationBuilder.Sql(PostgresMigrationSafety.EnsureIdentityColumn("ToolFaqs", "Id"));
 
             migrationBuilder.AlterColumn<string>(
                 name: "ToolSlug",
@@ -2283,7 +2283,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldType: "character varying(2000)",
                 oldMaxLength: 2000);
 
-            migrationBuilder.SafeAlterIdentityIfNeeded("ToolFaqs", "Id");
+            migrationBuilder.Sql(PostgresMigrationSafety.EnsureIdentityColumn("ToolFaqs", "Id"));
 
             migrationBuilder.AlterColumn<string>(
                 name: "ToolSlug",
