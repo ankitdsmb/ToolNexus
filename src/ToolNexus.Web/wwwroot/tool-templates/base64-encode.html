@@ -1,3 +1,4 @@
+<div data-runtime-container>
 <article class="tool-page tool base64-tool" data-tool="base64-encode" data-slug="" data-tool-root>
     <header class="base64-tool__header" data-tool-header>
         <div>
@@ -7,7 +8,9 @@
         <span class="base64-badge" aria-label="Execution scope">Client-side only</span>
     </header>
 
-    <section class="base64-workspace" aria-label="Base64 workspace" data-runtime-container>
+    <section data-tool-actions hidden></section>
+
+    <section class="base64-workspace" aria-label="Base64 workspace">
         <section data-tool-body>
         <section class="tool-panel base64-panel" aria-labelledby="inputHeading" data-tool-input>
             <div class="base64-panel__header">
@@ -37,7 +40,7 @@
 
             <p id="warningBanner" class="base64-warning" hidden></p>
 
-            <div class="base64-actions" data-tool-actions>
+            <div class="base64-actions">
                 <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
                 <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
             </div>
@@ -79,3 +82,4 @@
         </section>
     }
 </article>
+</div>

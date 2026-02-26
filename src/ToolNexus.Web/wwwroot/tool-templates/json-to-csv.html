@@ -1,3 +1,4 @@
+<div data-runtime-container>
 <article data-tool-root class="tool-page tool-json-csv" data-slug="">
     <header data-tool-header class="tool-json-csv__header">
         <div>
@@ -7,7 +8,7 @@
         <span class="tool-json-csv__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-json-csv__controls" aria-label="Conversion options">
+    <section class="tool-json-csv__controls" aria-label="Conversion options" data-tool-actions>
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy CSV</button>
@@ -41,8 +42,7 @@
 
     <p class="tool-json-csv__status" id="statusText">Ready</p>
 
-    <section class="tool-json-csv__workspace" aria-label="JSON to CSV workspace" data-runtime-container data-tool-body>
-        <section data-tool-actions hidden></section>
+    <section class="tool-json-csv__workspace" aria-label="JSON to CSV workspace" data-tool-body>
         <section class="tool-json-csv__panel" data-tool-input>
             <div class="tool-json-csv__panel-header">
                 <h2>JSON input</h2>
@@ -66,3 +66,4 @@
         <p id="errorSuggestion" class="tool-json-csv__error-suggestion"></p>
     </section>
 </article>
+</div>

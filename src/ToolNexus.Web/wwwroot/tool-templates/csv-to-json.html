@@ -1,3 +1,4 @@
+<div data-runtime-container>
 <article data-tool-root class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="">
     <header data-tool-header class="csv-json-page__header">
         <div>
@@ -7,7 +8,7 @@
         <span class="csv-json-page__badge">Client-side processing only</span>
     </header>
 
-    <section class="csv-json-controls" aria-label="CSV conversion controls">
+    <section class="csv-json-controls" aria-label="CSV conversion controls" data-tool-actions>
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy JSON</button>
@@ -72,8 +73,7 @@
 
     <div id="errorBox" class="csv-json-error" role="alert" aria-live="assertive" hidden></div>
 
-    <section class="csv-json-layout" aria-label="CSV to JSON workspace" data-runtime-container data-tool-body>
-        <section data-tool-actions hidden></section>
+    <section class="csv-json-layout" aria-label="CSV to JSON workspace" data-tool-body>
         <section class="csv-json-panel" data-tool-input>
             <h2>CSV Input</h2>
             <p class="csv-json-panel__hint">Ctrl/Cmd + Enter to convert. Ctrl/Cmd + L to clear.</p>
@@ -92,4 +92,4 @@
         </section>
     </section>
 </article>
-
+</div>
