@@ -80,12 +80,13 @@ public sealed class DatabaseInitializationHostedService(
             {
                 var postgresException = FindPostgresException(ex);
                 logger.LogCritical(ex,
-                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Table: {TableName}. Column: {ColumnName}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}. Startup retry was aborted because schema mismatch errors are non-transient.",
+                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Table: {TableName}. Column: {ColumnName}. ConversionStrategy: {ConversionStrategy}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}. Startup retry was aborted because schema mismatch errors are non-transient.",
                     contextName,
                     targetMigration,
                     postgresException?.SqlState ?? "<none>",
                     postgresException?.TableName ?? "<unknown>",
                     postgresException?.ColumnName ?? "<unknown>",
+                    InferConversionStrategy(postgresException),
                     postgresException?.MessageText ?? ex.Message,
                     postgresException?.Detail ?? "<none>",
                     postgresException?.Where ?? "<none>",
@@ -114,12 +115,13 @@ public sealed class DatabaseInitializationHostedService(
         {
             var postgresException = FindPostgresException(ex);
             logger.LogError(ex,
-                "Migration execution failed for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Table: {TableName}. Column: {ColumnName}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}",
+                "Migration execution failed for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Table: {TableName}. Column: {ColumnName}. ConversionStrategy: {ConversionStrategy}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}",
                 contextName,
                 targetMigration,
                 postgresException?.SqlState ?? "<none>",
                 postgresException?.TableName ?? "<unknown>",
                 postgresException?.ColumnName ?? "<unknown>",
+                InferConversionStrategy(postgresException),
                 postgresException?.MessageText ?? ex.Message,
                 postgresException?.Detail ?? "<none>",
                 postgresException?.Where ?? "<none>",
@@ -184,6 +186,37 @@ public sealed class DatabaseInitializationHostedService(
         }
 
         return NonRetryableSchemaSqlStates.Contains(postgresException.SqlState);
+    }
+
+
+    private static string InferConversionStrategy(PostgresException? postgresException)
+    {
+        if (postgresException is null)
+        {
+            return "none";
+        }
+
+        var message = (postgresException.MessageText ?? string.Empty).ToLowerInvariant();
+        var column = (postgresException.ColumnName ?? string.Empty).ToLowerInvariant();
+
+        if (column.Contains("source_ip", StringComparison.Ordinal)
+            || message.Contains("inet", StringComparison.Ordinal))
+        {
+            return "SafeConvertToInet";
+        }
+
+        if (message.Contains("boolean", StringComparison.Ordinal))
+        {
+            return "SafeConvertToBoolean";
+        }
+
+        if (message.Contains("identity", StringComparison.Ordinal)
+            || postgresException.SqlState == "55000")
+        {
+            return "EnsureIdentityColumnSafe";
+        }
+
+        return "SafeConvertColumn";
     }
 
     private static PostgresException? FindPostgresException(Exception exception)
