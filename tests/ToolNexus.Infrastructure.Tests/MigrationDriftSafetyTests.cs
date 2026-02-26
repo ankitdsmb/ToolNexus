@@ -193,6 +193,83 @@ public sealed class MigrationDriftSafetyTests
     }
 
 
+
+    [Fact]
+    public async Task ExecutionLedgerMigration_PreexistingAdminIdentityUsersTable_DoesNotFail()
+    {
+        await using var database = await CreatePostgresDatabaseOrSkipAsync();
+        await using var context = database.CreateContext();
+
+        var migrator = context.Database.GetService<IMigrator>();
+
+        await migrator.MigrateAsync("20260222173745_InitialContentBaseline");
+
+        await context.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS admin_identity_users (
+                "Id" uuid PRIMARY KEY,
+                "Email" character varying(320) NOT NULL,
+                "NormalizedEmail" character varying(320) NOT NULL,
+                "DisplayName" character varying(120) NOT NULL,
+                "PasswordHash" character varying(1024) NOT NULL,
+                "AccessFailedCount" integer NOT NULL,
+                "LockoutEndUtc" timestamp with time zone NULL,
+                "CreatedAtUtc" timestamp with time zone NOT NULL
+            );
+            """);
+
+        await context.Database.ExecuteSqlRawAsync("""
+            INSERT INTO admin_identity_users (
+                "Id", "Email", "NormalizedEmail", "DisplayName", "PasswordHash", "AccessFailedCount", "LockoutEndUtc", "CreatedAtUtc")
+            VALUES (
+                '11111111-1111-1111-1111-111111111111',
+                'admin@toolnexus.local',
+                'ADMIN@TOOLNEXUS.LOCAL',
+                'Admin',
+                'hash',
+                0,
+                NULL,
+                NOW());
+            """);
+
+        await migrator.MigrateAsync("20260225214033_AddExecutionLedger");
+        await context.Database.MigrateAsync();
+
+        var existingCount = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM admin_identity_users;").SingleAsync();
+        Assert.Equal(1, existingCount);
+        Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
+    [Fact]
+    public async Task ExecutionLedgerMigration_PreexistingAdminIdentityUsersIndex_DoesNotFail()
+    {
+        await using var database = await CreatePostgresDatabaseOrSkipAsync();
+        await using var context = database.CreateContext();
+
+        var migrator = context.Database.GetService<IMigrator>();
+
+        await migrator.MigrateAsync("20260222173745_InitialContentBaseline");
+
+        await context.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS admin_identity_users (
+                "Id" uuid PRIMARY KEY,
+                "Email" character varying(320) NOT NULL,
+                "NormalizedEmail" character varying(320) NOT NULL,
+                "DisplayName" character varying(120) NOT NULL,
+                "PasswordHash" character varying(1024) NOT NULL,
+                "AccessFailedCount" integer NOT NULL,
+                "LockoutEndUtc" timestamp with time zone NULL,
+                "CreatedAtUtc" timestamp with time zone NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_admin_identity_users_NormalizedEmail"
+            ON admin_identity_users ("NormalizedEmail");
+            """);
+
+        await migrator.MigrateAsync("20260225214033_AddExecutionLedger");
+        await context.Database.MigrateAsync();
+
+        Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
     [Fact]
     public async Task InitialContentBaseline_CleanDatabase_MigratesSuccessfully()
     {
