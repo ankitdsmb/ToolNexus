@@ -41,6 +41,9 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<GenerationValidationReportEntity> GenerationValidationReports => Set<GenerationValidationReportEntity>();
     public DbSet<GenerationSandboxReportEntity> GenerationSandboxReports => Set<GenerationSandboxReportEntity>();
     public DbSet<GenerationDecisionEntity> GenerationDecisions => Set<GenerationDecisionEntity>();
+    public DbSet<IntelligenceNodeEntity> IntelligenceNodes => Set<IntelligenceNodeEntity>();
+    public DbSet<IntelligenceEdgeEntity> IntelligenceEdges => Set<IntelligenceEdgeEntity>();
+    public DbSet<IntelligenceSnapshotEntity> IntelligenceSnapshots => Set<IntelligenceSnapshotEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -591,6 +594,72 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_generation_decisions_correlation_id");
             entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_generation_decisions_tenant_id");
             entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_generation_decisions_created_at").IsDescending();
+        });
+
+
+        modelBuilder.Entity<IntelligenceNodeEntity>(entity =>
+        {
+            entity.ToTable("intelligence_nodes");
+            entity.HasKey(x => x.NodeId);
+            entity.Property(x => x.NodeType).HasMaxLength(64);
+            entity.Property(x => x.ExternalRef).HasMaxLength(160);
+            entity.Property(x => x.DisplayName).HasMaxLength(200);
+            entity.Property(x => x.LifecycleState).HasMaxLength(40);
+            entity.Property(x => x.LifecycleVersion).HasMaxLength(32);
+            entity.Property(x => x.ConfidenceBand).HasMaxLength(32);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.ContextTagsJson).HasColumnType("jsonb");
+            entity.Property(x => x.PropertiesJson).HasColumnType("jsonb");
+            entity.Property(x => x.ObservedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.RetiredAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => new { x.NodeType, x.ExternalRef, x.LifecycleVersion }).IsUnique().HasDatabaseName("ux_intelligence_nodes_type_external_lifecycle");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_intelligence_nodes_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_intelligence_nodes_tenant_id");
+            entity.HasIndex(x => x.ObservedAtUtc).HasDatabaseName("idx_intelligence_nodes_observed_at").IsDescending();
+        });
+
+        modelBuilder.Entity<IntelligenceEdgeEntity>(entity =>
+        {
+            entity.ToTable("intelligence_edges");
+            entity.HasKey(x => x.EdgeId);
+            entity.Property(x => x.RelationshipType).HasMaxLength(64);
+            entity.Property(x => x.LifecycleVersion).HasMaxLength(32);
+            entity.Property(x => x.ConfidenceScore).HasColumnType("numeric(5,4)");
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.ContextTagsJson).HasColumnType("jsonb");
+            entity.Property(x => x.MetadataJson).HasColumnType("jsonb");
+            entity.Property(x => x.EffectiveAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.RecordedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.SupersededAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => new { x.SourceNodeId, x.TargetNodeId, x.RelationshipType, x.LifecycleVersion }).IsUnique().HasDatabaseName("ux_intelligence_edges_source_target_type_lifecycle");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_intelligence_edges_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_intelligence_edges_tenant_id");
+            entity.HasIndex(x => x.RecordedAtUtc).HasDatabaseName("idx_intelligence_edges_recorded_at").IsDescending();
+            entity.HasIndex(x => x.EffectiveAtUtc).HasDatabaseName("idx_intelligence_edges_effective_at").IsDescending();
+            entity.HasOne<IntelligenceNodeEntity>().WithMany().HasForeignKey(x => x.SourceNodeId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<IntelligenceNodeEntity>().WithMany().HasForeignKey(x => x.TargetNodeId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<IntelligenceSnapshotEntity>(entity =>
+        {
+            entity.ToTable("intelligence_snapshots");
+            entity.HasKey(x => x.SnapshotId);
+            entity.Property(x => x.SnapshotType).HasMaxLength(40);
+            entity.Property(x => x.LifecycleVersion).HasMaxLength(32);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.SnapshotAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.NodeCountByTypeJson).HasColumnType("jsonb");
+            entity.Property(x => x.EdgeCountByTypeJson).HasColumnType("jsonb");
+            entity.Property(x => x.IntegrityStatus).HasMaxLength(40);
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_intelligence_snapshots_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_intelligence_snapshots_tenant_id");
+            entity.HasIndex(x => x.SnapshotAtUtc).HasDatabaseName("idx_intelligence_snapshots_snapshot_at").IsDescending();
         });
 
         modelBuilder.Entity<AdminIdentityUserEntity>(entity =>
