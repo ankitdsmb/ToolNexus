@@ -45,7 +45,7 @@ public sealed class PostgresBooleanConversionMigrationTests
     }
 
     [Fact]
-    public async Task AlreadyBooleanColumn_MigrationSucceeds()
+    public async Task AlreadyBooleanColumn_MigrationReconcilesNullabilityAndDefault()
     {
         await using var database = await CreatePostgresDatabaseOrSkipAsync();
         await using var context = database.CreateContext();
@@ -54,18 +54,29 @@ public sealed class PostgresBooleanConversionMigrationTests
         await migrator.MigrateAsync(BaselineMigration);
 
         await context.Database.ExecuteSqlRawAsync("ALTER TABLE \"ToolExecutionPolicies\" ALTER COLUMN \"IsExecutionEnabled\" TYPE boolean USING (\"IsExecutionEnabled\"::integer = 1);");
+        await context.Database.ExecuteSqlRawAsync("ALTER TABLE \"ToolExecutionPolicies\" ALTER COLUMN \"IsExecutionEnabled\" DROP NOT NULL;");
+        await context.Database.ExecuteSqlRawAsync("ALTER TABLE \"ToolExecutionPolicies\" ALTER COLUMN \"IsExecutionEnabled\" SET DEFAULT NULL;");
+        await context.Database.ExecuteSqlRawAsync("UPDATE \"ToolExecutionPolicies\" SET \"IsExecutionEnabled\" = NULL;");
 
         await migrator.MigrateAsync(ConversionMigration);
 
-        var dataType = await context.Database.SqlQueryRaw<string>("""
-            SELECT data_type
+        var state = await context.Database.SqlQueryRaw<BooleanColumnState>("""
+            SELECT
+                data_type AS "DataType",
+                is_nullable AS "IsNullable",
+                column_default AS "ColumnDefault"
             FROM information_schema.columns
             WHERE table_schema = current_schema()
               AND table_name = 'ToolExecutionPolicies'
               AND column_name = 'IsExecutionEnabled';
             """).SingleAsync();
 
-        Assert.Equal("boolean", dataType);
+        var hasNulls = await context.Database.SqlQueryRaw<bool>("SELECT EXISTS (SELECT 1 FROM \"ToolExecutionPolicies\" WHERE \"IsExecutionEnabled\" IS NULL);").SingleAsync();
+
+        Assert.Equal("boolean", state.DataType);
+        Assert.Equal("NO", state.IsNullable);
+        Assert.Contains("false", state.ColumnDefault ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.False(hasNulls);
     }
 
     [Fact]
@@ -83,6 +94,15 @@ public sealed class PostgresBooleanConversionMigrationTests
         await migrator.MigrateAsync(ConversionMigration);
 
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
+    private sealed class BooleanColumnState
+    {
+        public string DataType { get; set; } = string.Empty;
+
+        public string IsNullable { get; set; } = string.Empty;
+
+        public string? ColumnDefault { get; set; }
     }
 
     private static async Task<TestDatabaseInstance> CreatePostgresDatabaseOrSkipAsync()
