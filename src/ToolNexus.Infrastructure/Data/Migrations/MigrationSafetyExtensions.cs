@@ -62,6 +62,32 @@ internal static class MigrationSafetyExtensions
         migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumnToBoolean(tableName, columnName));
     }
 
+
+    public static void SafeConvertToBoolean(this MigrationBuilder migrationBuilder, string tableName, string columnName)
+    {
+        migrationBuilder.SafeConvertColumnToBoolean(tableName, columnName);
+    }
+
+    public static void SafeConvertToInet(this MigrationBuilder migrationBuilder, string tableName, string columnName)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            return;
+        }
+
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertToInet(tableName, columnName));
+    }
+
+    public static void SafeConvertColumn(this MigrationBuilder migrationBuilder, string tableName, string columnName, string strategy)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            return;
+        }
+
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumn(tableName, columnName, strategy));
+    }
+
     public static void SafeDropIndexIfExists(this MigrationBuilder migrationBuilder, string tableName, string indexName)
     {
         if (!IsPostgreSqlProvider(migrationBuilder))
