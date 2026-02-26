@@ -58,6 +58,113 @@ internal static class PostgresMigrationSafety
            END $$;
            """;
 
+    public static string SafeConvertColumnToBoolean(string tableName, string columnName)
+        => $"""
+           DO $$
+           DECLARE
+               table_exists boolean;
+               column_exists boolean;
+               column_data_type text;
+               temp_column_name text := '{EscapeSqlLiteral(columnName)}_tmp';
+               temp_column_exists boolean;
+               nullable_state text;
+               default_expression text;
+           BEGIN
+               SELECT to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL
+                 INTO table_exists;
+
+               IF NOT table_exists THEN
+                   RETURN;
+               END IF;
+
+               SELECT EXISTS (
+                          SELECT 1
+                          FROM information_schema.columns
+                          WHERE table_schema = current_schema()
+                            AND table_name = '{EscapeSqlLiteral(tableName)}'
+                            AND column_name = '{EscapeSqlLiteral(columnName)}')
+                 INTO column_exists;
+
+               SELECT EXISTS (
+                          SELECT 1
+                          FROM information_schema.columns
+                          WHERE table_schema = current_schema()
+                            AND table_name = '{EscapeSqlLiteral(tableName)}'
+                            AND column_name = temp_column_name)
+                 INTO temp_column_exists;
+
+               IF NOT column_exists THEN
+                   IF temp_column_exists THEN
+                       EXECUTE format(
+                           'ALTER TABLE %I RENAME COLUMN %I TO %I',
+                           '{EscapeSqlLiteral(tableName)}',
+                           temp_column_name,
+                           '{EscapeSqlLiteral(columnName)}');
+                   END IF;
+
+                   RETURN;
+               END IF;
+
+               SELECT data_type, is_nullable, column_default
+                 INTO column_data_type, nullable_state, default_expression
+                 FROM information_schema.columns
+                 WHERE table_schema = current_schema()
+                   AND table_name = '{EscapeSqlLiteral(tableName)}'
+                   AND column_name = '{EscapeSqlLiteral(columnName)}';
+
+               IF column_data_type = 'boolean' THEN
+                   RETURN;
+               END IF;
+
+               IF NOT temp_column_exists THEN
+                   EXECUTE format(
+                       'ALTER TABLE %I ADD COLUMN %I boolean',
+                       '{EscapeSqlLiteral(tableName)}',
+                       temp_column_name);
+               END IF;
+
+               EXECUTE format(
+                   'UPDATE %I SET %I = CASE
+                        WHEN lower(%I::text) IN (''true'',''1'',''yes'',''y'') THEN TRUE
+                        WHEN lower(%I::text) IN (''false'',''0'',''no'',''n'') THEN FALSE
+                        ELSE FALSE
+                    END',
+                   '{EscapeSqlLiteral(tableName)}',
+                   temp_column_name,
+                   '{EscapeSqlLiteral(columnName)}',
+                   '{EscapeSqlLiteral(columnName)}');
+
+               EXECUTE format(
+                   'ALTER TABLE %I DROP COLUMN %I',
+                   '{EscapeSqlLiteral(tableName)}',
+                   '{EscapeSqlLiteral(columnName)}');
+
+               EXECUTE format(
+                   'ALTER TABLE %I RENAME COLUMN %I TO %I',
+                   '{EscapeSqlLiteral(tableName)}',
+                   temp_column_name,
+                   '{EscapeSqlLiteral(columnName)}');
+
+               IF default_expression IS NOT NULL THEN
+                   EXECUTE format(
+                       'ALTER TABLE %I ALTER COLUMN %I SET DEFAULT CASE
+                            WHEN lower((%s)::text) IN (''true'',''1'',''yes'',''y'') THEN TRUE
+                            ELSE FALSE
+                        END',
+                       '{EscapeSqlLiteral(tableName)}',
+                       '{EscapeSqlLiteral(columnName)}',
+                       default_expression);
+               END IF;
+
+               IF nullable_state = 'NO' THEN
+                   EXECUTE format(
+                       'ALTER TABLE %I ALTER COLUMN %I SET NOT NULL',
+                       '{EscapeSqlLiteral(tableName)}',
+                       '{EscapeSqlLiteral(columnName)}');
+               END IF;
+           END $$;
+           """;
+
     private static string QuoteIdentifier(string identifier)
     {
         var parts = identifier.Split('.', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);

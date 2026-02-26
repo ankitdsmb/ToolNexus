@@ -565,13 +565,9 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "IsExecutionEnabled",
-                table: "ToolExecutionPolicies",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
+            migrationBuilder.SafeConvertColumnToBoolean(
+                tableName: "ToolExecutionPolicies",
+                columnName: "IsExecutionEnabled");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ExecutionMode",

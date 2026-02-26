@@ -44,6 +44,24 @@ internal static class MigrationSafetyExtensions
         migrationBuilder.Sql(PostgresMigrationSafety.AddColumnIfMissing(tableName, columnName, columnDefinitionSql));
     }
 
+
+    public static void SafeConvertColumnToBoolean(this MigrationBuilder migrationBuilder, string tableName, string columnName)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            migrationBuilder.AlterColumn<bool>(
+                name: columnName,
+                table: tableName,
+                type: "boolean",
+                nullable: false,
+                oldClrType: typeof(int),
+                oldType: "INTEGER");
+            return;
+        }
+
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumnToBoolean(tableName, columnName));
+    }
+
     public static void SafeDropIndexIfExists(this MigrationBuilder migrationBuilder, string tableName, string indexName)
     {
         if (!IsPostgreSqlProvider(migrationBuilder))
