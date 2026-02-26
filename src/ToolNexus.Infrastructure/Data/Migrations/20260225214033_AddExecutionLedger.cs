@@ -300,11 +300,15 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 BEGIN
                     IF EXISTS (
                         SELECT 1
-                        FROM information_schema.columns
-                        WHERE table_schema = 'public'
-                          AND table_name = 'ToolUseCases'
-                          AND column_name = 'Id'
-                          AND is_identity = 'NO')
+                        FROM pg_attribute attribute
+                        JOIN pg_class table_definition
+                          ON table_definition.oid = attribute.attrelid
+                        JOIN pg_namespace schema_definition
+                          ON schema_definition.oid = table_definition.relnamespace
+                        WHERE schema_definition.nspname = current_schema()
+                          AND table_definition.relname = 'ToolUseCases'
+                          AND attribute.attname = 'Id'
+                          AND attribute.attidentity = '')
                     THEN
                         ALTER TABLE "ToolUseCases"
                             ALTER COLUMN "Id" TYPE integer,
@@ -355,11 +359,15 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 BEGIN
                     IF EXISTS (
                         SELECT 1
-                        FROM information_schema.columns
-                        WHERE table_schema = 'public'
-                          AND table_name = 'ToolSteps'
-                          AND column_name = 'Id'
-                          AND is_identity = 'NO')
+                        FROM pg_attribute attribute
+                        JOIN pg_class table_definition
+                          ON table_definition.oid = attribute.attrelid
+                        JOIN pg_namespace schema_definition
+                          ON schema_definition.oid = table_definition.relnamespace
+                        WHERE schema_definition.nspname = current_schema()
+                          AND table_definition.relname = 'ToolSteps'
+                          AND attribute.attname = 'Id'
+                          AND attribute.attidentity = '')
                     THEN
                         ALTER TABLE "ToolSteps"
                             ALTER COLUMN "Id" TYPE integer,
