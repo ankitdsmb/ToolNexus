@@ -1273,13 +1273,13 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                         CREATE OR REPLACE FUNCTION toolnexus_try_inet(value text)
                         RETURNS inet
                         LANGUAGE plpgsql
-                        AS $$
+                        AS $func$
                         BEGIN
                             RETURN value::inet;
                         EXCEPTION WHEN OTHERS THEN
                             RETURN NULL;
                         END;
-                        $$;
+                        $func$;
 
                         UPDATE "audit_events"
                         SET "source_ip_tmp" = CASE
