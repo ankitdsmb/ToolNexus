@@ -1,5 +1,5 @@
-<article class="html-entities-tool" data-slug="" aria-label="HTML entities tool">
-    <header class="html-entities-tool__header">
+<article data-tool-root class="html-entities-tool" data-slug="" aria-label="HTML entities tool">
+    <header data-tool-header class="html-entities-tool__header">
         <div>
             <h1></h1>
             <p class="html-entities-tool__description">Encode or decode HTML entities safely with deterministic UTF-8 handling.</p>
@@ -7,8 +7,8 @@
         <span class="html-entities-badge">Client-side processing</span>
     </header>
 
-    <section class="html-entities-workspace" aria-label="HTML entities workspace">
-        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesInputHeading">
+    <section class="html-entities-workspace" aria-label="HTML entities workspace" data-runtime-container data-tool-body>
+        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesInputHeading" data-tool-input>
             <div class="html-entities-panel__header">
                 <h2 id="htmlEntitiesInputHeading">Input</h2>
                 <p id="inputStats" class="html-entities-meta">0 chars</p>
@@ -32,14 +32,14 @@
                 <label><input id="preserveFormattingToggle" type="checkbox" checked /> Preserve spaces/newlines</label>
             </div>
 
-            <div class="html-entities-actions">
+            <div class="html-entities-actions" data-tool-actions>
                 <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
                 <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
             </div>
             <p class="html-entities-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Convert · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesOutputHeading">
+        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesOutputHeading" data-tool-output>
             <div class="html-entities-panel__header">
                 <h2 id="htmlEntitiesOutputHeading">Output</h2>
                 <p id="statusText" class="html-entities-meta">Ready</p>

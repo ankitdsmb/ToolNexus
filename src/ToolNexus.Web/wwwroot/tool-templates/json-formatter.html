@@ -1,5 +1,5 @@
-<article class="json-formatter-page tool-page tool" data-slug="" data-tool="json-formatter">
-    <header class="json-formatter-header">
+<article class="json-formatter-page tool-page tool" data-slug="" data-tool="json-formatter" data-tool-root>
+    <header class="json-formatter-header" data-tool-header>
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
@@ -7,6 +7,7 @@
         <span class="json-processing-badge">Client-side processing</span>
     </header>
 
+    <section data-runtime-container>
     <section class="json-toolbar" role="toolbar" aria-label="JSON formatter actions" data-tool-actions>
         <div class="json-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
@@ -35,7 +36,7 @@
         <p id="errorLocation" class="tool-error-location" hidden></p>
     </section>
 
-    <section class="json-workspace">
+        <section class="json-workspace" data-tool-body>
         <section class="json-panel" data-tool-input>
             <div class="panel-header">
                 <h2>Input JSON</h2>
@@ -62,5 +63,6 @@
 
     <section id="processingIndicator" class="tool-warning" hidden>Processing large JSON payload…</section>
     <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
+</section>
 </article>
 

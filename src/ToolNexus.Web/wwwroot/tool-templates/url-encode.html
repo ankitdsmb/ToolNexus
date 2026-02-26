@@ -1,5 +1,5 @@
-<article class="tool-page url-encode-tool" data-slug="">
-    <header class="url-encode-tool__header">
+<article data-tool-root class="tool-page url-encode-tool" data-slug="">
+    <header data-tool-header class="url-encode-tool__header">
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="tool-page__description">Standards-compliant URL encoding with component, full URL, and query-value modes.</p>
@@ -7,8 +7,8 @@
         <span class="url-encode-badge">Client-side processing</span>
     </header>
 
-    <section class="url-encode-layout" aria-label="URL encode workspace">
-        <section class="tool-panel url-encode-panel" aria-labelledby="inputHeading">
+    <section class="url-encode-layout" aria-label="URL encode workspace" data-runtime-container data-tool-body>
+        <section class="tool-panel url-encode-panel" aria-labelledby="inputHeading" data-tool-input>
             <div class="url-encode-panel__header">
                 <h2 id="inputHeading">Raw input</h2>
                 <p id="inputStats" class="url-encode-meta">0 chars · 0 bytes</p>
@@ -29,14 +29,14 @@
             <label for="inputEditor" class="url-encode-label">Input text</label>
             <textarea id="inputEditor" class="tool-textarea tool-textarea--mono" rows="14" placeholder="Paste text, URL, or query string"></textarea>
 
-            <div class="url-encode-actions">
+            <div class="url-encode-actions" data-tool-actions>
                 <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
                 <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
             </div>
             <p class="url-encode-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Encode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel url-encode-panel" aria-labelledby="outputHeading">
+        <section class="tool-panel url-encode-panel" aria-labelledby="outputHeading" data-tool-output>
             <div class="url-encode-panel__header">
                 <h2 id="outputHeading">Encoded output</h2>
                 <p id="statusText" class="url-encode-meta">Ready</p>

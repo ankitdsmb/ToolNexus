@@ -1,5 +1,5 @@
-<article class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="">
-    <header class="csv-json-page__header">
+<article data-tool-root class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="">
+    <header data-tool-header class="csv-json-page__header">
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p><span data-bind="tool.seoDescription"></span></p>
@@ -72,14 +72,15 @@
 
     <div id="errorBox" class="csv-json-error" role="alert" aria-live="assertive" hidden></div>
 
-    <section class="csv-json-layout" aria-label="CSV to JSON workspace">
-        <section class="csv-json-panel">
+    <section class="csv-json-layout" aria-label="CSV to JSON workspace" data-runtime-container data-tool-body>
+        <section data-tool-actions hidden></section>
+        <section class="csv-json-panel" data-tool-input>
             <h2>CSV Input</h2>
             <p class="csv-json-panel__hint">Ctrl/Cmd + Enter to convert. Ctrl/Cmd + L to clear.</p>
             <textarea id="csvInput" class="csv-json-editor" spellcheck="false" data-bind="tool.exampleInput"></textarea>
         </section>
 
-        <section class="csv-json-panel">
+        <section class="csv-json-panel" data-tool-output>
             <div class="csv-json-panel__header">
                 <h2>JSON Output</h2>
                 <div class="csv-json-metrics">

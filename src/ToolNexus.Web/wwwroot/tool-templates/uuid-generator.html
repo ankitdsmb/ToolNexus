@@ -1,13 +1,13 @@
 <link rel="stylesheet" href="/css/tools/uuid-generator.css" />
 
-<article id="uuidGeneratorApp" class="uuid-tool" aria-label="UUID generator workspace">
-    <header class="tool-panel uuid-tool__header">
+<article data-tool-root id="uuidGeneratorApp" class="uuid-tool" aria-label="UUID generator workspace">
+    <header data-tool-header class="tool-panel uuid-tool__header">
         <h1><span data-bind="tool.title"></span></h1>
         <p>Generate RFC-compliant UUIDs using secure client-side randomness. No server calls. No telemetry.</p>
         <span class="uuid-tool__badge" aria-label="Security badge">Secure client-side generation</span>
     </header>
 
-    <section class="tool-panel uuid-tool__panel" aria-label="UUID controls">
+    <section class="tool-panel uuid-tool__panel" aria-label="UUID controls" data-runtime-container data-tool-input data-tool-body>
         <div class="uuid-tool__controls">
             <div class="uuid-tool__field">
                 <label for="uuidVersion">UUID version</label>
@@ -49,7 +49,7 @@
             <label class="uuid-tool__toggle" for="uuidAutoGenerate"><input id="uuidAutoGenerate" type="checkbox" /> Auto-generate on option changes</label>
         </div>
 
-        <div class="uuid-tool__actions" role="toolbar" aria-label="UUID actions">
+        <div class="uuid-tool__actions" role="toolbar" aria-label="UUID actions" data-tool-actions>
             <button id="uuidGenerateBtn" class="tool-btn tool-btn--primary" type="button">Generate</button>
             <button id="uuidClearBtn" class="tool-btn tool-btn--outline" type="button">Clear</button>
             <button id="uuidCopyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy first</button>
@@ -60,7 +60,7 @@
         <p class="shortcut-hint">Shortcuts: Ctrl + Enter to generate, Ctrl + L to clear.</p>
     </section>
 
-    <section class="tool-panel uuid-tool__panel" aria-label="UUID output">
+    <section class="tool-panel uuid-tool__panel" aria-label="UUID output" data-tool-output>
         <div id="uuidErrorPanel" class="tool-error" hidden>
             <strong id="uuidErrorTitle"></strong>
             <p id="uuidErrorText"></p>

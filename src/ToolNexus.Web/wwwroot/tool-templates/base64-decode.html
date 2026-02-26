@@ -1,5 +1,5 @@
-<article class="tool-page" data-slug="" data-client-safe-actions="">
-    <header class="tool-page__heading">
+<article class="tool-page" data-slug="" data-client-safe-actions="" data-tool-root>
+    <header class="tool-page__heading" data-tool-header>
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="tool-page__description"><span data-bind="tool.seoDescription"></span></p>
@@ -11,8 +11,8 @@
         </div>
     </header>
 
-    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace">
-        <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
+    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace" data-runtime-container data-tool-body>
+        <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading" data-tool-input>
             <div class="panel-header">
                 <h2 id="toolInputHeading">Input</h2>
                 <div class="panel-header__actions">
@@ -29,7 +29,7 @@
                 </div>
             </div>
 
-            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
+            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions" data-tool-actions>
                 <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
                     <span class="spinner" aria-hidden="true"></span>
                     <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Decode">Decode</span>
@@ -99,7 +99,7 @@
             </div>
         </section>
 
-        <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading">
+        <section class="tool-layout__panel tool-panel tool-panel--output" aria-labelledby="toolOutputHeading" data-tool-output>
             <div class="panel-header">
                 <h2 id="toolOutputHeading">Output</h2>
                 <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">
