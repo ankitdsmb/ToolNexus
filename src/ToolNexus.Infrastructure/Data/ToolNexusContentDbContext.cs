@@ -31,6 +31,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<ToolQualityScoreEntity> ToolQualityScores => Set<ToolQualityScoreEntity>();
     public DbSet<CapabilityRegistryEntity> CapabilityRegistry => Set<CapabilityRegistryEntity>();
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
+    public DbSet<AdminOperationLedgerEntity> AdminOperationLedger => Set<AdminOperationLedgerEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -257,6 +258,22 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => new { x.Destination, x.DeadLetteredAtUtc }).HasDatabaseName("idx_audit_dead_letter_destination").IsDescending(false, true);
         });
 
+
+        modelBuilder.Entity<AdminOperationLedgerEntity>(entity =>
+        {
+            entity.ToTable("admin_operation_ledger");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OperationDomain).HasColumnName("operation_domain").HasMaxLength(64);
+            entity.Property(x => x.OperationName).HasColumnName("operation_name").HasMaxLength(64);
+            entity.Property(x => x.RequestedBy).HasColumnName("requested_by").HasMaxLength(120);
+            entity.Property(x => x.ResultStatus).HasColumnName("result_status").HasMaxLength(32);
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(120);
+            entity.Property(x => x.PayloadJson).HasColumnName("payload_json").HasColumnType("jsonb");
+            entity.Property(x => x.ExecutedAtUtc).HasColumnName("executed_at_utc").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_admin_operation_ledger_correlation_id");
+            entity.HasIndex(x => x.ExecutedAtUtc).HasDatabaseName("idx_admin_operation_ledger_executed_at").IsDescending();
+        });
         modelBuilder.Entity<ExecutionRunEntity>(entity =>
         {
             entity.ToTable("execution_runs");
