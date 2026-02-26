@@ -58,18 +58,30 @@ public sealed class DatabaseInitializationHostedService(
 
     private async Task MigrateWithRetryAsync(DbContext dbContext, CancellationToken cancellationToken)
     {
+        var contextName = dbContext.GetType().Name;
+        var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+        logger.LogInformation(
+            "Starting migration execution for context {ContextType}. Pending migrations ({PendingCount}): {MigrationList}",
+            contextName,
+            pendingMigrations.Length,
+            pendingMigrations.Length == 0 ? "<none>" : string.Join(", ", pendingMigrations));
+
         for (var attempt = 0; attempt <= MigrationRetryDelays.Length; attempt++)
         {
             try
             {
                 await dbContext.Database.MigrateAsync(cancellationToken);
+                logger.LogInformation("Migration execution completed for context {ContextType}.", contextName);
                 return;
             }
             catch (Exception ex) when (IsStructuralMigrationException(ex))
             {
+                var postgresException = FindPostgresException(ex);
                 logger.LogCritical(ex,
-                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Startup retry was aborted because schema mismatch errors are non-transient.",
-                    dbContext.GetType().Name);
+                    "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. SQLSTATE: {SqlState}. Message: {PostgresMessage}. Startup retry was aborted because schema mismatch errors are non-transient.",
+                    contextName,
+                    postgresException?.SqlState ?? "<none>",
+                    postgresException?.MessageText ?? ex.Message);
 
                 throw;
             }
@@ -85,7 +97,21 @@ public sealed class DatabaseInitializationHostedService(
             }
         }
 
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        try
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+            logger.LogInformation("Migration execution completed for context {ContextType} after retries.", contextName);
+        }
+        catch (Exception ex)
+        {
+            var postgresException = FindPostgresException(ex);
+            logger.LogError(ex,
+                "Migration execution failed for context {ContextType}. SQLSTATE: {SqlState}. Message: {PostgresMessage}",
+                contextName,
+                postgresException?.SqlState ?? "<none>",
+                postgresException?.MessageText ?? ex.Message);
+            throw;
+        }
     }
 
     private static readonly HashSet<string> TransientPostgresSqlStates =

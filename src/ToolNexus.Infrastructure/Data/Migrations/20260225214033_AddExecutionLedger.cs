@@ -512,14 +512,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldType: "TEXT",
                 oldMaxLength: 2000);
 
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "ToolFaqs",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER")
-                .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+            migrationBuilder.SafeAlterIdentityIfNeeded("ToolFaqs", "Id");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ToolSlug",
@@ -2290,14 +2283,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldType: "character varying(2000)",
                 oldMaxLength: 2000);
 
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "ToolFaqs",
-                type: "INTEGER",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer")
-                .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+            migrationBuilder.SafeAlterIdentityIfNeeded("ToolFaqs", "Id");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ToolSlug",
