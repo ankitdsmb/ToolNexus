@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -294,7 +295,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
 
-            migrationBuilder.Sql(@"""
+            migrationBuilder.Sql("""
                 DO $$
                 BEGIN
                     IF EXISTS (
@@ -2065,7 +2066,7 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldClrType: typeof(int),
                 oldType: "integer");
 
-            migrationBuilder.Sql(@"""
+            migrationBuilder.Sql("""
                 DO $$
                 BEGIN
                     IF EXISTS (
