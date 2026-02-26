@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Architecture Evolution Center";
+}
+
+<h2>Architecture Evolution Center</h2>
+<p class="text-muted">Drift Alerts, Evolution Suggestions, Migration Impact Simulation, Platform Growth Forecast, and Architectural Debt Tracker.</p>
+<div class="mb-3 d-flex gap-2">
+    <button id="run-drift" class="btn btn-outline-primary btn-sm" type="button">Run Drift Detection</button>
+    <button id="run-recommendations" class="btn btn-primary btn-sm" type="button">Generate Recommendations</button>
+</div>
+<div class="row g-3">
+    <div class="col-lg-6"><h4>Drift Alerts</h4><table class="table table-sm" id="drift-table"><thead><tr><th>Domain</th><th>Type</th><th>Score</th><th>Risk</th><th>Detected</th></tr></thead><tbody></tbody></table></div>
+    <div class="col-lg-6"><h4>Evolution Suggestions</h4><table class="table table-sm" id="recommendation-table"><thead><tr><th>Domain</th><th>Impact</th><th>Risk</th><th>Confidence</th><th>Action</th></tr></thead><tbody></tbody></table></div>
+    <div class="col-lg-6"><h4>Migration Impact Simulation</h4><table class="table table-sm" id="simulation-table"><thead><tr><th>Recommendation</th><th>Execution</th><th>Governance</th><th>Data</th><th>Migration</th></tr></thead><tbody></tbody></table></div>
+    <div class="col-lg-6"><h4>Platform Growth Forecast</h4><ul class="list-group" id="growth-list"></ul></div>
+    <div class="col-12"><h4>Architectural Debt Tracker</h4><ul class="list-group" id="debt-list"></ul></div>
+</div>
+
+@section Scripts {
+<script>
+(async function(){
+  const driftBody=document.querySelector('#drift-table tbody');
+  const recBody=document.querySelector('#recommendation-table tbody');
+  const simBody=document.querySelector('#simulation-table tbody');
+  const growth=document.querySelector('#growth-list');
+  const debt=document.querySelector('#debt-list');
+
+  async function review(id,action){
+    await fetch(`/api/admin/architecture/evolution/recommendations/${id}/review`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,architectId:'admin-ui',notes:'reviewed in architecture evolution center',correlationId:crypto.randomUUID(),tenantId:'default'})});
+    await load();
+  }
+
+  async function load(){
+    const res=await fetch('/api/admin/architecture/evolution/dashboard?limit=20');
+    if(!res.ok){return;}
+    const data=await res.json();
+    driftBody.innerHTML='';
+    (data.driftAlerts||[]).forEach(x=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${x.affectedDomain}</td><td>${x.driftType}</td><td>${x.driftScore}</td><td>${x.riskLevel}</td><td>${x.detectedAtUtc}</td>`; driftBody.appendChild(tr);});
+    recBody.innerHTML='';
+    (data.evolutionSuggestions||[]).forEach(x=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${x.affectedDomain}</td><td>${x.architectureImpactLevel}</td><td>${x.riskLevel}</td><td>${x.confidenceScore}</td><td><button class='btn btn-success btn-xs' data-a='approve-roadmap' data-id='${x.recommendationId}'>Approve</button> <button class='btn btn-outline-danger btn-xs' data-a='reject-recommendation' data-id='${x.recommendationId}'>Reject</button> <button class='btn btn-outline-secondary btn-xs' data-a='future-review' data-id='${x.recommendationId}'>Future</button></td>`; recBody.appendChild(tr);});
+    recBody.querySelectorAll('button[data-a]').forEach(b=>b.addEventListener('click',()=>review(b.dataset.id,b.dataset.a)));
+    simBody.innerHTML='';
+    (data.simulationReports||[]).forEach(x=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${x.recommendationId}</td><td>${x.executionFlowImpact}</td><td>${x.governanceFlowImpact}</td><td>${x.dataModelImpact}</td><td>${x.migrationComplexity}</td>`; simBody.appendChild(tr);});
+    growth.innerHTML='';
+    (data.growthForecast||[]).forEach(x=>{const li=document.createElement('li'); li.className='list-group-item'; li.textContent=`${x.affectedDomain}: benefit ${x.expectedPlatformBenefit} / migration cost ${x.estimatedMigrationCost}`; growth.appendChild(li);});
+    debt.innerHTML='';
+    (data.architecturalDebtTracker||[]).forEach(x=>{const li=document.createElement('li'); li.className='list-group-item'; li.textContent=`${x.affectedDomain}: drift ${x.driftScore} (${x.summary})`; debt.appendChild(li);});
+  }
+
+  document.getElementById('run-drift').addEventListener('click', async ()=>{await fetch('/api/admin/architecture/evolution/drift/detect',{method:'POST'}); await load();});
+  document.getElementById('run-recommendations').addEventListener('click', async ()=>{await fetch('/api/admin/architecture/evolution/recommendations/generate',{method:'POST'}); await load();});
+  await load();
+})();
+</script>
+}
