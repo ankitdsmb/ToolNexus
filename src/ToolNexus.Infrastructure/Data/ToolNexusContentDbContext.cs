@@ -32,6 +32,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<CapabilityRegistryEntity> CapabilityRegistry => Set<CapabilityRegistryEntity>();
     public DbSet<AdminIdentityUserEntity> AdminIdentityUsers => Set<AdminIdentityUserEntity>();
     public DbSet<AdminOperationLedgerEntity> AdminOperationLedger => Set<AdminOperationLedgerEntity>();
+    public DbSet<OperatorCommandEntity> OperatorCommands => Set<OperatorCommandEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -409,6 +410,24 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.AdmissionReason).HasColumnName("admission_reason").HasMaxLength(120);
             entity.Property(x => x.DecisionSource).HasColumnName("decision_source").HasMaxLength(120);
             entity.HasOne(x => x.ExecutionRun).WithOne(x => x.AuthorityDecision).HasForeignKey<ExecutionAuthorityDecisionEntity>(x => x.ExecutionRunId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OperatorCommandEntity>(entity =>
+        {
+            entity.ToTable("operator_commands");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Command).HasColumnName("command").HasMaxLength(100);
+            entity.Property(x => x.ExecutedBy).HasColumnName("executed_by").HasMaxLength(200);
+            entity.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(2000);
+            entity.Property(x => x.TimestampUtc).HasColumnName("timestamp_utc").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Result).HasColumnName("result").HasMaxLength(60);
+            entity.Property(x => x.RollbackInfo).HasColumnName("rollback_info").HasMaxLength(2000);
+            entity.Property(x => x.ImpactScope).HasColumnName("impact_scope").HasMaxLength(160);
+            entity.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(120);
+            entity.Property(x => x.AuthorityContext).HasColumnName("authority_context").HasMaxLength(80);
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_operator_commands_correlation_id");
+            entity.HasIndex(x => x.TimestampUtc).HasDatabaseName("idx_operator_commands_timestamp_utc").IsDescending();
         });
 
         modelBuilder.Entity<RuntimeIncidentEntity>(entity =>

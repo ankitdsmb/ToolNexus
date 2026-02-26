@@ -175,6 +175,66 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
     }
 
 
+
+    public async Task<IReadOnlyList<ExecutionStreamSnapshot>> GetExecutionStreamAsync(int take, CancellationToken cancellationToken)
+    {
+        return await dbContext.ExecutionRuns
+            .AsNoTracking()
+            .OrderByDescending(x => x.ExecutedAtUtc)
+            .Take(take)
+            .Select(x => new ExecutionStreamSnapshot(
+                x.Id,
+                x.ToolId,
+                x.Authority,
+                x.AdapterName,
+                $"{x.RuntimeLanguage}:{x.AdapterName}",
+                x.AuthorityDecision.AdmissionAllowed ? "admitted" : "blocked",
+                x.AuthorityDecision.AdmissionAllowed ? (x.Success ? "success" : "failed") : "blocked",
+                x.DurationMs,
+                x.ExecutedAtUtc))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<GovernanceVisibilitySnapshot> GetGovernanceVisibilityAsync(CancellationToken cancellationToken)
+    {
+        var approved = await dbContext.GovernanceDecisions.CountAsync(x => x.Status == "Approved", cancellationToken);
+        var blocked = await dbContext.ExecutionAuthorityDecisions.CountAsync(x => !x.AdmissionAllowed, cancellationToken);
+        var review = await dbContext.GovernanceDecisions.CountAsync(x => x.Status == "Review", cancellationToken);
+
+        var riskTier = await dbContext.ExecutionRuns
+            .AsNoTracking()
+            .GroupBy(x => x.ExecutionMode)
+            .Select(x => new { Tier = x.Key, Count = x.Count() })
+            .ToDictionaryAsync(x => x.Tier, x => x.Count, cancellationToken);
+
+        return new GovernanceVisibilitySnapshot(approved, blocked, review, riskTier);
+    }
+
+    public async Task<CapabilityLifecycleSnapshot> GetCapabilityLifecycleAsync(CancellationToken cancellationToken)
+    {
+        var statuses = await dbContext.CapabilityRegistry
+            .AsNoTracking()
+            .GroupBy(x => x.ActivationState)
+            .Select(x => new { ActivationState = x.Key, Count = x.Count() })
+            .ToListAsync(cancellationToken);
+
+        int Count(int state) => statuses.FirstOrDefault(x => x.ActivationState == state)?.Count ?? 0;
+        return new CapabilityLifecycleSnapshot(Count(0), Count(1), Count(2), Count(3), Count(4));
+    }
+
+    public async Task<QualityIntelligenceSnapshot> GetQualityIntelligenceAsync(CancellationToken cancellationToken)
+    {
+        var latestWindow = DateTime.UtcNow.AddDays(-7);
+        var qualityScores = dbContext.ToolQualityScores.AsNoTracking().Where(x => x.TimestampUtc >= latestWindow);
+        var avg = await qualityScores.Select(x => (decimal?)x.Score).AverageAsync(cancellationToken) ?? 0m;
+
+        var conformanceFailures = await dbContext.ExecutionConformanceResults.CountAsync(x => !x.IsValid, cancellationToken);
+        var runtimeInstability = await dbContext.RuntimeIncidents.CountAsync(x => x.Severity == "critical" || x.Severity == "warning", cancellationToken);
+        var anomalies = await dbContext.ToolAnomalySnapshots.CountAsync(cancellationToken);
+
+        return new QualityIntelligenceSnapshot(Math.Round(avg, 2), conformanceFailures, runtimeInstability, anomalies);
+    }
+
     private async Task<bool> EnsureRuntimeIncidentSchemaAvailableAsync(CancellationToken cancellationToken)
     {
         return await CanQueryRuntimeIncidentSchemaAsync(cancellationToken);
