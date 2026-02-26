@@ -43,6 +43,11 @@
     <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Quality Intelligence</h5><div id="quality-summary">-</div></div></div></div>
 </div>
 
+<div class="card mb-2" id="platform-optimization"><div class="card-body py-2">
+    <h4 class="card-title">PLATFORM OPTIMIZATION</h4>
+    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Domain</th><th>Recommendation</th><th>Confidence</th><th>Simulation</th><th>Actions</th></tr></thead><tbody id="optimization-body"></tbody></table></div>
+</div></div>
+
 <div class="card" id="incidents-panel"><div class="card-body py-2">
     <h4 class="card-title">Incident + Diagnostics</h4>
     <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Last Occurrence (UTC)</th><th>Severity/Type</th><th>Tool</th><th>Error Message</th><th class="text-end">Count</th></tr></thead><tbody id="incidents-body"></tbody></table></div>
@@ -65,6 +70,33 @@
   async function loadQuality(){const r=await fetch('/admin/execution/quality'); if(!r.ok)return; const q=await r.json(); document.getElementById('quality-summary').textContent=`Score ${q.averageQualityScore} · Conformance failures ${q.conformanceFailures} · Instability ${q.runtimeInstabilitySignals} · Anomalies ${q.anomalyAlerts}`;}
   async function loadIncidents(){const r=await fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`); if(!r.ok)return; const data=await r.json(); document.getElementById('incidents-body').innerHTML='';
     (data.items||[]).forEach(i=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${i.occurredAtUtc}</td><td><span class="badge ${sevClass(i.severity)}">${i.severity}/${i.eventType}</span></td><td>${i.destination}</td><td>${i.summary}</td><td class="text-end">${i.attemptCount}</td>`; document.getElementById('incidents-body').appendChild(tr);});
+  }
+
+  async function decideOptimization(id, action){
+    const operatorId=prompt('Enter operator id for optimization audit:'); if(!operatorId) return;
+    const authorityContext='human-governed';
+    const scheduledForUtc=action==='schedule-rollout'?new Date(Date.now()+3600000).toISOString():null;
+    await fetch(`/admin/execution/optimization/${id}/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operatorId,authorityContext,notes:'decision from optimization center',scheduledForUtc})});
+    await loadOptimization();
+  }
+
+  function appendOptimizationRows(items, domain){
+    const body=document.getElementById('optimization-body');
+    items.forEach(x=>{
+      const tr=document.createElement('tr');
+      const sim=x.latestSimulation?`${x.latestSimulation.summary} (risk Δ ${x.latestSimulation.projectedRiskDelta})`:'missing simulation';
+      tr.innerHTML=`<td>${domain}</td><td>${x.recommendation.suggestedChange}</td><td>${x.recommendation.confidenceScore}</td><td>${sim}</td><td><button class="btn btn-sm btn-outline-success me-1" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="approve">Approve</button><button class="btn btn-sm btn-outline-danger me-1" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="reject">Reject</button><button class="btn btn-sm btn-outline-primary" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="schedule-rollout">Schedule</button></td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  async function loadOptimization(){const r=await fetch('/admin/execution/optimization?take=10'); if(!r.ok)return; const data=await r.json(); const body=document.getElementById('optimization-body'); body.innerHTML='';
+    appendOptimizationRows(data.runtimeRecommendations||[], 'runtime');
+    appendOptimizationRows(data.governanceOptimization||[], 'governance');
+    appendOptimizationRows(data.uxOptimization||[], 'ux');
+    appendOptimizationRows(data.qualityOptimization||[], 'quality');
+    appendOptimizationRows(data.aiGenerationImprovements||[], 'ai-capability');
+    document.querySelectorAll('[data-opt-action]').forEach(b=>b.addEventListener('click',()=>decideOptimization(b.dataset.optId,b.dataset.optAction)));
   }
 
 
@@ -90,7 +122,7 @@
     await refresh();
   }
 
-  async function refresh(){await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents(),loadAutonomy()]);}
+  async function refresh(){await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents(),loadAutonomy(),loadOptimization()]);}
   document.querySelectorAll('[data-command]').forEach(b=>b.addEventListener('click',()=>runCommand(b.dataset.command)));
   document.getElementById('refresh-monitoring').addEventListener('click',refresh);
   setInterval(()=>{loadHealth();loadStream();},5000);

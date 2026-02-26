@@ -34,3 +34,42 @@ Decision endpoints emit audit-friendly telemetry logs:
 - `autonomy.insight.rejected`
 
 with `operator`, `authority context`, and `correlation id`.
+
+## Self Optimization Engine (Recommendation-first)
+
+The optimization engine is implemented as a governance-bound recommendation workflow:
+
+`Analyze -> Recommend -> Simulate -> Governance Review -> Controlled Application -> Outcome Measurement`.
+
+### PostgreSQL ledgers (append-only)
+
+- `optimization_recommendations`: immutable recommendation records for runtime, governance, UX, quality, and AI capability domains.
+- `optimization_simulations`: mandatory simulation reports per recommendation using historical snapshots, synthetic workloads, and governance replay references.
+- `optimization_applications`: operator approvals/rejections/scheduled rollouts with authority context and notes.
+- `optimization_outcomes`: measured impacts and realized risk/benefit after controlled application.
+
+### Admin panel
+
+`ADMIN -> PLATFORM OPTIMIZATION` is exposed in the Operator Command Center API/UI with domain-grouped recommendations and actions:
+
+- approve
+- reject
+- schedule rollout
+
+### Safety model
+
+- recommendations never mutate production runtime directly
+- simulation is required before decision endpoints can transition a recommendation
+- governance remains human authoritative
+- optimization engine has no execution authority
+
+### Telemetry
+
+Optimization workflow emits:
+
+- `optimization.generated`
+- `optimization.simulated`
+- `optimization.approved`
+- `optimization.rejected`
+- `optimization.applied`
+- `optimization.impact_measured`

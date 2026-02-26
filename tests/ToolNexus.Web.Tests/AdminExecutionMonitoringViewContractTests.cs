@@ -19,6 +19,8 @@ public sealed class AdminExecutionMonitoringViewContractTests
         Assert.Contains("fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`)", source, StringComparison.Ordinal);
         Assert.Contains("fetch('/admin/execution/autonomous-insights?take=15')", source, StringComparison.Ordinal);
         Assert.Contains("AUTONOMOUS INSIGHTS", source, StringComparison.Ordinal);
+        Assert.Contains("fetch('/admin/execution/optimization?take=10')", source, StringComparison.Ordinal);
+        Assert.Contains("PLATFORM OPTIMIZATION", source, StringComparison.Ordinal);
         Assert.Contains("data-command=\"cache-reset\"", source, StringComparison.Ordinal);
         Assert.Contains("data-command=\"queue-drain\"", source, StringComparison.Ordinal);
         Assert.Contains("data-command=\"queue-replay\"", source, StringComparison.Ordinal);
