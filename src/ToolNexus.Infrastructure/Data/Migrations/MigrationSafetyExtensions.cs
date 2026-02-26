@@ -109,6 +109,18 @@ internal static class MigrationSafetyExtensions
         migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumn(tableName, columnName, strategy));
     }
 
+
+    public static void ExecuteIfColumnExists(this MigrationBuilder migrationBuilder, string tableName, string columnName, string sql)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            migrationBuilder.Sql(sql);
+            return;
+        }
+
+        migrationBuilder.Sql(PostgresMigrationSafety.ExecuteIfColumnExists(tableName, columnName, sql));
+    }
+
     public static void SafeDropIndexIfExists(this MigrationBuilder migrationBuilder, string tableName, string indexName)
     {
         if (!IsPostgreSqlProvider(migrationBuilder))

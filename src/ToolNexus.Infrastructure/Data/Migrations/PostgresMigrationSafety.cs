@@ -125,6 +125,24 @@ internal static class PostgresMigrationSafety
 
     public static string SafeDropTableIfExists(string tableName)
         => $"DROP TABLE IF EXISTS {QuoteIdentifier(tableName)};";
+
+    public static string ExecuteIfColumnExists(string tableName, string columnName, string sql)
+        => $"""
+           DO $$
+           BEGIN
+               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL
+                  AND EXISTS (
+                       SELECT 1
+                       FROM information_schema.columns
+                       WHERE table_schema = current_schema()
+                         AND table_name = '{EscapeSqlLiteral(tableName)}'
+                         AND column_name = '{EscapeSqlLiteral(columnName)}')
+               THEN
+                   {sql}
+               END IF;
+           END $$;
+           """;
+
     private static string BuildBooleanConversionSql(string tableName, string columnName)
         => BuildMultiStepConversion(
             tableName,

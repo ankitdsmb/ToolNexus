@@ -97,6 +97,25 @@ public sealed class MigrationSafetyExtensionsTests
     }
 
 
+
+    [Fact]
+    public void ExecuteIfColumnExists_UsesColumnExistenceGuardForPostgres()
+    {
+        var migrationBuilder = new MigrationBuilder("Npgsql.EntityFrameworkCore.PostgreSQL");
+
+        InvokeExtension(
+            "ExecuteIfColumnExists",
+            migrationBuilder,
+            "execution_runs",
+            "id",
+            "SELECT 1;");
+
+        var operation = Assert.Single(migrationBuilder.Operations.OfType<SqlOperation>());
+        Assert.Contains("table_name = 'execution_runs'", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("column_name = 'id'", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("SELECT 1;", operation.Sql, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void SafeConvertColumnToBoolean_UsesGuardedMultiStepConversionForPostgres()
     {

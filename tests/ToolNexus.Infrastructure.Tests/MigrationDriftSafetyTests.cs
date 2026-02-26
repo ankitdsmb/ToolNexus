@@ -270,6 +270,82 @@ public sealed class MigrationDriftSafetyTests
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
     }
 
+
+    [Fact]
+    public async Task GovernanceDecisionMigration_WithExecutionRunsId_BackfillsSuccessfully()
+    {
+        await using var database = await CreatePostgresDatabaseOrSkipAsync();
+        await using var context = database.CreateContext();
+
+        var migrator = context.Database.GetService<IMigrator>();
+        await migrator.MigrateAsync("20260225214033_AddExecutionLedger");
+
+        var runId = Guid.NewGuid();
+        var snapshotId = Guid.NewGuid();
+
+        await context.Database.ExecuteSqlAsync($"""
+            INSERT INTO execution_runs (
+                id, tool_id, executed_at_utc, success, duration_ms, error_type, payload_size,
+                execution_mode, runtime_language, adapter_name, adapter_resolution_status,
+                capability, authority, shadow_execution, correlation_id, tenant_id, trace_id)
+            VALUES (
+                '{runId}', 'tool-a', NOW(), TRUE, 12, NULL, 128,
+                'sync', 'dotnet', 'default', 'resolved',
+                'standard', 'Unified', FALSE, 'corr', 'tenant', 'trace');
+
+            INSERT INTO execution_snapshots (
+                id, execution_run_id, snapshot_id, authority, runtime_language,
+                execution_capability, correlation_id, tenant_id, timestamp_utc, conformance_version, policy_snapshot_json)
+            VALUES (
+                '{snapshotId}', '{runId}', 'snap-1', 'Unified', 'dotnet',
+                'standard', 'corr', 'tenant', NOW(), 'v1', jsonb_build_object());
+            """);
+
+        await migrator.MigrateAsync("20260225215625_20260313000000_AddGovernanceDecisionDomain");
+
+        var count = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM governance_decisions;").SingleAsync();
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public async Task GovernanceDecisionMigration_WithoutExecutionRunsIdColumn_DoesNotFailStartupMigration()
+    {
+        await using var database = await CreatePostgresDatabaseOrSkipAsync();
+        await using var context = database.CreateContext();
+
+        var migrator = context.Database.GetService<IMigrator>();
+        await migrator.MigrateAsync("20260225214033_AddExecutionLedger");
+
+        var runId = Guid.NewGuid();
+        var snapshotId = Guid.NewGuid();
+
+        await context.Database.ExecuteSqlAsync($"""
+            INSERT INTO execution_runs (
+                id, tool_id, executed_at_utc, success, duration_ms, error_type, payload_size,
+                execution_mode, runtime_language, adapter_name, adapter_resolution_status,
+                capability, authority, shadow_execution, correlation_id, tenant_id, trace_id)
+            VALUES (
+                '{runId}', 'tool-b', NOW(), TRUE, 12, NULL, 128,
+                'sync', 'dotnet', 'default', 'resolved',
+                'standard', 'Unified', FALSE, 'corr', 'tenant', 'trace');
+
+            INSERT INTO execution_snapshots (
+                id, execution_run_id, snapshot_id, authority, runtime_language,
+                execution_capability, correlation_id, tenant_id, timestamp_utc, conformance_version, policy_snapshot_json)
+            VALUES (
+                '{snapshotId}', '{runId}', 'snap-2', 'Unified', 'dotnet',
+                'standard', 'corr', 'tenant', NOW(), 'v1', jsonb_build_object());
+            """);
+
+        await context.Database.ExecuteSqlRawAsync("""
+            ALTER TABLE execution_snapshots DROP CONSTRAINT IF EXISTS "FK_execution_snapshots_execution_runs_execution_run_id";
+            ALTER TABLE execution_runs RENAME COLUMN id TO execution_run_id;
+            """);
+
+        await context.Database.MigrateAsync();
+        Assert.Empty(await context.Database.GetPendingMigrationsAsync());
+    }
+
     [Fact]
     public async Task InitialContentBaseline_CleanDatabase_MigratesSuccessfully()
     {
