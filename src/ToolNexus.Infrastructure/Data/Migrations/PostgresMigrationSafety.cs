@@ -93,6 +93,38 @@ internal static class PostgresMigrationSafety
             _ => throw new ArgumentOutOfRangeException(nameof(strategy), strategy, "Unsupported migration conversion strategy")
         };
 
+    public static string EnsureTableExists(string tableName, string createSql)
+        => $"""
+           DO $$
+           BEGIN
+               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NULL THEN
+                   {createSql}
+               END IF;
+           END $$;
+           """;
+
+
+    public static string SafeAddForeignKeyIfMissing(string tableName, string constraintName, string foreignKeySql)
+        => $"""
+           DO $$
+           BEGIN
+               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM pg_constraint constraint_entry
+                      INNER JOIN pg_class relation_entry ON relation_entry.oid = constraint_entry.conrelid
+                      INNER JOIN pg_namespace namespace_entry ON namespace_entry.oid = relation_entry.relnamespace
+                      WHERE constraint_entry.conname = '{EscapeSqlLiteral(constraintName)}'
+                        AND relation_entry.relname = '{EscapeSqlLiteral(tableName)}'
+                        AND namespace_entry.nspname = current_schema())
+               THEN
+                   EXECUTE 'ALTER TABLE {QuoteIdentifier(tableName)} ADD CONSTRAINT {QuoteIdentifier(constraintName)} {foreignKeySql}';
+               END IF;
+           END $$;
+           """;
+
+    public static string SafeDropTableIfExists(string tableName)
+        => $"DROP TABLE IF EXISTS {QuoteIdentifier(tableName)};";
     private static string BuildBooleanConversionSql(string tableName, string columnName)
         => BuildMultiStepConversion(
             tableName,

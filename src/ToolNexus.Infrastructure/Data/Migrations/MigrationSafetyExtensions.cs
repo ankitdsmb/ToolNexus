@@ -34,6 +34,27 @@ internal static class MigrationSafetyExtensions
         migrationBuilder.Sql(PostgresMigrationSafety.SafeDropConstraintIfExists(tableName, constraintName));
     }
 
+    public static void SafeAddForeignKeyIfMissing(this MigrationBuilder migrationBuilder, string tableName, string constraintName, string foreignKeySql)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            return;
+        }
+
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeAddForeignKeyIfMissing(tableName, constraintName, foreignKeySql));
+    }
+
+    public static void SafeDropTableIfExists(this MigrationBuilder migrationBuilder, string tableName)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            migrationBuilder.DropTable(name: tableName);
+            return;
+        }
+
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeDropTableIfExists(tableName));
+    }
+
     public static void SafeAddColumnIfMissing(this MigrationBuilder migrationBuilder, string tableName, string columnName, string columnDefinitionSql)
     {
         if (!IsPostgreSqlProvider(migrationBuilder))

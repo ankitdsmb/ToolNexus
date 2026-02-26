@@ -1545,23 +1545,20 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
 
-            migrationBuilder.CreateTable(
-                name: "admin_identity_users",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
-                    NormalizedEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
-                    DisplayName = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
-                    PasswordHash = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false),
-                    LockoutEndUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_admin_identity_users", x => x.Id);
-                });
+            migrationBuilder.Sql(PostgresMigrationSafety.EnsureTableExists(
+                tableName: "admin_identity_users",
+                createSql: @"
+                CREATE TABLE admin_identity_users (
+                    ""Id"" uuid NOT NULL,
+                    ""Email"" character varying(320) NOT NULL,
+                    ""NormalizedEmail"" character varying(320) NOT NULL,
+                    ""DisplayName"" character varying(120) NOT NULL,
+                    ""PasswordHash"" character varying(1024) NOT NULL,
+                    ""AccessFailedCount"" integer NOT NULL,
+                    ""LockoutEndUtc"" timestamp with time zone NULL,
+                    ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                    CONSTRAINT ""PK_admin_identity_users"" PRIMARY KEY (""Id"")
+                );"));
 
             migrationBuilder.CreateTable(
                 name: "execution_runs",
@@ -1662,11 +1659,9 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_admin_identity_users_NormalizedEmail",
-                table: "admin_identity_users",
-                column: "NormalizedEmail",
-                unique: true);
+            migrationBuilder.Sql(@"
+                CREATE UNIQUE INDEX IF NOT EXISTS ""IX_admin_identity_users_NormalizedEmail""
+                ON admin_identity_users (""NormalizedEmail"");");
 
             migrationBuilder.CreateIndex(
                 name: "IX_execution_authority_decisions_execution_run_id",
@@ -1716,29 +1711,20 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 column: "execution_run_id",
                 unique: true);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_audit_dead_letter_audit_events_audit_event_id",
-                table: "audit_dead_letter",
-                column: "audit_event_id",
-                principalTable: "audit_events",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.SafeAddForeignKeyIfMissing(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_events_audit_event_id",
+                foreignKeySql: "FOREIGN KEY (audit_event_id) REFERENCES audit_events(id) ON DELETE CASCADE");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_audit_dead_letter_audit_outbox_outbox_id",
-                table: "audit_dead_letter",
-                column: "outbox_id",
-                principalTable: "audit_outbox",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.SafeAddForeignKeyIfMissing(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_outbox_outbox_id",
+                foreignKeySql: "FOREIGN KEY (outbox_id) REFERENCES audit_outbox(id) ON DELETE CASCADE");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_audit_outbox_audit_events_audit_event_id",
-                table: "audit_outbox",
-                column: "audit_event_id",
-                principalTable: "audit_events",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.SafeAddForeignKeyIfMissing(
+                tableName: "audit_outbox",
+                constraintName: "FK_audit_outbox_audit_events_audit_event_id",
+                foreignKeySql: "FOREIGN KEY (audit_event_id) REFERENCES audit_events(id) ON DELETE CASCADE");
         }
 
         /// <inheritdoc />
@@ -1756,20 +1742,11 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 tableName: "audit_outbox",
                 constraintName: "FK_audit_outbox_audit_events_audit_event_id");
 
-            migrationBuilder.DropTable(
-                name: "admin_identity_users");
-
-            migrationBuilder.DropTable(
-                name: "execution_authority_decisions");
-
-            migrationBuilder.DropTable(
-                name: "execution_conformance_results");
-
-            migrationBuilder.DropTable(
-                name: "execution_snapshots");
-
-            migrationBuilder.DropTable(
-                name: "execution_runs");
+            migrationBuilder.SafeDropTableIfExists("admin_identity_users");
+            migrationBuilder.SafeDropTableIfExists("execution_authority_decisions");
+            migrationBuilder.SafeDropTableIfExists("execution_conformance_results");
+            migrationBuilder.SafeDropTableIfExists("execution_snapshots");
+            migrationBuilder.SafeDropTableIfExists("execution_runs");
 
             migrationBuilder.SafeRenameColumnIfExists(
                 name: "destination",
@@ -3303,29 +3280,20 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_audit_dead_letter_audit_events_AuditEventId",
-                table: "audit_dead_letter",
-                column: "AuditEventId",
-                principalTable: "audit_events",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.SafeAddForeignKeyIfMissing(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_events_AuditEventId",
+                foreignKeySql: "FOREIGN KEY (\"AuditEventId\") REFERENCES audit_events(\"Id\") ON DELETE CASCADE");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_audit_dead_letter_audit_outbox_OutboxId",
-                table: "audit_dead_letter",
-                column: "OutboxId",
-                principalTable: "audit_outbox",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.SafeAddForeignKeyIfMissing(
+                tableName: "audit_dead_letter",
+                constraintName: "FK_audit_dead_letter_audit_outbox_OutboxId",
+                foreignKeySql: "FOREIGN KEY (\"OutboxId\") REFERENCES audit_outbox(\"Id\") ON DELETE CASCADE");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_audit_outbox_audit_events_AuditEventId",
-                table: "audit_outbox",
-                column: "AuditEventId",
-                principalTable: "audit_events",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.SafeAddForeignKeyIfMissing(
+                tableName: "audit_outbox",
+                constraintName: "FK_audit_outbox_audit_events_AuditEventId",
+                foreignKeySql: "FOREIGN KEY (\"AuditEventId\") REFERENCES audit_events(\"Id\") ON DELETE CASCADE");
         }
     }
 }
