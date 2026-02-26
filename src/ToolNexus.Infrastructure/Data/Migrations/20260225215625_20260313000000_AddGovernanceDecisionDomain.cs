@@ -36,45 +36,96 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     table.PrimaryKey("PK_governance_decisions", x => x.decision_id);
                 });
 
+            migrationBuilder.ExecuteIfColumnExists(
+                tableName: "execution_runs",
+                columnName: "id",
+                sql: """
+                     INSERT INTO governance_decisions (
+                         decision_id,
+                         tool_id,
+                         capability_id,
+                         authority,
+                         approved_by,
+                         decision_reason,
+                         policy_version,
+                         timestamp_utc,
+                         status)
+                     SELECT
+                         es.id,
+                         er.tool_id,
+                         COALESCE(es.execution_capability, 'standard'),
+                         COALESCE(es.authority, er.authority, 'Unknown'),
+                         'server',
+                         'LegacyMigrationBackfill',
+                         COALESCE(es.conformance_version, 'legacy'),
+                         COALESCE(es.timestamp_utc, er.executed_at_utc),
+                         'Approved'
+                     FROM execution_snapshots es
+                     INNER JOIN execution_runs er ON er.id = es.execution_run_id
+                     WHERE NOT EXISTS (
+                         SELECT 1 FROM governance_decisions gd WHERE gd.decision_id = es.id);
+                     """);
+
+            migrationBuilder.ExecuteIfColumnExists(
+                tableName: "execution_runs",
+                columnName: "execution_run_id",
+                sql: """
+                     INSERT INTO governance_decisions (
+                         decision_id,
+                         tool_id,
+                         capability_id,
+                         authority,
+                         approved_by,
+                         decision_reason,
+                         policy_version,
+                         timestamp_utc,
+                         status)
+                     SELECT
+                         es.id,
+                         er.tool_id,
+                         COALESCE(es.execution_capability, 'standard'),
+                         COALESCE(es.authority, er.authority, 'Unknown'),
+                         'server',
+                         'LegacyMigrationBackfill',
+                         COALESCE(es.conformance_version, 'legacy'),
+                         COALESCE(es.timestamp_utc, er.executed_at_utc),
+                         'Approved'
+                     FROM execution_snapshots es
+                     INNER JOIN execution_runs er ON er.execution_run_id = es.execution_run_id
+                     WHERE NOT EXISTS (
+                         SELECT 1 FROM governance_decisions gd WHERE gd.decision_id = es.id);
+                     """);
+
             migrationBuilder.Sql("""
-                INSERT INTO governance_decisions (
-                    decision_id,
-                    tool_id,
-                    capability_id,
-                    authority,
-                    approved_by,
-                    decision_reason,
-                    policy_version,
-                    timestamp_utc,
-                    status)
-                SELECT
-                    es.id,
-                    er.tool_id,
-                    COALESCE(es.execution_capability, 'standard'),
-                    COALESCE(es.authority, er.authority, 'Unknown'),
-                    'server',
-                    'LegacyMigrationBackfill',
-                    COALESCE(es.conformance_version, 'legacy'),
-                    COALESCE(es.timestamp_utc, er.executed_at_utc),
-                    'Approved'
-                FROM execution_snapshots es
-                INNER JOIN execution_runs er ON er.id = es.execution_run_id;
+                UPDATE execution_snapshots es
+                SET governance_decision_id = es.id
+                WHERE es.governance_decision_id IS NULL
+                  AND EXISTS (
+                      SELECT 1
+                      FROM governance_decisions gd
+                      WHERE gd.decision_id = es.id);
                 """);
 
             migrationBuilder.Sql("""
-                UPDATE execution_snapshots
-                SET governance_decision_id = id
-                WHERE governance_decision_id IS NULL;
+                DO $$
+                BEGIN
+                    IF to_regclass('execution_snapshots') IS NOT NULL
+                       AND EXISTS (
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = current_schema()
+                              AND table_name = 'execution_snapshots'
+                              AND column_name = 'governance_decision_id')
+                       AND NOT EXISTS (
+                            SELECT 1
+                            FROM execution_snapshots
+                            WHERE governance_decision_id IS NULL)
+                    THEN
+                        ALTER TABLE execution_snapshots
+                        ALTER COLUMN governance_decision_id SET NOT NULL;
+                    END IF;
+                END $$;
                 """);
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "governance_decision_id",
-                table: "execution_snapshots",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
 
             migrationBuilder.CreateIndex(
                 name: "idx_execution_snapshots_governance_decision_id",
@@ -96,13 +147,27 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 table: "governance_decisions",
                 column: "tool_id");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_execution_snapshots_governance_decisions_governance_decision_id",
-                table: "execution_snapshots",
-                column: "governance_decision_id",
-                principalTable: "governance_decisions",
-                principalColumn: "decision_id",
-                onDelete: ReferentialAction.Restrict);
+            migrationBuilder.Sql("""
+                DO $$
+                BEGIN
+                    IF to_regclass('execution_snapshots') IS NOT NULL
+                       AND to_regclass('governance_decisions') IS NOT NULL
+                       AND NOT EXISTS (
+                            SELECT 1
+                            FROM execution_snapshots es
+                            LEFT JOIN governance_decisions gd
+                              ON gd.decision_id = es.governance_decision_id
+                            WHERE es.governance_decision_id IS NOT NULL
+                              AND gd.decision_id IS NULL)
+                    THEN
+                        ALTER TABLE execution_snapshots
+                        ADD CONSTRAINT "FK_execution_snapshots_governance_decisions_governance_decision_id"
+                        FOREIGN KEY (governance_decision_id)
+                        REFERENCES governance_decisions (decision_id)
+                        ON DELETE RESTRICT;
+                    END IF;
+                END $$;
+                """);
         }
 
         /// <inheritdoc />

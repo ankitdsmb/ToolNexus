@@ -79,6 +79,7 @@ public sealed class DatabaseInitializationHostedService(
             catch (Exception ex) when (IsStructuralMigrationException(ex))
             {
                 var postgresException = FindPostgresException(ex);
+                LogLegacyAliasColumnDrift(targetMigration, postgresException);
                 logger.LogCritical(ex,
                     "STRUCTURAL MIGRATION FAILURE detected for context {ContextType}. Migration: {MigrationName}. SQLSTATE: {SqlState}. Table: {TableName}. Column: {ColumnName}. ConversionStrategy: {ConversionStrategy}. Message: {PostgresMessage}. Detail: {PostgresDetail}. Where: {PostgresWhere}. Routine: {PostgresRoutine}. Startup retry was aborted because schema mismatch errors are non-transient.",
                     contextName,
@@ -128,6 +129,28 @@ public sealed class DatabaseInitializationHostedService(
                 postgresException?.Routine ?? "<none>");
             throw;
         }
+    }
+
+
+    private void LogLegacyAliasColumnDrift(string migrationName, PostgresException? postgresException)
+    {
+        if (postgresException?.SqlState != PostgresErrorCodes.UndefinedColumn)
+        {
+            return;
+        }
+
+        var message = postgresException.MessageText ?? string.Empty;
+        if (!message.Contains("er.id", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        logger.LogError(
+            "Migration schema drift detected. Migration: {MigrationName}. TableAlias: {TableAlias}. MissingColumn: {MissingColumn}. ReferencedTable: {ReferencedTable}.",
+            migrationName,
+            "er",
+            "id",
+            "execution_runs");
     }
 
     private static readonly HashSet<string> TransientPostgresSqlStates =
