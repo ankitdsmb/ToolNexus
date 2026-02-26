@@ -20,10 +20,11 @@ public sealed class AdminApiLoggingMiddleware(RequestDelegate next, ILoggerFacto
         sw.Stop();
 
         _logger.LogInformation(
-            "Admin API request completed {Method} {Path} -> {StatusCode} in {ElapsedMs}ms",
+            "Admin API request completed {Method} {Path} -> {StatusCode} in {ElapsedMs}ms. CorrelationId: {CorrelationId}",
             context.Request.Method,
             context.Request.Path,
             context.Response.StatusCode,
-            sw.ElapsedMilliseconds);
+            sw.ElapsedMilliseconds,
+            context.TraceIdentifier);
     }
 }

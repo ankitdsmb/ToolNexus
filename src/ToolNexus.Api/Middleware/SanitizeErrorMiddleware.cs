@@ -5,7 +5,7 @@ namespace ToolNexus.Api.Middleware;
 /// <summary>
 /// Converts unhandled exceptions into a stable error contract that never leaks internal details.
 /// </summary>
-public sealed class SanitizeErrorMiddleware(RequestDelegate next, ILogger<SanitizeErrorMiddleware> logger)
+public sealed class SanitizeErrorMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -15,38 +15,18 @@ public sealed class SanitizeErrorMiddleware(RequestDelegate next, ILogger<Saniti
         }
         catch (InputSanitizationException ex)
         {
-            logger.LogWarning(
-                "Input sanitization failed for request {Method} {Path}. CorrelationId: {CorrelationId}",
-                context.Request.Method,
-                context.Request.Path,
-                context.TraceIdentifier);
-
             await WriteErrorAsync(
                 context,
                 StatusCodes.Status400BadRequest,
                 "invalid_input",
                 ex.Message);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (context.Response.HasStarted)
             {
-                logger.LogWarning(
-                    ex,
-                    "Unhandled exception occurred after response started for request {Method} {Path}. CorrelationId: {CorrelationId}",
-                    context.Request.Method,
-                    context.Request.Path,
-                    context.TraceIdentifier);
-
                 return;
             }
-
-            logger.LogError(
-                ex,
-                "Unhandled exception while processing request {Method} {Path}. CorrelationId: {CorrelationId}",
-                context.Request.Method,
-                context.Request.Path,
-                context.TraceIdentifier);
 
             await WriteErrorAsync(
                 context,

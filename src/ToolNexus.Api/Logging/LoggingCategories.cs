@@ -6,5 +6,7 @@ public static class LoggingCategories
     public const string RuntimeIncidentLogger = nameof(RuntimeIncidentLogger);
     public const string ToolExecutionLogger = nameof(ToolExecutionLogger);
     public const string AdminApiLogger = nameof(AdminApiLogger);
+    public const string SecurityLogger = nameof(SecurityLogger);
+    public const string ExceptionLogger = nameof(ExceptionLogger);
     public const string StartupLifecycleLogger = nameof(StartupLifecycleLogger);
 }

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Api.Middleware;
 using Xunit;
 
@@ -12,8 +11,7 @@ public sealed class SanitizeErrorMiddlewareTests
     public async Task InvokeAsync_DoesNotLeakInternalExceptionMessage()
     {
         var middleware = new SanitizeErrorMiddleware(
-            _ => throw new InvalidOperationException("database password leaked"),
-            NullLogger<SanitizeErrorMiddleware>.Instance);
+            _ => throw new InvalidOperationException("database password leaked"));
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
@@ -37,8 +35,7 @@ public sealed class SanitizeErrorMiddlewareTests
             {
                 await context.Response.WriteAsync("partial");
                 throw new InvalidOperationException("stream aborted");
-            },
-            NullLogger<SanitizeErrorMiddleware>.Instance);
+            });
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();

@@ -111,7 +111,9 @@ app.UseMiddleware<CorrelationEnrichmentMiddleware>();
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 app.UseMiddleware<AdminApiLoggingMiddleware>();
 app.UseMiddleware<ToolExecutionLoggingMiddleware>();
+app.UseMiddleware<SecurityLoggingMiddleware>();
 app.UseMiddleware<SanitizeErrorMiddleware>();
+app.UseMiddleware<ExceptionLoggingMiddleware>();
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/api/tools", out var remaining))
