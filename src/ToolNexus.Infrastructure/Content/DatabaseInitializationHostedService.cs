@@ -58,6 +58,8 @@ public sealed class DatabaseInitializationHostedService(
 
     private async Task MigrateWithRetryAsync(DbContext dbContext, CancellationToken cancellationToken)
     {
+        await AlignMigrationHistoryForExistingSchemaAsync(dbContext, cancellationToken);
+
         var contextName = dbContext.GetType().Name;
         var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
         var targetMigration = pendingMigrations.FirstOrDefault() ?? "<none>";
@@ -131,6 +133,62 @@ public sealed class DatabaseInitializationHostedService(
         }
     }
 
+    private async Task AlignMigrationHistoryForExistingSchemaAsync(DbContext dbContext, CancellationToken cancellationToken)
+    {
+        if (dbContext is not ToolNexusContentDbContext)
+        {
+            return;
+        }
+
+        if (!string.Equals(dbContext.Database.ProviderName, "Npgsql.EntityFrameworkCore.PostgreSQL", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var schemaLooksBootstrapped = await dbContext.Database.SqlQueryRaw<bool>("""
+            SELECT (
+                to_regclass('execution_runs') IS NOT NULL
+                AND to_regclass('execution_snapshots') IS NOT NULL
+            );
+            """).SingleAsync(cancellationToken);
+
+        if (!schemaLooksBootstrapped)
+        {
+            return;
+        }
+
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                "MigrationId" character varying(150) NOT NULL,
+                "ProductVersion" character varying(32) NOT NULL,
+                CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+            );
+            """, cancellationToken);
+
+        var historyCount = await dbContext.Database.SqlQueryRaw<int>("""
+            SELECT COUNT(*) FROM "__EFMigrationsHistory";
+            """).SingleAsync(cancellationToken);
+        if (historyCount > 0)
+        {
+            return;
+        }
+
+        const string ProductVersion = "8.0.0";
+        var allMigrations = dbContext.Database.GetMigrations().ToArray();
+        foreach (var migrationId in allMigrations)
+        {
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                VALUES ({migrationId}, {ProductVersion})
+                ON CONFLICT ("MigrationId") DO NOTHING;
+                """, cancellationToken);
+        }
+
+        logger.LogInformation(
+            "Aligned migration history for existing schema by marking all content migrations as applied. MigrationCount: {MigrationCount}",
+            allMigrations.Length);
+    }
+
 
     private void LogLegacyAliasColumnDrift(string migrationName, PostgresException? postgresException)
     {
@@ -140,17 +198,22 @@ public sealed class DatabaseInitializationHostedService(
         }
 
         var message = postgresException.MessageText ?? string.Empty;
-        if (!message.Contains("er.id", StringComparison.OrdinalIgnoreCase))
+        var hasExecutionRunAliasDrift = message.Contains("er.id", StringComparison.OrdinalIgnoreCase);
+        var hasExecutionSnapshotAliasDrift = message.Contains("es.id", StringComparison.OrdinalIgnoreCase);
+
+        if (!hasExecutionRunAliasDrift && !hasExecutionSnapshotAliasDrift)
         {
             return;
         }
 
         logger.LogError(
-            "Migration schema drift detected. Migration: {MigrationName}. TableAlias: {TableAlias}. MissingColumn: {MissingColumn}. ReferencedTable: {ReferencedTable}.",
+            "Migration schema drift detected. Migration: {MigrationName}. MissingAliasColumns: {MissingAliasColumns}.",
             migrationName,
-            "er",
-            "id",
-            "execution_runs");
+            string.Join(", ", new[]
+            {
+                hasExecutionRunAliasDrift ? "er.id (execution_runs)" : null,
+                hasExecutionSnapshotAliasDrift ? "es.id (execution_snapshots)" : null
+            }.Where(static alias => alias is not null)!));
     }
 
     private static readonly HashSet<string> TransientPostgresSqlStates =

@@ -36,74 +36,78 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     table.PrimaryKey("PK_governance_decisions", x => x.decision_id);
                 });
 
-            migrationBuilder.ExecuteIfColumnExists(
-                tableName: "execution_runs",
-                columnName: "id",
-                sql: """
-                     INSERT INTO governance_decisions (
-                         decision_id,
-                         tool_id,
-                         capability_id,
-                         authority,
-                         approved_by,
-                         decision_reason,
-                         policy_version,
-                         timestamp_utc,
-                         status)
-                     SELECT
-                         es.id,
-                         er.tool_id,
-                         COALESCE(es.execution_capability, 'standard'),
-                         COALESCE(es.authority, er.authority, 'Unknown'),
-                         'server',
-                         'LegacyMigrationBackfill',
-                         COALESCE(es.conformance_version, 'legacy'),
-                         COALESCE(es.timestamp_utc, er.executed_at_utc),
-                         'Approved'
-                     FROM execution_snapshots es
-                     INNER JOIN execution_runs er ON er.id = es.execution_run_id
-                     WHERE NOT EXISTS (
-                         SELECT 1 FROM governance_decisions gd WHERE gd.decision_id = es.id);
-                     """);
-
-            migrationBuilder.ExecuteIfColumnExists(
-                tableName: "execution_runs",
-                columnName: "execution_run_id",
-                sql: """
-                     INSERT INTO governance_decisions (
-                         decision_id,
-                         tool_id,
-                         capability_id,
-                         authority,
-                         approved_by,
-                         decision_reason,
-                         policy_version,
-                         timestamp_utc,
-                         status)
-                     SELECT
-                         es.id,
-                         er.tool_id,
-                         COALESCE(es.execution_capability, 'standard'),
-                         COALESCE(es.authority, er.authority, 'Unknown'),
-                         'server',
-                         'LegacyMigrationBackfill',
-                         COALESCE(es.conformance_version, 'legacy'),
-                         COALESCE(es.timestamp_utc, er.executed_at_utc),
-                         'Approved'
-                     FROM execution_snapshots es
-                     INNER JOIN execution_runs er ON er.execution_run_id = es.execution_run_id
-                     WHERE NOT EXISTS (
-                         SELECT 1 FROM governance_decisions gd WHERE gd.decision_id = es.id);
-                     """);
-
             migrationBuilder.Sql("""
-                UPDATE execution_snapshots es
-                SET governance_decision_id = es.id
-                WHERE es.governance_decision_id IS NULL
-                  AND EXISTS (
-                      SELECT 1
-                      FROM governance_decisions gd
-                      WHERE gd.decision_id = es.id);
+                DO $$
+                DECLARE
+                    snapshot_id_column text;
+                    run_id_column text;
+                BEGIN
+                    IF to_regclass('execution_snapshots') IS NULL
+                       OR to_regclass('execution_runs') IS NULL
+                       OR to_regclass('governance_decisions') IS NULL
+                    THEN
+                        RETURN;
+                    END IF;
+
+                    SELECT CASE
+                        WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'execution_snapshots' AND column_name = 'id') THEN 'id'
+                        WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'execution_snapshots' AND column_name = 'execution_snapshot_id') THEN 'execution_snapshot_id'
+                        ELSE NULL
+                    END INTO snapshot_id_column;
+
+                    IF snapshot_id_column IS NULL OR NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'execution_snapshots' AND column_name = 'execution_run_id')
+                    THEN
+                        RETURN;
+                    END IF;
+
+                    SELECT CASE
+                        WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'execution_runs' AND column_name = 'id') THEN 'id'
+                        WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'execution_runs' AND column_name = 'execution_run_id') THEN 'execution_run_id'
+                        ELSE NULL
+                    END INTO run_id_column;
+
+                    IF run_id_column IS NULL THEN
+                        RETURN;
+                    END IF;
+
+                    EXECUTE format($sql$
+                        INSERT INTO governance_decisions (
+                            decision_id,
+                            tool_id,
+                            capability_id,
+                            authority,
+                            approved_by,
+                            decision_reason,
+                            policy_version,
+                            timestamp_utc,
+                            status)
+                        SELECT
+                            es.%1$I,
+                            er.tool_id,
+                            COALESCE(es.execution_capability, 'standard'),
+                            COALESCE(es.authority, er.authority, 'Unknown'),
+                            'server',
+                            'LegacyMigrationBackfill',
+                            COALESCE(es.conformance_version, 'legacy'),
+                            COALESCE(es.timestamp_utc, er.executed_at_utc),
+                            'Approved'
+                        FROM execution_snapshots es
+                        INNER JOIN execution_runs er ON er.%2$I = es.execution_run_id
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM governance_decisions gd WHERE gd.decision_id = es.%1$I);
+                        $sql$, snapshot_id_column, run_id_column);
+
+                    EXECUTE format($sql$
+                        UPDATE execution_snapshots es
+                        SET governance_decision_id = es.%1$I
+                        WHERE es.governance_decision_id IS NULL
+                          AND EXISTS (
+                              SELECT 1
+                              FROM governance_decisions gd
+                              WHERE gd.decision_id = es.%1$I);
+                        $sql$, snapshot_id_column);
+                END $$;
                 """);
 
             migrationBuilder.Sql("""

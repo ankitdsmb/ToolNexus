@@ -22,6 +22,23 @@ public sealed class PostgresMigrationIntegrityTests
         }
     }
 
+
+    [Fact]
+    public void ContentMigrations_DoNotUseLegacyAliasIdJoinsWithoutGuards()
+    {
+        var migrationDirectory = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "ToolNexus.Infrastructure", "Data", "Migrations");
+        var migrationFiles = Directory.GetFiles(migrationDirectory, "*.cs", SearchOption.TopDirectoryOnly)
+            .Where(file => !file.EndsWith(".Designer.cs", StringComparison.Ordinal))
+            .ToArray();
+
+        foreach (var file in migrationFiles)
+        {
+            var content = File.ReadAllText(file);
+            Assert.DoesNotContain("INNER JOIN execution_runs er ON er.id = es.execution_run_id", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("SELECT\n                         es.id,", content, StringComparison.Ordinal);
+        }
+    }
+
     [Fact]
     public async Task EmptyDatabase_MigrateTwice_CompletesWithoutPendingMigrations()
     {
