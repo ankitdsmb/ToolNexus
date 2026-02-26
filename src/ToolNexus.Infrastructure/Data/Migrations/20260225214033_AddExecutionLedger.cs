@@ -1248,9 +1248,53 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 oldType: "TEXT",
                 oldNullable: true);
 
-            migrationBuilder.SafeConvertToInet(
-                tableName: "audit_events",
-                columnName: "source_ip");
+            migrationBuilder.Sql(
+                """
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_schema = current_schema()
+                          AND table_name = 'audit_events'
+                          AND column_name = 'source_ip'
+                          AND data_type <> 'inet'
+                    ) THEN
+                        IF NOT EXISTS (
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = current_schema()
+                              AND table_name = 'audit_events'
+                              AND column_name = 'source_ip_tmp'
+                        ) THEN
+                            ALTER TABLE "audit_events" ADD COLUMN "source_ip_tmp" inet;
+                        END IF;
+
+                        CREATE OR REPLACE FUNCTION toolnexus_try_inet(value text)
+                        RETURNS inet
+                        LANGUAGE plpgsql
+                        AS $$
+                        BEGIN
+                            RETURN value::inet;
+                        EXCEPTION WHEN OTHERS THEN
+                            RETURN NULL;
+                        END;
+                        $$;
+
+                        UPDATE "audit_events"
+                        SET "source_ip_tmp" = CASE
+                            WHEN "source_ip" IS NULL THEN NULL
+                            WHEN "source_ip"::text ~ '^([0-9]{1,3}\.){3}[0-9]{1,3}$' THEN toolnexus_try_inet("source_ip"::text)
+                            WHEN "source_ip"::text ~ '^[0-9a-fA-F:]+$' THEN toolnexus_try_inet("source_ip"::text)
+                            ELSE NULL
+                        END;
+
+                        ALTER TABLE "audit_events" DROP COLUMN "source_ip";
+                        ALTER TABLE "audit_events" RENAME COLUMN "source_ip_tmp" TO "source_ip";
+                        DROP FUNCTION IF EXISTS toolnexus_try_inet(text);
+                    END IF;
+                END $$;
+                """);
 
             migrationBuilder.AlterColumn<int>(
                 name: "schema_version",

@@ -62,6 +62,42 @@ public sealed class PostgresInetConversionMigrationTests
         Assert.Equal(1, nullCount);
     }
 
+    [Fact]
+    public async Task SourceIp_ConversionMigration_IsSafeWhenReapplied()
+    {
+        await using var database = await CreatePostgresDatabaseOrSkipAsync();
+        await using var context = database.CreateContext();
+        var migrator = context.Database.GetService<IMigrator>();
+
+        await migrator.MigrateAsync(BaselineMigration);
+
+        await context.Database.ExecuteSqlRawAsync("""
+            INSERT INTO "audit_events" ("id", "occurred_at_utc", "actor_type", "action", "result_status", "payload_redacted", "payload_hash_sha256", "schema_version", "source_ip")
+            VALUES ('00000000-0000-0000-0000-000000000003', NOW(), 'system', 'seed', 'ok', '{}', 'hash', 1, 'invalid-ip-value');
+            """);
+
+        await migrator.MigrateAsync(ConversionMigration);
+
+        await context.Database.ExecuteSqlRawAsync(
+            "DELETE FROM \"__EFMigrationsHistory\" WHERE \"MigrationId\" = {0};",
+            ConversionMigration);
+
+        await migrator.MigrateAsync(ConversionMigration);
+
+        var dataType = await context.Database.SqlQueryRaw<string>("""
+            SELECT data_type
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = 'audit_events'
+              AND column_name = 'source_ip';
+            """).SingleAsync();
+
+        var nullCount = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM \"audit_events\" WHERE \"source_ip\" IS NULL;").SingleAsync();
+
+        Assert.Equal("inet", dataType);
+        Assert.Equal(1, nullCount);
+    }
+
     private static async Task<TestDatabaseInstance> CreatePostgresDatabaseOrSkipAsync()
     {
         try
@@ -74,7 +110,7 @@ public sealed class PostgresInetConversionMigrationTests
         }
         catch
         {
-            throw new SkipException();
+            throw SkipException.ForSkip("PostgreSQL test database unavailable.");
         }
     }
 }
