@@ -12,7 +12,7 @@ internal static class MigrationSafetyExtensions
             return;
         }
 
-        migrationBuilder.Sql(PostgresMigrationSafety.SafeIdentityNoOpIfExists(tableName, columnName));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeNoOpIfIdentityExists(tableName, columnName));
     }
 
     public static void SafeEnsureIdentityByDefaultIfMissing(this MigrationBuilder migrationBuilder, string tableName, string columnName = "Id")
@@ -31,7 +31,7 @@ internal static class MigrationSafetyExtensions
             return;
         }
 
-        migrationBuilder.Sql(PostgresMigrationSafety.DropConstraintIfExists(tableName, constraintName));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeDropConstraintIfExists(tableName, constraintName));
     }
 
     public static void SafeAddColumnIfMissing(this MigrationBuilder migrationBuilder, string tableName, string columnName, string columnDefinitionSql)
@@ -41,7 +41,7 @@ internal static class MigrationSafetyExtensions
             return;
         }
 
-        migrationBuilder.Sql(PostgresMigrationSafety.AddColumnIfMissing(tableName, columnName, columnDefinitionSql));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeAddColumnIfMissing(tableName, columnName, columnDefinitionSql));
     }
 
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ToolNexus.Infrastructure.Data;
+using ToolNexus.Infrastructure.Data.Migrations;
 
 #nullable disable
 
@@ -19,31 +20,15 @@ public partial class FixIdentityBooleanColumnsForPostgres : Migration
             return;
         }
 
-        migrationBuilder.Sql(
-            """
-            ALTER TABLE "AspNetUsers"
-                ALTER COLUMN "EmailConfirmed" TYPE boolean USING ("EmailConfirmed" <> 0),
-                ALTER COLUMN "PhoneNumberConfirmed" TYPE boolean USING ("PhoneNumberConfirmed" <> 0),
-                ALTER COLUMN "TwoFactorEnabled" TYPE boolean USING ("TwoFactorEnabled" <> 0),
-                ALTER COLUMN "LockoutEnabled" TYPE boolean USING ("LockoutEnabled" <> 0);
-            """);
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumnToBoolean("AspNetUsers", "EmailConfirmed"));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumnToBoolean("AspNetUsers", "PhoneNumberConfirmed"));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumnToBoolean("AspNetUsers", "TwoFactorEnabled"));
+        migrationBuilder.Sql(PostgresMigrationSafety.SafeConvertColumnToBoolean("AspNetUsers", "LockoutEnabled"));
     }
 
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        if (!ActiveProvider.Contains("Npgsql", System.StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        migrationBuilder.Sql(
-            """
-            ALTER TABLE "AspNetUsers"
-                ALTER COLUMN "EmailConfirmed" TYPE integer USING CASE WHEN "EmailConfirmed" THEN 1 ELSE 0 END,
-                ALTER COLUMN "PhoneNumberConfirmed" TYPE integer USING CASE WHEN "PhoneNumberConfirmed" THEN 1 ELSE 0 END,
-                ALTER COLUMN "TwoFactorEnabled" TYPE integer USING CASE WHEN "TwoFactorEnabled" THEN 1 ELSE 0 END,
-                ALTER COLUMN "LockoutEnabled" TYPE integer USING CASE WHEN "LockoutEnabled" THEN 1 ELSE 0 END;
-            """);
+        // Drift-safe no-op.
     }
 }

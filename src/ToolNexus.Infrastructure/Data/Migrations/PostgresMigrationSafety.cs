@@ -5,9 +5,15 @@ namespace ToolNexus.Infrastructure.Data.Migrations;
 internal static class PostgresMigrationSafety
 {
     public static string EnsureIdentityColumn(string tableName, string columnName = "Id")
-        => SafeIdentityNoOpIfExists(tableName, columnName);
+        => EnsureIdentityColumnSafe(tableName, columnName);
+
+    public static string EnsureIdentityColumnSafe(string tableName, string columnName = "Id")
+        => SafeNoOpIfIdentityExists(tableName, columnName);
 
     public static string SafeIdentityNoOpIfExists(string tableName, string columnName = "Id")
+        => SafeNoOpIfIdentityExists(tableName, columnName);
+
+    public static string SafeNoOpIfIdentityExists(string tableName, string columnName = "Id")
         => $"""
            DO $$
            BEGIN
@@ -29,6 +35,9 @@ internal static class PostgresMigrationSafety
            """;
 
     public static string DropConstraintIfExists(string tableName, string constraintName)
+        => SafeDropConstraintIfExists(tableName, constraintName);
+
+    public static string SafeDropConstraintIfExists(string tableName, string constraintName)
         => $"""
            DO $$
            BEGIN
@@ -39,6 +48,9 @@ internal static class PostgresMigrationSafety
            """;
 
     public static string AddColumnIfMissing(string tableName, string columnName, string columnDefinitionSql)
+        => SafeAddColumnIfMissing(tableName, columnName, columnDefinitionSql);
+
+    public static string SafeAddColumnIfMissing(string tableName, string columnName, string columnDefinitionSql)
         => $"""
            DO $$
            BEGIN
