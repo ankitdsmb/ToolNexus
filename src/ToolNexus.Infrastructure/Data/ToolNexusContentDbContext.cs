@@ -36,6 +36,11 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<PlatformSignalEntity> PlatformSignals => Set<PlatformSignalEntity>();
     public DbSet<PlatformInsightEntity> PlatformInsights => Set<PlatformInsightEntity>();
     public DbSet<OperatorApprovedActionEntity> OperatorApprovedActions => Set<OperatorApprovedActionEntity>();
+    public DbSet<AiGenerationSignalEntity> AiGenerationSignals => Set<AiGenerationSignalEntity>();
+    public DbSet<ToolGenerationDraftEntity> ToolGenerationDrafts => Set<ToolGenerationDraftEntity>();
+    public DbSet<GenerationValidationReportEntity> GenerationValidationReports => Set<GenerationValidationReportEntity>();
+    public DbSet<GenerationSandboxReportEntity> GenerationSandboxReports => Set<GenerationSandboxReportEntity>();
+    public DbSet<GenerationDecisionEntity> GenerationDecisions => Set<GenerationDecisionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -507,6 +512,85 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.Severity).HasMaxLength(20);
             entity.Property(x => x.FirstOccurredUtc).HasColumnType("timestamp with time zone");
             entity.Property(x => x.LastOccurredUtc).HasColumnType("timestamp with time zone");
+        });
+
+
+        modelBuilder.Entity<AiGenerationSignalEntity>(entity =>
+        {
+            entity.ToTable("ai_generation_signals");
+            entity.HasKey(x => x.SignalId);
+            entity.Property(x => x.Source).HasMaxLength(80);
+            entity.Property(x => x.SuggestedToolCategory).HasMaxLength(120);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_ai_generation_signals_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_ai_generation_signals_tenant_id");
+            entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_ai_generation_signals_created_at").IsDescending();
+        });
+
+        modelBuilder.Entity<ToolGenerationDraftEntity>(entity =>
+        {
+            entity.ToTable("tool_generation_drafts");
+            entity.HasKey(x => x.DraftId);
+            entity.Property(x => x.ToolSlug).HasMaxLength(120);
+            entity.Property(x => x.GeneratedCapabilityClass).HasMaxLength(80);
+            entity.Property(x => x.SuggestedRuntimeLanguage).HasMaxLength(40);
+            entity.Property(x => x.RequiredPermissions).HasMaxLength(500);
+            entity.Property(x => x.RiskLevel).HasMaxLength(40);
+            entity.Property(x => x.Status).HasMaxLength(40);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.SignalId).HasDatabaseName("idx_tool_generation_drafts_signal_id");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_tool_generation_drafts_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_tool_generation_drafts_tenant_id");
+            entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_tool_generation_drafts_created_at").IsDescending();
+        });
+
+        modelBuilder.Entity<GenerationValidationReportEntity>(entity =>
+        {
+            entity.ToTable("generation_validation_reports");
+            entity.HasKey(x => x.ReportId);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.DraftId).HasDatabaseName("idx_generation_validation_reports_draft_id");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_generation_validation_reports_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_generation_validation_reports_tenant_id");
+            entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_generation_validation_reports_created_at").IsDescending();
+        });
+
+        modelBuilder.Entity<GenerationSandboxReportEntity>(entity =>
+        {
+            entity.ToTable("generation_sandbox_reports");
+            entity.HasKey(x => x.ReportId);
+            entity.Property(x => x.ExecutionBehavior).HasMaxLength(120);
+            entity.Property(x => x.ConformanceCompliance).HasMaxLength(120);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.DraftId).HasDatabaseName("idx_generation_sandbox_reports_draft_id");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_generation_sandbox_reports_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_generation_sandbox_reports_tenant_id");
+            entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_generation_sandbox_reports_created_at").IsDescending();
+        });
+
+        modelBuilder.Entity<GenerationDecisionEntity>(entity =>
+        {
+            entity.ToTable("generation_decisions");
+            entity.HasKey(x => x.DecisionId);
+            entity.Property(x => x.OperatorId).HasMaxLength(120);
+            entity.Property(x => x.Action).HasMaxLength(80);
+            entity.Property(x => x.TelemetryEventName).HasMaxLength(120);
+            entity.Property(x => x.GovernanceDecisionId).HasMaxLength(120);
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.DraftId).HasDatabaseName("idx_generation_decisions_draft_id");
+            entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_generation_decisions_correlation_id");
+            entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_generation_decisions_tenant_id");
+            entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_generation_decisions_created_at").IsDescending();
         });
 
         modelBuilder.Entity<AdminIdentityUserEntity>(entity =>
