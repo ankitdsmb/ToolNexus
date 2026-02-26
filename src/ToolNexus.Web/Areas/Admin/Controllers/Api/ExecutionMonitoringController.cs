@@ -10,7 +10,7 @@ namespace ToolNexus.Web.Areas.Admin.Controllers.Api;
 [ApiController]
 [Route("admin/execution")]
 [Authorize(Policy = AdminPolicyNames.AdminRead)]
-public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringService service, ILogger<ExecutionMonitoringController> logger) : ControllerBase
+public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringService service, IAdminControlPlaneService controlPlaneService, ILogger<ExecutionMonitoringController> logger) : ControllerBase
 {
     [HttpGet("health")]
     public async Task<ActionResult<ExecutionHealthSummary>> GetHealth(CancellationToken cancellationToken)
@@ -31,5 +31,29 @@ public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringServi
     {
         logger.LogInformation("Admin execution incidents requested. page={Page} pageSize={PageSize}", page, pageSize);
         return Ok(await service.GetIncidentsAsync(page, pageSize, cancellationToken));
+    }
+
+    [HttpPost("operations/cache-reset")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AdminControlPlaneOperationResult>> ResetCaches(CancellationToken cancellationToken)
+    {
+        logger.LogWarning("Admin control-plane cache reset requested.");
+        return Ok(await controlPlaneService.ResetCachesAsync(cancellationToken));
+    }
+
+    [HttpPost("operations/queue-drain")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AdminControlPlaneOperationResult>> DrainQueue(CancellationToken cancellationToken)
+    {
+        logger.LogWarning("Admin control-plane queue drain requested.");
+        return Ok(await controlPlaneService.DrainAuditQueueAsync(cancellationToken));
+    }
+
+    [HttpPost("operations/queue-replay")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AdminControlPlaneOperationResult>> ReplayDeadLetters(CancellationToken cancellationToken)
+    {
+        logger.LogWarning("Admin control-plane dead-letter replay requested.");
+        return Ok(await controlPlaneService.ReplayAuditDeadLettersAsync(cancellationToken));
     }
 }

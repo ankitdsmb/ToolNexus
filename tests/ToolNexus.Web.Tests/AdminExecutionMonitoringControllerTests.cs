@@ -13,7 +13,7 @@ public sealed class AdminExecutionMonitoringControllerTests
     public async Task GetHealth_ReturnsOkPayload()
     {
         var expected = new ExecutionHealthSummary(1, 2, 3, 4.5, true, true);
-        var controller = new ExecutionMonitoringController(new StubService(health: expected), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(health: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetHealth(CancellationToken.None);
 
@@ -27,7 +27,7 @@ public sealed class AdminExecutionMonitoringControllerTests
         var expected = new ExecutionWorkersResponse([
             new ExecutionWorkerStatus("worker-1", DateTime.UtcNow, 2, 1, false)
         ]);
-        var controller = new ExecutionMonitoringController(new StubService(workers: expected), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(workers: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetWorkers(CancellationToken.None);
 
@@ -42,12 +42,36 @@ public sealed class AdminExecutionMonitoringControllerTests
         [
             new ExecutionIncident("retry", "warning", "siem", DateTime.UtcNow, "retry", 1)
         ]);
-        var controller = new ExecutionMonitoringController(new StubService(incidents: expected), NullLogger<ExecutionMonitoringController>.Instance);
+        var controller = new ExecutionMonitoringController(new StubService(incidents: expected), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
 
         var action = await controller.GetIncidents(2, 10, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(action.Result);
         Assert.Same(expected, ok.Value);
+    }
+
+    
+
+    [Fact]
+    public async Task ResetCaches_ReturnsOperationPayload()
+    {
+        var controller = new ExecutionMonitoringController(new StubService(), new StubControlPlaneService(), NullLogger<ExecutionMonitoringController>.Instance);
+        var action = await controller.ResetCaches(CancellationToken.None);
+        var ok = Assert.IsType<OkObjectResult>(action.Result);
+        Assert.IsType<AdminControlPlaneOperationResult>(ok.Value);
+    }
+
+
+    private sealed class StubControlPlaneService : IAdminControlPlaneService
+    {
+        public Task<AdminControlPlaneOperationResult> ResetCachesAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new AdminControlPlaneOperationResult("cache_reset", "success", "ok", 0));
+
+        public Task<AdminControlPlaneOperationResult> DrainAuditQueueAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new AdminControlPlaneOperationResult("queue_drain", "success", "ok", 1));
+
+        public Task<AdminControlPlaneOperationResult> ReplayAuditDeadLettersAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new AdminControlPlaneOperationResult("queue_replay", "success", "ok", 1));
     }
 
     private sealed class StubService(

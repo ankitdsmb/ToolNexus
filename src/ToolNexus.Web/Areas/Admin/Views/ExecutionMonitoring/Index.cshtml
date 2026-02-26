@@ -7,6 +7,9 @@
     <div class="d-flex gap-2">
         <button class="btn btn-sm btn-outline-secondary" id="jump-workers">Workers</button>
         <button class="btn btn-sm btn-outline-secondary" id="jump-incidents">Incidents</button>
+        <button class="btn btn-sm btn-outline-warning" id="reset-caches">Reset Caches</button>
+        <button class="btn btn-sm btn-outline-warning" id="drain-queue">Drain Queue</button>
+        <button class="btn btn-sm btn-outline-warning" id="replay-queue">Replay Dead Letters</button>
         <button class="btn btn-sm btn-primary" id="refresh-monitoring">Refresh</button>
     </div>
 </div>
@@ -91,6 +94,17 @@
         document.getElementById('worker-warning').classList.toggle('d-none', !staleFound);
     }
 
+
+    async function runOperation(endpoint) {
+        const res = await fetch(endpoint, { method: 'POST' });
+        if (!res.ok) {
+            alert('Operation failed. Check permissions and logs.');
+            return;
+        }
+        await loadHealth();
+        await loadIncidents();
+    }
+
     function severityClass(severity) {
         if (severity === 'critical') return 'bg-red-lt';
         if (severity === 'warning') return 'bg-yellow-lt';
@@ -129,6 +143,10 @@
     document.getElementById('jump-incidents').addEventListener('click', () => {
         document.getElementById('incidents-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+
+    document.getElementById('reset-caches').addEventListener('click', async () => runOperation('/admin/execution/operations/cache-reset'));
+    document.getElementById('drain-queue').addEventListener('click', async () => runOperation('/admin/execution/operations/queue-drain'));
+    document.getElementById('replay-queue').addEventListener('click', async () => runOperation('/admin/execution/operations/queue-replay'));
 
     document.getElementById('refresh-monitoring').addEventListener('click', async () => {
         await loadHealth();
