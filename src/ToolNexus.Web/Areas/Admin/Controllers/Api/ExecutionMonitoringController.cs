@@ -10,7 +10,7 @@ namespace ToolNexus.Web.Areas.Admin.Controllers.Api;
 [ApiController]
 [Route("admin/execution")]
 [Authorize(Policy = AdminPolicyNames.AdminRead)]
-public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringService service, IAdminControlPlaneService controlPlaneService, ILogger<ExecutionMonitoringController> logger) : ControllerBase
+public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringService service, IAdminControlPlaneService controlPlaneService, IAutonomousInsightsService autonomousInsightsService, ILogger<ExecutionMonitoringController> logger) : ControllerBase
 {
     [HttpGet("health")]
     public async Task<ActionResult<ExecutionHealthSummary>> GetHealth(CancellationToken cancellationToken)
@@ -52,6 +52,21 @@ public sealed class ExecutionMonitoringController(IAdminExecutionMonitoringServi
     [HttpGet("command-center")]
     public async Task<ActionResult<OperatorCommandCenterSnapshot>> GetCommandCenter(CancellationToken cancellationToken)
         => Ok(await service.GetCommandCenterSnapshotAsync(1, 15, 25, cancellationToken));
+
+
+    [HttpGet("autonomous-insights")]
+    public async Task<ActionResult<AutonomousInsightsPanel>> GetAutonomousInsights([FromQuery] int take = 15, CancellationToken cancellationToken = default)
+        => Ok(await autonomousInsightsService.GetPanelAsync(take, cancellationToken));
+
+    [HttpPost("autonomous-insights/{insightId:guid}/approve")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<IActionResult> ApproveAutonomousInsight(Guid insightId, [FromBody] AutonomousInsightDecisionRequest request, CancellationToken cancellationToken)
+        => await autonomousInsightsService.ApproveAsync(insightId, request, cancellationToken) ? Ok() : NotFound();
+
+    [HttpPost("autonomous-insights/{insightId:guid}/reject")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<IActionResult> RejectAutonomousInsight(Guid insightId, [FromBody] AutonomousInsightDecisionRequest request, CancellationToken cancellationToken)
+        => await autonomousInsightsService.RejectAsync(insightId, request, cancellationToken) ? Ok() : NotFound();
 
     [HttpPost("operations/cache-reset")]
     [Authorize(Policy = AdminPolicyNames.AdminWrite)]
