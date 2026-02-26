@@ -1,5 +1,37 @@
 import { LAYOUT_TYPES, TOOL_DOM_CONTRACT } from './tool-dom-contract.js';
 
+function describeScope(scope) {
+  if (!scope || scope.nodeType !== Node.ELEMENT_NODE) {
+    return {
+      tag: scope?.nodeName ?? 'unknown',
+      id: '',
+      className: '',
+      equalsToolRoot: false
+    };
+  }
+
+  return {
+    tag: String(scope.tagName || '').toLowerCase(),
+    id: scope.id || '',
+    className: scope.className || '',
+    equalsToolRoot: scope.id === 'tool-root'
+  };
+}
+
+function emitValidationLog({ phase, scope, missingNodes, detectedLayoutType }) {
+  const logger = globalThis.console;
+  if (!logger?.info) {
+    return;
+  }
+
+  logger.info('[DomContract] validation diagnostics', {
+    phase,
+    scope: describeScope(scope),
+    missingNodes,
+    detectedLayoutType
+  });
+}
+
 function normalizeRoot(root) {
   if (root?.nodeType === Node.ELEMENT_NODE || root?.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
     return root;
@@ -63,9 +95,16 @@ function detectLayoutType(scope) {
   return LAYOUT_TYPES.UNKNOWN_LAYOUT;
 }
 
-export function validateToolDom(root) {
+export function validateToolDom(root, options = {}) {
+  const phase = typeof options.phase === 'string' ? options.phase : 'unspecified';
   const scope = normalizeRoot(root);
   if (!scope) {
+    emitValidationLog({
+      phase,
+      scope,
+      missingNodes: [...TOOL_DOM_CONTRACT.requiredNodes],
+      detectedLayoutType: LAYOUT_TYPES.UNKNOWN_LAYOUT
+    });
     return {
       isValid: false,
       missingNodes: [...TOOL_DOM_CONTRACT.requiredNodes],
@@ -76,10 +115,18 @@ export function validateToolDom(root) {
 
   const missingNodes = TOOL_DOM_CONTRACT.requiredNodes.filter((nodeName) => !hasNode(scope, nodeName));
 
+  const detectedLayoutType = detectLayoutType(scope);
+  emitValidationLog({
+    phase,
+    scope,
+    missingNodes,
+    detectedLayoutType
+  });
+
   return {
     isValid: missingNodes.length === 0,
     missingNodes,
-    detectedLayoutType: detectLayoutType(scope),
+    detectedLayoutType,
     mountSafe: Boolean(scope)
   };
 }
