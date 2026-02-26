@@ -20,10 +20,11 @@ public sealed class ToolExecutionLoggingMiddleware(RequestDelegate next, ILogger
         sw.Stop();
 
         _logger.LogInformation(
-            "Tool execution API request {Method} {Path} -> {StatusCode} in {ElapsedMs}ms",
+            "Tool execution API request {Method} {Path} -> {StatusCode} in {ElapsedMs}ms. CorrelationId: {CorrelationId}",
             context.Request.Method,
             context.Request.Path,
             context.Response.StatusCode,
-            sw.ElapsedMilliseconds);
+            sw.ElapsedMilliseconds,
+            context.TraceIdentifier);
     }
 }
