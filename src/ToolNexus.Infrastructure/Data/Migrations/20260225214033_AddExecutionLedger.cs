@@ -25,247 +25,247 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 tableName: "audit_outbox",
                 constraintName: "FK_audit_outbox_audit_events_AuditEventId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "Destination",
                 table: "audit_outbox",
                 newName: "destination");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "Id",
                 table: "audit_outbox",
                 newName: "id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "UpdatedAtUtc",
                 table: "audit_outbox",
                 newName: "updated_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "NextAttemptAtUtc",
                 table: "audit_outbox",
                 newName: "next_attempt_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "LeaseOwner",
                 table: "audit_outbox",
                 newName: "lease_owner");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "LeaseExpiresAtUtc",
                 table: "audit_outbox",
                 newName: "lease_expires_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "LastErrorMessage",
                 table: "audit_outbox",
                 newName: "last_error_message");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "LastErrorCode",
                 table: "audit_outbox",
                 newName: "last_error_code");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "LastAttemptAtUtc",
                 table: "audit_outbox",
                 newName: "last_attempt_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "IdempotencyKey",
                 table: "audit_outbox",
                 newName: "idempotency_key");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "DeliveryState",
                 table: "audit_outbox",
                 newName: "delivery_state");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "DeliveredAtUtc",
                 table: "audit_outbox",
                 newName: "delivered_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "CreatedAtUtc",
                 table: "audit_outbox",
                 newName: "created_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "AuditEventId",
                 table: "audit_outbox",
                 newName: "audit_event_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "AttemptCount",
                 table: "audit_outbox",
                 newName: "attempt_count");
 
-            migrationBuilder.RenameIndex(
+            migrationBuilder.SafeRenameIndexIfExists(
                 name: "IX_audit_outbox_AuditEventId",
                 table: "audit_outbox",
                 newName: "IX_audit_outbox_audit_event_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "Action",
                 table: "audit_events",
                 newName: "action");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "Id",
                 table: "audit_events",
                 newName: "id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "UserAgent",
                 table: "audit_events",
                 newName: "user_agent");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "TraceId",
                 table: "audit_events",
                 newName: "trace_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "TenantId",
                 table: "audit_events",
                 newName: "tenant_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "TargetType",
                 table: "audit_events",
                 newName: "target_type");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "TargetId",
                 table: "audit_events",
                 newName: "target_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "SourceIp",
                 table: "audit_events",
                 newName: "source_ip");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "SchemaVersion",
                 table: "audit_events",
                 newName: "schema_version");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "ResultStatus",
                 table: "audit_events",
                 newName: "result_status");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "RequestId",
                 table: "audit_events",
                 newName: "request_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "PayloadRedacted",
                 table: "audit_events",
                 newName: "payload_redacted");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "PayloadHashSha256",
                 table: "audit_events",
                 newName: "payload_hash_sha256");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "OccurredAtUtc",
                 table: "audit_events",
                 newName: "occurred_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "HttpStatus",
                 table: "audit_events",
                 newName: "http_status");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "CreatedAtUtc",
                 table: "audit_events",
                 newName: "created_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "ActorType",
                 table: "audit_events",
                 newName: "actor_type");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "ActorId",
                 table: "audit_events",
                 newName: "actor_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "Destination",
                 table: "audit_dead_letter",
                 newName: "destination");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "Id",
                 table: "audit_dead_letter",
                 newName: "id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "UpdatedAtUtc",
                 table: "audit_dead_letter",
                 newName: "updated_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "OutboxId",
                 table: "audit_dead_letter",
                 newName: "outbox_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "OperatorStatus",
                 table: "audit_dead_letter",
                 newName: "operator_status");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "OperatorNote",
                 table: "audit_dead_letter",
                 newName: "operator_note");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "OperatorId",
                 table: "audit_dead_letter",
                 newName: "operator_id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "FirstFailedAtUtc",
                 table: "audit_dead_letter",
                 newName: "first_failed_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "FinalAttemptCount",
                 table: "audit_dead_letter",
                 newName: "final_attempt_count");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "ErrorSummary",
                 table: "audit_dead_letter",
                 newName: "error_summary");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "ErrorDetails",
                 table: "audit_dead_letter",
                 newName: "error_details");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "DeadLetteredAtUtc",
                 table: "audit_dead_letter",
                 newName: "dead_lettered_at_utc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "AuditEventId",
                 table: "audit_dead_letter",
                 newName: "audit_event_id");
 
-            migrationBuilder.RenameIndex(
+            migrationBuilder.SafeRenameIndexIfExists(
                 name: "IX_audit_dead_letter_OutboxId",
                 table: "audit_dead_letter",
                 newName: "IX_audit_dead_letter_outbox_id");
 
-            migrationBuilder.RenameIndex(
+            migrationBuilder.SafeRenameIndexIfExists(
                 name: "IX_audit_dead_letter_AuditEventId",
                 table: "audit_dead_letter",
                 newName: "IX_audit_dead_letter_audit_event_id");
@@ -1786,247 +1786,247 @@ namespace ToolNexus.Infrastructure.Data.Migrations
             migrationBuilder.DropTable(
                 name: "execution_runs");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "destination",
                 table: "audit_outbox",
                 newName: "Destination");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "id",
                 table: "audit_outbox",
                 newName: "Id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "updated_at_utc",
                 table: "audit_outbox",
                 newName: "UpdatedAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "next_attempt_at_utc",
                 table: "audit_outbox",
                 newName: "NextAttemptAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "lease_owner",
                 table: "audit_outbox",
                 newName: "LeaseOwner");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "lease_expires_at_utc",
                 table: "audit_outbox",
                 newName: "LeaseExpiresAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "last_error_message",
                 table: "audit_outbox",
                 newName: "LastErrorMessage");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "last_error_code",
                 table: "audit_outbox",
                 newName: "LastErrorCode");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "last_attempt_at_utc",
                 table: "audit_outbox",
                 newName: "LastAttemptAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "idempotency_key",
                 table: "audit_outbox",
                 newName: "IdempotencyKey");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "delivery_state",
                 table: "audit_outbox",
                 newName: "DeliveryState");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "delivered_at_utc",
                 table: "audit_outbox",
                 newName: "DeliveredAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "created_at_utc",
                 table: "audit_outbox",
                 newName: "CreatedAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "audit_event_id",
                 table: "audit_outbox",
                 newName: "AuditEventId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "attempt_count",
                 table: "audit_outbox",
                 newName: "AttemptCount");
 
-            migrationBuilder.RenameIndex(
+            migrationBuilder.SafeRenameIndexIfExists(
                 name: "IX_audit_outbox_audit_event_id",
                 table: "audit_outbox",
                 newName: "IX_audit_outbox_AuditEventId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "action",
                 table: "audit_events",
                 newName: "Action");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "id",
                 table: "audit_events",
                 newName: "Id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "user_agent",
                 table: "audit_events",
                 newName: "UserAgent");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "trace_id",
                 table: "audit_events",
                 newName: "TraceId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "tenant_id",
                 table: "audit_events",
                 newName: "TenantId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "target_type",
                 table: "audit_events",
                 newName: "TargetType");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "target_id",
                 table: "audit_events",
                 newName: "TargetId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "source_ip",
                 table: "audit_events",
                 newName: "SourceIp");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "schema_version",
                 table: "audit_events",
                 newName: "SchemaVersion");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "result_status",
                 table: "audit_events",
                 newName: "ResultStatus");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "request_id",
                 table: "audit_events",
                 newName: "RequestId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "payload_redacted",
                 table: "audit_events",
                 newName: "PayloadRedacted");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "payload_hash_sha256",
                 table: "audit_events",
                 newName: "PayloadHashSha256");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "occurred_at_utc",
                 table: "audit_events",
                 newName: "OccurredAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "http_status",
                 table: "audit_events",
                 newName: "HttpStatus");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "created_at_utc",
                 table: "audit_events",
                 newName: "CreatedAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "actor_type",
                 table: "audit_events",
                 newName: "ActorType");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "actor_id",
                 table: "audit_events",
                 newName: "ActorId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "destination",
                 table: "audit_dead_letter",
                 newName: "Destination");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "id",
                 table: "audit_dead_letter",
                 newName: "Id");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "updated_at_utc",
                 table: "audit_dead_letter",
                 newName: "UpdatedAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "outbox_id",
                 table: "audit_dead_letter",
                 newName: "OutboxId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "operator_status",
                 table: "audit_dead_letter",
                 newName: "OperatorStatus");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "operator_note",
                 table: "audit_dead_letter",
                 newName: "OperatorNote");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "operator_id",
                 table: "audit_dead_letter",
                 newName: "OperatorId");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "first_failed_at_utc",
                 table: "audit_dead_letter",
                 newName: "FirstFailedAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "final_attempt_count",
                 table: "audit_dead_letter",
                 newName: "FinalAttemptCount");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "error_summary",
                 table: "audit_dead_letter",
                 newName: "ErrorSummary");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "error_details",
                 table: "audit_dead_letter",
                 newName: "ErrorDetails");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "dead_lettered_at_utc",
                 table: "audit_dead_letter",
                 newName: "DeadLetteredAtUtc");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.SafeRenameColumnIfExists(
                 name: "audit_event_id",
                 table: "audit_dead_letter",
                 newName: "AuditEventId");
 
-            migrationBuilder.RenameIndex(
+            migrationBuilder.SafeRenameIndexIfExists(
                 name: "IX_audit_dead_letter_outbox_id",
                 table: "audit_dead_letter",
                 newName: "IX_audit_dead_letter_OutboxId");
 
-            migrationBuilder.RenameIndex(
+            migrationBuilder.SafeRenameIndexIfExists(
                 name: "IX_audit_dead_letter_audit_event_id",
                 table: "audit_dead_letter",
                 newName: "IX_audit_dead_letter_AuditEventId");

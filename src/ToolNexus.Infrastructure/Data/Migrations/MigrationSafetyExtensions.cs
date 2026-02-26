@@ -40,6 +40,57 @@ internal static class MigrationSafetyExtensions
         migrationBuilder.Sql($"DROP INDEX IF EXISTS {QuoteIdentifier(indexName)};");
     }
 
+    public static void SafeRenameColumnIfExists(this MigrationBuilder migrationBuilder, string name, string table, string newName)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            migrationBuilder.RenameColumn(name: name, table: table, newName: newName);
+            return;
+        }
+
+        migrationBuilder.Sql($"""
+            DO $$
+            BEGIN
+                IF to_regclass('{EscapeSqlLiteral(table)}') IS NOT NULL
+                   AND EXISTS (
+                        SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public'
+                          AND table_name = '{EscapeSqlLiteral(table)}'
+                          AND column_name = '{EscapeSqlLiteral(name)}')
+                   AND NOT EXISTS (
+                        SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public'
+                          AND table_name = '{EscapeSqlLiteral(table)}'
+                          AND column_name = '{EscapeSqlLiteral(newName)}')
+                THEN
+                    ALTER TABLE {QuoteIdentifier(table)} RENAME COLUMN {QuoteIdentifier(name)} TO {QuoteIdentifier(newName)};
+                END IF;
+            END $$;
+            """);
+    }
+
+    public static void SafeRenameIndexIfExists(this MigrationBuilder migrationBuilder, string name, string table, string newName)
+    {
+        if (!IsPostgreSqlProvider(migrationBuilder))
+        {
+            migrationBuilder.RenameIndex(name: name, table: table, newName: newName);
+            return;
+        }
+
+        migrationBuilder.Sql($"""
+            DO $$
+            BEGIN
+                IF to_regclass('{EscapeSqlLiteral(name)}') IS NOT NULL
+                   AND to_regclass('{EscapeSqlLiteral(newName)}') IS NULL
+                THEN
+                    ALTER INDEX {QuoteIdentifier(name)} RENAME TO {QuoteIdentifier(newName)};
+                END IF;
+            END $$;
+            """);
+    }
+
     private static bool IsPostgreSqlProvider(MigrationBuilder migrationBuilder)
         => migrationBuilder.ActiveProvider?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
 
