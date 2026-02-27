@@ -1,63 +1,93 @@
 import { createJsonFormatterApp } from './json-formatter.app.js';
+import { getToolPlatformKernel } from './tool-platform-kernel.js';
 
 const TOOL_ID = 'json-formatter';
 
-function resolveRoot(rootOrContext) {
-  if (rootOrContext instanceof Element) {
-    return (
-      rootOrContext.closest('[data-tool="json-formatter"]') ||
-      rootOrContext
-    );
-  }
-
-  if (rootOrContext?.root instanceof Element) {
-    return resolveRoot(rootOrContext.root);
-  }
-
-  if (rootOrContext?.toolRoot instanceof Element) {
-    return resolveRoot(rootOrContext.toolRoot);
-  }
-
-  return document.querySelector('[data-tool="json-formatter"]');
+function isElement(value) {
+  return Boolean(value && value.nodeType === Node.ELEMENT_NODE && value instanceof Element);
 }
 
-/* ================================
-   MODERN LIFECYCLE (CRITICAL)
-================================ */
+function toHandleRoot(handle) {
+  return isElement(handle?.root) ? handle.root : null;
+}
 
-export async function create(context) {
-  const root = resolveRoot(context);
+function normalizeLifecycleRoot(rootOrContext) {
+  if (isElement(rootOrContext)) {
+    return rootOrContext.closest(`[data-tool="${TOOL_ID}"]`) || rootOrContext;
+  }
+
+  if (isElement(rootOrContext?.root)) {
+    return normalizeLifecycleRoot(rootOrContext.root);
+  }
+
+  if (isElement(rootOrContext?.toolRoot)) {
+    return normalizeLifecycleRoot(rootOrContext.toolRoot);
+  }
+
+  if (rootOrContext?.id === TOOL_ID) {
+    return toHandleRoot(rootOrContext);
+  }
+
+  const scopedHandleRoot = toHandleRoot(rootOrContext?.handle);
+  if (scopedHandleRoot) {
+    return normalizeLifecycleRoot(scopedHandleRoot);
+  }
+
+  return document.querySelector(`[data-tool="${TOOL_ID}"][data-tool-root]`) || document.querySelector(`[data-tool="${TOOL_ID}"]`);
+}
+
+function resolveToolRoot(rootOrContext) {
+  const normalizedRoot = normalizeLifecycleRoot(rootOrContext);
+
+  if (!normalizedRoot) {
+    return null;
+  }
+
+  return normalizedRoot.matches?.(`[data-tool="${TOOL_ID}"][data-tool-root]`)
+    ? normalizedRoot
+    : normalizedRoot.closest?.(`[data-tool="${TOOL_ID}"][data-tool-root]`) || normalizedRoot;
+}
+
+export function create(context) {
+  const root = resolveToolRoot(context);
 
   if (!root) {
     console.warn('[json-formatter] root not found');
     return null;
   }
 
-  const app = createJsonFormatterApp(root);
-
-  return {
-    mounted: true,
-    cleanup: () => app?.destroy?.(),
-    app
-  };
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: async () => {
+      const app = createJsonFormatterApp(root);
+      await app.init();
+      return app;
+    },
+    destroy: (app) => app?.destroy?.()
+  });
 }
 
 export async function init(context) {
-  const root = resolveRoot(context);
-  if (!root) return { mounted: false };
+  const handle = create(context);
+  if (!handle) {
+    return { mounted: false };
+  }
 
-  const app = createJsonFormatterApp(root);
-  await app.init();
+  await handle.init();
 
   return {
     mounted: true,
-    cleanup: () => app?.destroy?.()
+    cleanup: () => handle.destroy(),
+    handle
   };
 }
 
 export function destroy(context) {
-  const root = resolveRoot(context);
-  if (!root) return;
+  const root = resolveToolRoot(context);
+  if (!root) {
+    return;
+  }
 
-  // optional explicit cleanup
-} 
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+}

@@ -63,4 +63,16 @@ describe('tool-platform-kernel', () => {
     expect(() => handle.destroy()).not.toThrow();
     expect(kernel.getLifecycleState('destroy-broken', root)).toBe('missing');
   });
+
+  test('registerTool throws actionable error for invalid root', () => {
+    const kernel = getToolPlatformKernel();
+
+    expect(() => kernel.registerTool({ id: 'broken-root', root: undefined, init: () => ({}) }))
+      .toThrow('[ToolKernel] Invalid root passed to registerTool()');
+    expect(() => kernel.registerTool({ id: 'broken-root', root: undefined, init: () => ({}) }))
+      .toThrow('Received: undefined');
+    expect(() => kernel.registerTool({ id: 'broken-root', root: undefined, init: () => ({}) }))
+      .toThrow('Callsite: registerTool()');
+  });
+
 });
