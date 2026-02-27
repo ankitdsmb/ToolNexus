@@ -45,12 +45,8 @@ describe('tool-platform-kernel root normalization', () => {
   test('registerTool(runtime execution context)', () => {
     const root = document.createElement('section');
     const executionContext = {
-      lifecycleContext: {
-        executionContext: {
-          context: {
-            toolRoot: root
-          }
-        }
+      executionContext: {
+        toolRoot: root
       }
     };
 

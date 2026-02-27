@@ -157,7 +157,14 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     if (typeof target?.init === 'function') {
       logger.debug('Invoking normalized init lifecycle.', { slug, mode });
       return withDomTracking(root, context, async () => {
-        console.debug('[Runtime] lifecycle init context', context);
+        if (shouldGuardLifecycleDiagnostics()) {
+          console.debug('[Runtime] lifecycle init context', context);
+        }
+
+        if (!(root instanceof Element)) {
+          throw new Error('[Runtime] lifecycle init requires DOM root');
+        }
+
         const initValue = await target.init(instance ?? context, root, context?.manifest, context);
         if (mode === 'modern.lifecycle' && typeof target?.runTool === 'function') {
           await target.runTool(instance ?? context, root, context?.manifest, context);
