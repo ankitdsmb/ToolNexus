@@ -93,12 +93,12 @@ export function createJsonFormatterApp(root) {
     const hasInput = state.inputModel.getValue().trim().length > 0;
     const hasOutput = state.outputModel.getValue().trim().length > 0;
 
-    dom.formatBtn.disabled = state.isBusy || !hasInput;
-    dom.minifyBtn.disabled = state.isBusy || !hasInput;
-    dom.validateBtn.disabled = state.isBusy || !hasInput;
-    dom.clearBtn.disabled = state.isBusy || !hasInput;
-    dom.copyBtn.disabled = state.isBusy || !hasOutput;
-    dom.downloadBtn.disabled = state.isBusy || !hasOutput;
+    if (dom.formatBtn) dom.formatBtn.disabled = state.isBusy || !hasInput;
+    if (dom.minifyBtn) dom.minifyBtn.disabled = state.isBusy || !hasInput;
+    if (dom.validateBtn) dom.validateBtn.disabled = state.isBusy || !hasInput;
+    if (dom.clearBtn) dom.clearBtn.disabled = state.isBusy || !hasInput;
+    if (dom.copyBtn) dom.copyBtn.disabled = state.isBusy || !hasOutput;
+    if (dom.downloadBtn) dom.downloadBtn.disabled = state.isBusy || !hasOutput;
   };
 
   const setMarkers = (location, message) => {
@@ -123,8 +123,14 @@ export function createJsonFormatterApp(root) {
   };
 
   const updateStats = () => {
-    dom.payloadStats.textContent = formatCountSummary(state.inputModel.getValue());
-    dom.outputStats.textContent = formatCountSummary(state.outputModel.getValue());
+    if (dom.payloadStats) {
+      dom.payloadStats.textContent = formatCountSummary(state.inputModel.getValue());
+    }
+
+    if (dom.outputStats) {
+      dom.outputStats.textContent = formatCountSummary(state.outputModel.getValue());
+    }
+
     updateButtons();
   };
 
@@ -141,12 +147,12 @@ export function createJsonFormatterApp(root) {
     });
 
     if (!result.ok) {
-      dom.validationState.textContent = 'Invalid JSON';
+      if (dom.validationState) dom.validationState.textContent = 'Invalid JSON';
       setMarkers(result.error.location, result.error.message);
       state.outputModel.setValue('');
       setErrorState(dom, result.error);
     } else {
-      dom.validationState.textContent = 'Valid JSON';
+      if (dom.validationState) dom.validationState.textContent = 'Valid JSON';
       setMarkers(null, '');
       state.outputModel.setValue(result.output);
 
@@ -159,77 +165,115 @@ export function createJsonFormatterApp(root) {
     }
 
     state.isBusy = false;
-    dom.perfTime.textContent =
-      `${(performance.now() - started).toFixed(2)} ms`;
+    if (dom.perfTime) {
+      dom.perfTime.textContent =
+        `${(performance.now() - started).toFixed(2)} ms`;
+    }
 
     updateStats();
   };
 
   return {
     async init() {
-      if (!dom.jsonEditor || !dom.outputEditor) {
-        console.warn('[json-formatter] Editor containers missing; skipping editor initialization.');
-        return;
-      }
-
-      /* ========= MONACO REAL FIX ========= */
       try {
-        state.monaco = await loadMonacoSafe();
-        if (!state.monaco?.editor) {
-          throw new Error('Monaco editor API unavailable after loader resolution.');
+        if (!dom.jsonEditor || !dom.outputEditor) {
+          console.warn('[json-formatter] Editor containers missing; skipping editor initialization.');
+          return;
         }
 
-        state.inputModel = state.monaco.editor.createModel(
-          window.ToolNexusConfig?.jsonExampleInput ?? '',
-          'json'
-        );
-
-        state.outputModel = state.monaco.editor.createModel('', 'json');
-
-        const shared = {
-          theme: JSON_FORMATTER_CONFIG.monacoTheme,
-          automaticLayout: true,
-          minimap: { enabled: false },
-          fontSize: 14
+        let monacoLoaded = false;
+        const buildFallbackEditors = () => {
+          state.inputEditor = createFallbackEditor(dom.jsonEditor);
+          state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
+          state.inputModel = state.inputEditor;
+          state.outputModel = state.outputEditor;
         };
 
-        state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
-          ...shared,
-          model: state.inputModel
-        });
+        const buildMonacoEditors = () => {
+          console.debug('[json-formatter] Monaco createModel(input) start');
+          state.inputModel = state.monaco.editor.createModel(
+            window.ToolNexusConfig?.jsonExampleInput ?? '',
+            'json'
+          );
+          console.debug('[json-formatter] Monaco createModel(input) complete');
 
-        state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
-          ...shared,
-          model: state.outputModel,
-          readOnly: true
-        });
-      } catch (e) {
-        console.warn('[json-formatter] Monaco failed, fallback editor', e);
-        state.inputEditor = createFallbackEditor(dom.jsonEditor);
-        state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
-        state.inputModel = state.inputEditor;
-        state.outputModel = state.outputEditor;
-      }
-      /* =================================== */
+          console.debug('[json-formatter] Monaco createModel(output) start');
+          state.outputModel = state.monaco.editor.createModel('', 'json');
+          console.debug('[json-formatter] Monaco createModel(output) complete');
 
-      const onInputChanged = () => updateStats();
+          const shared = {
+            theme: JSON_FORMATTER_CONFIG.monacoTheme,
+            automaticLayout: true,
+            minimap: { enabled: false },
+            fontSize: 14
+          };
 
-      state.inputSubscription =
-        state.inputModel.onDidChangeContent(onInputChanged);
+          console.debug('[json-formatter] Monaco editor.create(input) start');
+          state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
+            ...shared,
+            model: state.inputModel
+          });
+          console.debug('[json-formatter] Monaco editor.create(input) complete');
 
-      state.keyboardDispose =
-        getKeyboardEventManager().register({
-          root,
-          onKeydown: e => {
-            if (e.ctrlKey && e.key === 'Enter') {
-              e.preventDefault();
-              runPipeline(FORMAT_MODE.PRETTY);
-            }
+          console.debug('[json-formatter] Monaco editor.create(output) start');
+          state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
+            ...shared,
+            model: state.outputModel,
+            readOnly: true
+          });
+          console.debug('[json-formatter] Monaco editor.create(output) complete');
+        };
+
+        try {
+          console.debug('[json-formatter] Monaco load start');
+          state.monaco = await loadMonacoSafe();
+          console.debug('[json-formatter] Monaco load complete');
+
+          if (window.monaco?.editor) {
+            buildMonacoEditors();
+            monacoLoaded = true;
           }
-        });
+        } catch (e) {
+          console.warn('[json-formatter] Monaco unavailable → fallback editor', e);
+        }
 
-      updateStats();
-      runPipeline(FORMAT_MODE.PRETTY, { silent: true });
+        if (!monacoLoaded) {
+          buildFallbackEditors();
+        }
+
+        const onInputChanged = () => updateStats();
+
+        state.inputSubscription =
+          state.inputModel.onDidChangeContent(onInputChanged);
+
+        state.keyboardDispose =
+          getKeyboardEventManager().register({
+            root,
+            onKeydown: e => {
+              if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                runPipeline(FORMAT_MODE.PRETTY);
+              }
+            }
+          });
+
+        updateStats();
+        runPipeline(FORMAT_MODE.PRETTY, { silent: true });
+      } catch (e) {
+        console.error(
+          '[json-formatter] LIFECYCLE INIT CRASH',
+          e,
+          e?.stack
+        );
+
+        if (!state.inputModel || !state.outputModel) {
+          state.inputEditor = createFallbackEditor(dom.jsonEditor);
+          state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
+          state.inputModel = state.inputEditor;
+          state.outputModel = state.outputEditor;
+          updateStats();
+        }
+      }
     },
 
     destroy() {
