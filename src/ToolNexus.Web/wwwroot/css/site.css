@@ -1485,8 +1485,8 @@ RESPONSIVE
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
   column-gap: var(--runtime-context-gap);
-  row-gap: var(--section-gap);
-  padding-block: var(--section-gap);
+  row-gap: var(--subsection-gap);
+  padding-block: var(--subsection-gap);
   align-items: start;
   max-width: var(--container-max);
   margin-inline: auto;
@@ -1500,14 +1500,14 @@ RESPONSIVE
 
 .workspace-shell__runtime-zone {
   position: sticky;
-  top: calc(var(--space-6) + 52px);
+  top: calc(var(--space-5) + 48px);
 }
 
 .workspace-shell__context-rail {
   grid-column: 2;
   position: sticky;
-  top: calc(var(--space-6) + 52px);
-  max-height: calc(100vh - 120px);
+  top: calc(var(--space-5) + 48px);
+  max-height: calc(100vh - 96px);
   overflow: auto;
   contain: content;
 }
@@ -1515,10 +1515,10 @@ RESPONSIVE
 .tool-shell-page__hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--internal-gap);
-  align-items: end;
-  padding: var(--internal-gap);
-  border-radius: var(--radius-xl);
+  gap: var(--space-sm);
+  align-items: start;
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg-secondary) 90%, var(--bg-primary));
   box-shadow: var(--elevation-level-1);
@@ -1526,7 +1526,7 @@ RESPONSIVE
 
 .tool-shell-page__workspace {
   display: grid;
-  gap: var(--internal-gap);
+  gap: var(--space-sm);
 }
 
 .tool-shell-page__runtime-zone-shell {
@@ -1550,7 +1550,7 @@ RESPONSIVE
 .tool-shell-page__workspace-head {
   display: flex;
   justify-content: space-between;
-  gap: var(--internal-gap);
+  gap: var(--space-sm);
   align-items: center;
   color: var(--text-muted);
   font-size: var(--text-sm);
@@ -1562,24 +1562,22 @@ RESPONSIVE
 }
 
 .tool-shell-page__runtime {
-  min-height: clamp(680px, 72vh, 920px);
+  min-height: clamp(620px, 68vh, 840px);
   border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border-default));
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   background:
     radial-gradient(140% 80% at calc(var(--runtime-pointer-x, 0.5) * 100%) 0%, color-mix(in srgb, var(--accent-soft) 55%, transparent), transparent 58%),
     var(--bg-secondary);
-  transition: box-shadow var(--motion-base) var(--ease-premium), border-color var(--motion-base) var(--ease-premium), transform var(--motion-fast) var(--ease-premium);
-  box-shadow: var(--elevation-level-2);
+  transition: box-shadow var(--motion-base) var(--ease-premium), border-color var(--motion-base) var(--ease-premium);
+  box-shadow: var(--elevation-level-1);
   isolation: isolate;
-  will-change: transform;
   contain: content;
 }
 
 .tool-shell-page__runtime:focus-within,
 .tool-shell-page__runtime:hover {
   border-color: color-mix(in srgb, var(--accent) 42%, var(--border-default));
-  box-shadow: 0 28px 54px rgba(5, 10, 28, 0.26);
-  transform: translateY(-2px);
+  box-shadow: var(--elevation-level-2);
 }
 
 
@@ -1641,8 +1639,8 @@ RESPONSIVE
 .tool-shell-page__docs {
   display: grid;
   gap: var(--subsection-gap);
-  padding: var(--internal-gap);
-  border-radius: var(--radius-xl);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
   box-shadow: var(--elevation-level-1);
@@ -1665,8 +1663,8 @@ RESPONSIVE
 
 .section-frame {
   display: grid;
-  gap: var(--internal-gap);
-  padding: var(--internal-gap);
+  gap: var(--space-sm);
+  padding: var(--space-md);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
