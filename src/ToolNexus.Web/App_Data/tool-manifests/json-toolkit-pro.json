@@ -1,0 +1,12 @@
+{
+  "Slug": "json-toolkit-pro",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/json-toolkit-pro.js",
+  "TemplatePath": "/tool-templates/json-toolkit-pro.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": "",
+  "UiMode": "auto",
+  "ComplexityTier": 1
+}

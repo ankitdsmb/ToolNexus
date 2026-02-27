@@ -1383,13 +1383,34 @@ export function ensureStylesheet(cssPath) {
 
 export { defaultLifecycleAdapter as mountToolModule };
 
-const runtime = createToolRuntime();
-if (typeof document !== 'undefined' && document.getElementById('tool-root')) {
-  scheduleNonCriticalTask(() => {
-    runtime.bootstrapToolRuntime().catch((error) => {
-      runtimeLogger.warn('[ToolRuntime] bootstrap task failed safely.', {
-        message: error?.message ?? String(error)
+  // ---------------------------------------------------------
+  // Runtime bootstrap (FIXED)
+  // ---------------------------------------------------------
+
+  const runtime = createToolRuntime();
+
+  /*
+   * IMPORTANT FIX
+   * ---------------------------------------------------------
+   * Some lifecycle modules and legacy tools still rely on
+   * global runtime access.
+   *
+   * This restores compatibility without changing architecture.
+   */
+  if (typeof window !== 'undefined') {
+    window.ToolNexusRuntime ??= runtime;
+  }
+
+  if (typeof document !== 'undefined' && document.getElementById('tool-root')) {
+    scheduleNonCriticalTask(() => {
+      runtime.bootstrapToolRuntime().catch((error) => {
+
+        // FIX:
+        // runtimeLogger was undefined -> replaced with safe console fallback
+        console.warn('[ToolRuntime] bootstrap task failed safely.', {
+          message: error?.message ?? String(error)
+        });
+
       });
     });
-  });
-}
+  } 

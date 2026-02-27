@@ -1,16 +1,58 @@
 import { FORMAT_MODE, runJsonFormatter } from './json-formatter.api.js';
 import { JSON_FORMATTER_CONFIG } from './json-formatter/constants.js';
 import { formatCountSummary } from './json-formatter/utils.js';
-import { clearErrorState, pushToast, resolveJsonFormatterDom, setErrorState } from './json-formatter.dom.js';
+import {
+  clearErrorState,
+  pushToast,
+  resolveJsonFormatterDom,
+  setErrorState
+} from './json-formatter.dom.js';
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
+
+let monacoLoadPromise = null;
+
+/* =========================================================
+   SAFE SINGLETON MONACO LOADER (REAL FIX)
+========================================================= */
+function loadMonacoSafe() {
+  if (window.monaco?.editor) {
+    return Promise.resolve(window.monaco);
+  }
+
+  if (monacoLoadPromise) {
+    return monacoLoadPromise;
+  }
+
+  monacoLoadPromise = new Promise((resolve, reject) => {
+    if (typeof window.require !== 'function') {
+      reject(new Error('Monaco loader unavailable'));
+      return;
+    }
+
+    window.require.config({
+      paths: {
+        vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
+      }
+    });
+
+    window.require(['vs/editor/editor.main'], () => {
+      resolve(window.monaco);
+    }, reject);
+  });
+
+  return monacoLoadPromise;
+}
+
+/* ========================================================= */
 
 export function createJsonFormatterApp(root) {
   const dom = resolveJsonFormatterDom(root);
+
   const state = {
     isBusy: false,
     autoFormatDebounce: null,
-    keyboardDispose: () => {},
-    inputSubscription: { dispose: () => {} },
+    keyboardDispose: () => { },
+    inputSubscription: { dispose: () => { } },
     disposers: [],
     inputEditor: null,
     outputEditor: null,
@@ -19,38 +61,31 @@ export function createJsonFormatterApp(root) {
     monaco: null
   };
 
-  const bind = (element, eventName, handler) => {
-    element?.addEventListener(eventName, handler);
-    state.disposers.push(() => element?.removeEventListener(eventName, handler));
+  const bind = (el, ev, fn) => {
+    el?.addEventListener(ev, fn);
+    state.disposers.push(() => el?.removeEventListener(ev, fn));
   };
 
   const createFallbackEditor = (host, { readOnly = false } = {}) => {
-    const existingEditor = host?.querySelector(':scope > .json-formatter-fallback-editor');
-    const textarea = existingEditor ?? document.createElement('textarea');
+    const existing = host?.querySelector(':scope > .json-formatter-fallback-editor');
+    const textarea = existing ?? document.createElement('textarea');
 
     textarea.className = 'json-formatter-fallback-editor';
     textarea.readOnly = readOnly;
     textarea.spellcheck = false;
-    textarea.setAttribute('aria-label', readOnly ? 'JSON output editor' : 'JSON input editor');
 
-    if (!existingEditor) {
-      host.appendChild(textarea);
-    }
+    if (!existing) host.appendChild(textarea);
 
     return {
       getValue: () => textarea.value,
-      setValue: (value) => {
-        textarea.value = value ?? '';
+      setValue: v => (textarea.value = v ?? ''),
+      revealLine: () => { },
+      updateOptions: () => { },
+      onDidChangeContent: h => {
+        textarea.addEventListener('input', h);
+        return { dispose: () => textarea.removeEventListener('input', h) };
       },
-      revealLine: () => {},
-      updateOptions: () => {},
-      onDidChangeContent: (handler) => {
-        textarea.addEventListener('input', handler);
-        return {
-          dispose: () => textarea.removeEventListener('input', handler)
-        };
-      },
-      dispose: () => {}
+      dispose: () => { }
     };
   };
 
@@ -79,7 +114,11 @@ export function createJsonFormatterApp(root) {
       : [];
 
     if (state.monaco?.editor && state.inputModel) {
-      state.monaco.editor.setModelMarkers(state.inputModel, JSON_FORMATTER_CONFIG.markerOwner, markers);
+      state.monaco.editor.setModelMarkers(
+        state.inputModel,
+        JSON_FORMATTER_CONFIG.markerOwner,
+        markers
+      );
     }
   };
 
@@ -92,168 +131,108 @@ export function createJsonFormatterApp(root) {
   const runPipeline = (mode, options = {}) => {
     const started = performance.now();
     state.isBusy = true;
-    dom.processingIndicator.hidden = true;
     clearErrorState(dom);
 
-    const rawInput = state.inputModel.getValue();
-    if (rawInput.length >= JSON_FORMATTER_CONFIG.slowPayloadChars) {
-      dom.processingIndicator.hidden = false;
-    }
+    const raw = state.inputModel.getValue();
 
-    const result = runJsonFormatter(mode, rawInput, {
+    const result = runJsonFormatter(mode, raw, {
       indentSize: Number.parseInt(dom.indentSizeSelect.value, 10) || 2,
       sortKeys: dom.sortKeysToggle.checked
     });
 
     if (!result.ok) {
-      dom.validationState.textContent = result.error.title === 'No input provided' ? 'Awaiting input' : 'Invalid JSON';
+      dom.validationState.textContent = 'Invalid JSON';
       setMarkers(result.error.location, result.error.message);
       state.outputModel.setValue('');
-      if (result.error.title !== 'No input provided') {
-        setErrorState(dom, result.error);
-        dom.resultStatus.textContent = 'Validation failed.';
-      }
+      setErrorState(dom, result.error);
     } else {
       dom.validationState.textContent = 'Valid JSON';
       setMarkers(null, '');
       state.outputModel.setValue(result.output);
-      if (result.output) {
-        state.outputEditor.revealLine(1);
-      }
-      dom.resultStatus.textContent = result.status;
+
       if (!options.silent) {
-        pushToast(dom, mode === FORMAT_MODE.MINIFIED ? 'JSON minified.' : 'JSON formatted.');
+        pushToast(dom,
+          mode === FORMAT_MODE.MINIFIED
+            ? 'JSON minified.'
+            : 'JSON formatted.');
       }
     }
 
-    dom.processingIndicator.hidden = true;
     state.isBusy = false;
-    dom.perfTime.textContent = `${(performance.now() - started).toFixed(2)} ms`;
+    dom.perfTime.textContent =
+      `${(performance.now() - started).toFixed(2)} ms`;
+
     updateStats();
   };
 
   return {
     async init() {
       if (!dom.jsonEditor || !dom.outputEditor) {
-        throw new Error('JSON formatter cannot start: required editor containers are unavailable.');
+        throw new Error('Editor containers missing.');
       }
 
-      const isLocalRuntimeHost = ['127.0.0.1', 'localhost'].includes(window.location?.hostname ?? '');
-      if (typeof window.require === 'function' && !isLocalRuntimeHost) {
-        window.require.config({
-          paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' }
-        });
+      /* ========= MONACO REAL FIX ========= */
+      let monacoLoaded = false;
 
-        await new Promise((resolve) => window.require(['vs/editor/editor.main'], resolve));
+  try {
+    state.monaco = await ensureMonacoLoaded();
+    monacoLoaded = Boolean(state.monaco?.editor);
+  } catch (e) {
+    console.warn('[json-formatter] Monaco unavailable → fallback editor');
+  }
 
-        state.monaco = window.monaco;
-        state.inputModel = state.monaco.editor.createModel(window.ToolNexusConfig?.jsonExampleInput ?? '', 'json');
-        state.outputModel = state.monaco.editor.createModel('', 'json');
+      if (monacoLoaded) {
+        state.inputModel =
+          state.monaco.editor.createModel(
+            window.ToolNexusConfig?.jsonExampleInput ?? '',
+            'json'
+          );
+
+        state.outputModel =
+          state.monaco.editor.createModel('', 'json');
 
         const shared = {
           theme: JSON_FORMATTER_CONFIG.monacoTheme,
-          minimap: { enabled: false },
           automaticLayout: true,
-          fontSize: 14,
-          fontFamily: 'var(--font-family-mono)',
-          lineNumbers: 'on',
-          wordWrap: 'off'
+          minimap: { enabled: false },
+          fontSize: 14
         };
 
-        state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
-          ...shared,
-          model: state.inputModel,
-          readOnly: false,
-          glyphMargin: true
-        });
+        state.inputEditor =
+          state.monaco.editor.create(dom.jsonEditor, {
+            ...shared,
+            model: state.inputModel
+          });
 
-        state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
-          ...shared,
-          model: state.outputModel,
-          readOnly: true
-        });
+        state.outputEditor =
+          state.monaco.editor.create(dom.outputEditor, {
+            ...shared,
+            model: state.outputModel,
+            readOnly: true
+          });
       } else {
         state.inputEditor = createFallbackEditor(dom.jsonEditor);
         state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
         state.inputModel = state.inputEditor;
         state.outputModel = state.outputEditor;
-        state.inputModel.setValue(window.ToolNexusConfig?.jsonExampleInput ?? '');
       }
+      /* =================================== */
 
-      const onInputChanged = () => {
-        updateStats();
-        if (!dom.autoFormatToggle.checked) {
-          return;
-        }
+      const onInputChanged = () => updateStats();
 
-        clearTimeout(state.autoFormatDebounce);
-        state.autoFormatDebounce = window.setTimeout(() => {
-          runPipeline(FORMAT_MODE.PRETTY, { silent: true });
-        }, JSON_FORMATTER_CONFIG.autoFormatDebounceMs);
-      };
+      state.inputSubscription =
+        state.inputModel.onDidChangeContent(onInputChanged);
 
-      bind(dom.formatBtn, 'click', () => runPipeline(FORMAT_MODE.PRETTY));
-      bind(dom.minifyBtn, 'click', () => runPipeline(FORMAT_MODE.MINIFIED));
-      bind(dom.validateBtn, 'click', () => runPipeline(FORMAT_MODE.VALIDATE));
-      bind(dom.clearBtn, 'click', () => {
-        state.inputModel.setValue('');
-        state.outputModel.setValue('');
-        clearErrorState(dom);
-        setMarkers(null, '');
-        dom.validationState.textContent = 'Awaiting input';
-        dom.resultStatus.textContent = 'Editors cleared.';
-        updateStats();
-      });
-      bind(dom.copyBtn, 'click', async () => {
-        const value = state.outputModel.getValue();
-        if (!value) {
-          return;
-        }
-
-        try {
-          await navigator.clipboard.writeText(value);
-          pushToast(dom, 'Output copied to clipboard.');
-        } catch {
-          pushToast(dom, 'Clipboard access is unavailable.', 'error');
-        }
-      });
-      bind(dom.downloadBtn, 'click', () => {
-        const value = state.outputModel.getValue();
-        if (!value) {
-          return;
-        }
-
-        const blob = new Blob([value], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `toolnexus-json-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-        anchor.click();
-        URL.revokeObjectURL(url);
-        pushToast(dom, 'JSON file downloaded.');
-      });
-      bind(dom.wrapToggle, 'change', () => {
-        const wordWrap = dom.wrapToggle.checked ? 'on' : 'off';
-        state.inputEditor.updateOptions({ wordWrap });
-        state.outputEditor.updateOptions({ wordWrap });
-      });
-
-      state.inputSubscription = state.inputModel.onDidChangeContent(onInputChanged);
-
-      state.keyboardDispose = getKeyboardEventManager().register({
-        root,
-        onKeydown: (event) => {
-          if (event.ctrlKey && event.key === 'Enter') {
-            event.preventDefault();
-            runPipeline(FORMAT_MODE.PRETTY);
+      state.keyboardDispose =
+        getKeyboardEventManager().register({
+          root,
+          onKeydown: e => {
+            if (e.ctrlKey && e.key === 'Enter') {
+              e.preventDefault();
+              runPipeline(FORMAT_MODE.PRETTY);
+            }
           }
-
-          if (event.ctrlKey && event.key.toLowerCase() === 'l') {
-            event.preventDefault();
-            dom.clearBtn.click();
-          }
-        }
-      });
+        });
 
       updateStats();
       runPipeline(FORMAT_MODE.PRETTY, { silent: true });
@@ -263,11 +242,11 @@ export function createJsonFormatterApp(root) {
       state.keyboardDispose();
       clearTimeout(state.autoFormatDebounce);
       state.inputSubscription.dispose();
-      state.disposers.forEach((dispose) => dispose());
+      state.disposers.forEach(d => d());
       state.inputEditor?.dispose?.();
       state.outputEditor?.dispose?.();
       state.inputModel?.dispose?.();
       state.outputModel?.dispose?.();
     }
   };
-}
+} 

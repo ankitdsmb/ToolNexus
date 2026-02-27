@@ -1,0 +1,176 @@
+2026-02-27T05:15:01.7828735+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T05:15:04.1517169+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=2384
+2026-02-27T05:15:04.1548860+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T05:15:04.3973958+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=242
+2026-02-27T05:15:04.4004695+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T05:15:04.5244617+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=124
+2026-02-27T05:15:04.5271472+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T05:15:04.7506332+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=222
+2026-02-27T05:15:04.7605260+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T05:15:04.8077790+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=53
+2026-02-27T05:15:04.8112203+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T05:15:04.8343441+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=22
+2026-02-27T05:15:04.8377556+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T05:15:04.9969637+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=159
+2026-02-27T05:15:05.0007572+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T05:15:05.0233649+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=21
+2026-02-27T05:29:56.2127374+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T05:29:58.4906927+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=2304
+2026-02-27T05:29:58.4944802+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T05:29:58.8752030+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=380
+2026-02-27T05:29:58.8788597+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T05:29:59.0163469+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=137
+2026-02-27T05:29:59.0194657+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T05:29:59.2580699+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=237
+2026-02-27T05:29:59.2622643+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T05:29:59.2920667+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=28
+2026-02-27T05:29:59.2967376+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T05:29:59.3215617+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=25
+2026-02-27T05:29:59.3257062+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T05:29:59.5170302+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=191
+2026-02-27T05:29:59.5214490+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T05:29:59.5504002+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=28
+2026-02-27T05:40:25.4857823+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T05:40:27.2965285+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1817
+2026-02-27T05:40:27.2996934+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T05:40:27.5385480+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=238
+2026-02-27T05:40:27.5412439+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T05:40:27.6597578+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=117
+2026-02-27T05:40:27.6639910+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T05:40:27.8788475+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=215
+2026-02-27T05:40:27.8818571+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T05:40:27.9084325+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=25
+2026-02-27T05:40:27.9127286+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T05:40:27.9357268+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=23
+2026-02-27T05:40:27.9389849+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T05:40:28.1055246+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=166
+2026-02-27T05:40:28.1088401+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T05:40:28.1346871+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=24
+2026-02-27T05:52:46.6949073+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T05:52:48.4902323+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1803
+2026-02-27T05:52:48.4942881+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T05:52:48.7641501+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=270
+2026-02-27T05:52:48.7668399+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T05:52:48.8960312+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=127
+2026-02-27T05:52:48.8988970+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T05:52:49.1133368+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=213
+2026-02-27T05:52:49.1177777+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T05:52:49.1465852+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=27
+2026-02-27T05:52:49.1509456+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T05:52:49.1764487+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=26
+2026-02-27T05:52:49.1803611+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T05:52:49.3557653+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=174
+2026-02-27T05:52:49.3620783+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T05:52:49.3900702+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=27
+2026-02-27T06:00:44.6846224+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T06:00:46.4036357+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1726
+2026-02-27T06:00:46.4068578+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T06:00:46.6438915+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=236
+2026-02-27T06:00:46.6467819+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T06:00:46.7626143+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=113
+2026-02-27T06:00:46.7668877+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T06:00:46.9654073+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=199
+2026-02-27T06:00:46.9686651+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T06:00:46.9910458+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=22
+2026-02-27T06:00:46.9952304+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T06:00:47.0204769+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=23
+2026-02-27T06:00:47.0241088+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T06:00:47.1855753+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=162
+2026-02-27T06:00:47.1883743+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T06:00:47.2096488+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=20
+2026-02-27T06:07:36.3923002+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T06:07:38.1656304+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1782
+2026-02-27T06:07:38.1699984+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T06:07:38.4080730+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=238
+2026-02-27T06:07:38.4112998+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T06:07:38.5385453+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=127
+2026-02-27T06:07:38.5416645+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T06:07:38.7471397+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=205
+2026-02-27T06:07:38.7501019+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T06:07:38.7753501+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=22
+2026-02-27T06:07:38.7785626+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T06:07:38.7968785+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=18
+2026-02-27T06:07:38.8003069+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T06:07:38.9644480+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=164
+2026-02-27T06:07:38.9678580+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T06:07:38.9951865+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=27
+2026-02-27T06:20:39.3061901+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T06:20:43.8691578+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=4581
+2026-02-27T06:20:43.8791485+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T06:20:44.4381430+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=561
+2026-02-27T06:20:44.4451958+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T06:20:44.7349614+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=289
+2026-02-27T06:20:44.7440613+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T06:20:45.2876257+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=546
+2026-02-27T06:20:45.2947807+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T06:20:45.3419941+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=46
+2026-02-27T06:20:45.3499289+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T06:20:45.3899364+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=40
+2026-02-27T06:20:45.4182283+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T06:20:45.8140548+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=407
+2026-02-27T06:20:45.8222945+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T06:20:45.8661235+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=44
+2026-02-27T07:18:11.6223690+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T07:18:13.5831519+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1969
+2026-02-27T07:18:13.5871721+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T07:18:13.8473369+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=260
+2026-02-27T07:18:13.8510366+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T07:18:13.9880350+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=135
+2026-02-27T07:18:13.9926119+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T07:18:14.2637915+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=271
+2026-02-27T07:18:14.2682447+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T07:18:14.3140065+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=45
+2026-02-27T07:18:14.3181796+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T07:18:14.3468037+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=28
+2026-02-27T07:18:14.3512079+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T07:18:14.5999017+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=248
+2026-02-27T07:18:14.6034122+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T07:18:14.6303893+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=26
+2026-02-27T07:20:29.0306926+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T07:20:31.1091712+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=2087
+2026-02-27T07:20:31.1128508+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T07:20:31.3820595+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=268
+2026-02-27T07:20:31.3853040+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T07:20:31.5261890+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=140
+2026-02-27T07:20:31.5292747+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T07:20:31.7509977+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=221
+2026-02-27T07:20:31.7550605+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T07:20:31.7840661+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=28
+2026-02-27T07:20:31.7891318+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T07:20:31.8119229+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=23
+2026-02-27T07:20:31.8168194+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T07:20:32.0077079+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=192
+2026-02-27T07:20:32.0109431+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T07:20:32.0344049+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=22
+2026-02-27T07:37:10.3703025+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T07:37:12.3550787+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1995
+2026-02-27T07:37:12.3593855+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T07:37:13.0807966+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=722
+2026-02-27T07:37:13.0838699+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T07:37:13.2096366+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=125
+2026-02-27T07:37:13.2132151+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T07:37:13.4229295+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=209
+2026-02-27T07:37:13.4270497+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T07:37:13.4509333+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=24
+2026-02-27T07:37:13.4543331+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T07:37:13.4776231+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=23
+2026-02-27T07:37:13.4814346+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T07:37:13.6705049+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=190
+2026-02-27T07:37:13.6741449+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T07:37:13.6973292+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=24
+2026-02-27T07:41:57.7145605+00:00 [StartupPhase] BEGIN Phase 0 (Database Initialization)
+2026-02-27T07:41:59.3495105+00:00 [StartupPhase] END Phase 0 (Database Initialization) DurationMs=1642
+2026-02-27T07:41:59.3521585+00:00 [StartupPhase] BEGIN Phase 1 (Tool Content Seeding)
+2026-02-27T07:41:59.5594757+00:00 [StartupPhase] END Phase 1 (Tool Content Seeding) DurationMs=207
+2026-02-27T07:41:59.5618374+00:00 [StartupPhase] BEGIN Phase 2 (Tool Manifest Synchronization)
+2026-02-27T07:41:59.6681180+00:00 [StartupPhase] END Phase 2 (Tool Manifest Synchronization) DurationMs=105
+2026-02-27T07:41:59.6705250+00:00 [StartupPhase] BEGIN Phase 3 (Platform Cache Warmup)
+2026-02-27T07:41:59.8493480+00:00 [StartupPhase] END Phase 3 (Platform Cache Warmup) DurationMs=179
+2026-02-27T07:41:59.8519594+00:00 [StartupPhase] BEGIN Phase 4 (Manifest Startup Validation)
+2026-02-27T07:41:59.8712240+00:00 [StartupPhase] END Phase 4 (Manifest Startup Validation) DurationMs=19
+2026-02-27T07:41:59.8742912+00:00 [StartupPhase] BEGIN Phase 5 (Manifest Executor Alignment Validation)
+2026-02-27T07:41:59.8911603+00:00 [StartupPhase] END Phase 5 (Manifest Executor Alignment Validation) DurationMs=16
+2026-02-27T07:41:59.8940161+00:00 [StartupPhase] BEGIN Phase 6 (Admin Identity Bootstrap)
+2026-02-27T07:42:00.0419825+00:00 [StartupPhase] END Phase 6 (Admin Identity Bootstrap) DurationMs=147
+2026-02-27T07:42:00.0468813+00:00 [StartupPhase] BEGIN Phase 7 (Admin Identity Startup Validation)
+2026-02-27T07:42:00.0661952+00:00 [StartupPhase] END Phase 7 (Admin Identity Startup Validation) DurationMs=21

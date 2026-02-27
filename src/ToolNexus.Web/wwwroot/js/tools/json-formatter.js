@@ -1,66 +1,70 @@
 import { createJsonFormatterApp } from './json-formatter.app.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
 
 const TOOL_ID = 'json-formatter';
 
-function resolveRoot() {
-  return document.querySelector('[data-tool="json-formatter"]');
-}
-
-function resolveRootFromContext(rootOrContext) {
+/**
+ * ALWAYS resolve full tool article.
+ * Runtime may pass different scopes.
+ */
+function resolveRoot(rootOrContext) {
   if (rootOrContext instanceof Element) {
-    return rootOrContext;
+    return (
+      rootOrContext.closest('[data-tool="json-formatter"]') ||
+      rootOrContext
+    );
   }
 
   if (rootOrContext?.root instanceof Element) {
-    return rootOrContext.root;
+    return resolveRoot(rootOrContext.root);
   }
 
   if (rootOrContext?.toolRoot instanceof Element) {
-    return rootOrContext.toolRoot;
+    return resolveRoot(rootOrContext.toolRoot);
   }
 
-  return resolveRoot();
+  return document.querySelector('[data-tool="json-formatter"]');
 }
 
-export function create(rootOrContext = resolveRoot()) {
-  const root = resolveRootFromContext(rootOrContext);
+/* ===================================================
+   RUNTIME LIFECYCLE CONTRACT (FIXED)
+=================================================== */
+
+export function create(rootOrContext) {
+  const root = resolveRoot(rootOrContext);
+
   if (!root) {
+    console.warn('[json-formatter] root not found');
     return null;
   }
 
-  return getToolPlatformKernel().registerTool({
-    id: TOOL_ID,
-    root,
-    init: () => {
-      const app = createJsonFormatterApp(root);
-      app.init();
-      return app;
-    },
-    destroy: (app) => app?.destroy?.()
-  });
+  // IMPORTANT:
+  // runtime expects REAL app instance — NOT kernel handle
+  const app = createJsonFormatterApp(root);
+  return app;
 }
 
-export function init(rootOrContext = resolveRoot()) {
-  if (rootOrContext?.id === TOOL_ID && typeof rootOrContext?.init === 'function') {
-    rootOrContext.init();
-    return rootOrContext;
-  }
+export function init(appOrRoot) {
+  const app =
+    appOrRoot?.init && appOrRoot?.destroy
+      ? appOrRoot
+      : create(appOrRoot);
 
-  const handle = create(rootOrContext);
-  if (!handle) {
-    return null;
-  }
+  if (!app) return null;
 
-  handle.init();
-  return handle;
+  app.init?.();
+  return app;
 }
 
-export function destroy(rootOrContext = resolveRoot()) {
-  const root = resolveRootFromContext(rootOrContext);
-  if (!root) {
+export function destroy(appOrRoot) {
+  if (appOrRoot?.destroy) {
+    appOrRoot.destroy();
     return;
   }
 
-  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
-}
+  const root = resolveRoot(appOrRoot);
+  if (!root) return;
+
+  // optional safeguard cleanup
+  root.querySelectorAll('.json-formatter-fallback-editor')
+    .forEach(el => el.remove());
+} 

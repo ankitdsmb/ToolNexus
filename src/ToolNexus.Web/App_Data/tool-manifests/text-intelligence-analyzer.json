@@ -1,0 +1,12 @@
+{
+  "Slug": "text-intelligence-analyzer",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/text-intelligence-analyzer.js",
+  "TemplatePath": "/tool-templates/text-intelligence-analyzer.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": "",
+  "UiMode": "auto",
+  "ComplexityTier": 1
+}
