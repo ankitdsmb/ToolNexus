@@ -15,10 +15,22 @@ function normalizeToolRootInput(input) {
   const candidates = [
     input.root,
     input.toolRoot,
+    input.element,
+    input.host,
     input.context?.root,
     input.context?.toolRoot,
+    input.context?.element,
+    input.context?.host,
     input.executionContext?.root,
-    input.executionContext?.toolRoot
+    input.executionContext?.toolRoot,
+    input.executionContext?.element,
+    input.executionContext?.host,
+    input.handle?.root,
+    input.handle?.toolRoot,
+    input.instance?.root,
+    input.instance?.toolRoot,
+    input.runtime?.root,
+    input.runtime?.toolRoot
   ];
 
   for (const value of candidates) {
@@ -69,7 +81,7 @@ class ToolPlatformKernel {
     }
 
     throw new Error(
-      '[ToolKernel] Invalid root passed to registerTool()\n'
+      '[ToolKernel] invalid root passed\n'
       + 'Expected HTMLElement with runtime tool identity.\n'
       + `Received: ${this.describeRootType(root)}\n`
       + `Callsite: ${callsite}`
@@ -88,14 +100,15 @@ class ToolPlatformKernel {
     const normalizedRoot = this.normalizeToolRoot(root);
 
     if (!normalizedRoot) {
-      throw new Error('[ToolKernel] registerTool received invalid root context');
+      throw new Error('[ToolKernel] invalid root passed');
     }
 
     if (this.isDevelopmentMode()) {
       console.debug('[ToolKernel] normalized root', {
-        inputType: typeof root,
-        resolvedTag: normalizedRoot?.tagName,
-        resolvedDataset: normalizedRoot?.dataset
+        inputType: this.describeRootType(root),
+        resolvedTag: String(normalizedRoot?.tagName ?? '').toLowerCase(),
+        resolvedDataset: normalizedRoot?.dataset,
+        callsite: 'registerTool()'
       });
     }
 
@@ -194,26 +207,28 @@ class ToolPlatformKernel {
   }
 
   createToolKey(id, root, callsite = 'createToolKey()') {
-    if (!(root instanceof Element)) {
+    const normalizedRoot = this.normalizeToolRoot(root);
+    if (!(normalizedRoot instanceof Element)) {
       throw new Error('[ToolKernel] createToolKey requires Element root');
     }
 
-    return `${id}:${this.ensureRootId(root, callsite)}`;
+    return `${id}:${this.ensureRootId(normalizedRoot, callsite)}`;
   }
 
   ensureRootId(root, callsite = 'ensureRootId()') {
-    if (!(root instanceof Element)) {
+    const normalizedRoot = this.normalizeToolRoot(root);
+    if (!(normalizedRoot instanceof Element)) {
       throw new Error('[ToolKernel] ensureRootId requires Element root');
     }
 
-    this.assertValidRoot(root, callsite);
+    this.assertValidRoot(normalizedRoot, callsite);
 
-    if (root.dataset.toolRootId) {
-      return root.dataset.toolRootId;
+    if (normalizedRoot.dataset.toolRootId) {
+      return normalizedRoot.dataset.toolRootId;
     }
 
     const generated = `${TOOL_ROOT_ID_PREFIX}${Math.random().toString(16).slice(2)}`;
-    root.dataset.toolRootId = generated;
+    normalizedRoot.dataset.toolRootId = generated;
     return generated;
   }
 

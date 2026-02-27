@@ -1075,7 +1075,8 @@ export function createToolRuntime({
         let result;
         try {
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
-          if (strictMode) {
+          const shouldAssertLifecycleRoots = strictMode && String(result?.mode ?? '') === 'module.lifecycle-contract';
+          if (shouldAssertLifecycleRoots) {
             assertDomContractRootsUnchanged(contractRootSnapshot, 'mount.lifecycle');
           }
           guardInvalidLifecycleResult(result, { slug, mode: result?.mode ?? 'unknown', phase: 'mount.result' });
@@ -1101,7 +1102,8 @@ export function createToolRuntime({
         }
 
 
-        if (result?.normalized) {
+        const legacyLifecycleMode = String(result?.mode ?? '');
+        if (legacyLifecycleMode.startsWith('legacy') || legacyLifecycleMode.startsWith('window.')) {
           runtimeMetrics.legacyAdapterUsage += 1;
           emit('compatibility_mode_used', { toolSlug: slug, modeUsed: 'legacy' });
         }
