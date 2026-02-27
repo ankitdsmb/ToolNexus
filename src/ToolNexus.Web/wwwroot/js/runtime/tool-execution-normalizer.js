@@ -3,6 +3,37 @@ import { createRuntimeLogger } from './runtime-logger.js';
 
 const logger = createRuntimeLogger({ source: 'tool-execution-normalizer' });
 
+function shouldGuardLifecycleDiagnostics() {
+  return Boolean(import.meta?.env?.DEV || window.ToolNexusLogging?.runtimeDebugEnabled === true);
+}
+
+function isValidLifecycleResultShape(result) {
+  if (!result || typeof result !== 'object') {
+    return false;
+  }
+
+  const hasMountedFlag = typeof result.mounted === 'boolean';
+  const hasValidCleanup = result.cleanup === undefined || typeof result.cleanup === 'function';
+  return hasMountedFlag && hasValidCleanup;
+}
+
+export function guardInvalidLifecycleResult(result, { slug = 'unknown', mode = 'unknown', phase = 'mount' } = {}) {
+  if (!shouldGuardLifecycleDiagnostics() || isValidLifecycleResultShape(result)) {
+    return;
+  }
+
+  const diagnostics = {
+    toolSlug: slug,
+    lifecycleMode: mode,
+    phase,
+    returnedObject: result,
+    stack: result?.stack ?? new Error('[ToolRuntimeGuard] Lifecycle result stack capture').stack
+  };
+
+  console.error('[ToolRuntimeGuard] Invalid lifecycle result detected', diagnostics);
+  logger.error('[ToolRuntimeGuard] Invalid lifecycle result detected', diagnostics);
+}
+
 function toCandidates(toolModule) {
   return [toolModule, toolModule?.default, toolModule?.lifecycle, toolModule?.default?.lifecycle].filter(Boolean);
 }

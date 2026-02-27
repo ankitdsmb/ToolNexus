@@ -19,6 +19,8 @@ import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js'
 import { createAutoToolRuntimeModule } from './runtime/tool-auto-runtime.js';
 import { useUnifiedToolControl as useUnifiedControlAdapter } from './runtime/tool-unified-control-runtime.js';
 import { createToolContainerManager, normalizeToolMountMode } from './runtime/tool-container-manager.js';
+import { createRuntimeCrashOverlay } from './runtime/runtime-crash-overlay.js';
+import { guardInvalidLifecycleResult } from './runtime/tool-execution-normalizer.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -52,6 +54,12 @@ function createRuntimeIdentityDescriptor({
   };
 }
 
+
+function isDevelopmentEnvironment() {
+  const environment = String(window.ToolNexusConfig?.runtimeEnvironment ?? window.ToolNexusConfig?.environment ?? '').trim().toLowerCase();
+  return environment === 'development';
+}
+
 function isDevelopmentRuntime() {
   const environment = String(window.ToolNexusConfig?.runtimeEnvironment ?? window.ToolNexusConfig?.environment ?? '').trim().toLowerCase();
   if (environment) {
@@ -63,9 +71,17 @@ function isDevelopmentRuntime() {
 
 function shouldExposeRuntimeErrors() {
   return (
-    window.ToolNexusConfig?.runtimeEnvironment === 'development'
+    isDevelopmentEnvironment()
     || window.ToolNexusLogging?.runtimeDebugEnabled === true
     || window.ToolNexusConfig?.adminRuntimeDebug === true
+  );
+}
+
+function shouldShowRuntimeCrashOverlay() {
+  return (
+    window.ToolNexusConfig?.isAdmin === true
+    || window.ToolNexusLogging?.runtimeDebugEnabled === true
+    || isDevelopmentEnvironment()
   );
 }
 
@@ -161,6 +177,40 @@ export function createToolRuntime({
       metadata,
       timestamp: new Date().toISOString()
     };
+  }
+
+  function showRuntimeCrashOverlay(root, details = {}) {
+    if (!shouldShowRuntimeCrashOverlay()) {
+      return null;
+    }
+
+    const overlayRoot = root ?? getRoot();
+    if (!overlayRoot) {
+      return null;
+    }
+
+    const payload = {
+      root: overlayRoot,
+      toolSlug: details.toolSlug ?? 'unknown-tool',
+      phase: details.phase ?? 'unknown-phase',
+      errorMessage: details.errorMessage ?? 'Unknown runtime error',
+      stack: details.stack,
+      runtimeIdentity: details.runtimeIdentity,
+      classification: details.classification ?? 'runtime_error'
+    };
+
+    const overlay = createRuntimeCrashOverlay(payload);
+    if (overlay) {
+      logger.error('[RuntimeCrashOverlay] displayed', {
+        toolSlug: payload.toolSlug,
+        phase: payload.phase,
+        classification: payload.classification,
+        runtimeIdentity: payload.runtimeIdentity,
+        errorMessage: payload.errorMessage
+      });
+    }
+
+    return overlay;
   }
 
   function renderContractError(root, errors) {
@@ -806,6 +856,14 @@ export function createToolRuntime({
       const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
       logger.error(message, errors);
       emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
+      showRuntimeCrashOverlay(root, {
+        toolSlug: slug,
+        phase: 'dom_contract_failure',
+        errorMessage: message,
+        stack: errors.join('\n'),
+        runtimeIdentity: { ...runtimeIdentity },
+        classification: 'contract_violation'
+      });
       renderContractError(root, errors);
       return;
     }
@@ -895,6 +953,14 @@ export function createToolRuntime({
             error: error?.message ?? String(error)
           });
         }
+        showRuntimeCrashOverlay(root, {
+          toolSlug: slug,
+          phase: 'module_import_failure',
+          errorMessage: error?.message ?? String(error),
+          stack: error?.stack,
+          runtimeIdentity: { ...runtimeIdentity },
+          classification: 'runtime_error'
+        });
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
@@ -976,12 +1042,21 @@ export function createToolRuntime({
         let result;
         try {
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+          guardInvalidLifecycleResult(result, { slug, mode: result?.mode ?? 'unknown', phase: 'mount.result' });
         } catch (error) {
           if (shouldExposeRuntimeErrors()) {
             console.error(`[ToolRuntime DEV] Lifecycle crash for "${slug}"`, error);
             emit('lifecycle_crash_dev', {
               toolSlug: slug,
               error: error?.stack ?? error?.message ?? String(error)
+            });
+            showRuntimeCrashOverlay(root, {
+              toolSlug: slug,
+              phase: 'lifecycle_retry_failure',
+              errorMessage: error?.message ?? String(error),
+              stack: error?.stack,
+              runtimeIdentity: { ...runtimeIdentity },
+              classification: 'runtime_error'
             });
             throw error;
           }
@@ -1006,6 +1081,7 @@ export function createToolRuntime({
             const retryValidation = validateDomAtPhase(root, 'lifecycle-retry-recheck').validation;
             if (retryValidation.isValid) {
               result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+              guardInvalidLifecycleResult(result, { slug, mode: result?.mode ?? 'unknown', phase: 'mount.retry.result' });
               logger.info('[DomAdapter] init retry success', { slug });
             } else {
               throw error;
@@ -1234,6 +1310,15 @@ export function createToolRuntime({
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
 
+        showRuntimeCrashOverlay(root, {
+          toolSlug: slug,
+          phase: 'mount_failure',
+          errorMessage: error?.message ?? String(error),
+          stack: error?.stack,
+          runtimeIdentity: { ...runtimeIdentity },
+          classification: classifyRuntimeError({ stage: 'mount', message: error?.message, eventName: 'mount_failure' })
+        });
+
         emit('healing_attempt', { toolSlug: slug });
         emit('tool_self_heal_triggered', { toolSlug: slug });
 
@@ -1252,6 +1337,7 @@ export function createToolRuntime({
             });
           }
           const retried = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities: detectToolCapabilities({ slug, module, manifest, root }) });
+          guardInvalidLifecycleResult(retried, { slug, mode: retried?.mode ?? 'unknown', phase: 'healing.retry.result' });
           if (retried?.mounted) {
             healedByCompatibilityFlow = true;
           }

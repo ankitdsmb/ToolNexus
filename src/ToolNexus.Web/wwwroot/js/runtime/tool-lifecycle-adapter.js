@@ -1,5 +1,5 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
-import { normalizeToolExecution } from './tool-execution-normalizer.js';
+import { normalizeToolExecution, guardInvalidLifecycleResult } from './tool-execution-normalizer.js';
 
 const EMPTY_LIFECYCLE_RESULT = Object.freeze({
   mounted: false,
@@ -76,13 +76,21 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
 
   const executionOnly = normalized.metadata.mode === 'legacy.runTool.execution-only';
 
-  return toLifecycleResult({
+  const lifecycleResult = toLifecycleResult({
     mounted: !executionOnly && normalized.metadata.mode !== 'none',
     cleanup: normalized.destroy,
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,
     autoDestroyGenerated: normalized.metadata.autoDestroyGenerated
   });
+
+  guardInvalidLifecycleResult(lifecycleResult, {
+    slug,
+    mode: normalizedMode,
+    phase: 'mountNormalizedLifecycle.result'
+  });
+
+  return lifecycleResult;
 }
 
 async function tryLegacyFallback({ slug, root, manifest, context, capabilities }) {
