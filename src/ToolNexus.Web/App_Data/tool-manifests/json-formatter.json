@@ -4,7 +4,9 @@
   "category": "",
   "modulePath": "/js/tools/json-formatter.js",
   "templatePath": "/tool-templates/json-formatter.html",
-  "dependencies": [],
+  "dependencies": [
+    "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"
+  ],
   "styles": [
     "/css/pages/json-formatter.css"
   ],

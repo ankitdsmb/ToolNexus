@@ -232,6 +232,14 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         }
 
         var normalized = path.Trim();
+
+        if (normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        {
+            return normalized;
+        }
+
         if (!normalized.StartsWith('/'))
         {
             normalized = $"/{normalized}";
@@ -245,6 +253,13 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         if (string.IsNullOrWhiteSpace(path))
         {
             return false;
+        }
+
+        if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
         }
 
         var normalized = NormalizeWebPath(path);
