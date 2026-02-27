@@ -13,9 +13,12 @@
         <div class="d-flex flex-wrap gap-2 mb-3">
             <button id="download-template" class="btn btn-sm btn-outline-secondary" type="button">1) Download JSON template</button>
             <button id="copy-prompt" class="btn btn-sm btn-outline-secondary" type="button">2) Copy AI prompt</button>
+            <button id="generate-contract" class="btn btn-sm btn-outline-primary" type="button">3) Auto-generate from idea</button>
             <button id="validate-json" class="btn btn-sm btn-primary" type="button">4) Validate JSON</button>
             <button id="create-draft" class="btn btn-sm btn-success" type="button">5) Create Draft Tool</button>
         </div>
+        <label for="tool-idea" class="form-label">Tool idea or name (optional)</label>
+        <input id="tool-idea" class="form-control mb-3" type="text" placeholder="e.g. JSON Path Inspector" />
         <label for="ai-json" class="form-label">3) Paste AI output JSON</label>
         <textarea id="ai-json" class="form-control" rows="14" spellcheck="false"></textarea>
         <div id="import-status" class="small mt-2 text-secondary">Waiting for JSON payload.</div>
@@ -33,6 +36,7 @@
 (() => {
   const payloadEl = document.getElementById('ai-json');
   const statusEl = document.getElementById('import-status');
+  const toolIdeaEl = document.getElementById('tool-idea');
   const errorsEl = document.getElementById('import-errors');
   const previewLink = document.getElementById('preview-link');
   let cachedTemplate = null;
@@ -102,6 +106,36 @@
     }
 
     setStatus('Validation passed. Draft import is allowed.');
+  });
+
+  document.getElementById('generate-contract').addEventListener('click', async () => {
+    setErrors([]);
+    previewLink.classList.add('d-none');
+    const response = await fetch('/admin/ai-capability-factory/import/generate-contract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        toolIdea: toolIdeaEl.value,
+        existingToolSlugs: [],
+        correlationId: 'admin-ui-generate-contract',
+        tenantId: 'admin'
+      })
+    });
+
+    if (!response.ok) {
+      setStatus('Contract generation failed.', true);
+      return;
+    }
+
+    const result = await response.json();
+    if (result.status === 'duplicate') {
+      setStatus(result.message || 'Tool already exists.', true);
+      payloadEl.value = JSON.stringify(result, null, 2);
+      return;
+    }
+
+    payloadEl.value = result.contractJson || '';
+    setStatus(`Contract generated for '${result.slug}'. Review and validate before creating draft.`);
   });
 
   document.getElementById('create-draft').addEventListener('click', async () => {

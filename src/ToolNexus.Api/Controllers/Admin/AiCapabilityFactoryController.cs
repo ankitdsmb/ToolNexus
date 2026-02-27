@@ -51,6 +51,11 @@ public sealed class AiCapabilityFactoryController(
     public ActionResult<AiToolPackageTemplateResponse> GetImportTemplate()
         => Ok(importService.GetTemplate());
 
+    [HttpPost("import/generate-contract")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AiToolContractGenerationResponse>> GenerateContract([FromBody] AiToolContractGenerationRequest request, CancellationToken cancellationToken)
+        => Ok(await importService.GenerateContractAsync(request, cancellationToken));
+
     [HttpPost("import/validate")]
     [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<ActionResult<AiToolPackageImportValidationResult>> ValidateImport([FromBody] AiToolPackageImportRequest request, CancellationToken cancellationToken)

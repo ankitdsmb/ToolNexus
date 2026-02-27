@@ -26,6 +26,7 @@ public sealed class AiCapabilityFactoryPreviewControllerTests
     private sealed class StubImportService : IAiToolPackageImportService
     {
         public Task<AiToolPackageRecord> CreateDraftAsync(AiToolPackageImportRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<AiToolContractGenerationResponse> GenerateContractAsync(AiToolContractGenerationRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<AiToolPackageContract?> GetContractBySlugAsync(string slug, CancellationToken cancellationToken)
             => Task.FromResult<AiToolPackageContract?>(new AiToolPackageContract("v1", slug, "{}", "{}", "{}", "{}", [new AiToolVirtualFile("tool.js", "js", "export default {}")], "{}"));
         public AiToolPackageTemplateResponse GetTemplate() => throw new NotImplementedException();

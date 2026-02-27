@@ -44,3 +44,15 @@ public sealed record AiToolPackageImportRequest(
 public sealed record AiToolPackageTemplateResponse(
     string JsonTemplate,
     string Prompt);
+
+public sealed record AiToolContractGenerationRequest(
+    string ToolIdea,
+    IReadOnlyList<string>? ExistingToolSlugs,
+    string CorrelationId,
+    string TenantId);
+
+public sealed record AiToolContractGenerationResponse(
+    string Status,
+    string? Message,
+    string Slug,
+    string? ContractJson);

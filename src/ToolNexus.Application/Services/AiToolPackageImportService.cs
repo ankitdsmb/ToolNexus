@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text;
+using System.Text.RegularExpressions;
 using ToolNexus.Application.Models;
 
 namespace ToolNexus.Application.Services;
@@ -9,6 +11,35 @@ public sealed class AiToolPackageImportService(
 {
     private const int MaxPayloadBytes = 512 * 1024;
     private static readonly HashSet<string> AllowedTypes = ["js", "html", "css", "json", "md"];
+    private static readonly Regex MultiDashRegex = new("-{2,}", RegexOptions.Compiled);
+
+    public async Task<AiToolContractGenerationResponse> GenerateContractAsync(AiToolContractGenerationRequest request, CancellationToken cancellationToken)
+    {
+        var slug = ToSlug(request.ToolIdea);
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            slug = "generated-tool";
+        }
+
+        var incomingDup = request.ExistingToolSlugs?.Any(x => string.Equals(ToSlug(x), slug, StringComparison.OrdinalIgnoreCase)) == true;
+        var packageDup = await repository.ExistsBySlugAsync(slug, cancellationToken);
+        var existingTools = await toolDefinitionService.GetListAsync(cancellationToken);
+        var toolDup = existingTools.Any(x => string.Equals(x.Slug, slug, StringComparison.OrdinalIgnoreCase));
+
+        if (incomingDup || packageDup || toolDup)
+        {
+            return new AiToolContractGenerationResponse(
+                "duplicate",
+                "Tool already exists",
+                slug,
+                null);
+        }
+
+        var title = ToTitle(request.ToolIdea, slug);
+        var description = $"{title} helps developers run focused transformations with governed execution and clean output.";
+        var contractJson = BuildContractJson(slug, title, description);
+        return new AiToolContractGenerationResponse("ok", null, slug, contractJson);
+    }
 
     public AiToolPackageTemplateResponse GetTemplate()
     {
@@ -245,5 +276,106 @@ public sealed class AiToolPackageImportService(
         return content.Contains("eval(", StringComparison.OrdinalIgnoreCase)
                || content.Contains("window.location =", StringComparison.OrdinalIgnoreCase)
                || content.Contains("window.location.href =", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ToSlug(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value.Trim().ToLowerInvariant();
+        var builder = new StringBuilder(normalized.Length);
+        foreach (var ch in normalized)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                builder.Append(ch);
+                continue;
+            }
+
+            builder.Append('-');
+        }
+
+        var collapsed = MultiDashRegex.Replace(builder.ToString(), "-").Trim('-');
+        return collapsed;
+    }
+
+    private static string ToTitle(string? toolIdea, string fallbackSlug)
+    {
+        if (string.IsNullOrWhiteSpace(toolIdea))
+        {
+            return string.Join(' ', fallbackSlug.Split('-', StringSplitOptions.RemoveEmptyEntries).Select(Capitalize));
+        }
+
+        return string.Join(' ', ToSlug(toolIdea).Split('-', StringSplitOptions.RemoveEmptyEntries).Select(Capitalize));
+    }
+
+    private static string Capitalize(string value)
+        => string.IsNullOrWhiteSpace(value) ? value : char.ToUpperInvariant(value[0]) + value[1..];
+
+    private static string BuildContractJson(string slug, string title, string description)
+    {
+        var payload = new
+        {
+            contractVersion = "v1",
+            tool = new
+            {
+                slug,
+                title,
+                description
+            },
+            runtime = new
+            {
+                uiMode = "auto",
+                complexityTier = 1,
+                executionAuthority = "ShadowOnly"
+            },
+            ui = new
+            {
+                viewName = "ToolShell"
+            },
+            seo = new
+            {
+                title = $"{title} | ToolNexus",
+                description
+            },
+            files = new object[]
+            {
+                new
+                {
+                    path = "tool.js",
+                    type = "js",
+                    content = "import { initUI } from './ui.js';\n\nexport default {\n  mount(container){\n    const ui = initUI(container);\n    return {\n      destroy(){\n        ui.destroy();\n      }\n    };\n  }\n};"
+                },
+                new
+                {
+                    path = "ui.js",
+                    type = "js",
+                    content = "import { execute } from './logic.js';\n\nexport function initUI(container){\n  container.innerHTML = '';\n  const root = document.createElement('div');\n  root.className = 'tn-ai-tool';\n  root.innerHTML = `<div class=\"tn-ai-tool__input\"><textarea data-input></textarea><button data-run>Run</button></div><pre data-output></pre>`;\n  container.appendChild(root);\n\n  const runButton = root.querySelector('[data-run]');\n  const input = root.querySelector('[data-input]');\n  const output = root.querySelector('[data-output]');\n  const onClick = () => { output.textContent = execute(input.value); };\n  runButton.addEventListener('click', onClick);\n\n  return {\n    destroy(){\n      runButton.removeEventListener('click', onClick);\n      root.remove();\n    }\n  };\n}"
+                },
+                new
+                {
+                    path = "logic.js",
+                    type = "js",
+                    content = "export function execute(value){\n  const normalized = String(value ?? '').trim();\n  if (!normalized) return 'Enter input to execute.';\n  return `Processed: ${normalized}`;\n}"
+                },
+                new
+                {
+                    path = "template.html",
+                    type = "html",
+                    content = $"<section class=\"tn-article\">\n  <header><h1>{title}</h1><p>{description}</p></header>\n  <section><h2>Input Area</h2><p>Paste your source payload and click run.</p></section>\n  <section><h2>Action Buttons</h2><p>Use Run to execute and reset to clear.</p></section>\n  <section><h2>Result Panel</h2><p>Output appears in the right panel with execution state.</p></section>\n  <section><h2>Real Example</h2><p>Input: hello world → Output: Processed: hello world.</p></section>\n  <section><h2>How To Use</h2><ol><li>Paste input.</li><li>Click run.</li><li>Copy result.</li></ol></section>\n  <article><h2>Deep Dive</h2><p>When teams build internal workflows, they need a lightweight utility that stays predictable. This tool keeps the experience compact, fast, and maintainable while still fitting the larger execution platform patterns.</p></article>\n</section>"
+                },
+                new
+                {
+                    path = "styles.css",
+                    type = "css",
+                    content = ".tn-ai-tool{display:grid;gap:0.75rem}.tn-ai-tool__input{display:grid;gap:0.5rem}.tn-article h1{margin-bottom:0.5rem}"
+                }
+            }
+        };
+
+        return JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
     }
 }
