@@ -34,14 +34,14 @@ public partial class FixIdentityLockoutEndForPostgres : Migration
                     CREATE OR REPLACE FUNCTION pg_temp.tn_try_timestamptz(value_text text)
                     RETURNS timestamp with time zone
                     LANGUAGE plpgsql
-                    AS $$
+                    AS $fn$
                     BEGIN
                         RETURN value_text::timestamp with time zone;
                     EXCEPTION
                         WHEN others THEN
                             RETURN NULL;
                     END;
-                    $$;
+                    $fn$;
 
                     ALTER TABLE "AspNetUsers"
                     ALTER COLUMN "LockoutEnd" TYPE timestamp with time zone
