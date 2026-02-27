@@ -49,20 +49,20 @@ class ToolPlatformKernel {
     );
   }
 
-  normalizeToolRoot(input, depth = 0) {
-    if (depth > 5) {
+  normalizeToolRoot(input) {
+    if (!input) {
       return null;
     }
 
-    if (this.isHTMLElement(input)) {
+    if (input instanceof Element) {
       return input;
     }
 
-    if (!input || typeof input !== 'object') {
+    if (typeof input !== 'object') {
       return null;
     }
 
-    const knownLifecycleShapes = [
+    const candidates = [
       input.root,
       input.toolRoot,
       input.context?.root,
@@ -71,10 +71,9 @@ class ToolPlatformKernel {
       input.executionContext?.toolRoot
     ];
 
-    for (const candidate of knownLifecycleShapes) {
-      const resolved = this.normalizeToolRoot(candidate, depth + 1);
-      if (resolved) {
-        return resolved;
+    for (const candidate of candidates) {
+      if (candidate instanceof Element) {
+        return candidate;
       }
     }
 
@@ -88,16 +87,16 @@ class ToolPlatformKernel {
 
     const normalizedRoot = this.normalizeToolRoot(root);
 
-    if (this.isDevelopmentMode()) {
-      console.debug('[ToolKernel] normalized root', {
-        inputType: typeof root,
-        normalized: normalizedRoot,
-        hasDataset: !!normalizedRoot?.dataset
-      });
+    if (!normalizedRoot) {
+      throw new Error('[ToolKernel] Invalid tool root passed to registerTool');
     }
 
-    if (!normalizedRoot) {
-      throw new Error('[ToolKernel] registerTool received invalid root from lifecycle context');
+    if (this.isDevelopmentMode()) {
+      console.debug('[ToolKernel] root normalized', {
+        inputType: typeof root,
+        resolved: normalizedRoot,
+        dataset: normalizedRoot?.dataset
+      });
     }
 
     this.ensureRootId(normalizedRoot, 'registerTool()');
@@ -196,7 +195,7 @@ class ToolPlatformKernel {
 
   createToolKey(id, root, callsite = 'createToolKey()') {
     if (!root || !(root instanceof Element)) {
-      throw new Error('[ToolKernel] createToolKey called with invalid root');
+      throw new Error('[ToolKernel] createToolKey invalid root');
     }
 
     return `${id}:${this.ensureRootId(root, callsite)}`;
@@ -204,7 +203,7 @@ class ToolPlatformKernel {
 
   ensureRootId(root, callsite = 'ensureRootId()') {
     if (!root || !(root instanceof Element)) {
-      throw new Error('[ToolKernel] ensureRootId called without DOM root');
+      throw new Error('[ToolKernel] ensureRootId requires a DOM Element');
     }
 
     this.assertValidRoot(root, callsite);
