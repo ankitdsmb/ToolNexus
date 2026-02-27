@@ -22,6 +22,7 @@ import { createToolContainerManager, normalizeToolMountMode } from './runtime/to
 import { createRuntimeCrashOverlay } from './runtime/runtime-crash-overlay.js';
 import { guardInvalidLifecycleResult } from './runtime/tool-execution-normalizer.js';
 import { assertDomContractRootsUnchanged, freezeDomContractRoots } from './runtime/tool-dom-contract-guard.js';
+import { isModuleContractError, validateModuleContract } from './runtime/module-contract-validator.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -679,7 +680,11 @@ export function createToolRuntime({
     };
   }
 
-  function detectToolClassification({ hasManifest, lifecycleContract, modulePath, legacyBridgeUsed, mountError }) {
+  function detectToolClassification({ hasManifest, lifecycleContract, modulePath, legacyBridgeUsed, mountError, moduleContractInvalid = false }) {
+    if (moduleContractInvalid) {
+      return 'module_contract_error';
+    }
+
     if (!hasManifest || legacyBridgeUsed) {
       return 'legacy';
     }
@@ -765,6 +770,7 @@ export function createToolRuntime({
     };
 
     const runtimeIdentity = createRuntimeIdentityDescriptor();
+    let moduleContractInvalid = false;
 
     function inferIdentityResolutionMode(mode) {
       if (mode === RUNTIME_RESOLUTION_MODES.AUTO_FALLBACK) {
@@ -781,6 +787,10 @@ export function createToolRuntime({
     function inferIdentitySource({ mode, modulePath }) {
       if (mode === RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE) {
         return 'custom-module';
+      }
+
+      if (moduleContractInvalid) {
+        return 'module-contract-invalid';
       }
 
       if (mode === RUNTIME_RESOLUTION_MODES.AUTO_FALLBACK) {
@@ -942,6 +952,17 @@ export function createToolRuntime({
       let importFailed = false;
       try {
         module = await importModule(modulePath);
+        validateModuleContract(module, [
+          'create',
+          'init'
+        ], slug);
+
+        const kernelModule = await import('./tools/tool-platform-kernel.js');
+        validateModuleContract(kernelModule, [
+          'normalizeToolRoot',
+          'getToolPlatformKernel'
+        ], 'tool-platform-kernel');
+
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
         lifecycleContract = inspectLifecycleContract(module);
         emit('lifecycle_contract_evaluated', {
@@ -961,8 +982,13 @@ export function createToolRuntime({
       } catch (error) {
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
         importFailed = true;
+        const contractInvalid = isModuleContractError(error);
+        moduleContractInvalid = contractInvalid;
         setLastError('module-import', error, slug, { modulePath });
-        const importReason = `custom_module_import_failed:${error?.message ?? 'unknown_error'}`;
+        const reasonPrefix = contractInvalid
+          ? 'custom_module_contract_invalid'
+          : 'custom_module_import_failed';
+        const importReason = `${reasonPrefix}:${error?.message ?? 'unknown_error'}`;
         setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED, importReason);
         emit('module_import_failure', {
           toolSlug: slug,
@@ -970,6 +996,7 @@ export function createToolRuntime({
           error: error?.message ?? String(error),
           metadata: {
             modulePath,
+            classification: contractInvalid ? 'module_contract_error' : 'runtime_error',
             runtimeResolutionMode: RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED,
             runtimeResolutionReason: importReason
           }
@@ -993,8 +1020,20 @@ export function createToolRuntime({
           errorMessage: error?.message ?? String(error),
           stack: error?.stack,
           runtimeIdentity: { ...runtimeIdentity },
-          classification: 'runtime_error'
+          classification: contractInvalid ? 'module_contract_error' : 'runtime_error'
         });
+
+        if (contractInvalid && isDevelopmentRuntime()) {
+          throw error;
+        }
+
+        if (contractInvalid && !isDevelopmentRuntime()) {
+          fallbackLogger.warn(`[ModuleContract] Invalid module export contract for "${slug}"; continuing with auto runtime fallback.`, {
+            modulePath,
+            error: error?.message ?? String(error)
+          });
+        }
+
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
@@ -1267,7 +1306,8 @@ export function createToolRuntime({
           lifecycleContract,
           modulePath,
           legacyBridgeUsed,
-          mountError: importFailed
+          mountError: importFailed,
+          moduleContractInvalid
         });
         logger.info(`Runtime classification for "${slug}": ${classification}.`, {
           classification,
@@ -1312,7 +1352,8 @@ export function createToolRuntime({
           lifecycleContract,
           modulePath,
           legacyBridgeUsed,
-          mountError: true
+          mountError: true,
+          moduleContractInvalid
         });
         setLastError('mount', error, slug, { classification });
         stateRegistry.setFailure(stateKey, error?.message ?? String(error));
