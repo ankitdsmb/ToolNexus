@@ -34,14 +34,21 @@ export async function loadMonaco() {
 
     window.require(
       ['vs/editor/editor.main'],
-      () => {
-        if (!window.monaco?.editor) {
-          reject(new Error('Monaco loaded but editor missing'));
+      (monacoNamespace) => {
+        const resolvedMonaco = monacoNamespace ?? window.monaco;
+
+        if (resolvedMonaco && !window.monaco) {
+          window.monaco = resolvedMonaco;
+        }
+
+        if (!resolvedMonaco?.editor) {
+          console.warn('[runtime] Monaco module resolved without editor; falling back to basic editors');
+          resolve(null);
           return;
         }
 
         console.info('[runtime] Monaco loaded successfully');
-        resolve(window.monaco);
+        resolve(resolvedMonaco);
       },
       reject
     );
