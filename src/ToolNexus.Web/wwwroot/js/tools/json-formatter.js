@@ -7,7 +7,24 @@ function resolveRoot() {
   return document.querySelector('[data-tool="json-formatter"]');
 }
 
-export function create(root = resolveRoot()) {
+function resolveRootFromContext(rootOrContext) {
+  if (rootOrContext instanceof Element) {
+    return rootOrContext;
+  }
+
+  if (rootOrContext?.root instanceof Element) {
+    return rootOrContext.root;
+  }
+
+  if (rootOrContext?.toolRoot instanceof Element) {
+    return rootOrContext.toolRoot;
+  }
+
+  return resolveRoot();
+}
+
+export function create(rootOrContext = resolveRoot()) {
+  const root = resolveRootFromContext(rootOrContext);
   if (!root) {
     return null;
   }
@@ -24,8 +41,13 @@ export function create(root = resolveRoot()) {
   });
 }
 
-export function init(root = resolveRoot()) {
-  const handle = create(root);
+export function init(rootOrContext = resolveRoot()) {
+  if (rootOrContext?.id === TOOL_ID && typeof rootOrContext?.init === 'function') {
+    rootOrContext.init();
+    return rootOrContext;
+  }
+
+  const handle = create(rootOrContext);
   if (!handle) {
     return null;
   }
@@ -34,7 +56,8 @@ export function init(root = resolveRoot()) {
   return handle;
 }
 
-export function destroy(root = resolveRoot()) {
+export function destroy(rootOrContext = resolveRoot()) {
+  const root = resolveRootFromContext(rootOrContext);
   if (!root) {
     return;
   }
