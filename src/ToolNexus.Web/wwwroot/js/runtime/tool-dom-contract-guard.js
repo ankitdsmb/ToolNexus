@@ -1,8 +1,10 @@
 const GUARDED_SELECTORS = Object.freeze([
-  '[data-runtime-container]',
-  '[data-tool-root]',
+  '[data-tool-shell]',
+  '[data-tool-context]',
   '[data-tool-input]',
-  '[data-tool-output]'
+  '[data-tool-status]',
+  '[data-tool-output]',
+  '[data-tool-followup]'
 ]);
 
 function captureContractReference(root, selector) {

@@ -21,13 +21,17 @@ describe('tool unified control runtime', () => {
   });
 
 
-  test('renders inside [data-tool-root] without replacing runtime container', () => {
+  test('renders inside [data-tool-shell] without replacing canonical shell', () => {
     const host = document.createElement('div');
     host.innerHTML = `
-      <section data-runtime-container="true">
-        <div data-tool-root="true"><p data-sentinel>sentinel</p></div>
+      <section data-tool-shell="true">
+        <header data-tool-context="true"></header>
+        <section data-tool-input="true"><p data-sentinel>sentinel</p></section>
+        <section data-tool-status="true"></section>
+        <section data-tool-output="true"></section>
+        <footer data-tool-followup="true"></footer>
       </section>`;
-    const runtimeContainer = host.querySelector('[data-runtime-container]');
+    const runtimeContainer = host.querySelector('[data-tool-shell]');
 
     const control = createUnifiedToolControl({
       root: host,
@@ -36,9 +40,9 @@ describe('tool unified control runtime', () => {
     });
 
     expect(control).not.toBeNull();
-    expect(host.querySelector('[data-runtime-container]')).toBe(runtimeContainer);
+    expect(host.querySelector('[data-tool-shell]')).toBe(runtimeContainer);
     expect(host.querySelector('[data-sentinel]')).toBeNull();
-    expect(host.querySelector('[data-tool-root] > .tn-unified-tool-control')).not.toBeNull();
+    expect(host.querySelector('[data-tool-shell].tn-unified-tool-control')).not.toBeNull();
   });
 
   test('adapter helper can consume runtime context object', () => {

@@ -16,14 +16,18 @@ describe('tool auto runtime', () => {
   });
 
 
-  test('auto runtime mounts only inside [data-tool-root] and preserves runtime container', () => {
+  test('auto runtime mounts only inside [data-tool-shell] and preserves canonical shell', () => {
     const host = document.createElement('div');
     host.innerHTML = `
-      <section data-runtime-container="true">
-        <div data-tool-root="true"><p data-preexisting>existing</p></div>
+      <section data-tool-shell="true">
+        <header data-tool-context="true"></header>
+        <section data-tool-input="true"><p data-preexisting>existing</p></section>
+        <section data-tool-status="true"></section>
+        <section data-tool-output="true"></section>
+        <footer data-tool-followup="true"></footer>
       </section>`;
     document.body.append(host);
-    const runtimeContainer = host.querySelector('[data-runtime-container]');
+    const runtimeContainer = host.querySelector('[data-tool-shell]');
 
     const module = createAutoToolRuntimeModule({
       slug: 'auto-tool',
@@ -33,23 +37,28 @@ describe('tool auto runtime', () => {
     const state = module.create(host);
     module.init(state, host, { addCleanup() {} });
 
-    expect(host.querySelector('[data-runtime-container]')).toBe(runtimeContainer);
+    expect(host.querySelector('[data-tool-shell]')).toBe(runtimeContainer);
     expect(host.querySelector('[data-preexisting]')).toBeNull();
-    expect(host.querySelector('[data-tool-root] .tn-unified-tool-control')).not.toBeNull();
+    expect(host.querySelector('[data-tool-shell].tn-unified-tool-control')).not.toBeNull();
   });
 
-  test('throws contract violation when [data-tool-root] resolves outside runtime container', () => {
+  test('uses canonical shell contract without throwing', () => {
     const host = document.createElement('div');
     host.innerHTML = `
-      <div data-tool-root="true"></div>
-      <section data-runtime-container="true"></section>`;
+      <section data-tool-shell="true">
+        <header data-tool-context="true"></header>
+        <section data-tool-input="true"></section>
+        <section data-tool-status="true"></section>
+        <section data-tool-output="true"></section>
+        <footer data-tool-followup="true"></footer>
+      </section>`;
 
     const module = createAutoToolRuntimeModule({
       slug: 'auto-tool',
       manifest: { uiMode: 'auto', complexityTier: 1, operationSchema: null }
     });
 
-    expect(() => module.useAutoInputs(host, { addCleanup() {} })).toThrowError('AUTO_RUNTIME_CONTRACT_VIOLATION');
+    expect(() => module.useAutoInputs(host, { addCleanup() {} })).not.toThrow();
   });
 
   test('tier 1 tools auto-render with fallback JSON input', () => {

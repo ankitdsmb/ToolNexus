@@ -19,7 +19,6 @@ if (!page) {
 const slug = page.dataset.slug ?? '';
 const apiBase = window.ToolNexusConfig?.apiBaseUrl ?? '';
 const toolExecutionPathPrefix = normalizePathPrefix(window.ToolNexusConfig?.toolExecutionPathPrefix ?? '/api/v1/tools');
-const maxClientInputBytes = 1024 * 1024;
 
 const STORAGE_KEYS = {
   recentTools: 'toolnexus.recentTools',
@@ -78,13 +77,6 @@ function ensureEditorContract() {
     outputTextArea: fallbackOutput
   };
 }
-
-const clientSafeActions = new Set(
-  (page.dataset.clientSafeActions ?? '')
-    .split(',')
-    .map(a => a.trim().toLowerCase())
-    .filter(Boolean)
-);
 
 const contractNodes = ensureEditorContract();
 const inputTextArea = contractNodes.inputTextArea;
@@ -403,9 +395,6 @@ function getUtf8SizeInBytes(input) {
   return new TextEncoder().encode(input).length;
 }
 
-function isEligibleForClientExecution(input) {
-  return getUtf8SizeInBytes(input) <= maxClientInputBytes;
-}
 
 function storeRecentJsonCandidate(output) {
   if (typeof output !== 'string' || !output.trim()) return;
@@ -606,43 +595,6 @@ function renderInsight(insight) {
 }
 
 
-class ClientToolExecutor {
-  canExecute(toolSlug, action, input) {
-    const normalizedPayload = normalizeToolExecutionPayload(action, input, { toolSlug });
-    const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
-    const normalizedAction = normalizedPayload.isValidAction ? normalizedPayload.action.trim().toLowerCase() : '';
-
-    if (!normalizedSlug || !normalizedAction) return false;
-    if (!clientSafeActions.has(normalizedAction)) return false;
-    if (!isEligibleForClientExecution(input)) return false;
-
-    const module = window.ToolNexusModules?.[normalizedSlug];
-    return typeof module?.runTool === 'function';
-  }
-
-  async execute(toolSlug, action, input) {
-    const normalizedPayload = normalizeToolExecutionPayload(action, input, { toolSlug });
-    const normalizedSlug = typeof toolSlug === 'string' ? toolSlug.trim() : '';
-    const module = window.ToolNexusModules?.[normalizedSlug];
-
-    if (typeof module?.runTool !== 'function') {
-      throw new Error('Client execution is not supported for this tool/action.');
-    }
-
-    if (!normalizedPayload.isValidAction) {
-      return { ok: false, reason: 'unsupported_action' };
-    }
-
-    try {
-      return await module.runTool(normalizedPayload.action, normalizedPayload.input);
-    } catch {
-      return { ok: false, reason: 'tool_execution_failed' };
-    }
-  }
-}
-
-const clientExecutor = new ClientToolExecutor();
-
 function normalizePathPrefix(pathPrefix) {
   const normalized = (pathPrefix ?? '').toString().trim();
   if (!normalized) return '/api/v1/tools';
@@ -718,47 +670,23 @@ async function run() {
 
     let normalizedResult = null;
     let insight = null;
-    let hasClientResult = false;
 
-    if (clientExecutor.canExecute(slug, selectedAction, sanitizedInput)) {
-      try {
-        const clientResult = await clientExecutor.execute(slug, selectedAction, sanitizedInput);
-        normalizedResult = normalizeToolPageExecutionResult(clientResult);
-        hasClientResult = true;
+    const response = await executeToolActionViaApi({
+      baseUrl: apiBase,
+      slug,
+      action: selectedAction,
+      input: sanitizedInput
+    });
 
-        if (normalizedResult.shouldAbort) {
-          renderRuntimeFallbackAndStop({ action: selectedAction, reason: normalizedResult.reason });
-          return;
-        }
+    normalizedResult = normalizeToolPageExecutionResult(response);
 
-        if (normalizedResult.output) {
-          showToast('Executed locally.', 'success');
-        }
-      } catch (clientError) {
-        const safeMessage = clientError?.message || 'Client execution failed. Falling back to server.';
-        showError(safeMessage);
-        showToast('Client execution failed; using server fallback.', 'warning');
-      }
+    if (normalizedResult.shouldAbort) {
+      renderRuntimeFallbackAndStop({ action: selectedAction, reason: normalizedResult.reason });
+      return;
     }
 
-    if (!hasClientResult) {
-      const response = await executeToolActionViaApi({
-        baseUrl: apiBase,
-        slug,
-        action: selectedAction,
-        input: sanitizedInput
-      });
-
-      normalizedResult = normalizeToolPageExecutionResult(response);
-
-      if (normalizedResult.shouldAbort) {
-        renderRuntimeFallbackAndStop({ action: selectedAction, reason: normalizedResult.reason });
-        return;
-      }
-
-      insight = response?.insight ?? null;
-      showToast('Execution completed.', 'success');
-    }
+    insight = response?.insight ?? null;
+    showToast('Execution completed.', 'success');
 
     const result = normalizedResult?.output || 'No output';
 
