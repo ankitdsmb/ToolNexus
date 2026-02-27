@@ -20,6 +20,27 @@ describe('tool unified control runtime', () => {
     expect(control.details.hidden).toBe(false);
   });
 
+
+  test('renders inside [data-tool-root] without replacing runtime container', () => {
+    const host = document.createElement('div');
+    host.innerHTML = `
+      <section data-runtime-container="true">
+        <div data-tool-root="true"><p data-sentinel>sentinel</p></div>
+      </section>`;
+    const runtimeContainer = host.querySelector('[data-runtime-container]');
+
+    const control = createUnifiedToolControl({
+      root: host,
+      slug: 'json-formatter',
+      manifest: { title: 'JSON Formatter' }
+    });
+
+    expect(control).not.toBeNull();
+    expect(host.querySelector('[data-runtime-container]')).toBe(runtimeContainer);
+    expect(host.querySelector('[data-sentinel]')).toBeNull();
+    expect(host.querySelector('[data-tool-root] > .tn-unified-tool-control')).not.toBeNull();
+  });
+
   test('adapter helper can consume runtime context object', () => {
     const root = document.createElement('div');
     const runtime = { root };
