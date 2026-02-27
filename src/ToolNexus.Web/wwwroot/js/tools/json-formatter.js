@@ -1,5 +1,7 @@
 import { createJsonFormatterApp } from './json-formatter.app.js';
+import { runJsonFormatter } from './json-formatter.api.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-formatter';
 
@@ -27,6 +29,8 @@ export function create(context) {
   });
 }
 
+// lifecycle init (mount only)
+// execution handled via runTool
 export async function init(context) {
   const handle = create(context);
   if (!handle) {
@@ -49,4 +53,9 @@ export function destroy(context) {
   }
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
+}
+
+export async function runTool(action, input, options = {}) {
+  assertRunToolExecutionOnly(TOOL_ID, action, input, options);
+  return runJsonFormatter(action, input, options);
 }
