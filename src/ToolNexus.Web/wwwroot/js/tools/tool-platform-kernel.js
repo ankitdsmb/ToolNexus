@@ -12,6 +12,10 @@ class ToolPlatformKernel {
     return Boolean(root && root.nodeType === Node.ELEMENT_NODE && root instanceof HTMLElement);
   }
 
+  isDevelopmentMode() {
+    return Boolean(import.meta?.env?.DEV || window.ToolNexusLogging?.runtimeDebugEnabled === true);
+  }
+
   describeRootType(root) {
     if (root === undefined) {
       return 'undefined';
@@ -45,7 +49,11 @@ class ToolPlatformKernel {
     );
   }
 
-  normalizeRoot(input, visited = new Set()) {
+  normalizeToolRoot(input, depth = 0) {
+    if (depth > 5) {
+      return null;
+    }
+
     if (this.isHTMLElement(input)) {
       return input;
     }
@@ -54,24 +62,17 @@ class ToolPlatformKernel {
       return null;
     }
 
-    if (visited.has(input)) {
-      return null;
-    }
-
-    visited.add(input);
-
-    const candidateKeys = [
-      'toolRoot',
-      'root',
-      'context',
-      'executionContext',
-      'lifecycleContext',
-      'runtimeContext',
-      'handle'
+    const knownLifecycleShapes = [
+      input.root,
+      input.toolRoot,
+      input.context?.root,
+      input.context?.toolRoot,
+      input.executionContext?.root,
+      input.executionContext?.toolRoot
     ];
 
-    for (const key of candidateKeys) {
-      const resolved = this.normalizeRoot(input[key], visited);
+    for (const candidate of knownLifecycleShapes) {
+      const resolved = this.normalizeToolRoot(candidate, depth + 1);
       if (resolved) {
         return resolved;
       }
@@ -80,24 +81,23 @@ class ToolPlatformKernel {
     return null;
   }
 
-  normalizeToolRoot(rootOrContext) {
-    const normalizedRoot = this.normalizeRoot(rootOrContext);
-
-    if (!this.isHTMLElement(normalizedRoot)) {
-      throw new Error('[ToolKernel] registerTool received invalid root. Lifecycle context missing root.');
-    }
-
-    return normalizedRoot;
-  }
-
   registerTool({ id, root, init, destroy }) {
     if (!id || typeof init !== 'function') {
       throw new Error('registerTool requires id, root, and init().');
     }
 
     const normalizedRoot = this.normalizeToolRoot(root);
-    if (!normalizedRoot || !(normalizedRoot instanceof Element)) {
-      throw new Error('[ToolKernel] registerTool received invalid root. Lifecycle context missing root.');
+
+    if (this.isDevelopmentMode()) {
+      console.debug('[ToolKernel] normalized root', {
+        inputType: typeof root,
+        normalized: normalizedRoot,
+        hasDataset: !!normalizedRoot?.dataset
+      });
+    }
+
+    if (!normalizedRoot) {
+      throw new Error('[ToolKernel] registerTool received invalid root from lifecycle context');
     }
 
     this.ensureRootId(normalizedRoot, 'registerTool()');
@@ -195,14 +195,18 @@ class ToolPlatformKernel {
   }
 
   createToolKey(id, root, callsite = 'createToolKey()') {
-    if (!root) {
-      throw new Error('createToolKey called without root');
+    if (!root || !(root instanceof Element)) {
+      throw new Error('[ToolKernel] createToolKey called with invalid root');
     }
 
     return `${id}:${this.ensureRootId(root, callsite)}`;
   }
 
   ensureRootId(root, callsite = 'ensureRootId()') {
+    if (!root || !(root instanceof Element)) {
+      throw new Error('[ToolKernel] ensureRootId called without DOM root');
+    }
+
     this.assertValidRoot(root, callsite);
 
     if (root.dataset.toolRootId) {
