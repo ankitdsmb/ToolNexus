@@ -22,8 +22,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var provider = configuration["Database:Provider"];
-        var connectionString = configuration["Database:ConnectionString"] ?? "Data Source=toolnexus.db";
+        var provider = configuration["Database:Provider"] ?? "PostgreSQL";
+        var connectionString = configuration["Database:ConnectionString"]
+            ?? configuration.GetConnectionString("Default")
+            ?? "Host=localhost;Port=5432;Database=ToolNexus;Username=toolnexus;Password=toolnexus_dev;SSL Mode=Disable";
 
         services.AddDbContext<ToolNexusContentDbContext>(options =>
             DatabaseProviderConfiguration.Configure(options, provider, connectionString));

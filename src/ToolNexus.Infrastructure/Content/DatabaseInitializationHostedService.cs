@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -14,6 +15,8 @@ public sealed class DatabaseInitializationHostedService(
     IServiceProvider serviceProvider,
     IOptions<DatabaseInitializationOptions> options,
     DatabaseInitializationState state,
+    IHostEnvironment hostEnvironment,
+    IConfiguration configuration,
     ILogger<DatabaseInitializationHostedService> logger) : IStartupPhaseService
 {
     private static readonly TimeSpan[] MigrationRetryDelays =
@@ -31,6 +34,12 @@ public sealed class DatabaseInitializationHostedService(
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var effectiveProvider = configuration["Database:Provider"] ?? options.Value.Provider;
+        var effectiveConnectionString = configuration["Database:ConnectionString"]
+            ?? options.Value.ConnectionString;
+
+        LogConnectivityIntent(effectiveProvider, effectiveConnectionString);
+
         try
         {
             if (options.Value.RunMigrationOnStartup)
@@ -50,10 +59,91 @@ public sealed class DatabaseInitializationHostedService(
         }
         catch (Exception ex)
         {
-            state.MarkFailed(ex.Message);
-            logger.LogError(ex, "Database initialization failed.");
-            throw;
+            if (await TryRunDevelopmentFallbackAsync(ex, stoppingToken))
+            {
+                state.MarkReady();
+                return;
+            }
+
+            var startupError = BuildStartupFailureMessage(ex);
+            state.MarkFailed(startupError);
+            logger.LogCritical(ex, "{StartupError}", startupError);
+            throw new InvalidOperationException(startupError, ex);
         }
+    }
+
+    private async Task<bool> TryRunDevelopmentFallbackAsync(Exception startupException, CancellationToken cancellationToken)
+    {
+        if (!hostEnvironment.IsDevelopment()
+            || !options.Value.EnableDevelopmentFallbackConnection
+            || string.IsNullOrWhiteSpace(options.Value.DevelopmentFallbackConnectionString)
+            || !IsTransientPostgresStartupException(startupException))
+        {
+            return false;
+        }
+
+        logger.LogWarning(startupException,
+            "Primary PostgreSQL connection is unavailable. Development fallback connection is enabled and will be attempted.");
+
+        var fallbackConnectionString = options.Value.DevelopmentFallbackConnectionString!;
+
+        var contentOptionsBuilder = new DbContextOptionsBuilder<ToolNexusContentDbContext>();
+        DatabaseProviderConfiguration.Configure(contentOptionsBuilder, DatabaseProviderConfiguration.PostgreSqlProvider, fallbackConnectionString);
+        await using var contentDb = new ToolNexusContentDbContext(contentOptionsBuilder.Options);
+        await MigrateWithRetryAsync(contentDb, cancellationToken);
+
+        var identityOptionsBuilder = new DbContextOptionsBuilder<ToolNexusIdentityDbContext>();
+        DatabaseProviderConfiguration.Configure(identityOptionsBuilder, DatabaseProviderConfiguration.PostgreSqlProvider, fallbackConnectionString);
+        await using var identityDb = new ToolNexusIdentityDbContext(identityOptionsBuilder.Options);
+        await MigrateWithRetryAsync(identityDb, cancellationToken);
+
+        logger.LogWarning("Development fallback database migration completed successfully using fallback connection.");
+        return true;
+    }
+
+    private void LogConnectivityIntent(string provider, string connectionString)
+    {
+        if (string.Equals(provider, DatabaseProviderConfiguration.PostgreSqlProvider, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(provider, "Postgres", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(provider, "Npgsql", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var builder = new NpgsqlConnectionStringBuilder(connectionString);
+                logger.LogInformation(
+                    "Database startup connectivity target => Provider={Provider}; Host={Host}; Port={Port}; Database={Database}; Username={Username}; MigrationsOnStartup={MigrationsOnStartup}; DevelopmentFallbackEnabled={DevelopmentFallbackEnabled}",
+                    provider,
+                    builder.Host,
+                    builder.Port,
+                    builder.Database,
+                    string.IsNullOrWhiteSpace(builder.Username) ? "<not-set>" : builder.Username,
+                    options.Value.RunMigrationOnStartup,
+                    options.Value.EnableDevelopmentFallbackConnection);
+                return;
+            }
+            catch
+            {
+                // Continue to generic logging if parsing fails.
+            }
+        }
+
+        logger.LogInformation(
+            "Database startup connectivity target => Provider={Provider}; Connection={Connection}; MigrationsOnStartup={MigrationsOnStartup}; DevelopmentFallbackEnabled={DevelopmentFallbackEnabled}",
+            provider,
+            string.IsNullOrWhiteSpace(connectionString) ? "<missing>" : "<configured>",
+            options.Value.RunMigrationOnStartup,
+            options.Value.EnableDevelopmentFallbackConnection);
+    }
+
+    private string BuildStartupFailureMessage(Exception exception)
+    {
+        var postgresException = FindPostgresException(exception);
+        var provider = configuration["Database:Provider"] ?? options.Value.Provider;
+
+        var sqlState = postgresException?.SqlState ?? "<none>";
+        var postgresMessage = postgresException?.MessageText ?? exception.Message;
+
+        return $"Database initialization failed for provider '{provider}'. PostgreSQL did not become available or migrations could not be applied. SQLSTATE={sqlState}. Detail={postgresMessage}. Verify Database:ConnectionString and PostgreSQL readiness (docker compose up postgres).";
     }
 
     private async Task MigrateWithRetryAsync(DbContext dbContext, CancellationToken cancellationToken)
