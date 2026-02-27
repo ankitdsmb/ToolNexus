@@ -8,7 +8,7 @@ import {
   serializeResult,
   summarize
 } from './text-diff.api.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const MODULE_KEY = 'text-diff';
@@ -28,14 +28,14 @@ export function create(root) {
 }
 
 // MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
-export function init(context) {
-  const root = context?.root || context?.toolRoot || context;
+export function init(...args) {
+  const { lifecycleContext, root } = resolveLifecycleInitRoot(args);
   if (!(root instanceof Element)) {
-    throw new Error('Invalid mount root');
+    throw new Error('[Lifecycle] invalid root');
   }
 
   return {
-    ...(typeof context === 'object' && context ? context : {}),
+    ...(typeof lifecycleContext === 'object' && lifecycleContext ? lifecycleContext : {}),
     root,
     handle: mountTextDiff(root)
   };

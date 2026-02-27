@@ -1,6 +1,6 @@
 import { createJsonToYamlApp } from './json-to-yaml.app.js';
 import { runJsonToYaml } from './json-to-yaml.api.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-to-yaml';
@@ -34,11 +34,15 @@ export function create(context) {
   });
 }
 
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const handle = create(root);
   if (!handle) return null;
-  handle.init();
+  handle?.init?.();
   return handle;
 }
 

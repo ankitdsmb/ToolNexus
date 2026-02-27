@@ -1,6 +1,6 @@
 import { createJsonToXmlApp } from './json-to-xml.app.js';
 import { buildXml, getDefaultJsonToXmlOptions, JsonXmlError, parseJson, sanitizeTagName } from './json-to-xml.api.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-to-xml';
@@ -48,11 +48,15 @@ export function create(context) {
   });
 }
 
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const handle = create(root);
   if (!handle) return null;
-  handle.init();
+  handle?.init?.();
   return handle;
 }
 

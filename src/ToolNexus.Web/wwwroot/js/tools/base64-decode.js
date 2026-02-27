@@ -1,5 +1,5 @@
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const BASE64_CONFIG = {
@@ -481,10 +481,14 @@ export function create(context) {
   });
 }
 
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const handle = create(root);
-  handle?.init();
+  handle?.init?.();
   return handle;
 }
 

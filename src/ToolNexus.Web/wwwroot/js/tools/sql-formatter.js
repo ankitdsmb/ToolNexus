@@ -1,6 +1,6 @@
 import { createSqlFormatterApp } from './sql-formatter.app.js';
 import { runSqlFormatter } from './sql-formatter.api.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'sql-formatter';
@@ -35,11 +35,15 @@ export function create(context) {
 }
 
 // MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const handle = create(root);
   if (!handle) return null;
-  handle.init();
+  handle?.init?.();
   return handle;
 }
 

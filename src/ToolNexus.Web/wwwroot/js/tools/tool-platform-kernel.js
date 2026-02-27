@@ -13,6 +13,24 @@ function normalizeToolRoot(rootLike) {
   return null;
 }
 
+
+function resolveLifecycleInitRoot(args = []) {
+  const candidateContext = args[0];
+  const lifecycleContext =
+    candidateContext?.toolRoot || candidateContext?.root ? candidateContext : null;
+
+  const rootCandidate =
+    lifecycleContext?.toolRoot
+    || lifecycleContext?.root
+    || args[1]
+    || candidateContext;
+
+  return {
+    lifecycleContext,
+    root: normalizeToolRoot(rootCandidate)
+  };
+}
+
 class ToolPlatformKernel {
   constructor() {
     this.tools = new Map();
@@ -246,5 +264,6 @@ if (typeof normalizeToolRoot !== 'function') {
 export {
   getToolPlatformKernel,
   normalizeToolRoot,
+  resolveLifecycleInitRoot,
   resetToolPlatformKernelForTesting
 };
