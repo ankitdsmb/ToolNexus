@@ -9,9 +9,13 @@ function emitMonacoAssetInvalidWarning() {
 }
 
 function assertValidAmdLoader() {
-  if (!window.require?.s?.contexts?._) {
-    throw new Error('Invalid Monaco AMD loader detected');
+
+  if (typeof window.require !== 'function') {
+    throw new Error('Monaco loader missing');
   }
+
+  // CDN loader may NOT expose contexts early.
+  // only validate require exists.
 }
 
 function ensureMonacoLoaderScript() {
