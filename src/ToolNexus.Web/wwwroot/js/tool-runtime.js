@@ -96,7 +96,7 @@ function isStrictModeEnabled() {
     return false;
   }
 
-  return isDevelopmentEnvironment() || window.ToolNexusConfig?.adminRuntimeDebug === true;
+  return true;
 }
 
 const TOOL_MOUNT_MODES = Object.freeze({
@@ -1461,9 +1461,7 @@ export { defaultLifecycleAdapter as mountToolModule };
    */
   if (typeof window !== 'undefined') {
     window.ToolNexusRuntime ??= runtime;
-    if (window.ToolNexusRuntime.strict == null) {
-      window.ToolNexusRuntime.strict = false;
-    }
+    window.ToolNexusRuntime.strict = true;
   }
 
   if (typeof document !== 'undefined' && document.getElementById('tool-root')) {

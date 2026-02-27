@@ -3,11 +3,24 @@ import { getToolPlatformKernel } from './tool-platform-kernel.js';
 
 const TOOL_ID = 'url-encode';
 
-function resolveRoot() {
-  return document.querySelector('.url-encode-tool');
+function resolveRoot(rootOrContext) {
+  if (rootOrContext instanceof Element) return rootOrContext;
+  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
+  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
+  return null;
 }
 
-export function create(root = resolveRoot()) {
+function requireRuntimeRoot(rootOrContext) {
+  const root = resolveRoot(rootOrContext);
+  if (!root) {
+    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
+  }
+
+  return root;
+}
+
+export function create(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   if (!root) {
     return null;
   }
@@ -20,7 +33,8 @@ export function create(root = resolveRoot()) {
   });
 }
 
-export function init(root = resolveRoot()) {
+export function init(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   const handle = create(root);
   if (!handle) {
     return null;
@@ -30,10 +44,8 @@ export function init(root = resolveRoot()) {
   return handle;
 }
 
-export function destroy(root = resolveRoot()) {
-  if (!root) {
-    return;
-  }
+export function destroy(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }

@@ -13,8 +13,20 @@ function normalizePathPrefix(pathPrefix) {
   return `/${normalized.replace(/^\/+/, '').replace(/\/+$/, '')}`;
 }
 
-function resolveRoot() {
-  return document.querySelector(`[data-tool="${TOOL_SLUG}"]`) ?? document.querySelector('.tool-page');
+function resolveRoot(rootOrContext) {
+  if (rootOrContext instanceof Element) return rootOrContext;
+  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
+  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
+  return null;
+}
+
+function requireRuntimeRoot(rootOrContext) {
+  const root = resolveRoot(rootOrContext);
+  if (!root) {
+    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
+  }
+
+  return root;
 }
 
 function createRuntimeNodes(doc = document) {
@@ -90,7 +102,8 @@ function renderPayload(resultNode, payload) {
   }
 }
 
-export function create(root = resolveRoot()) {
+export function create(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   if (!root) {
     return null;
   }
@@ -111,7 +124,7 @@ export function create(root = resolveRoot()) {
   };
 }
 
-export function mount(context = create()) {
+export function mount(context) {
   if (!context?.root || !context?.nodes || context.mounted) {
     return context ?? null;
   }
@@ -165,7 +178,8 @@ export function mount(context = create()) {
   };
 }
 
-export function init(root = resolveRoot()) {
+export function init(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   const created = create(root);
   if (!created) {
     return null;
@@ -174,7 +188,8 @@ export function init(root = resolveRoot()) {
   return mount(created);
 }
 
-export function destroy(context = null, root = resolveRoot()) {
+export function destroy(context = null, rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   const effectiveRoot = context?.root ?? root;
   context?.removeListeners?.();
 

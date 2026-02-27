@@ -46,25 +46,34 @@ class ToolPlatformKernel {
   }
 
   normalizeToolRoot(rootOrContext, callsite = 'registerTool()') {
-    if (this.isHTMLElement(rootOrContext)) {
-      return rootOrContext;
+    let cursor = rootOrContext;
+    let normalizedRoot = null;
+
+    while (cursor && normalizedRoot == null) {
+      if (this.isHTMLElement(cursor)) {
+        normalizedRoot = cursor;
+        break;
+      }
+
+      if (this.isHTMLElement(cursor?.root)) {
+        normalizedRoot = cursor.root;
+        break;
+      }
+
+      if (this.isHTMLElement(cursor?.toolRoot)) {
+        normalizedRoot = cursor.toolRoot;
+        break;
+      }
+
+      cursor = cursor?.context;
     }
 
-    const candidate = rootOrContext?.root
-      ?? rootOrContext?.toolRoot
-      ?? rootOrContext?.context?.root
-      ?? rootOrContext?.context?.toolRoot;
-
-    if (this.isHTMLElement(candidate)) {
-      return candidate;
+    if (!this.isHTMLElement(normalizedRoot)) {
+      throw new Error('Tool runtime error: invalid root passed to registerTool()');
     }
 
-    throw new Error(
-      '[ToolKernel] Invalid root passed to registerTool()\n'
-      + 'Supported values: HTMLElement | { root } | { toolRoot } | { context: { root | toolRoot } }\n'
-      + `Received: ${this.describeRootType(rootOrContext)}\n`
-      + `Callsite: ${callsite}`
-    );
+    this.ensureRootId(normalizedRoot, callsite);
+    return normalizedRoot;
   }
 
   registerTool({ id, root, init, destroy }) {
@@ -73,7 +82,9 @@ class ToolPlatformKernel {
     }
 
     const normalizedRoot = this.normalizeToolRoot(root, 'registerTool()');
-    this.assertValidRoot(normalizedRoot, 'registerTool()');
+    if (!normalizedRoot || !(normalizedRoot instanceof Element)) {
+      throw new Error('[ToolKernel] Invalid root provided. Tool must use runtime lifecycle root.');
+    }
 
     const toolKey = this.createToolKey(id, normalizedRoot, 'registerTool()');
     const existing = this.tools.get(toolKey);
