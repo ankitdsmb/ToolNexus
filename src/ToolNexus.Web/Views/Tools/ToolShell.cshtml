@@ -48,8 +48,8 @@
 
     <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace" data-workspace-zone="runtime">
         <header class="tool-shell-page__workspace-head" aria-label="Runtime hints">
-            <p class="tool-shell-page__workspace-label">Request → Runtime → Result</p>
-            <p class="tool-shell-page__workspace-hint">Keep input stable on the left while execution and conformance evidence stream on the right.</p>
+            <p class="tool-shell-page__workspace-label">INPUT (control) → RUNTIME → OUTPUT (evidence)</p>
+            <p class="tool-shell-page__workspace-hint">Left panel defines request intent; right panel preserves execution evidence, metadata, and diagnostics.</p>
         </header>
         <section id="tool-root" class="tool-shell-page__runtime" data-tool-shell="true" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
             <header data-tool-context="true" data-tool-header="true" class="tn-tool-header" aria-label="Tool execution context">
@@ -59,7 +59,7 @@
                 <p>Input area loading…</p>
             </section>
             <section class="tn-tool-panel" aria-label="Tool output workspace">
-                <div data-tool-status="true" class="tool-execution-status" role="status" aria-live="polite">Request · Ready</div>
+                <div data-tool-status="true" class="tool-execution-status" role="status" aria-live="polite">Idle · Ready for request</div>
                 <section data-tool-output="true" aria-label="Tool output panel">
                     <p>Output preview loading…</p>
                 </section>

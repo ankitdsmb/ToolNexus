@@ -214,6 +214,32 @@ ENTERPRISE UI SYSTEM
   width: fit-content;
 }
 
+:where(.tn-unified-tool-control__status[data-execution-state="idle"]) {
+  border-color: color-mix(in srgb, var(--color-border) 90%, transparent);
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="validating"],
+  .tn-unified-tool-control__status[data-execution-state="running"],
+  .tn-unified-tool-control__status[data-execution-state="streaming"]) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--color-border));
+  background: color-mix(in srgb, var(--accent-soft) 38%, var(--bg-secondary));
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="success"]) {
+  border-color: color-mix(in srgb, var(--success) 45%, var(--color-border));
+  background: color-mix(in srgb, var(--success-soft) 44%, var(--bg-secondary));
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="warning"]) {
+  border-color: color-mix(in srgb, var(--warning) 50%, var(--color-border));
+  background: color-mix(in srgb, var(--warning-soft) 48%, var(--bg-secondary));
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="failed"]) {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--color-border));
+  background: color-mix(in srgb, var(--danger-soft) 42%, var(--bg-secondary));
+}
+
 :where(.tn-unified-tool-control__output) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -221,6 +247,37 @@ ENTERPRISE UI SYSTEM
   background: var(--runtime-output-surface);
   display: grid;
   gap: var(--runtime-density-gap);
+}
+
+:where(.tn-unified-tool-control__output-block) {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+}
+
+:where(.tn-unified-tool-control__output-block--primary) {
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--color-border));
+}
+
+:where(.tn-unified-tool-control__output-label) {
+  margin: 0;
+  font-size: var(--type-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+:where([data-tool-input="true"]) {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+:where([data-tool-output="true"]) {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 10%, transparent);
 }
 
 :where(.tn-unified-tool-control__preview, .tn-unified-tool-control__result) {
