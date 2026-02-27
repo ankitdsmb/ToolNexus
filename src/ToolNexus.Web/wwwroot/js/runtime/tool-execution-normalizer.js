@@ -138,6 +138,28 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
   logger.debug('Execution target normalized.', { slug, mode });
   const hasDestroy = typeof target?.destroy === 'function';
   let instance = null;
+  const __runtimeLifecycleAudit = [];
+
+  function auditLifecycleCall(toolSlug, phase, payload) {
+    const lifecycleRoot = payload?.root || payload?.toolRoot || payload;
+
+    const record = {
+      slug: toolSlug,
+      phase,
+      hasRoot: lifecycleRoot instanceof Element,
+      payloadType: typeof payload,
+      payloadKeys:
+        payload && typeof payload === 'object'
+          ? Object.keys(payload).slice(0, 8)
+          : []
+    };
+
+    __runtimeLifecycleAudit.push(record);
+
+    if (!(lifecycleRoot instanceof Element)) {
+      console.warn('[LifecycleAudit] BAD TOOL DETECTED', record);
+    }
+  }
 
   async function create() {
     if (typeof target?.create === 'function') {
@@ -217,7 +239,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     await context?.destroy?.();
   }
 
-  return {
+  const normalized = {
     create,
     init,
     destroy,
@@ -227,4 +249,16 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
       normalized: true
     }
   };
+
+  /* wrap init call */
+  const originalInit = normalized.init;
+  normalized.init = async (...args) => {
+    auditLifecycleCall(slug, 'init', args[0]);
+    return originalInit(...args);
+  };
+
+  /* expose report globally */
+  window.ToolNexusLifecycleAudit = () => console.table(__runtimeLifecycleAudit);
+
+  return normalized;
 }
