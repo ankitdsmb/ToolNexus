@@ -47,9 +47,4 @@ export async function runTool(action, input, options = {}) {
   return runClientUrlEncode(input, options);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['url-encode'] = { runTool, create, init, destroy };

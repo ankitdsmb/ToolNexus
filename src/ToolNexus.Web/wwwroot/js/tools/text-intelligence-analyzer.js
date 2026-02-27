@@ -186,20 +186,4 @@ export function destroy(context = null, root = resolveRoot()) {
   container?.remove();
 }
 
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => init(), { once: true });
-  } else {
-    init();
-  }
-}
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[TOOL_SLUG] = {
-  toolRuntimeType,
-  create,
-  mount,
-  init,
-  destroy,
-  runtime: { toolRuntimeType }
-};

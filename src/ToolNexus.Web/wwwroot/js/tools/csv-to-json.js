@@ -76,15 +76,4 @@ export function destroyCsvToJsonApp(doc = document) {
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initCsvToJsonApp(document), { once: true });
-  } else {
-    initCsvToJsonApp(document);
-  }
-}
 
-if (typeof window !== 'undefined') {
-  window.ToolNexusModules = window.ToolNexusModules || {};
-  window.ToolNexusModules[MODULE_KEY] = { create, init, runTool, destroy, initCsvToJsonApp, destroyCsvToJsonApp };
-}

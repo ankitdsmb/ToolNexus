@@ -781,19 +781,6 @@ export async function runTool(action, input) {
 }
 
 
-function initializeIfCsvViewerPage() {
-  const toolPage = document.querySelector('.tool-page');
-  if (!toolPage || toolPage.dataset.slug !== 'csv-viewer') return;
-  ensureViewerUi();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeIfCsvViewerPage, { once: true });
-} else {
-  initializeIfCsvViewerPage();
-}
-
-
 
 const TOOL_ID = 'csv-viewer';
 
@@ -830,9 +817,4 @@ export function destroy(root = resolveRoot()) {
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };

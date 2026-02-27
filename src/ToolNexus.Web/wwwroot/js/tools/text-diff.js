@@ -62,13 +62,4 @@ export function initTextDiffApp(doc = document) {
   return mountTextDiff(root);
 }
 
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initTextDiffApp(document), { once: true });
-  } else {
-    initTextDiffApp(document);
-  }
-}
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[MODULE_KEY] = { create, init, runTool, destroy, initTextDiffApp };

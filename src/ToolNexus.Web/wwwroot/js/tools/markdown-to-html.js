@@ -43,9 +43,4 @@ export async function runTool(action, input) {
   return runMarkdownToHtml(action, input);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['markdown-to-html'] = { runTool, create, init, destroy };

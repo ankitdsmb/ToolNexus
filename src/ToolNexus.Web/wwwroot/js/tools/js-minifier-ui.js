@@ -63,7 +63,10 @@ export function ensureUi() {
   if (refs.actionSelect) refs.actionSelect.value = refs.actionSelect.options[0]?.value ?? '';
   if (refs.heading) refs.heading.textContent = 'Minified JavaScript Output';
   if (refs.shortcutHint) refs.shortcutHint.textContent = 'Shortcuts: Ctrl/Cmd + Enter to minify, Ctrl/Cmd + L to clear input';
-  refs.runBtn?.querySelector('.tool-btn__label')?.replaceChildren(document.createTextNode('Minify'));
+  const runLabel = refs.runBtn?.querySelector('.tool-btn__label');
+  if (runLabel) {
+    runLabel.textContent = 'Minify';
+  }
   if (refs.copyBtn) refs.copyBtn.textContent = 'Copy Output';
   if (refs.downloadBtn) refs.downloadBtn.textContent = 'Download .min.js';
   refs.shareBtn?.setAttribute('hidden', 'hidden');

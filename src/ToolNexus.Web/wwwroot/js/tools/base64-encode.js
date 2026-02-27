@@ -47,9 +47,4 @@ export async function runTool(action, input, options = {}) {
   return runClientBase64Encode(input, options);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['base64-encode'] = { runTool, create, init, destroy };

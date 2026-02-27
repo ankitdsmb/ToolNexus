@@ -51,9 +51,4 @@ export async function runTool(action, input) {
   }).output;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };

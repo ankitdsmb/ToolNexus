@@ -480,9 +480,15 @@ export function create(rootOrContext = resolveRoot()) {
   });
 }
 
-const handle = create(resolveRoot());
-handle?.create();
-handle?.init();
+export function init(rootOrContext = resolveRoot()) {
+  const handle = create(rootOrContext);
+  if (!handle) {
+    return null;
+  }
+
+  handle.init();
+  return handle;
+}
 
 export function destroy(root = resolveRoot()) {
   if (!root) {
@@ -491,5 +497,3 @@ export function destroy(root = resolveRoot()) {
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['case-converter'] = { runTool };
