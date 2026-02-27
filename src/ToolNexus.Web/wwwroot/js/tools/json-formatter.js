@@ -64,6 +64,3 @@ export function destroy(rootOrContext = resolveRoot()) {
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
-
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['json-formatter'] = { create, init, destroy };
