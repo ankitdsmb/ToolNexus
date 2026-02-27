@@ -7,10 +7,43 @@ cd "$ROOT_DIR"
 echo "=== ToolNexus Setup (PostgreSQL + .NET 8 + Node) ==="
 
 CONNECTION_STRING="${TOOLNEXUS_DB_CONNECTION:-${ConnectionStrings__DefaultConnection:-}}"
+SKIP_INSTALL="${TOOLNEXUS_SKIP_PACKAGE_INSTALL:-false}"
 
-echo "[Setup] Installing platform prerequisites..."
-apt-get update
-apt-get install -y dotnet-sdk-8.0 postgresql-client nodejs npm
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+install_prerequisites() {
+  if [ "$SKIP_INSTALL" = "true" ]; then
+    echo "[Setup] TOOLNEXUS_SKIP_PACKAGE_INSTALL=true set; skipping system package installation."
+    return
+  fi
+
+  if [ "$(id -u)" -ne 0 ]; then
+    echo "[Setup] WARNING: not running as root; skipping apt package installation."
+    echo "        Install prerequisites manually: dotnet-sdk-8.0, postgresql-client, nodejs, npm"
+    return
+  fi
+
+  if ! has_cmd apt-get; then
+    echo "[Setup] WARNING: apt-get unavailable; skipping package installation."
+    echo "        Install prerequisites manually: dotnet-sdk-8.0, postgresql-client, nodejs, npm"
+    return
+  fi
+
+  echo "[Setup] Installing platform prerequisites..."
+  apt-get update
+  apt-get install -y dotnet-sdk-8.0 postgresql-client nodejs npm
+}
+
+install_prerequisites
+
+for required_command in dotnet npm psql pg_isready; do
+  if ! has_cmd "$required_command"; then
+    echo "ERROR: required command '$required_command' is not available on PATH."
+    exit 1
+  fi
+done
 
 echo "[Setup] Restoring .NET solution dependencies..."
 dotnet restore ToolNexus.sln --nologo
@@ -32,11 +65,6 @@ fi
 
 if [ -z "$CONNECTION_STRING" ]; then
   echo "ERROR: TOOLNEXUS_DB_CONNECTION or ConnectionStrings__DefaultConnection must be set."
-  exit 1
-fi
-
-if ! command -v pg_isready >/dev/null 2>&1; then
-  echo "ERROR: pg_isready not found after postgresql-client install."
   exit 1
 fi
 

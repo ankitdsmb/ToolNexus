@@ -15,7 +15,10 @@
     "test:playwright:runtime": "playwright test tests/playwright/runtime",
     "test:playwright:smoke": "playwright test tests/playwright/smoke",
     "test:playwright:visual": "playwright test tests/playwright/screenshots",
-    "test:runtime": "vitest run tests/runtime"
+    "test:runtime": "vitest run tests/runtime",
+    "env:setup": "bash ./scripts/setup-toolnexus.sh",
+    "env:maintenance": "bash ./scripts/maintenance-toolnexus.sh full",
+    "env:maintenance:quick": "bash ./scripts/maintenance-toolnexus.sh quick"
   },
   "devDependencies": {
     "jest": "^30.0.5",
