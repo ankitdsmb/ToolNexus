@@ -1,6 +1,6 @@
 {
   "slug": "file-merge",
-  "viewName": "fileMerge",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/file-merge/main.js",
   "templatePath": "/tool-templates/file-merge.html",

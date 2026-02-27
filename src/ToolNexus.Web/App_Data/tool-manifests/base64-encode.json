@@ -1,6 +1,6 @@
 {
   "slug": "base64-encode",
-  "viewName": "base64Encode",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/base64-encode.js",
   "templatePath": "/tool-templates/base64-encode.html",

@@ -1,6 +1,6 @@
 {
   "slug": "json-validator",
-  "viewName": "JsonValidator",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/json-validator.js",
   "templatePath": "/tool-templates/json-validator.html",

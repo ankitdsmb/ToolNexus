@@ -1,6 +1,6 @@
 {
   "slug": "sql-formatter",
-  "viewName": "SqlFormatter",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/sql-formatter.js",
   "templatePath": "/tool-templates/sql-formatter.html",

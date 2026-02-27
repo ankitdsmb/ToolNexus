@@ -1,6 +1,6 @@
 {
   "slug": "json-to-yaml",
-  "viewName": "jsonToYaml",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/json-to-yaml.js",
   "templatePath": "/tool-templates/json-to-yaml.html",

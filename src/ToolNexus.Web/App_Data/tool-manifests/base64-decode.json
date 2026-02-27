@@ -1,6 +1,6 @@
 {
   "slug": "base64-decode",
-  "viewName": "base64Decode",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/base64-decode.js",
   "templatePath": "/tool-templates/base64-decode.html",
