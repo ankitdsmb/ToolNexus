@@ -3,11 +3,12 @@ import {
   RegexToolError,
   normalizeRegexOptions,
   runRegexEvaluation,
-  runTool,
+  runTool as runRegexTesterTool,
   sanitizeFlags,
   validateRegexInputs
 } from './regex-tester.api.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const MODULE_KEY = 'regex-tester';
 const TOOL_ID = 'regex-tester';
@@ -16,15 +17,21 @@ export {
   RegexToolError,
   normalizeRegexOptions,
   runRegexEvaluation,
-  runTool,
   sanitizeFlags,
   validateRegexInputs
 };
+
+export async function runTool(action, input, options = {}) {
+  assertRunToolExecutionOnly(TOOL_ID, action, input, options);
+  return runRegexTesterTool(action, input, options);
+}
 
 export function create(root) {
   return { root, handle: null };
 }
 
+// lifecycle init (mount only)
+// execution handled via runTool
 export function init(context) {
   if (!context?.root) {
     return context ?? null;
@@ -62,4 +69,4 @@ export function initRegexTesterApp(doc = document) {
   return mountRegexTester(root);
 }
 
-
+void MODULE_KEY;

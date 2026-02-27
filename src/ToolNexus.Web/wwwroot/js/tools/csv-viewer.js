@@ -1,5 +1,6 @@
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const VIEWER_STATE = {
   parsed: null,
@@ -754,6 +755,7 @@ function escapeAttribute(value) {
 }
 
 export async function runTool(action, input) {
+  assertRunToolExecutionOnly('csv-viewer', action, input);
   ensureViewerUi();
 
   const delimiterSelect = document.getElementById('csvDelimiterSelect');
@@ -818,6 +820,8 @@ export function create(rootOrContext) {
   });
 }
 
+// lifecycle init (mount only)
+// execution handled via runTool
 export function init(rootOrContext) {
   const root = requireRuntimeRoot(rootOrContext);
   const handle = create(root);

@@ -1,4 +1,5 @@
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-validator';
 
@@ -24,6 +25,8 @@ export function create(rootOrContext) {
   });
 }
 
+// lifecycle init (mount only)
+// execution handled via runTool
 export function init(rootOrContext) {
   const root = requireRuntimeRoot(rootOrContext);
   const handle = create(root);
@@ -42,6 +45,7 @@ export function destroy(rootOrContext) {
 }
 
 export async function runTool(action, input) {
+  assertRunToolExecutionOnly(TOOL_ID, action, input);
   const normalizedAction = typeof action === 'string' ? action.trim().toLowerCase() : 'validate';
   const normalizedInput = typeof input === 'string' ? input : '';
 
