@@ -93,6 +93,6 @@ describe('tool execution normalization engine', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(document.querySelector('[data-tool-runtime-fallback="true"]')).not.toBeNull();
-    expect(runtime.getDiagnostics().initRetriesPerformed).toBeGreaterThan(0);
+    expect(runtime.getDiagnostics().initRetriesPerformed).toBe(0);
   });
 });

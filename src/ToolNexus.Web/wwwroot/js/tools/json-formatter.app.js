@@ -8,42 +8,7 @@ import {
   setErrorState
 } from './json-formatter.dom.js';
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
-
-let monacoLoadPromise = null;
-
-/* =========================================================
-   SAFE SINGLETON MONACO LOADER (REAL FIX)
-========================================================= */
-function loadMonacoSafe() {
-  if (window.monaco?.editor) {
-    return Promise.resolve(window.monaco);
-  }
-
-  if (monacoLoadPromise) {
-    return monacoLoadPromise;
-  }
-
-  monacoLoadPromise = new Promise((resolve, reject) => {
-    if (typeof window.require !== 'function') {
-      reject(new Error('Monaco loader unavailable'));
-      return;
-    }
-
-    window.require.config({
-      paths: {
-        vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
-      }
-    });
-
-    window.require(['vs/editor/editor.main'], () => {
-      resolve(window.monaco);
-    }, reject);
-  });
-
-  return monacoLoadPromise;
-}
-
-/* ========================================================= */
+import { loadMonacoOnce } from '../runtime/monaco-loader.js';
 
 export function createJsonFormatterApp(root) {
   const dom = resolveJsonFormatterDom(root);
@@ -226,7 +191,7 @@ export function createJsonFormatterApp(root) {
 
         try {
           console.debug('[json-formatter] Monaco load start');
-          state.monaco = await loadMonacoSafe();
+          state.monaco = await loadMonacoOnce();
           console.debug('[json-formatter] Monaco load complete');
 
           if (window.monaco?.editor) {
