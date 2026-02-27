@@ -108,6 +108,24 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
         Assert.Contains(incidents.Items, x => x.EventType == "runtime_incident" && x.Destination == "json-formatter" && x.AttemptCount == 3);
     }
 
+    [Theory]
+    [ClassData(typeof(ProviderTheoryData))]
+    public async Task MissingToolQualityScoresTable_ReturnsSafeQualityIntelligence(TestDatabaseProvider provider)
+    {
+        await using var db = await TestDatabaseInstance.CreateAsync(provider);
+        await using (var context = db.CreateContext())
+        {
+            await DropToolQualityScoresTableAsync(context, provider);
+        }
+
+        await using var verify = db.CreateContext();
+        var repository = new EfAdminExecutionMonitoringRepository(verify);
+
+        var snapshot = await repository.GetQualityIntelligenceAsync(CancellationToken.None);
+
+        Assert.Equal(0m, snapshot.AverageQualityScore);
+    }
+
     private static async Task DropRuntimeIncidentTableAsync(DbContext context)
         => await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS \"RuntimeIncidents\";");
 
@@ -133,5 +151,16 @@ public sealed class EfAdminExecutionMonitoringRepositoryTests
 
         await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS audit_dead_letter;");
         await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS audit_outbox;");
+    }
+
+    private static async Task DropToolQualityScoresTableAsync(DbContext context, TestDatabaseProvider provider)
+    {
+        if (provider == TestDatabaseProvider.PostgreSql)
+        {
+            await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS tool_quality_scores;");
+            return;
+        }
+
+        await context.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS tool_quality_scores;");
     }
 }
