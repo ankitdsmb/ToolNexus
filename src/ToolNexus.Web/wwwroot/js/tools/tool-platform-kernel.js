@@ -7,12 +7,51 @@ class ToolPlatformKernel {
     this.tools = new Map();
   }
 
+  isHTMLElement(root) {
+    return Boolean(root && root.nodeType === Node.ELEMENT_NODE && root instanceof HTMLElement);
+  }
+
+  describeRootType(root) {
+    if (root === undefined) {
+      return 'undefined';
+    }
+
+    if (root === null) {
+      return 'null';
+    }
+
+    if (this.isHTMLElement(root)) {
+      return `HTMLElement<${String(root.tagName).toLowerCase()}>`;
+    }
+
+    if (typeof root === 'object') {
+      return root.constructor?.name ? `object:${root.constructor.name}` : 'object';
+    }
+
+    return typeof root;
+  }
+
+  assertValidRoot(root, callsite = 'registerTool()') {
+    if (this.isHTMLElement(root)) {
+      return;
+    }
+
+    throw new Error(
+      '[ToolKernel] Invalid root passed to registerTool()\n'
+      + 'Expected HTMLElement with runtime tool identity.\n'
+      + `Received: ${this.describeRootType(root)}\n`
+      + `Callsite: ${callsite}`
+    );
+  }
+
   registerTool({ id, root, init, destroy }) {
-    if (!id || !root || typeof init !== 'function') {
+    if (!id || typeof init !== 'function') {
       throw new Error('registerTool requires id, root, and init().');
     }
 
-    const toolKey = this.createToolKey(id, root);
+    this.assertValidRoot(root, 'registerTool()');
+
+    const toolKey = this.createToolKey(id, root, 'registerTool()');
     const existing = this.tools.get(toolKey);
     if (existing) {
       return existing.handle;
@@ -100,14 +139,16 @@ class ToolPlatformKernel {
   }
 
   destroyToolById(id, root) {
-    this.destroy(this.createToolKey(id, root));
+    this.destroy(this.createToolKey(id, root, 'destroyToolById()'));
   }
 
-  createToolKey(id, root) {
-    return `${id}:${this.ensureRootId(root)}`;
+  createToolKey(id, root, callsite = 'createToolKey()') {
+    return `${id}:${this.ensureRootId(root, callsite)}`;
   }
 
-  ensureRootId(root) {
+  ensureRootId(root, callsite = 'ensureRootId()') {
+    this.assertValidRoot(root, callsite);
+
     if (root.dataset.toolRootId) {
       return root.dataset.toolRootId;
     }
@@ -118,7 +159,7 @@ class ToolPlatformKernel {
   }
 
   getLifecycleState(id, root) {
-    return this.tools.get(this.createToolKey(id, root))?.state ?? 'missing';
+    return this.tools.get(this.createToolKey(id, root, 'getLifecycleState()'))?.state ?? 'missing';
   }
 
   getRegisteredToolCount() {
@@ -126,7 +167,7 @@ class ToolPlatformKernel {
   }
 
   getLastError(id, root) {
-    return this.tools.get(this.createToolKey(id, root))?.error ?? null;
+    return this.tools.get(this.createToolKey(id, root, 'getLastError()'))?.error ?? null;
   }
 
   resetForTesting() {
