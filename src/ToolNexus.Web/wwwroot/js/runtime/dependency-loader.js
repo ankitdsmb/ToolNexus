@@ -108,7 +108,51 @@ export function createDependencyLoader({
     return false;
   }
 
-  async function loadDependency(src, toolSlug) {
+  function normalizeDependencyEntry(dependency) {
+    if (typeof dependency === 'string') {
+      return {
+        src: dependency,
+        ready: null,
+        key: dependency
+      };
+    }
+
+    if (dependency && typeof dependency === 'object') {
+      const src = typeof dependency.src === 'string' ? dependency.src : null;
+      return {
+        src,
+        ready: typeof dependency.ready === 'function' ? dependency.ready : null,
+        key: src ?? `ready:${dependency.name ?? 'inline'}`
+      };
+    }
+
+    return null;
+  }
+
+  async function ensureDependencyReady(entry, toolSlug) {
+    if (typeof entry.ready !== 'function') {
+      return;
+    }
+
+    const readyResult = await entry.ready();
+    if (readyResult === false) {
+      throw new Error(`Dependency readiness check failed: ${entry.src ?? entry.key}`);
+    }
+
+    emit('dependency_ready', {
+      toolSlug,
+      metadata: { dependency: entry.src ?? entry.key }
+    });
+  }
+
+  async function loadDependency(entry, toolSlug) {
+    const src = entry?.src;
+
+    if (!src) {
+      await ensureDependencyReady(entry, toolSlug);
+      return;
+    }
+
     if (shouldSkipRemoteDependency(src)) {
       logger.info(`Skipping dependency "${src}".`, { toolSlug });
       emit('dependency_script_load_skipped', {
@@ -135,6 +179,9 @@ export function createDependencyLoader({
 
     const pending =
       (src.endsWith('.css') ? cssLoader(src) : scriptLoader(src))
+        .then(() => {
+          return ensureDependencyReady(entry, toolSlug);
+        })
         .then(() => {
           logger.info(`Loaded dependency "${src}".`, { toolSlug });
 
@@ -168,7 +215,9 @@ export function createDependencyLoader({
 
   async function loadDependencies({ dependencies = [], toolSlug } = {}) {
     const list = Array.isArray(dependencies)
-      ? dependencies.filter(Boolean)
+      ? dependencies
+        .map((dependency) => normalizeDependencyEntry(dependency))
+        .filter(Boolean)
       : [];
 
     await Promise.all(
