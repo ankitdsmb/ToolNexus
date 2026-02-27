@@ -370,12 +370,28 @@ function renderFallbackWarningBadge(doc, unifiedControl) {
   unifiedControl.shell.append(badge);
 }
 
+function resolveAutoRuntimeToolRoot(root) {
+  const toolRoot = root?.querySelector?.('[data-tool-root]') || root;
+  const runtimeContainer = root?.querySelector?.('[data-runtime-container]')
+    ?? (root?.matches?.('[data-runtime-container]') ? root : null);
+
+  if (runtimeContainer && toolRoot?.closest?.('[data-runtime-container]') !== runtimeContainer) {
+    throw new Error('AUTO_RUNTIME_CONTRACT_VIOLATION');
+  }
+
+  return toolRoot;
+}
+
 function renderTierError(root, tier, uiMode) {
-  root.innerHTML = '';
+  const toolRoot = resolveAutoRuntimeToolRoot(root);
+  if (!toolRoot) {
+    return;
+  }
+
   const panel = document.createElement('section');
   panel.className = 'tool-auto-runtime tool-auto-runtime--error tn-tool-shell';
   panel.append(createExecutionError(document, `Tool UI configuration error: complexity tier ${tier} requires custom UI, but uiMode is "${uiMode}".`));
-  root.append(panel);
+  toolRoot.replaceChildren(panel);
 }
 
 export function createAutoToolRuntimeModule({ manifest, slug }) {
@@ -386,10 +402,15 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
     toolRuntimeType: 'mount',
     useAutoInputs(root, runtimeContext = {}) {
       const doc = root?.ownerDocument ?? document;
+      const toolRoot = resolveAutoRuntimeToolRoot(root);
+      if (!toolRoot) {
+        return null;
+      }
+
       const schema = defaultSchemaFromManifest(manifest);
       const fields = flattenFields(schema);
       const unifiedControl = createUnifiedToolControl({
-        root,
+        root: toolRoot,
         doc,
         slug,
         manifest,

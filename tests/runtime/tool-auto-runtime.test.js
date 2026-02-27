@@ -15,6 +15,43 @@ describe('tool auto runtime', () => {
     };
   });
 
+
+  test('auto runtime mounts only inside [data-tool-root] and preserves runtime container', () => {
+    const host = document.createElement('div');
+    host.innerHTML = `
+      <section data-runtime-container="true">
+        <div data-tool-root="true"><p data-preexisting>existing</p></div>
+      </section>`;
+    document.body.append(host);
+    const runtimeContainer = host.querySelector('[data-runtime-container]');
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: { uiMode: 'auto', complexityTier: 1, operationSchema: null }
+    });
+
+    const state = module.create(host);
+    module.init(state, host, { addCleanup() {} });
+
+    expect(host.querySelector('[data-runtime-container]')).toBe(runtimeContainer);
+    expect(host.querySelector('[data-preexisting]')).toBeNull();
+    expect(host.querySelector('[data-tool-root] .tn-unified-tool-control')).not.toBeNull();
+  });
+
+  test('throws contract violation when [data-tool-root] resolves outside runtime container', () => {
+    const host = document.createElement('div');
+    host.innerHTML = `
+      <div data-tool-root="true"></div>
+      <section data-runtime-container="true"></section>`;
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: { uiMode: 'auto', complexityTier: 1, operationSchema: null }
+    });
+
+    expect(() => module.useAutoInputs(host, { addCleanup() {} })).toThrowError('AUTO_RUNTIME_CONTRACT_VIOLATION');
+  });
+
   test('tier 1 tools auto-render with fallback JSON input', () => {
     const host = document.createElement('div');
     document.body.append(host);
