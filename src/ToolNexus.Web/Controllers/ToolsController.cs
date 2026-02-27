@@ -65,6 +65,23 @@ public sealed class ToolsController(
         });
     }
 
+    [HttpGet("legacy/{slug}")]
+    public IActionResult Legacy(string slug)
+    {
+        var descriptor = toolRegistryService.GetBySlug(slug);
+        if (descriptor is null)
+        {
+            return NotFound();
+        }
+
+        return StatusCode(StatusCodes.Status410Gone, new
+        {
+            slug,
+            status = "deprecated_non_governed_surface",
+            message = "Legacy tool pages are deprecated. Use the governed ToolShell route at /tools/{slug}."
+        });
+    }
+
     [HttpGet("{segment}")]
     [OutputCache(Duration = 300, VaryByRouteValueNames = ["segment"])]
     public async Task<IActionResult> Segment(string segment, CancellationToken cancellationToken)

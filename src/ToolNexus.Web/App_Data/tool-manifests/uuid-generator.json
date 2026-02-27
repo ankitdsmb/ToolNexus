@@ -1,6 +1,6 @@
 {
   "slug": "uuid-generator",
-  "viewName": "uuidGenerator",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/uuid-generator.js",
   "templatePath": "/tool-templates/uuid-generator.html",

@@ -1,6 +1,6 @@
 {
   "slug": "json-formatter",
-  "viewName": "JsonFormatter",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/json-formatter.js",
   "templatePath": "/tool-templates/json-formatter.html",

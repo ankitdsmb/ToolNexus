@@ -1,6 +1,6 @@
 {
   "slug": "url-decode",
-  "viewName": "urlDecode",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/url-decode.js",
   "templatePath": "/tool-templates/url-decode.html",

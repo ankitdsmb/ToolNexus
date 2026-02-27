@@ -1,6 +1,6 @@
 {
   "slug": "html-entities",
-  "viewName": "htmlEntities",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/html-entities.js",
   "templatePath": "/tool-templates/html-entities.html",

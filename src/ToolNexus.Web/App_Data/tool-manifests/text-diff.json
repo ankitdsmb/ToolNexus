@@ -1,6 +1,6 @@
 {
   "slug": "text-diff",
-  "viewName": "TextDiff",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/text-diff.js",
   "templatePath": "/tool-templates/text-diff.html",

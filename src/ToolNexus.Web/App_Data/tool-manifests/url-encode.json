@@ -1,6 +1,6 @@
 {
   "slug": "url-encode",
-  "viewName": "urlEncode",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/url-encode.js",
   "templatePath": "/tool-templates/url-encode.html",

@@ -1,6 +1,6 @@
 {
   "slug": "json-to-csv",
-  "viewName": "json2csv",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/json-to-csv.js",
   "templatePath": "/tool-templates/json-to-csv.html",

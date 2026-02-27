@@ -17,11 +17,11 @@ export const TOOL_DOM_CONTRACT = {
   },
   legacyAliases: {
     'data-tool-shell': ['[data-tool-root]', '.tool-page', '.tool-runtime-fallback'],
-    'data-tool-context': ['[data-tool-header]', '.tn-tool-header', '.tool-header', 'header'],
-    'data-tool-input': ['.tool-controls', '#inputEditor', 'textarea', 'input[type="text"]', '.editor-input'],
+    'data-tool-context': ['[data-tool-header]', '.tn-tool-header', '.tool-header'],
+    'data-tool-input': ['.tool-controls', '#inputEditor', '.editor-input'],
     'data-tool-status': ['.tn-unified-tool-control__status', '.tool-status', '[role="status"]'],
-    'data-tool-output': ['.tool-result', '#outputField', '.tool-panel--output', '.editor-output', 'pre', 'output'],
-    'data-tool-followup': ['[data-tool-actions]', '.tool-actions', '.tool-toolbar', '.tool-controls-actions', 'button']
+    'data-tool-output': ['.tool-result', '#outputField', '.tool-panel--output', '.editor-output'],
+    'data-tool-followup': ['[data-tool-actions]', '.tool-actions', '.tool-toolbar', '.tool-controls-actions']
   }
 };
 

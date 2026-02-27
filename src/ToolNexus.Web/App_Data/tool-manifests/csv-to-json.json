@@ -1,6 +1,6 @@
 {
   "slug": "csv-to-json",
-  "viewName": "CsvToJson",
+  "viewName": "ToolShell",
   "category": "",
   "modulePath": "/js/tools/csv-to-json.js",
   "templatePath": "/tool-templates/csv-to-json.html",

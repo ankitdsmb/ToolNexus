@@ -97,7 +97,11 @@ export function createUnifiedToolControl({
   const contractFollowup = toolRoot.querySelector('[data-tool-followup]');
   const hasContractZones = Boolean(contractContext && contractInput && contractStatus && contractOutput && contractFollowup);
 
-  const shell = hasContractZones ? toolRoot : doc.createElement('section');
+  if (!hasContractZones) {
+    return null;
+  }
+
+  const shell = toolRoot;
   shell.classList.add('tn-unified-tool-control', 'tn-tool-shell', 'tool-auto-runtime');
   shell.dataset.toolSlug = slug ?? '';
 
@@ -111,10 +115,10 @@ export function createUnifiedToolControl({
     </div>
   `;
 
-  const inputArea = hasContractZones ? contractInput : doc.createElement('section');
+  const inputArea = contractInput;
   inputArea.className = 'tn-unified-tool-control__input';
 
-  const actions = hasContractZones ? contractFollowup : doc.createElement('div');
+  const actions = contractFollowup;
   actions.className = 'tn-unified-tool-control__actions';
 
   const runButton = doc.createElement('button');
@@ -138,18 +142,12 @@ export function createUnifiedToolControl({
   suggestionReason.hidden = true;
 
   actions.replaceChildren(runButton, suggestionBadge, suggestionReason);
-  if (!hasContractZones) {
-    actions.prepend(status);
-  } else {
-    contractStatus.replaceChildren(status);
-  }
+  contractStatus.replaceChildren(status);
 
-  const output = hasContractZones ? contractOutput : createOutputContent(doc);
+  const output = contractOutput;
   output.className = 'tn-unified-tool-control__output';
-  if (hasContractZones) {
-    const outputContent = createOutputContent(doc);
-    output.innerHTML = outputContent.innerHTML;
-  }
+  const outputContent = createOutputContent(doc);
+  output.innerHTML = outputContent.innerHTML;
 
   const preview = output.querySelector('.tn-unified-tool-control__preview');
   const details = output.querySelector('.tn-unified-tool-control__details');
@@ -159,19 +157,11 @@ export function createUnifiedToolControl({
   const errors = doc.createElement('div');
   errors.className = 'tn-unified-tool-control__errors';
 
-  if (hasContractZones) {
-    if (contractContext) {
-      contractContext.innerHTML = header.innerHTML;
-    }
-    inputArea.replaceChildren();
-    output.append(errors);
-  } else {
-    const body = doc.createElement('section');
-    body.className = 'tn-unified-tool-control__body';
-    body.append(inputArea, actions, output);
-    shell.replaceChildren(header, body, errors);
-    toolRoot.replaceChildren(shell);
+  if (contractContext) {
+    contractContext.innerHTML = header.innerHTML;
   }
+  inputArea.replaceChildren();
+  output.append(errors);
 
   return {
     shell,

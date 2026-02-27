@@ -32,7 +32,7 @@
     }
 }
 
-<article class="tool-shell-page workspace-shell tool-page page-shell" aria-label="Tool runtime page">
+<article class="tool-shell-page workspace-shell page-shell" aria-label="Tool runtime page">
     <header class="tool-shell-page__hero workspace-shell__hero tool-panel" aria-label="Tool introduction">
         <p class="tool-section__eyebrow">Runtime workspace</p>
         <div class="tool-shell-page__hero-main">
@@ -51,32 +51,23 @@
             <p class="tool-shell-page__workspace-label">INPUT → RUN → COPY</p>
             <p class="tool-shell-page__workspace-hint">Execute in runtime first. Pull context only when blocked.</p>
         </header>
-        <div class="tool-shell-page__runtime-zone-shell" data-runtime-zone-shell="true" data-runtime-container="true">
-            <div id="tool-root" class="tool-shell-page__runtime" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
-                <header data-tool-header="true" class="tn-tool-header">
-                    <h2>@Model.Tool.Title runtime</h2>
-                </header>
-                <section data-tool-body="true" class="tn-tool-body">
-                    <section data-tool-input="true" class="tn-tool-panel" aria-label="Tool input panel">
-                        <p>Input area loading…</p>
-                    </section>
-                    <section data-tool-output="true" class="tn-tool-panel" aria-label="Tool output panel">
-                        <p>Output preview loading…</p>
-                    </section>
-                    <div data-tool-actions="true" class="tool-execution-panel">
-                        <button type="button" disabled>Preparing runtime</button>
-                    </div>
+        <section id="tool-root" class="tool-shell-page__runtime" data-tool-shell="true" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
+            <header data-tool-context="true" data-tool-header="true" class="tn-tool-header" aria-label="Tool execution context">
+                <h2>@Model.Tool.Title runtime</h2>
+            </header>
+            <section data-tool-input="true" class="tn-tool-panel" aria-label="Tool input panel">
+                <p>Input area loading…</p>
+            </section>
+            <section class="tn-tool-panel" aria-label="Tool output workspace">
+                <div data-tool-status="true" class="tool-execution-status" role="status" aria-live="polite">Ready</div>
+                <section data-tool-output="true" aria-label="Tool output panel">
+                    <p>Output preview loading…</p>
                 </section>
-            </div>
-        </div>
-        <div class="tool-shell-page__mount-demo" data-mount-demo="true">
-            <button type="button" class="tool-btn" data-inline-mount-trigger="true">Open inline runtime demo</button>
-            <div class="tool-shell-page__mount-demo-host" data-inline-mount-host="true" aria-label="Inline runtime demo host"></div>
-        </div>
-        <aside class="tool-shell-page__momentum" aria-live="polite" hidden data-momentum-loop="true">
-            <p class="tool-shell-page__momentum-title">Next step ready</p>
-            <p class="tool-shell-page__momentum-copy">Output ready. Copy now or chain into the next tool.</p>
-        </aside>
+            </section>
+            <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel" aria-label="Follow-up actions">
+                <button type="button" disabled>Preparing runtime</button>
+            </footer>
+        </section>
     </section>
 
     <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">

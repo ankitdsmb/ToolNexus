@@ -19,7 +19,7 @@ public sealed class CachingExecutionStep(
     private static readonly ConcurrentDictionary<string, Task<ToolExecutionResponse>> Inflight = new(StringComparer.Ordinal);
     private readonly TimeSpan _cacheDuration = TimeSpan.FromSeconds(Math.Max(1, cacheOptions.Value.AbsoluteExpirationSeconds));
 
-    public int Order => 200;
+    public int Order => 210;
 
     public async Task<ToolExecutionResponse> InvokeAsync(ToolExecutionContext context, ToolExecutionDelegate next, CancellationToken cancellationToken)
     {
