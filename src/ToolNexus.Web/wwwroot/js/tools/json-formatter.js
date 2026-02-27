@@ -5,8 +5,9 @@ import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-formatter';
 
-function resolveRoot(rootOrContext) {
-  return rootOrContext;
+function resolveRoot(context) {
+  const root = context?.root || context?.toolRoot || context;
+  return root instanceof Element ? root : null;
 }
 
 export function create(context) {

@@ -3,11 +3,22 @@ import { getToolPlatformKernel } from '../tool-platform-kernel.js';
 
 const TOOL_ID = 'json-validator';
 
-function resolveRoot() {
-  return document.querySelector('[data-json-validator]');
+function resolveRoot(context) {
+  const root = context?.root || context?.toolRoot || context;
+  return root instanceof Element ? root : null;
 }
 
-export function create(root = resolveRoot()) {
+function requireRuntimeRoot(context) {
+  const root = resolveRoot(context);
+  if (!(root instanceof Element)) {
+    throw new Error(`[${TOOL_ID}] invalid lifecycle root`);
+  }
+
+  return root;
+}
+
+export function create(context) {
+  const root = requireRuntimeRoot(context);
   if (!root) {
     return null;
   }
@@ -20,25 +31,19 @@ export function create(root = resolveRoot()) {
   });
 }
 
-export function init(root = resolveRoot()) {
+export function init(context) {
+  const root = requireRuntimeRoot(context);
   const handle = create(root);
   if (!handle) {
     return null;
   }
 
-  handle.create();
   handle.init();
   return handle;
 }
 
-export function destroy(root = resolveRoot()) {
-  if (!root) {
-    return;
-  }
+export function destroy(context) {
+  const root = requireRuntimeRoot(context);
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});

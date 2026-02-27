@@ -11,6 +11,7 @@ import {
 } from './csv-to-json.api.js';
 import { createCsvToJsonApp, TOOL_ID } from './csv-to-json.app.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const MODULE_KEY = 'csv-to-json';
 

@@ -1,27 +1,26 @@
 import { decodeUrlInput } from './url-decode/decoder.js';
 import { mountUrlDecodeTool } from './url-decode/ui.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'url-decode';
 
-function resolveRoot(rootOrContext) {
-  if (rootOrContext instanceof Element) return rootOrContext;
-  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
-  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
-  return null;
+function resolveRoot(context) {
+  const root = context?.root || context?.toolRoot || context;
+  return root instanceof Element ? root : null;
 }
 
-function requireRuntimeRoot(rootOrContext) {
-  const root = resolveRoot(rootOrContext);
+function requireRuntimeRoot(context) {
+  const root = resolveRoot(context);
   if (!root) {
-    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
+    throw new Error(`[${TOOL_ID}] invalid lifecycle root`);
   }
 
   return root;
 }
 
-export function create(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function create(context) {
+  const root = requireRuntimeRoot(context);
   if (!root) {
     return null;
   }
@@ -34,8 +33,8 @@ export function create(rootOrContext) {
   });
 }
 
-export function init(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function init(context) {
+  const root = requireRuntimeRoot(context);
   const handle = create(root);
   if (!handle) {
     return null;
@@ -45,13 +44,14 @@ export function init(rootOrContext) {
   return handle;
 }
 
-export function destroy(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function destroy(context) {
+  const root = requireRuntimeRoot(context);
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
 export async function runTool(action, input) {
+  assertRunToolExecutionOnly(TOOL_ID, action, input);
   const normalizedAction = String(action ?? '').trim().toLowerCase();
   if (normalizedAction !== 'decode') {
     throw new Error(`Unsupported action "${action}" for url-decode.`);
