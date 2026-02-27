@@ -61,6 +61,14 @@ function isDevelopmentRuntime() {
   return Boolean(window.ToolNexusLogging?.runtimeDebugEnabled);
 }
 
+function shouldExposeRuntimeErrors() {
+  return (
+    window.ToolNexusConfig?.runtimeEnvironment === 'development'
+    || window.ToolNexusLogging?.runtimeDebugEnabled === true
+    || window.ToolNexusConfig?.adminRuntimeDebug === true
+  );
+}
+
 const TOOL_MOUNT_MODES = Object.freeze({
   FULLSCREEN: 'fullscreen',
   PANEL: 'panel',
@@ -969,6 +977,15 @@ export function createToolRuntime({
         try {
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
         } catch (error) {
+          if (shouldExposeRuntimeErrors()) {
+            console.error(`[ToolRuntime DEV] Lifecycle crash for "${slug}"`, error);
+            emit('lifecycle_crash_dev', {
+              toolSlug: slug,
+              error: error?.stack ?? error?.message ?? String(error)
+            });
+            throw error;
+          }
+
           stateRegistry.incrementRetry(stateKey);
           runtimeMetrics.initRetriesPerformed += 1;
           emit('init_retry', { toolSlug: slug, metadata: { phase: 'lifecycle-init' } });
