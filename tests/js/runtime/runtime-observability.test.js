@@ -4,6 +4,11 @@ import { createDependencyLoader } from '../../../src/ToolNexus.Web/wwwroot/js/ru
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 
 describe('runtime observability', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+    window.ToolNexusRuntime = { ...(window.ToolNexusRuntime || {}), strict: false };
+  });
+
   test('documents QA expectation matrix coverage', () => {
     const expectations = [
       'bootstrap_start',

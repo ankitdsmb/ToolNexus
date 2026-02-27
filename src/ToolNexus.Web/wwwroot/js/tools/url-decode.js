@@ -1,13 +1,16 @@
 import { decodeUrlInput } from './url-decode/decoder.js';
 import { mountUrlDecodeTool } from './url-decode/ui.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'url-decode';
 
 function resolveRoot(context) {
-  const root = context?.root || context?.toolRoot || context;
-  return root instanceof Element ? root : null;
+  if (context?.handle?.id === TOOL_ID && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  return normalizeToolRoot(context);
 }
 
 function requireRuntimeRoot(context) {

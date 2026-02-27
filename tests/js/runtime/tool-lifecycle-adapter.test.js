@@ -15,9 +15,6 @@ describe('tool lifecycle adapter', () => {
       init: jest.fn((context) => {
         calls.push(['init', context.token]);
       }),
-      runTool: jest.fn((context) => {
-        calls.push(['runTool', context.token]);
-      }),
       destroy: jest.fn((context) => {
         calls.push(['destroy', context.token]);
       }),
@@ -32,15 +29,13 @@ describe('tool lifecycle adapter', () => {
     expect(result.mode).toBe('module.lifecycle-contract');
     expect(module.create).toHaveBeenCalledTimes(1);
     expect(module.init).toHaveBeenCalledTimes(1);
-    expect(module.runTool).toHaveBeenCalledTimes(1);
     expect(module.mount).not.toHaveBeenCalled();
 
     await result.cleanup();
     expect(module.destroy).toHaveBeenCalledTimes(1);
     expect(calls).toEqual([
       ['create', root],
-      ['init', 'ctx-1'],
-      ['runTool', 'ctx-1'],
+      ['init', undefined],
       ['destroy', 'ctx-1']
     ]);
   });

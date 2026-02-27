@@ -7,7 +7,7 @@ import {
   sanitizeFlags,
   validateRegexInputs
 } from './regex-tester.api.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const MODULE_KEY = 'regex-tester';
@@ -27,8 +27,11 @@ export async function runTool(action, input, options = {}) {
 }
 
 function resolveRoot(context) {
-  const root = context?.root || context?.toolRoot || context;
-  return root instanceof Element ? root : null;
+  if (context?.handle?.id === TOOL_ID && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  return normalizeToolRoot(context);
 }
 
 export function create(context) {
@@ -38,7 +41,7 @@ export function create(context) {
 // lifecycle init (mount only)
 // execution handled via runTool
 export function init(context) {
-  const root = context?.root || context?.toolRoot || context;
+  const root = resolveRoot(context);
   if (!(root instanceof Element)) {
     throw new Error('Invalid mount root');
   }

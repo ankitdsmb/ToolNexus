@@ -1,13 +1,16 @@
 import { createSqlFormatterApp } from './sql-formatter.app.js';
 import { runSqlFormatter } from './sql-formatter.api.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'sql-formatter';
 
 function resolveRoot(context) {
-  const root = context?.root || context?.toolRoot || context;
-  return root instanceof Element ? root : null;
+  if (context?.handle?.id === TOOL_ID && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  return normalizeToolRoot(context);
 }
 
 function requireRuntimeRoot(context) {

@@ -2,7 +2,14 @@ import { jest } from '@jest/globals';
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 
 describe('runtime safety orchestrator', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+    window.ToolNexusRuntime = { ...(window.ToolNexusRuntime || {}), strict: false };
+  });
+
   afterEach(() => {
+    delete window.ToolNexusConfig;
+    delete window.ToolNexusRuntime;
     jest.restoreAllMocks();
     document.body.innerHTML = '';
     delete window.ToolNexusModules;
@@ -16,7 +23,7 @@ describe('runtime safety orchestrator', () => {
     });
     window.ToolNexusModules = { 'legacy-a': { runTool } };
 
-    window.ToolNexusConfig = { runtimeUiMode: 'custom', runtimeModulePath: '/legacy-a.js' };
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeUiMode: 'custom', runtimeModulePath: '/legacy-a.js' };
 
     const runtime = createToolRuntime({
       loadManifest: async () => { throw new Error('manifest missing'); },

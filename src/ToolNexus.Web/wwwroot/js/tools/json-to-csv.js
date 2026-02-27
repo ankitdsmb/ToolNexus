@@ -3,7 +3,7 @@ import { normalizeRows } from './json-to-csv/normalizer.js';
 import { buildCsv } from './json-to-csv/csv-engine.js';
 import { toUserError } from './json-to-csv/errors.js';
 import { mountJsonToCsvTool } from './json-to-csv/ui.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-to-csv';
@@ -15,8 +15,11 @@ const DELIMITER_MAP = {
 };
 
 function resolveRoot(context) {
-  const root = context?.root || context?.toolRoot || context;
-  return root instanceof Element ? root : null;
+  if (context?.handle?.id === TOOL_ID && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  return normalizeToolRoot(context);
 }
 
 function requireRuntimeRoot(context) {

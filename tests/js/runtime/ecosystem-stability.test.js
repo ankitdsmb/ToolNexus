@@ -2,12 +2,24 @@ import { jest } from '@jest/globals';
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 import { detectToolCapabilities } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-capability-matrix.js';
 
+function loadDemoTemplate(_slug, root) {
+  root.innerHTML = `
+    <div data-runtime-container>
+      <article data-tool-root data-tool="demo-tool">
+        <header data-tool-header></header>
+        <section data-tool-body>
+          <section data-tool-input><textarea id="inputEditor"></textarea></section>
+          <section data-tool-output><textarea id="outputField"></textarea></section>
+        </section>
+        <footer data-tool-actions></footer>
+      </article>
+    </div>`;
+}
+
 function createBaseRuntime(overrides = {}) {
   return createToolRuntime({
     loadManifest: async () => ({ slug: 'demo-tool', modulePath: '/demo.js', templatePath: '/demo.html', dependencies: [], uiMode: 'custom', complexityTier: 2 }),
-    templateLoader: async (_slug, root) => {
-      root.innerHTML = '<div class="tool-page"><div class="tool-layout"><section class="tool-layout__panel"><textarea id="inputEditor"></textarea></section><section class="tool-panel--output"><textarea id="outputField"></textarea></section></div></div>';
-    },
+    templateLoader: loadDemoTemplate,
     dependencyLoader: { loadDependencies: async () => {} },
     ...overrides
   });
@@ -19,65 +31,44 @@ describe('ecosystem runtime stability matrix', () => {
     delete window.runTool;
     delete window.init;
     delete window.ToolNexusModules;
+    delete window.ToolNexusConfig;
     jest.restoreAllMocks();
   });
 
   test('modern lifecycle path works', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="demo-tool"></div>';
-    const mount = jest.fn((root) => { root.innerHTML = '<div data-mounted="modern">ok</div>'; });
+    const module = {
+      create: jest.fn(),
+      init: jest.fn(),
+      destroy: jest.fn()
+    };
 
-    const runtime = createBaseRuntime({
-      importModule: async () => ({ mount })
-    });
+    const runtime = createBaseRuntime({ importModule: async () => module });
 
     await runtime.bootstrapToolRuntime();
 
-    expect(mount).toHaveBeenCalledTimes(0);
+    expect(module.create).toHaveBeenCalledTimes(1);
+    expect(module.init).toHaveBeenCalledTimes(1);
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
   });
 
-  test('transitional tool mounts via legacy bridge', async () => {
+  test('strict mode blocks execution-only runTool lifecycle bridging', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="demo-tool"></div>';
-    const runTool = jest.fn((root) => { root.innerHTML = '<div data-mounted="bridge">bridge</div>'; });
-
     const runtime = createBaseRuntime({
       lifecycleAdapter: async () => ({ mounted: false }),
-      importModule: async () => ({ runTool })
+      importModule: async () => ({ runTool: jest.fn((action, input) => ({ action, input })) })
     });
 
-    await runtime.bootstrapToolRuntime();
-
-    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
-    expect(document.querySelector('[data-mounted="bridge"]') || document.querySelector('.tool-auto-runtime') || document.querySelector('.tool-runtime-fallback')).not.toBeNull();
-  });
-
-  test('legacy runTool executes once per mount cycle (double mount prevented)', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="legacy-tool"></div>';
-    const runTool = jest.fn((root) => { root.innerHTML = '<div data-mounted="legacy">legacy</div>'; });
-    window.ToolNexusModules = { 'legacy-tool': { runTool } };
-
-    window.ToolNexusConfig = { runtimeUiMode: 'custom', runtimeModulePath: '/legacy-tool.js' };
-
-    const runtime = createToolRuntime({
-      loadManifest: async () => { throw new Error('no manifest'); },
-      
-      templateLoader: async () => {},
-      dependencyLoader: { loadDependencies: async () => {} },
-      importModule: async () => ({}),
-      lifecycleAdapter: async () => ({ mounted: false })
-    });
-
-    await runtime.bootstrapToolRuntime();
-    await runtime.bootstrapToolRuntime();
-
-    expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
+    await expect(runtime.bootstrapToolRuntime())
+      .rejects
+      .toThrow('Strict runtime mode disallows legacy execution bridge for "demo-tool".');
   });
 
   test('SSR content remains visible in enhance mode', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="demo-tool"><article id="ssr">SSR</article></div>';
 
     const runtime = createBaseRuntime({
-      importModule: async () => ({})
+      importModule: async () => ({ create() {}, init() {}, destroy() {} })
     });
 
     await runtime.bootstrapToolRuntime();
@@ -104,19 +95,14 @@ describe('ecosystem runtime stability matrix', () => {
     expect(removeSpy).toHaveBeenCalledWith('resize', expect.any(Function), undefined);
   });
 
-  test('navigation remount works cleanly', async () => {
+  test('navigation remount works cleanly with modern lifecycle module', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="nav-tool"></div>';
-    const runTool = jest.fn((root) => { root.innerHTML = '<div data-mounted="nav">nav</div>'; });
-    window.ToolNexusModules = { 'nav-tool': { runTool } };
-
-    window.ToolNexusConfig = { runtimeUiMode: 'custom', runtimeModulePath: '/nav-tool.js' };
 
     const runtime = createToolRuntime({
-      loadManifest: async () => { throw new Error('legacy'); },
-      templateLoader: async () => {},
+      loadManifest: async () => ({ slug: 'nav-tool', modulePath: '/nav-tool.js', templatePath: '/demo.html', dependencies: [], uiMode: 'custom', complexityTier: 2 }),
+      templateLoader: loadDemoTemplate,
       dependencyLoader: { loadDependencies: async () => {} },
-      importModule: async () => ({}),
-      lifecycleAdapter: async () => ({ mounted: false })
+      importModule: async () => ({ create() {}, init() {}, destroy() {} })
     });
 
     await runtime.bootstrapToolRuntime();
@@ -126,19 +112,15 @@ describe('ecosystem runtime stability matrix', () => {
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
   });
 
-  test('broken tool renders standardized fallback UI', async () => {
+  test('broken tool lifecycle crashes surface with explicit error in strict runtime', async () => {
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="broken-tool"></div>';
-
     const runtime = createBaseRuntime({
       lifecycleAdapter: async () => { throw new Error('broken mount'); },
       importModule: async () => ({}),
       healRuntime: async () => false
     });
 
-    await runtime.bootstrapToolRuntime();
-
-    expect(document.querySelector('[data-tool-runtime-fallback="true"]')).not.toBeNull();
-    expect(document.getElementById('tool-root').textContent).toContain('Tool failed to initialize safely.');
+    await expect(runtime.bootstrapToolRuntime()).rejects.toThrow('broken mount');
   });
 
   test('capability matrix returns normalized shape', () => {
