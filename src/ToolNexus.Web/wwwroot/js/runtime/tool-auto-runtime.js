@@ -461,6 +461,8 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
 
       const run = async () => {
         unifiedControl.clearErrors();
+        unifiedControl.setIntent('AI intent: Validate request shape before runtime execution.');
+        unifiedControl.setGuidance('Guidance: Ensure required fields are complete.');
         unifiedControl.setStatus('validating');
 
         const payload = {};
@@ -477,6 +479,8 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           }
         } catch (error) {
           unifiedControl.setStatus('warning', 'Warning · Input validation needs attention');
+          unifiedControl.setIntent('AI intent: Stop execution until request validity is restored.');
+          unifiedControl.setGuidance('Guidance: Correct highlighted input issues and rerun.');
           unifiedControl.showError(error?.message ?? 'Invalid input.');
           return;
         }
@@ -490,6 +494,8 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         }
 
         runButton.disabled = true;
+        unifiedControl.setIntent('AI intent: Execute request through authority resolution and runtime processing.');
+        unifiedControl.setGuidance('Guidance: Runtime is active; wait for evidence and interpretation.');
         unifiedControl.setStatus('running');
 
         try {
@@ -509,15 +515,28 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         try {
           const result = await executeTool({ slug, payload: sanitized });
           unifiedControl.setStatus('streaming');
+          unifiedControl.setIntent('AI intent: Assemble output evidence and interpretation for your request.');
+          unifiedControl.setGuidance('Guidance: Review interpretation summary and confidence before follow-up actions.');
           const hierarchy = unifiedControl.renderResult(result);
           const completedWithWarnings = hierarchy?.hasWarnings || ignoredFields.length > 0;
+          const diagnosticsOnly = !hierarchy?.supporting && !hierarchy?.metadata && Boolean(hierarchy?.diagnostics);
           if (completedWithWarnings) {
             unifiedControl.setStatus('warning', 'Warning · Completed with runtime notes');
+            unifiedControl.setIntent('AI intent: Surface cautionary runtime signals for operator review.');
+            unifiedControl.setGuidance('Guidance: Inspect runtime notes and refine inputs before operational use.');
+          } else if (diagnosticsOnly) {
+            unifiedControl.setStatus('uncertain');
+            unifiedControl.setIntent('AI intent: Flag uncertain interpretation due to limited context evidence.');
+            unifiedControl.setGuidance('Guidance: Cross-check output against trusted baseline, then rerun with richer inputs.');
           } else {
             unifiedControl.setStatus('success');
+            unifiedControl.setIntent('AI intent: Confirm execution outcome is ready for workflow continuation.');
+            unifiedControl.setGuidance('Guidance: Use follow-up actions to continue or rerun for comparison.');
           }
         } catch (error) {
           unifiedControl.setStatus('failed');
+          unifiedControl.setIntent('AI intent: Report failed execution path with recoverable guidance.');
+          unifiedControl.setGuidance('Guidance: Review error details, adjust inputs, and rerun.');
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;
