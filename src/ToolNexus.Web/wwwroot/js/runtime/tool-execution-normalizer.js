@@ -1,5 +1,6 @@
 import { safeInitScheduler } from './safe-init-scheduler.js';
 import { createRuntimeLogger } from './runtime-logger.js';
+import { runtimeObserver } from './runtime-observer.js';
 
 const logger = createRuntimeLogger({ source: 'tool-execution-normalizer' });
 
@@ -175,10 +176,22 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
             throw error;
           }
 
+          const retryPayload = {
+            slug,
+            mode,
+            originalError: error?.message ?? String(error),
+            retryStrategy: 'root-first'
+          };
+
           logger.warn('Retrying normalized init with root-first signature.', {
             slug,
             mode,
             originalError: error?.message ?? String(error)
+          });
+          runtimeObserver.emit('runtime_lifecycle_retry', {
+            ...retryPayload,
+            toolSlug: slug,
+            metadata: retryPayload
           });
           initValue = await target.init(root, context?.manifest, context);
         }
