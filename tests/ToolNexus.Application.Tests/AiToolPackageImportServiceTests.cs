@@ -7,6 +7,44 @@ namespace ToolNexus.Application.Tests;
 public sealed class AiToolPackageImportServiceTests
 {
     [Fact]
+    public async Task GenerateContractAsync_DuplicateSlug_ReturnsDuplicateStatus()
+    {
+        var repository = new InMemoryAiToolPackageRepository();
+        await repository.CreateAsync(
+            new AiToolPackageContract("v1", "json-formatter", "{}", "{}", "{}", "{}", [new AiToolVirtualFile("tool.js", "js", "export default {}")], "{}"),
+            "corr",
+            "tenant",
+            CancellationToken.None);
+        var service = CreateService(repository);
+
+        var response = await service.GenerateContractAsync(
+            new AiToolContractGenerationRequest("Json Formatter", ["other-tool"], "corr", "tenant"),
+            CancellationToken.None);
+
+        Assert.Equal("duplicate", response.Status);
+        Assert.Equal("Tool already exists", response.Message);
+        Assert.Equal("json-formatter", response.Slug);
+        Assert.Null(response.ContractJson);
+    }
+
+    [Fact]
+    public async Task GenerateContractAsync_UniqueSlug_ReturnsContractPayload()
+    {
+        var service = CreateService();
+
+        var response = await service.GenerateContractAsync(
+            new AiToolContractGenerationRequest("CSV Cleaner", ["json-formatter"], "corr", "tenant"),
+            CancellationToken.None);
+
+        Assert.Equal("ok", response.Status);
+        Assert.Equal("csv-cleaner", response.Slug);
+        Assert.NotNull(response.ContractJson);
+        Assert.Contains("\"contractVersion\": \"v1\"", response.ContractJson, StringComparison.Ordinal);
+        Assert.Contains("\"executionAuthority\": \"ShadowOnly\"", response.ContractJson, StringComparison.Ordinal);
+        Assert.Contains("\"template.html\"", response.ContractJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ValidateAsync_RejectsBannedJavascriptPattern()
     {
         var service = CreateService();

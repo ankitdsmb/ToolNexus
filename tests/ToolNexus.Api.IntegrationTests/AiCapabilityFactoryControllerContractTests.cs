@@ -29,6 +29,7 @@ public sealed class AiCapabilityFactoryControllerContractTests
         Assert.Contains("OperatorApprove", writeMethods);
         Assert.Contains("Activate", writeMethods);
         Assert.Contains("ValidateImport", writeMethods);
+        Assert.Contains("GenerateContract", writeMethods);
         Assert.Contains("Import", writeMethods);
     }
 }
