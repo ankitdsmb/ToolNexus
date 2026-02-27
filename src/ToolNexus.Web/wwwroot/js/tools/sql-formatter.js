@@ -34,6 +34,7 @@ export function create(context) {
   });
 }
 
+// MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
 export function init(context) {
   const root = requireRuntimeRoot(context);
   const handle = create(root);

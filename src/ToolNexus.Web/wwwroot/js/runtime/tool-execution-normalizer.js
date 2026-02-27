@@ -2,6 +2,7 @@ import { safeInitScheduler } from './safe-init-scheduler.js';
 import { createRuntimeLogger } from './runtime-logger.js';
 
 const logger = createRuntimeLogger({ source: 'tool-execution-normalizer' });
+const LIFECYCLE_SIGNATURE_ERROR_CODE = 'LIFECYCLE_SIGNATURE_INVALID';
 let hasLoggedInitContextInjected = false;
 
 function shouldGuardLifecycleDiagnostics() {
@@ -133,6 +134,31 @@ function withDomTracking(root, context, callback) {
   }
 }
 
+function createLifecycleSignatureError(slug, details = {}) {
+  const error = new Error(`${LIFECYCLE_SIGNATURE_ERROR_CODE}: ${slug}`);
+  error.code = LIFECYCLE_SIGNATURE_ERROR_CODE;
+  error.details = {
+    slug,
+    ...details
+  };
+  return error;
+}
+
+function validateLifecycleInitSignature(initFn, slug) {
+  if (typeof initFn !== 'function') {
+    return true;
+  }
+
+  if (Number(initFn.length ?? 0) > 1) {
+    throw createLifecycleSignatureError(slug, {
+      reason: 'init must declare a single lifecycleContext argument',
+      declaredArity: Number(initFn.length ?? 0)
+    });
+  }
+
+  return true;
+}
+
 export function normalizeToolExecution(toolModule, capability = {}, { slug = '', root, context } = {}) {
   const { target, mode } = resolveTarget(toolModule, capability, slug, context);
   logger.debug('Execution target normalized.', { slug, mode });
@@ -140,24 +166,26 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
   let instance = null;
   const __runtimeLifecycleAudit = [];
 
-  function auditLifecycleCall(toolSlug, phase, payload) {
+  function auditLifecycleCall(toolSlug, phase, payload, lifecycleMode) {
     const lifecycleRoot = payload?.root || payload?.toolRoot || payload;
+    const signatureValid = Boolean(payload && typeof payload === 'object'
+      && lifecycleRoot instanceof Element
+      && ('executionContext' in payload)
+      && ('manifest' in payload)
+      && ('runtimeIdentity' in payload));
 
     const record = {
       slug: toolSlug,
       phase,
       hasRoot: lifecycleRoot instanceof Element,
-      payloadType: typeof payload,
-      payloadKeys:
-        payload && typeof payload === 'object'
-          ? Object.keys(payload).slice(0, 8)
-          : []
+      lifecycleMode,
+      signatureValid
     };
 
     __runtimeLifecycleAudit.push(record);
 
-    if (!(lifecycleRoot instanceof Element)) {
-      console.warn('[LifecycleAudit] BAD TOOL DETECTED', record);
+    if (!signatureValid) {
+      console.error('[LifecycleAudit] INVALID SIGNATURE', record);
     }
   }
 
@@ -188,14 +216,26 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           throw new Error(`[RuntimeLifecycle] init called without valid root for ${slug}`);
         }
 
+        validateLifecycleInitSignature(target.init, slug);
+
         const manifest = context?.manifest;
         const safeLifecycleContext = lifecycleContextOverride ?? {
           root,
           toolRoot: root,
-          executionContext: context,
           manifest,
-          slug
+          executionContext: context,
+          runtimeIdentity: context?.runtimeIdentity ?? context?.manifest?.runtimeIdentity ?? { runtimeType: 'unknown', resolutionMode: 'unknown' }
         };
+
+        const missingContextKeys = ['root', 'toolRoot', 'manifest', 'executionContext', 'runtimeIdentity']
+          .filter((key) => !(key in (safeLifecycleContext ?? {})));
+
+        if (missingContextKeys.length > 0) {
+          throw createLifecycleSignatureError(slug, {
+            reason: 'missing lifecycleContext fields',
+            missingContextKeys
+          });
+        }
 
         if (!hasLoggedInitContextInjected) {
           hasLoggedInitContextInjected = true;
@@ -203,7 +243,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           logger.info('[RuntimeLifecycle] init context injected', { slug, mode });
         }
 
-        return await target.init(safeLifecycleContext, root, manifest, context);
+        return await target.init(safeLifecycleContext);
       });
     }
 
@@ -235,24 +275,24 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     }
   };
 
-  /* wrap init call */
   const originalInit = normalized.init;
   normalized.init = async () => {
-    const manifest = context?.manifest;
     const safeLifecycleContext = {
       root,
       toolRoot: root,
+      manifest: context?.manifest,
       executionContext: context,
-      manifest,
-      slug
+      runtimeIdentity: context?.runtimeIdentity ?? context?.manifest?.runtimeIdentity ?? { runtimeType: 'unknown', resolutionMode: 'unknown' }
     };
 
-    auditLifecycleCall(slug, 'init', safeLifecycleContext);
+    auditLifecycleCall(slug, 'init', safeLifecycleContext, mode);
     return originalInit(safeLifecycleContext);
   };
 
-  /* expose report globally */
-  window.ToolNexusLifecycleAudit = () => console.table(__runtimeLifecycleAudit);
+  window.ToolNexusLifecycleAudit = () => {
+    console.table(__runtimeLifecycleAudit);
+    return [...__runtimeLifecycleAudit];
+  };
 
   return normalized;
 }

@@ -40,6 +40,7 @@ export function create(context) {
 
 // lifecycle init (mount only)
 // execution handled via runTool
+// MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
 export function init(context) {
   const root = resolveRoot(context);
   if (!(root instanceof Element)) {

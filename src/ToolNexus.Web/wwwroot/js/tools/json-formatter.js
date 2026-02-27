@@ -35,6 +35,7 @@ export function create(context) {
 
 // lifecycle init (mount only)
 // execution handled via runTool
+// MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
 export async function init(context) {
   const handle = create(context);
   if (!handle) {

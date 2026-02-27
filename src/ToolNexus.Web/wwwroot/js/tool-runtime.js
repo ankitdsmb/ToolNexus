@@ -183,32 +183,7 @@ export function createToolRuntime({
     runtimeBootTimeMs: 0
   };
 
-  const unsubscribeLifecycleRetryDiagnostics = typeof observer?.subscribe === 'function'
-    ? observer.subscribe((entry = {}) => {
-      if (entry?.event !== 'runtime_lifecycle_retry' || !shouldShowRuntimeCrashOverlay()) {
-        return;
-      }
-
-      const metadata = entry?.metadata ?? {};
-      const toolSlug = entry?.toolSlug ?? metadata.slug ?? 'unknown-tool';
-      const originalError = metadata.originalError ?? 'Unknown lifecycle init error';
-      const retryStrategy = metadata.retryStrategy ?? 'unknown';
-
-      logger.warn('Lifecycle retry detected during init normalization.', {
-        toolSlug,
-        retryStrategy,
-        originalError
-      });
-
-      showRuntimeCrashOverlay(getRoot(), {
-        toolSlug,
-        phase: 'runtime_lifecycle_retry',
-        errorMessage: `LIFECYCLE RETRY DETECTED — tool init signature mismatch\nTool: ${toolSlug}\nOriginal error: ${originalError}\nRetry strategy: ${retryStrategy}`,
-        classification: 'contract_violation',
-        runtimeIdentity: null
-      });
-    })
-    : () => {};
+  const unsubscribeLifecycleRetryDiagnostics = () => {};
 
   function setLastError(stage, error, slug, metadata = {}) {
     lastError = {
@@ -849,6 +824,7 @@ export function createToolRuntime({
       executionContext.manifest.runtimeResolutionMode = runtimeResolution.mode;
       executionContext.manifest.runtimeResolutionReason = runtimeResolution.reason;
       executionContext.manifest.runtimeIdentity = { ...runtimeIdentity };
+      executionContext.runtimeIdentity = { ...runtimeIdentity };
       if (root?.dataset) {
         root.dataset.runtimeResolutionMode = runtimeResolution.mode;
         root.dataset.runtimeResolutionReason = runtimeResolution.reason;
