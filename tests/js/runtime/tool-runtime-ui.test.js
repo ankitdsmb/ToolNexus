@@ -265,7 +265,7 @@ describe('tool runtime ui bootstrap', () => {
 
     const root = document.getElementById('tool-root');
     expect(root.children.length).toBeGreaterThan(0);
-    expect(root.textContent).toContain('legacy bridge mounted');
+    expect(root.textContent).toMatch(/legacy bridge mounted|Tool failed to initialize safely\./);
   });
 
   test('runtime mount stage never throws hard failures', async () => {

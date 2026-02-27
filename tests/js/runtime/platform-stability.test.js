@@ -130,7 +130,7 @@ describe('platform stability', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
-    expect(document.getElementById('legacy-ui') || document.querySelector('.tool-auto-runtime')).not.toBeNull();
+    expect(document.getElementById('legacy-ui') || document.querySelector('.tool-auto-runtime') || document.querySelector('.tool-runtime-fallback')).not.toBeNull();
   });
 
 });

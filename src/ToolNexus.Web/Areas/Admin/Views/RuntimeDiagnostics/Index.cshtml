@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Runtime Diagnostics";
+}
+
+<section class="admin-panel" data-runtime-diagnostics>
+    <h1>Runtime Diagnostics</h1>
+    <p>Live runtime diagnostics for mounted tools and lifecycle state.</p>
+
+    <div class="admin-card-grid">
+        <article class="admin-card">
+            <h2>Runtime Identity</h2>
+            <pre id="runtimeIdentity">unavailable</pre>
+        </article>
+        <article class="admin-card">
+            <h2>Mounted Tools</h2>
+            <pre id="mountedTools">[]</pre>
+        </article>
+        <article class="admin-card">
+            <h2>Fallback Usage</h2>
+            <pre id="fallbackUsage">false</pre>
+        </article>
+        <article class="admin-card">
+            <h2>Errors</h2>
+            <pre id="runtimeErrors">[]</pre>
+        </article>
+    </div>
+
+    <button type="button" id="toggleStrictMode" class="btn btn-primary">Toggle Strict Mode</button>
+</section>
+
+<script>
+(function () {
+    const runtime = window.ToolNexusRuntime;
+    const diagnostics = runtime?.getDiagnostics?.() ?? {};
+
+    document.getElementById('runtimeIdentity').textContent = JSON.stringify(window.ToolNexusRuntimeIdentity ?? {}, null, 2);
+    document.getElementById('mountedTools').textContent = JSON.stringify(diagnostics.registry ?? {}, null, 2);
+    document.getElementById('fallbackUsage').textContent = String((diagnostics.legacyAdapterUsage ?? 0) > 0);
+    document.getElementById('runtimeErrors').textContent = JSON.stringify(diagnostics.lastError ?? [], null, 2);
+
+    document.getElementById('toggleStrictMode')?.addEventListener('click', () => {
+        window.ToolNexusRuntime = window.ToolNexusRuntime || {};
+        window.ToolNexusRuntime.strict = !window.ToolNexusRuntime.strict;
+        alert(`ToolNexusRuntime.strict = ${window.ToolNexusRuntime.strict}`);
+    });
+})();
+</script>

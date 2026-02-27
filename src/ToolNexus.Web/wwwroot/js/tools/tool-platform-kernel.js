@@ -1,4 +1,5 @@
 const ROOT_TOOL_INSTANCE_KEY = '__toolNexusPlatformKernelInstance';
+const TOOL_ROOT_ID_PREFIX = 'tool-root-';
 
 function noop() {}
 
@@ -44,14 +45,37 @@ class ToolPlatformKernel {
     );
   }
 
+  normalizeToolRoot(rootOrContext, callsite = 'registerTool()') {
+    if (this.isHTMLElement(rootOrContext)) {
+      return rootOrContext;
+    }
+
+    const candidate = rootOrContext?.root
+      ?? rootOrContext?.toolRoot
+      ?? rootOrContext?.context?.root
+      ?? rootOrContext?.context?.toolRoot;
+
+    if (this.isHTMLElement(candidate)) {
+      return candidate;
+    }
+
+    throw new Error(
+      '[ToolKernel] Invalid root passed to registerTool()\n'
+      + 'Supported values: HTMLElement | { root } | { toolRoot } | { context: { root | toolRoot } }\n'
+      + `Received: ${this.describeRootType(rootOrContext)}\n`
+      + `Callsite: ${callsite}`
+    );
+  }
+
   registerTool({ id, root, init, destroy }) {
     if (!id || typeof init !== 'function') {
       throw new Error('registerTool requires id, root, and init().');
     }
 
-    this.assertValidRoot(root, 'registerTool()');
+    const normalizedRoot = this.normalizeToolRoot(root, 'registerTool()');
+    this.assertValidRoot(normalizedRoot, 'registerTool()');
 
-    const toolKey = this.createToolKey(id, root, 'registerTool()');
+    const toolKey = this.createToolKey(id, normalizedRoot, 'registerTool()');
     const existing = this.tools.get(toolKey);
     if (existing) {
       return existing.handle;
@@ -59,7 +83,7 @@ class ToolPlatformKernel {
 
     const registration = {
       id,
-      root,
+      root: normalizedRoot,
       init,
       destroy: typeof destroy === 'function' ? destroy : noop,
       state: 'created',
@@ -69,7 +93,7 @@ class ToolPlatformKernel {
 
     const handle = {
       id,
-      root,
+      root: normalizedRoot,
       create: () => this.create(toolKey),
       init: () => this.initialize(toolKey),
       destroy: () => this.destroy(toolKey)
@@ -78,8 +102,8 @@ class ToolPlatformKernel {
     registration.handle = handle;
     this.tools.set(toolKey, registration);
 
-    root[ROOT_TOOL_INSTANCE_KEY] = root[ROOT_TOOL_INSTANCE_KEY] || new Map();
-    root[ROOT_TOOL_INSTANCE_KEY].set(id, handle);
+    normalizedRoot[ROOT_TOOL_INSTANCE_KEY] = normalizedRoot[ROOT_TOOL_INSTANCE_KEY] || new Map();
+    normalizedRoot[ROOT_TOOL_INSTANCE_KEY].set(id, handle);
 
     return handle;
   }
@@ -153,7 +177,7 @@ class ToolPlatformKernel {
       return root.dataset.toolRootId;
     }
 
-    const generated = `tool-root-${Math.random().toString(16).slice(2)}`;
+    const generated = `${TOOL_ROOT_ID_PREFIX}${Math.random().toString(16).slice(2)}`;
     root.dataset.toolRootId = generated;
     return generated;
   }
@@ -185,6 +209,10 @@ export function getToolPlatformKernel() {
   }
 
   return globalKernel;
+}
+
+export function normalizeToolRoot(rootOrContext) {
+  return getToolPlatformKernel().normalizeToolRoot(rootOrContext, 'normalizeToolRoot()');
 }
 
 export function resetToolPlatformKernelForTesting() {

@@ -21,6 +21,7 @@ import { useUnifiedToolControl as useUnifiedControlAdapter } from './runtime/too
 import { createToolContainerManager, normalizeToolMountMode } from './runtime/tool-container-manager.js';
 import { createRuntimeCrashOverlay } from './runtime/runtime-crash-overlay.js';
 import { guardInvalidLifecycleResult } from './runtime/tool-execution-normalizer.js';
+import { assertDomContractRootsUnchanged, freezeDomContractRoots } from './runtime/tool-dom-contract-guard.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -83,6 +84,19 @@ function shouldShowRuntimeCrashOverlay() {
     || window.ToolNexusLogging?.runtimeDebugEnabled === true
     || isDevelopmentEnvironment()
   );
+}
+
+function isStrictModeEnabled() {
+  if (window.ToolNexusConfig?.runtimeStrictMode === true) {
+    return true;
+  }
+
+  const runtimeStrictFlag = window.ToolNexusRuntime?.strict === true;
+  if (!runtimeStrictFlag) {
+    return false;
+  }
+
+  return isDevelopmentEnvironment() || window.ToolNexusConfig?.adminRuntimeDebug === true;
 }
 
 const TOOL_MOUNT_MODES = Object.freeze({
@@ -240,13 +254,18 @@ export function createToolRuntime({
 
     const layout = document.createElement('div');
     layout.className = 'tool-layout tn-tool-body';
+    layout.setAttribute('data-tool-body', 'true');
     layout.innerHTML = `
-      <section class="tool-layout__panel tn-tool-panel" aria-label="Tool input panel">
+      <header class="tn-tool-header" data-tool-header="true"><h2>${slug}</h2></header>
+      <section class="tool-layout__panel tn-tool-panel" data-tool-input="true" aria-label="Tool input panel">
         <textarea id="inputEditor"></textarea>
       </section>
-      <section class="tool-layout__panel tool-panel--output tn-tool-panel" id="outputField" aria-label="Tool output panel"></section>
+      <section class="tool-layout__panel tool-panel--output tn-tool-panel" data-tool-output="true" id="outputField" aria-label="Tool output panel"></section>
+      <footer class="tool-actions" data-tool-actions="true"></footer>
     `;
 
+    toolPage.setAttribute('data-tool-root', 'true');
+    toolPage.setAttribute('data-runtime-container', 'true');
     toolPage.appendChild(layout);
     if (!toolPage.parentElement) {
       root.appendChild(toolPage);
@@ -850,7 +869,7 @@ export function createToolRuntime({
 
     templateBinder(root, window.ToolNexusConfig ?? {});
 
-    const validation = ensureDomContract(root, slug, capabilitiesAtStart);
+    let validation = ensureDomContract(root, slug, capabilitiesAtStart);
     if (!validation.isValid) {
       const message = `tool-runtime: DOM contract invalid for "${slug}"`;
       const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
@@ -864,8 +883,20 @@ export function createToolRuntime({
         runtimeIdentity: { ...runtimeIdentity },
         classification: 'contract_violation'
       });
-      renderContractError(root, errors);
-      return;
+
+      if (isStrictModeEnabled()) {
+        throw new Error(errors.join('\n'));
+      }
+
+      const canAttemptAutoFallback = Array.isArray(validation.missingNodes)
+        && validation.missingNodes.every((nodeName) => String(nodeName).startsWith('data-'));
+      if (!canAttemptAutoFallback) {
+        renderContractError(root, errors);
+        return;
+      }
+
+      injectContractFallbackLayout(root, slug);
+      validation = ensureDomContract(root, slug, capabilitiesAtStart);
     }
 
     const safeLoadDependencies = async () => {
@@ -1036,15 +1067,20 @@ export function createToolRuntime({
       emit('mount_start', { toolSlug: slug });
 
       let legacyBridgeUsed = false;
+      const strictMode = isStrictModeEnabled();
       try {
         const capabilities = detectToolCapabilities({ slug, module, manifest, root });
         const childCountBeforeLifecycle = root?.childElementCount ?? 0;
+        const contractRootSnapshot = freezeDomContractRoots(root);
         let result;
         try {
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+          if (strictMode) {
+            assertDomContractRootsUnchanged(contractRootSnapshot, 'mount.lifecycle');
+          }
           guardInvalidLifecycleResult(result, { slug, mode: result?.mode ?? 'unknown', phase: 'mount.result' });
         } catch (error) {
-          if (shouldExposeRuntimeErrors()) {
+          if (strictMode || shouldExposeRuntimeErrors()) {
             console.error(`[ToolRuntime DEV] Lifecycle crash for "${slug}"`, error);
             emit('lifecycle_crash_dev', {
               toolSlug: slug,
@@ -1061,35 +1097,9 @@ export function createToolRuntime({
             throw error;
           }
 
-          stateRegistry.incrementRetry(stateKey);
-          runtimeMetrics.initRetriesPerformed += 1;
-          emit('init_retry', { toolSlug: slug, metadata: { phase: 'lifecycle-init' } });
-
-          const preRetryValidation = validateDomAtPhase(root, 'lifecycle-retry-precheck').validation;
-          if (!preRetryValidation.isValid) {
-            if (preRetryValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT) {
-              adaptDomContract(resolveValidationScope(root, 'lifecycle-retry-adapter').scope ?? root, capabilities);
-            } else {
-              logger.info('[DomAdapter] NO adapter applied', {
-                slug,
-                phase: 'lifecycle-retry-adapter',
-                reason: 'non_legacy_layout',
-                detectedLayoutType: preRetryValidation.detectedLayoutType,
-                missingNodes: preRetryValidation.missingNodes
-              });
-            }
-            const retryValidation = validateDomAtPhase(root, 'lifecycle-retry-recheck').validation;
-            if (retryValidation.isValid) {
-              result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
-              guardInvalidLifecycleResult(result, { slug, mode: result?.mode ?? 'unknown', phase: 'mount.retry.result' });
-              logger.info('[DomAdapter] init retry success', { slug });
-            } else {
-              throw error;
-            }
-          } else {
-            throw error;
-          }
+          throw error;
         }
+
 
         if (result?.normalized) {
           runtimeMetrics.legacyAdapterUsage += 1;
@@ -1098,14 +1108,20 @@ export function createToolRuntime({
         if (result?.autoDestroyGenerated) {
           runtimeMetrics.autoDestroyGenerated += 1;
         }
-        const mounted = Boolean(result?.mounted ?? true);
+        const executionOnlyLifecycle = String(result?.mode ?? '').includes('execution-only');
+        const mounted = executionOnlyLifecycle ? true : Boolean(result?.mounted ?? true);
         if (typeof result?.cleanup !== 'function') {
           result = { ...result, cleanup: executionContext.destroy.bind(executionContext) };
         }
         executionContext.addCleanup(result?.cleanup);
-        const shouldForceLegacyBootstrap = !mounted || !root.firstElementChild;
+        const lifecycleMode = String(result?.mode ?? '');
+        const lifecycleAlreadyExecuted = lifecycleMode.includes('runTool') && !lifecycleMode.includes('execution-only');
+        const shouldForceLegacyBootstrap = (!mounted || !root.firstElementChild) && !lifecycleAlreadyExecuted;
 
         if (shouldForceLegacyBootstrap) {
+          if (strictMode) {
+            throw new Error(`Strict runtime mode disallows legacy execution bridge for "${slug}".`);
+          }
           legacyBridgeUsed = true;
           emit('compatibility_mode_used', { toolSlug: slug, modeUsed: 'fallback' });
           const legacyExecution = await legacyExecuteTool({ slug, root, module, context: executionContext });
@@ -1319,68 +1335,8 @@ export function createToolRuntime({
           classification: classifyRuntimeError({ stage: 'mount', message: error?.message, eventName: 'mount_failure' })
         });
 
-        emit('healing_attempt', { toolSlug: slug });
-        emit('tool_self_heal_triggered', { toolSlug: slug });
-
-        let healedByCompatibilityFlow = false;
-        try {
-          const errorRecoveryValidation = validateDomAtPhase(root, 'error-recovery-precheck').validation;
-          if (errorRecoveryValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT) {
-            adaptDomContract(resolveValidationScope(root, 'error-recovery').scope ?? root, detectToolCapabilities({ slug, module, manifest, root }));
-          } else {
-            logger.info('[DomAdapter] NO adapter applied', {
-              slug,
-              phase: 'error-recovery',
-              reason: 'non_legacy_layout',
-              detectedLayoutType: errorRecoveryValidation.detectedLayoutType,
-              missingNodes: errorRecoveryValidation.missingNodes
-            });
-          }
-          const retried = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities: detectToolCapabilities({ slug, module, manifest, root }) });
-          guardInvalidLifecycleResult(retried, { slug, mode: retried?.mode ?? 'unknown', phase: 'healing.retry.result' });
-          if (retried?.mounted) {
-            healedByCompatibilityFlow = true;
-          }
-        } catch {}
-
-        if (!healedByCompatibilityFlow) {
-          try {
-            const bridged = await legacyExecuteTool({ slug, root, module, context: executionContext });
-            healedByCompatibilityFlow = Boolean(bridged?.mounted);
-          } catch {}
-        }
-
-        if (!healedByCompatibilityFlow) {
-          await new Promise((resolve) => setTimeout(resolve, 0));
-          stateRegistry.incrementRetry(stateKey);
-          runtimeMetrics.initRetriesPerformed += 1;
-          emit('init_retry', { toolSlug: slug, metadata: { phase: 'healing-loop' } });
-        }
-
-        if (healedByCompatibilityFlow) {
-          stateRegistry.setPhase(stateKey, 'mounted');
-          runtimeMetrics.toolsMountedSuccessfully += 1;
-          emit('healing_success', { toolSlug: slug });
-          return;
-        }
-
-        try {
-          const healed = await healRuntime({ slug, root, manifest, error });
-          emit('healing_result', { toolSlug: slug, metadata: { healed: Boolean(healed) } });
-          if (healed) {
-            emit('healing_success', { toolSlug: slug });
-            emit('tool_self_heal_success', { toolSlug: slug });
-            ensureRootFallback(root, slug);
-            logger.info(`Runtime self-healed for "${slug}".`);
-            return;
-          }
-
-          emit('healing_failure', { toolSlug: slug });
-          emit('tool_unrecoverable_failure', { toolSlug: slug });
-        } catch {
-          emit('healing_result', { toolSlug: slug, metadata: { healed: false } });
-          emit('healing_failure', { toolSlug: slug });
-          emit('tool_unrecoverable_failure', { toolSlug: slug });
+        if (strictMode) {
+          throw error;
         }
 
         logger.warn(`Tool runtime entered fallback recovery path for "${slug}".`, error);
@@ -1390,7 +1346,7 @@ export function createToolRuntime({
 
     await safeMount();
 
-    if (ensureRootFallback(root, slug)) {
+    if (!isStrictModeEnabled() && ensureRootFallback(root, slug)) {
       emit('mount_fallback_content', { toolSlug: slug, metadata: { phase: 'post-bootstrap' } });
     }
 
@@ -1429,6 +1385,9 @@ export function createToolRuntime({
         await safeMountTool({ root, slug });
       } catch (error) {
         setLastError('runtime', error, slug);
+        if (isStrictModeEnabled()) {
+          throw error;
+        }
         fallbackLogger.warn(`Unexpected runtime failure for "${slug}"; using fallback container.`, error);
         ensureRootFallback(root, slug);
       }
@@ -1502,6 +1461,9 @@ export { defaultLifecycleAdapter as mountToolModule };
    */
   if (typeof window !== 'undefined') {
     window.ToolNexusRuntime ??= runtime;
+    if (window.ToolNexusRuntime.strict == null) {
+      window.ToolNexusRuntime.strict = false;
+    }
   }
 
   if (typeof document !== 'undefined' && document.getElementById('tool-root')) {

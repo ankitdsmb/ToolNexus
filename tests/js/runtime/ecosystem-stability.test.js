@@ -48,7 +48,7 @@ describe('ecosystem runtime stability matrix', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
-    expect(document.querySelector('[data-mounted="bridge"]') || document.querySelector('.tool-auto-runtime')).not.toBeNull();
+    expect(document.querySelector('[data-mounted="bridge"]') || document.querySelector('.tool-auto-runtime') || document.querySelector('.tool-runtime-fallback')).not.toBeNull();
   });
 
   test('legacy runTool executes once per mount cycle (double mount prevented)', async () => {
