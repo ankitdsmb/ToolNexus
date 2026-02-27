@@ -17,27 +17,26 @@ import {
 } from './js-minifier-ui.js';
 import { byteSize } from './js-minifier-utils.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'js-minifier';
 
-function resolveRoot(rootOrContext) {
-  if (rootOrContext instanceof Element) return rootOrContext;
-  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
-  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
-  return null;
+function resolveRoot(context) {
+  const root = context?.root || context?.toolRoot || context;
+  return root instanceof Element ? root : null;
 }
 
-function requireRuntimeRoot(rootOrContext) {
-  const root = resolveRoot(rootOrContext);
+function requireRuntimeRoot(context) {
+  const root = resolveRoot(context);
   if (!root) {
-    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
+    throw new Error(`[${TOOL_ID}] invalid lifecycle root`);
   }
 
   return root;
 }
 
-export function create(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function create(context) {
+  const root = requireRuntimeRoot(context);
   if (!root) return null;
 
   return getToolPlatformKernel().registerTool({
@@ -51,21 +50,22 @@ export function create(rootOrContext) {
   });
 }
 
-export function init(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function init(context) {
+  const root = requireRuntimeRoot(context);
   const handle = create(root);
   if (!handle) return null;
   handle.init();
   return handle;
 }
 
-export function destroy(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function destroy(context) {
+  const root = requireRuntimeRoot(context);
   if (!root) return;
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
 export async function runTool(action, input) {
+  assertRunToolExecutionOnly(TOOL_ID, action, input);
   ensureUi();
   clearError();
 

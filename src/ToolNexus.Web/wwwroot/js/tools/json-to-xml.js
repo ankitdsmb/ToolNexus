@@ -1,15 +1,22 @@
 import { createJsonToXmlApp } from './json-to-xml.app.js';
 import { buildXml, getDefaultJsonToXmlOptions, JsonXmlError, parseJson, sanitizeTagName } from './json-to-xml.api.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-to-xml';
 
-function resolveRoot(rootOrContext) {
-  return rootOrContext;
+function resolveRoot(context) {
+  const root = context?.root || context?.toolRoot || context;
+  return root instanceof Element ? root : null;
 }
 
-function requireRuntimeRoot(rootOrContext) {
-  return resolveRoot(rootOrContext);
+function requireRuntimeRoot(context) {
+  const root = resolveRoot(context);
+  if (!(root instanceof Element)) {
+    throw new Error(`[${TOOL_ID}] invalid lifecycle root`);
+  }
+
+  return root;
 }
 
 function readOptionsFromDocument() {
@@ -26,8 +33,8 @@ function readOptionsFromDocument() {
   };
 }
 
-export function create(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function create(context) {
+  const root = requireRuntimeRoot(context);
   if (!root) return null;
 
   return getToolPlatformKernel().registerTool({
@@ -38,21 +45,22 @@ export function create(rootOrContext) {
   });
 }
 
-export function init(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function init(context) {
+  const root = requireRuntimeRoot(context);
   const handle = create(root);
   if (!handle) return null;
   handle.init();
   return handle;
 }
 
-export function destroy(rootOrContext) {
-  const root = requireRuntimeRoot(rootOrContext);
+export function destroy(context) {
+  const root = requireRuntimeRoot(context);
   if (!root) return;
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
 export async function runTool(action, input, options = {}) {
+  assertRunToolExecutionOnly(TOOL_ID, action, input, options);
   try {
     if (String(action ?? '').trim().toLowerCase() !== 'convert') {
       throw new JsonXmlError('Unsupported action', 'Only convert action is supported.');

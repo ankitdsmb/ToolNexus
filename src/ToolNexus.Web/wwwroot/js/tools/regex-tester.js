@@ -26,20 +26,31 @@ export async function runTool(action, input, options = {}) {
   return runRegexTesterTool(action, input, options);
 }
 
-export function create(root) {
-  return { root, handle: null };
+function resolveRoot(context) {
+  const root = context?.root || context?.toolRoot || context;
+  return root instanceof Element ? root : null;
+}
+
+export function create(context) {
+  return { root: resolveRoot(context), handle: null };
 }
 
 // lifecycle init (mount only)
 // execution handled via runTool
 export function init(context) {
-  if (!context?.root) {
+  const root = resolveRoot(context);
+  if (!(root instanceof Element)) {
+    throw new Error(`[${TOOL_ID}] invalid lifecycle root`);
+  }
+
+  if (!root) {
     return context ?? null;
   }
 
   return {
-    ...context,
-    handle: mountRegexTester(context.root)
+    ...(typeof context === 'object' && context ? context : {}),
+    root,
+    handle: mountRegexTester(root)
   };
 }
 

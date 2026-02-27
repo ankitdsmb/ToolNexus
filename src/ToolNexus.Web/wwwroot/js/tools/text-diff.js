@@ -9,6 +9,7 @@ import {
   summarize
 } from './text-diff.api.js';
 import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const MODULE_KEY = 'text-diff';
 
@@ -38,6 +39,7 @@ export function init(context) {
 }
 
 export function runTool() {
+  assertRunToolExecutionOnly(TOOL_ID);
   return undefined;
 }
 
