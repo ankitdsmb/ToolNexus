@@ -75,6 +75,7 @@ public sealed class DatabaseInitializationHostedService(
             try
             {
                 await dbContext.Database.MigrateAsync(cancellationToken);
+                await EnsureOptimizationLedgerSchemaAsync(dbContext, cancellationToken);
                 logger.LogInformation("Migration execution completed for context {ContextType}.", contextName);
                 return;
             }
@@ -112,6 +113,7 @@ public sealed class DatabaseInitializationHostedService(
         try
         {
             await dbContext.Database.MigrateAsync(cancellationToken);
+            await EnsureOptimizationLedgerSchemaAsync(dbContext, cancellationToken);
             logger.LogInformation("Migration execution completed for context {ContextType} after retries.", contextName);
         }
         catch (Exception ex)
@@ -131,6 +133,90 @@ public sealed class DatabaseInitializationHostedService(
                 postgresException?.Routine ?? "<none>");
             throw;
         }
+    }
+
+    private static async Task EnsureOptimizationLedgerSchemaAsync(DbContext dbContext, CancellationToken cancellationToken)
+    {
+        if (dbContext is not ToolNexusContentDbContext)
+        {
+            return;
+        }
+
+        if (!string.Equals(
+                dbContext.Database.ProviderName,
+                "Npgsql.EntityFrameworkCore.PostgreSQL",
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        await dbContext.Database.ExecuteSqlRawAsync(
+            """
+            CREATE TABLE IF NOT EXISTS optimization_recommendations (
+                recommendation_id uuid NOT NULL,
+                domain character varying(64) NOT NULL,
+                target_node_id character varying(120) NOT NULL,
+                reason character varying(2000) NOT NULL,
+                confidence_score numeric(5,4) NOT NULL,
+                suggested_change character varying(2000) NOT NULL,
+                risk_impact character varying(2000) NOT NULL,
+                expected_benefit character varying(2000) NOT NULL,
+                correlation_id character varying(120) NOT NULL,
+                tenant_id character varying(120) NOT NULL,
+                rollback_metadata jsonb NOT NULL,
+                generated_at_utc timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                status character varying(32) NOT NULL,
+                CONSTRAINT "PK_optimization_recommendations" PRIMARY KEY (recommendation_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS optimization_simulations (
+                simulation_id uuid NOT NULL,
+                recommendation_id uuid NOT NULL,
+                simulation_summary character varying(3000) NOT NULL,
+                projected_risk_delta numeric(8,4) NOT NULL,
+                projected_benefit_delta numeric(8,4) NOT NULL,
+                approved_for_review boolean NOT NULL,
+                source_snapshot_ids jsonb NOT NULL,
+                synthetic_workload_ref character varying(200) NOT NULL,
+                governance_replay_ref character varying(200) NOT NULL,
+                simulated_at_utc timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT "PK_optimization_simulations" PRIMARY KEY (simulation_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS optimization_applications (
+                application_id uuid NOT NULL,
+                recommendation_id uuid NOT NULL,
+                action_type character varying(32) NOT NULL,
+                operator_id character varying(120) NOT NULL,
+                authority_context character varying(120) NOT NULL,
+                notes character varying(2000),
+                scheduled_for_utc timestamp with time zone,
+                applied_at_utc timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT "PK_optimization_applications" PRIMARY KEY (application_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS optimization_outcomes (
+                outcome_id uuid NOT NULL,
+                recommendation_id uuid NOT NULL,
+                outcome_status character varying(64) NOT NULL,
+                benefit_realized numeric(8,4) NOT NULL,
+                risk_realized numeric(8,4) NOT NULL,
+                measured_by character varying(120) NOT NULL,
+                measured_at_utc timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT "PK_optimization_outcomes" PRIMARY KEY (outcome_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_optimization_recommendations_correlation ON optimization_recommendations (correlation_id);
+            CREATE INDEX IF NOT EXISTS idx_optimization_recommendations_tenant ON optimization_recommendations (tenant_id);
+            CREATE INDEX IF NOT EXISTS idx_optimization_recommendations_generated_at ON optimization_recommendations (generated_at_utc DESC);
+            CREATE INDEX IF NOT EXISTS idx_optimization_simulations_recommendation ON optimization_simulations (recommendation_id);
+            CREATE INDEX IF NOT EXISTS idx_optimization_simulations_simulated_at ON optimization_simulations (simulated_at_utc DESC);
+            CREATE INDEX IF NOT EXISTS idx_optimization_applications_recommendation ON optimization_applications (recommendation_id);
+            CREATE INDEX IF NOT EXISTS idx_optimization_applications_applied_at ON optimization_applications (applied_at_utc DESC);
+            CREATE INDEX IF NOT EXISTS idx_optimization_outcomes_recommendation ON optimization_outcomes (recommendation_id);
+            CREATE INDEX IF NOT EXISTS idx_optimization_outcomes_measured_at ON optimization_outcomes (measured_at_utc DESC);
+            """,
+            cancellationToken);
     }
     private async Task AlignMigrationHistoryForExistingSchemaAsync(
     DbContext dbContext,
