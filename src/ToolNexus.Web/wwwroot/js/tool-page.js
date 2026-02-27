@@ -1,3 +1,4 @@
+import { loadMonaco } from '/js/runtime/monaco-loader.js';
 import { normalizeToolExecutionPayload } from './runtime/runtime-safe-tool-wrapper.js';
 import { runtimeIncidentReporter } from './runtime/runtime-incident-reporter.js';
 import { createRuntimeLogger } from './runtime/runtime-logger.js';
@@ -122,6 +123,7 @@ let outputEditor = null;
 let currentEditorType = 'textarea';
 let persistTimer = 0;
 let pendingLayoutFrame = 0;
+let monacoRuntime = null;
 
 const TOOL_INTELLIGENCE_GRAPH = {
   json: ['json-validator', 'json-to-csv', 'json-to-yaml', 'yaml-to-json'],
@@ -166,14 +168,15 @@ async function loadToolModule() {
 }
 
 async function initializeEditors() {
-  const monacoReady = await loadMonaco();
+  monacoRuntime = await loadMonaco();
+  const monacoLoaded = Boolean(monacoRuntime?.editor);
 
-  if (monacoReady) {
+  if (monacoLoaded) {
     currentEditorType = 'monaco';
     inputTextArea.hidden = true;
     outputTextArea.hidden = true;
 
-    inputEditor = monaco.editor.create(inputEditorSurface, {
+    inputEditor = monacoRuntime.editor.create(inputEditorSurface, {
       value: inputTextArea.value || '',
       language: 'json',
       automaticLayout: true,
@@ -183,7 +186,7 @@ async function initializeEditors() {
       roundedSelection: false
     });
 
-    outputEditor = monaco.editor.create(outputEditorSurface, {
+    outputEditor = monacoRuntime.editor.create(outputEditorSurface, {
       value: '',
       language: 'json',
       readOnly: true,
@@ -196,6 +199,8 @@ async function initializeEditors() {
 
     return;
   }
+
+  console.warn('[tool] Monaco unavailable → fallback editor');
 
   const codeMirrorReady = await loadCodeMirror();
 
@@ -229,34 +234,6 @@ async function initializeEditors() {
     setValue: (v) => { outputTextArea.value = v; },
     refresh: () => {}
   };
-}
-
-function loadMonaco() {
-  return new Promise((resolve) => {
-    if (window.monaco?.editor) {
-      resolve(true);
-      return;
-    }
-
-    if (window.require) {
-      window.require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } });
-      window.require(['vs/editor/editor.main'], () => resolve(true), () => resolve(false));
-      return;
-    }
-
-    const loader = document.createElement('script');
-    loader.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js';
-    loader.onload = () => {
-      if (!window.require) {
-        resolve(false);
-        return;
-      }
-      window.require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } });
-      window.require(['vs/editor/editor.main'], () => resolve(true), () => resolve(false));
-    };
-    loader.onerror = () => resolve(false);
-    document.head.appendChild(loader);
-  });
 }
 
 function loadCodeMirror() {
@@ -371,7 +348,7 @@ function bindEvents() {
   });
 
   if (currentEditorType === 'monaco') {
-    inputEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, run);
+    inputEditor.addCommand(monacoRuntime.KeyMod.CtrlCmd | monacoRuntime.KeyCode.Enter, run);
     inputEditor.onDidChangeModelContent(() => {
       scheduleSessionPersist();
       renderSmartContextHint();
@@ -446,7 +423,7 @@ function applyEditorTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
   if (currentEditorType === 'monaco' && window.monaco?.editor) {
-    monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs');
+    monacoRuntime.editor.setTheme(isDark ? 'vs-dark' : 'vs');
     return;
   }
 
@@ -535,6 +512,12 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 220);
   }, 3200);
 }
+
+
+window.addEventListener('beforeunload', () => {
+  inputEditor?.dispose?.();
+  outputEditor?.dispose?.();
+});
 
 function reportToolPageRuntimeIncident({ action, reason }) {
   logger.warn('Tool page runtime incident reported.', { action, reason });

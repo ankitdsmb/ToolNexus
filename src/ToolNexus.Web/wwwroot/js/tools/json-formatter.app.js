@@ -1,3 +1,4 @@
+import { loadMonaco } from '/js/runtime/monaco-loader.js';
 import { FORMAT_MODE, runJsonFormatter } from './json-formatter.api.js';
 import { JSON_FORMATTER_CONFIG } from './json-formatter/constants.js';
 import { formatCountSummary } from './json-formatter/utils.js';
@@ -8,49 +9,6 @@ import {
   setErrorState
 } from './json-formatter.dom.js';
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
-
-async function loadMonacoSafely() {
-  if (window.monaco?.editor) {
-    console.info('[json-formatter] Monaco already loaded');
-    return window.monaco;
-  }
-
-  if (typeof window.require !== 'function') {
-    console.error('[json-formatter] Monaco loader missing');
-    return null;
-  }
-
-  try {
-    window.require.config({
-      paths: {
-        vs: '/lib/monaco/vs'
-      }
-    });
-
-    window.require.onError = (err) => {
-      console.error('[json-formatter] Monaco AMD error', err);
-    };
-
-    await new Promise((resolve, reject) => {
-      window.require(
-        ['vs/editor/editor.main'],
-        () => resolve(),
-        (err) => reject(err)
-      );
-    });
-
-    if (!window.monaco?.editor) {
-      throw new Error('Monaco loaded but editor missing');
-    }
-
-    console.info('[json-formatter] Monaco loaded successfully');
-
-    return window.monaco;
-  } catch (error) {
-    console.error('[json-formatter] Monaco load failed', error);
-    return null;
-  }
-}
 
 export function createJsonFormatterApp(root) {
   const dom = resolveJsonFormatterDom(root);
@@ -230,7 +188,7 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
-        state.monaco = await loadMonacoSafely();
+        state.monaco = await loadMonaco();
 
         const monacoLoaded = Boolean(state.monaco?.editor);
 

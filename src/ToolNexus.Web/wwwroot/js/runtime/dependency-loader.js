@@ -43,16 +43,6 @@ export function createDependencyLoader({
           () => {
             script.dataset.runtimeDependencyReady = 'true';
 
-            // Monaco loader auto-config
-            if (
-              src.endsWith('/lib/monaco/vs/loader.js') &&
-              typeof window.require === 'function'
-            ) {
-              window.require.config({
-                paths: { vs: '/lib/monaco/vs' }
-              });
-            }
-
             resolve();
           },
           { once: true }

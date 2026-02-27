@@ -1,3 +1,4 @@
+import { loadMonaco } from '/js/runtime/monaco-loader.js';
 import { JSON_FORMATTER_CONFIG } from './constants.js';
 
 export class JsonFormatterUi {
@@ -26,13 +27,12 @@ export class JsonFormatterUi {
   }
 
   async initEditors() {
-    window.require.config({
-      paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' }
-    });
+    this.monaco = await loadMonaco();
 
-    await new Promise((resolve) => window.require(['vs/editor/editor.main'], resolve));
-
-    this.monaco = window.monaco;
+    if (!this.monaco?.editor) {
+      console.warn('[json-formatter] Monaco unavailable → fallback editor');
+      return false;
+    }
 
     this.inputModel = this.monaco.editor.createModel(window.ToolNexusConfig?.jsonExampleInput ?? '', 'json');
     this.outputModel = this.monaco.editor.createModel('', 'json');
@@ -59,6 +59,8 @@ export class JsonFormatterUi {
       model: this.outputModel,
       readOnly: true
     });
+
+    return true;
   }
 
   setBusy(isBusy) {
