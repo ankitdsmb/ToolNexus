@@ -18,12 +18,12 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 return;
             }
 
-            migrationBuilder.Sql("ALTER TABLE \"DailyToolMetrics\" ALTER COLUMN \"DateUtc\" TYPE timestamp with time zone USING \"DateUtc\"::timestamptz;");
-            migrationBuilder.Sql("ALTER TABLE \"ToolAnomalySnapshots\" ALTER COLUMN \"DateUtc\" TYPE timestamp with time zone USING \"DateUtc\"::timestamptz;");
-            migrationBuilder.Sql("ALTER TABLE \"ToolExecutionEvents\" ALTER COLUMN \"TimestampUtc\" TYPE timestamp with time zone USING \"TimestampUtc\"::timestamptz;");
-            migrationBuilder.Sql("ALTER TABLE \"ToolDefinitions\" ALTER COLUMN \"UpdatedAt\" TYPE timestamp with time zone USING \"UpdatedAt\"::timestamptz;");
-            migrationBuilder.Sql("ALTER TABLE \"RuntimeIncidents\" ALTER COLUMN \"FirstOccurredUtc\" TYPE timestamp with time zone USING \"FirstOccurredUtc\"::timestamptz;");
-            migrationBuilder.Sql("ALTER TABLE \"RuntimeIncidents\" ALTER COLUMN \"LastOccurredUtc\" TYPE timestamp with time zone USING \"LastOccurredUtc\"::timestamptz;");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "DailyToolMetrics", "DateUtc", "timestamptz");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "ToolAnomalySnapshots", "DateUtc", "timestamptz");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "ToolExecutionEvents", "TimestampUtc", "timestamptz");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "ToolDefinitions", "UpdatedAt", "timestamptz");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "RuntimeIncidents", "FirstOccurredUtc", "timestamptz");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "RuntimeIncidents", "LastOccurredUtc", "timestamptz");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -33,12 +33,27 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                 return;
             }
 
-            migrationBuilder.Sql("ALTER TABLE \"DailyToolMetrics\" ALTER COLUMN \"DateUtc\" TYPE text USING \"DateUtc\"::text;");
-            migrationBuilder.Sql("ALTER TABLE \"ToolAnomalySnapshots\" ALTER COLUMN \"DateUtc\" TYPE text USING \"DateUtc\"::text;");
-            migrationBuilder.Sql("ALTER TABLE \"ToolExecutionEvents\" ALTER COLUMN \"TimestampUtc\" TYPE text USING \"TimestampUtc\"::text;");
-            migrationBuilder.Sql("ALTER TABLE \"ToolDefinitions\" ALTER COLUMN \"UpdatedAt\" TYPE text USING \"UpdatedAt\"::text;");
-            migrationBuilder.Sql("ALTER TABLE \"RuntimeIncidents\" ALTER COLUMN \"FirstOccurredUtc\" TYPE text USING \"FirstOccurredUtc\"::text;");
-            migrationBuilder.Sql("ALTER TABLE \"RuntimeIncidents\" ALTER COLUMN \"LastOccurredUtc\" TYPE text USING \"LastOccurredUtc\"::text;");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "DailyToolMetrics", "DateUtc", "text");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "ToolAnomalySnapshots", "DateUtc", "text");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "ToolExecutionEvents", "TimestampUtc", "text");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "ToolDefinitions", "UpdatedAt", "text");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "RuntimeIncidents", "FirstOccurredUtc", "text");
+            AlterTimestampColumnIfTableExists(migrationBuilder, "RuntimeIncidents", "LastOccurredUtc", "text");
+        }
+
+        private static void AlterTimestampColumnIfTableExists(MigrationBuilder migrationBuilder, string tableName, string columnName, string targetType)
+        {
+            var castType = targetType == "text" ? "text" : "timestamptz";
+            migrationBuilder.Sql($"""
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '{tableName}')
+                    THEN
+                        EXECUTE 'ALTER TABLE "{tableName}" ALTER COLUMN "{columnName}" TYPE {targetType} USING "{columnName}"::{castType};';
+                    END IF;
+                END
+                $$;
+                """);
         }
     }
 }

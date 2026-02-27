@@ -23,6 +23,12 @@ public sealed class AdminIdentitySeedHostedService(
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        if (string.Equals(Environment.GetEnvironmentVariable("TOOLNEXUS_SKIP_ADMIN_IDENTITY_SEED"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning("Skipping admin identity bootstrap because TOOLNEXUS_SKIP_ADMIN_IDENTITY_SEED=true.");
+            return;
+        }
+
         try
         {
             await initializationState.WaitForReadyAsync(cancellationToken);

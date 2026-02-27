@@ -153,8 +153,8 @@ function createAdminNavigationCommands() {
     nav('admin:analytics', 'Admin · Analytics Drilldown', 'Open analytics with drilldown focus.', '/admin/analytics?drilldown=drilldown', 'admin analytics drilldown filter jump'),
     nav('admin:analytics-top', 'Admin · Analytics Top Tools', 'Jump directly to top tool insights.', '/admin/analytics?drilldown=top-tools', 'admin analytics top tools filter jump'),
     nav('admin:analytics-slow', 'Admin · Analytics Slow Tools', 'Jump directly to slow tool insights.', '/admin/analytics?drilldown=slow-tools', 'admin analytics slow tools filter jump'),
-    nav('admin:execution', 'Admin · Execution Monitoring', 'Open execution monitoring module.', '/admin/executionmonitoring', 'admin execution monitoring open module'),
-    nav('admin:execution-incidents', 'Admin · Execution Incidents', 'Jump to incident timeline.', '/admin/executionmonitoring?focus=incidents', 'admin execution incidents filter jump'),
+    nav('admin:execution', 'Admin · Execution Monitoring', 'Open execution monitoring module.', '/admin/execution-monitoring', 'admin execution monitoring open module'),
+    nav('admin:execution-incidents', 'Admin · Execution Incidents', 'Jump to incident timeline.', '/admin/execution-monitoring?focus=incidents', 'admin execution incidents filter jump'),
     nav('admin:history', 'Admin · Change History', 'Open audited changes list.', '/admin/changehistory', 'admin change history open module')
   ];
 }

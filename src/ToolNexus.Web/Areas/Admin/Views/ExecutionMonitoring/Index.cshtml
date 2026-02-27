@@ -2,81 +2,148 @@
     ViewData["Title"] = "Operator Command Center";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <h2 class="mb-0">Operator Command Center</h2>
-    <button class="btn btn-sm btn-primary" id="refresh-monitoring">Refresh</button>
-</div>
-
-<div class="row g-2 mb-2" id="global-runtime-status">
-    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Environment</small><div id="env-status">production</div></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Health</small><div id="pending-count">-</div></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Alerts</small><div id="dead-letter-count">-</div></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body py-2"><small>Queue</small><div id="retry-count">-</div></div></div></div>
-</div>
-
-<div class="card mb-2" id="stream-panel"><div class="card-body py-2">
-    <h4 class="card-title">Live Execution Stream</h4>
-    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>When</th><th>Tool</th><th>Authority</th><th>Adapter</th><th>Runtime</th><th>Governance</th><th>Duration</th><th>Status</th></tr></thead><tbody id="stream-body"></tbody></table></div>
-</div></div>
-
-<div class="card mb-2" id="controls-panel"><div class="card-body py-2">
-    <h4 class="card-title">Operator Action Zone</h4>
-    <div class="d-flex flex-wrap gap-2">
-        <button class="btn btn-sm btn-outline-warning" data-command="cache-reset" data-risk="medium">Reset Cache</button>
-        <button class="btn btn-sm btn-outline-warning" data-command="queue-drain" data-risk="high">Drain Queue</button>
-        <button class="btn btn-sm btn-outline-warning" data-command="queue-replay" data-risk="medium">Reprocess Failed Jobs</button>
+<section class="admin-ops-page" data-admin-ops-page>
+    <div class="admin-ops-header">
+        <div>
+            <h2 class="mb-1">Operator Command Center</h2>
+            <p class="text-secondary mb-0">Runtime operations, governance visibility, and actionable telemetry in one workspace.</p>
+        </div>
+        <button class="btn btn-primary" id="refresh-monitoring" type="button">Refresh workspace</button>
     </div>
-    <small class="text-secondary">All commands require reason, explicit confirmation, and audit emission.</small>
-</div></div>
 
+    <div class="alert d-none" id="ops-feedback" role="status" aria-live="polite"></div>
 
-<div class="card mb-2" id="autonomy-panel"><div class="card-body py-2">
-    <h4 class="card-title">AUTONOMOUS INSIGHTS</h4>
-    <small class="text-secondary">AI-generated recommendations. Execution requires explicit operator approval.</small>
-    <div class="table-responsive mt-2"><table class="table table-sm"><thead><tr><th>Action</th><th>Risk</th><th>Confidence</th><th>Impact</th><th>Controls</th></tr></thead><tbody id="autonomy-body"></tbody></table></div>
-</div></div>
+    <div class="row g-3 mb-3" id="global-runtime-status">
+        <div class="col-sm-6 col-xl-3"><article class="card admin-ops-metric"><div class="card-body"><small>Environment</small><div id="env-status">production</div></div></article></div>
+        <div class="col-sm-6 col-xl-3"><article class="card admin-ops-metric"><div class="card-body"><small>Health</small><div id="pending-count">-</div></div></article></div>
+        <div class="col-sm-6 col-xl-3"><article class="card admin-ops-metric"><div class="card-body"><small>Alerts</small><div id="dead-letter-count">-</div></div></article></div>
+        <div class="col-sm-6 col-xl-3"><article class="card admin-ops-metric"><div class="card-body"><small>Queue</small><div id="retry-count">-</div></div></article></div>
+    </div>
 
+    <div class="card admin-ops-card" id="stream-panel"><div class="card-body">
+        <h4 class="card-title">Live Execution Stream</h4>
+        <div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead><tr><th>When</th><th>Tool</th><th>Authority</th><th>Adapter</th><th>Runtime</th><th>Governance</th><th>Duration</th><th>Status</th></tr></thead><tbody id="stream-body"></tbody></table></div>
+    </div></div>
 
-<div class="row g-2 mb-2" id="domain-grid">
-    <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Governance</h5><div id="governance-summary">-</div></div></div></div>
-    <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Capability Lifecycle</h5><div id="capability-summary">-</div><a href="/admin/capabilities/marketplace" class="btn btn-sm btn-outline-secondary mt-1">Open Editor</a></div></div></div>
-    <div class="col-md-4"><div class="card"><div class="card-body py-2"><h5>Quality Intelligence</h5><div id="quality-summary">-</div></div></div></div>
-</div>
+    <div class="card admin-ops-card" id="controls-panel"><div class="card-body">
+        <h4 class="card-title">Operator Action Zone</h4>
+        <p class="text-secondary">All commands require operator reason, explicit confirmation, and audit emission.</p>
+        <div class="admin-ops-actions" role="group" aria-label="Operator action commands">
+            <button class="btn btn-outline-warning" data-command="cache-reset" data-risk="medium" type="button">Reset Cache</button>
+            <button class="btn btn-outline-warning" data-command="queue-drain" data-risk="high" type="button">Drain Queue</button>
+            <button class="btn btn-outline-warning" data-command="queue-replay" data-risk="medium" type="button">Reprocess Failed Jobs</button>
+        </div>
+    </div></div>
 
-<div class="card mb-2" id="platform-optimization"><div class="card-body py-2">
-    <h4 class="card-title">PLATFORM OPTIMIZATION</h4>
-    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Domain</th><th>Recommendation</th><th>Confidence</th><th>Simulation</th><th>Actions</th></tr></thead><tbody id="optimization-body"></tbody></table></div>
-</div></div>
+    <div class="card admin-ops-card" id="autonomy-panel"><div class="card-body">
+        <h4 class="card-title">Autonomous Insights</h4>
+        <small class="text-secondary">AI-generated recommendations. Execution requires explicit operator approval.</small>
+        <div class="table-responsive mt-2"><table class="table table-sm table-hover align-middle"><thead><tr><th>Action</th><th>Risk</th><th>Confidence</th><th>Impact</th><th>Controls</th></tr></thead><tbody id="autonomy-body"></tbody></table></div>
+    </div></div>
 
-<div class="card" id="incidents-panel"><div class="card-body py-2">
-    <h4 class="card-title">Incident + Diagnostics</h4>
-    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Last Occurrence (UTC)</th><th>Severity/Type</th><th>Tool</th><th>Error Message</th><th class="text-end">Count</th></tr></thead><tbody id="incidents-body"></tbody></table></div>
-</div></div>
+    <div class="row g-3 mb-3" id="domain-grid">
+        <div class="col-lg-4"><div class="card admin-ops-card"><div class="card-body"><h5>Governance</h5><div id="governance-summary">-</div></div></div></div>
+        <div class="col-lg-4"><div class="card admin-ops-card"><div class="card-body"><h5>Capability Lifecycle</h5><div id="capability-summary">-</div><a href="/admin/capabilities/marketplace" class="btn btn-outline-secondary btn-sm mt-2">Open Editor</a></div></div></div>
+        <div class="col-lg-4"><div class="card admin-ops-card"><div class="card-body"><h5>Quality Intelligence</h5><div id="quality-summary">-</div></div></div></div>
+    </div>
+
+    <div class="card admin-ops-card" id="platform-optimization"><div class="card-body">
+        <h4 class="card-title">Platform Optimization</h4>
+        <div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead><tr><th>Domain</th><th>Recommendation</th><th>Confidence</th><th>Simulation</th><th>Actions</th></tr></thead><tbody id="optimization-body"></tbody></table></div>
+    </div></div>
+
+    <div class="card admin-ops-card" id="incidents-panel"><div class="card-body">
+        <h4 class="card-title">Incident + Diagnostics</h4>
+        <div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead><tr><th>Last Occurrence (UTC)</th><th>Severity/Type</th><th>Tool</th><th>Error Message</th><th class="text-end">Count</th></tr></thead><tbody id="incidents-body"></tbody></table></div>
+    </div></div>
+</section>
 
 <script>
 (async function(){
-  const page=1,pageSize=15;
+  const page=1, pageSize=15;
+  const feedback=document.getElementById('ops-feedback');
+  const refreshButton=document.getElementById('refresh-monitoring');
+  const state={loading:false};
+
   const statusClass=s=>s==='success'?'bg-green-lt':(s==='blocked'?'bg-red-lt':(s==='failed'?'bg-orange-lt':'bg-yellow-lt'));
   const sevClass=s=>s==='critical'?'bg-red-lt':(s==='warning'?'bg-yellow-lt':'bg-secondary-lt');
 
-  async function loadHealth(){const r=await fetch('/admin/execution/health'); if(!r.ok)return; const h=await r.json();
-    document.getElementById('pending-count').textContent=`pending ${h.pendingItems}`; document.getElementById('retry-count').textContent=`retry ${h.retryCount}`; document.getElementById('dead-letter-count').textContent=`dead ${h.deadLetterCount}`;
+  function setLoading(isLoading){
+    state.loading=isLoading;
+    refreshButton.disabled=isLoading;
+    refreshButton.textContent=isLoading?'Refreshing…':'Refresh workspace';
   }
-  async function loadStream(){const r=await fetch('/admin/execution/stream?take=25'); if(!r.ok)return; const items=await r.json(); document.getElementById('stream-body').innerHTML='';
-    (items||[]).forEach(x=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${x.executedAtUtc}</td><td>${x.toolId}</td><td>${x.authority}</td><td>${x.adapter}</td><td>${x.runtimeIdentity}</td><td>${x.governanceResult}</td><td>${x.durationMs}ms</td><td><span class="badge ${statusClass(x.status)}">${x.status}</span></td>`; document.getElementById('stream-body').appendChild(tr);});
+
+  function notify(message, type='info'){
+    feedback.className=`alert alert-${type}`;
+    feedback.classList.remove('d-none');
+    feedback.textContent=message;
   }
-  async function loadGovernance(){const r=await fetch('/admin/execution/governance'); if(!r.ok)return; const g=await r.json(); document.getElementById('governance-summary').textContent=`Approved ${g.approvedDecisions} · Blocked ${g.blockedExecutions} · Review ${g.requiresApproval}`;}
-  async function loadCapability(){const r=await fetch('/admin/execution/capability-lifecycle'); if(!r.ok)return; const c=await r.json(); document.getElementById('capability-summary').textContent=`Draft ${c.draft} · Review ${c.review} · Approved ${c.approved} · Active ${c.active} · Deprecated ${c.deprecated}`;}
-  async function loadQuality(){const r=await fetch('/admin/execution/quality'); if(!r.ok)return; const q=await r.json(); document.getElementById('quality-summary').textContent=`Score ${q.averageQualityScore} · Conformance failures ${q.conformanceFailures} · Instability ${q.runtimeInstabilitySignals} · Anomalies ${q.anomalyAlerts}`;}
-  async function loadIncidents(){const r=await fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`); if(!r.ok)return; const data=await r.json(); document.getElementById('incidents-body').innerHTML='';
-    (data.items||[]).forEach(i=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${i.occurredAtUtc}</td><td><span class="badge ${sevClass(i.severity)}">${i.severity}/${i.eventType}</span></td><td>${i.destination}</td><td>${i.summary}</td><td class="text-end">${i.attemptCount}</td>`; document.getElementById('incidents-body').appendChild(tr);});
+
+  function clearNotification(){
+    feedback.classList.add('d-none');
+    feedback.textContent='';
+  }
+
+  async function fetchJson(url, options){
+    const response=await fetch(url, options);
+    if(!response.ok){
+      const text=await response.text();
+      throw new Error(`${response.status} ${response.statusText}${text?` - ${text.substring(0,160)}`:''}`);
+    }
+    return response.status===204?null:response.json();
+  }
+
+  async function loadHealth(){
+    const h=await fetchJson('/admin/execution/health');
+    document.getElementById('pending-count').textContent=`pending ${h.pendingItems}`;
+    document.getElementById('retry-count').textContent=`retry ${h.retryCount}`;
+    document.getElementById('dead-letter-count').textContent=`dead ${h.deadLetterCount}`;
+  }
+
+  async function loadStream(){
+    const items=await fetchJson('/admin/execution/stream?take=25');
+    const body=document.getElementById('stream-body');
+    body.innerHTML='';
+    (items||[]).forEach(x=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${x.executedAtUtc}</td><td>${x.toolId}</td><td>${x.authority}</td><td>${x.adapter}</td><td>${x.runtimeIdentity}</td><td>${x.governanceResult}</td><td>${x.durationMs}ms</td><td><span class="badge ${statusClass(x.status)}">${x.status}</span></td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  async function loadGovernance(){
+    const g=await fetchJson('/admin/execution/governance');
+    document.getElementById('governance-summary').textContent=`Approved ${g.approvedDecisions} · Blocked ${g.blockedExecutions} · Review ${g.requiresApproval}`;
+  }
+
+  async function loadCapability(){
+    const c=await fetchJson('/admin/execution/capability-lifecycle');
+    document.getElementById('capability-summary').textContent=`Draft ${c.draft} · Review ${c.review} · Approved ${c.approved} · Active ${c.active} · Deprecated ${c.deprecated}`;
+  }
+
+  async function loadQuality(){
+    const q=await fetchJson('/admin/execution/quality');
+    document.getElementById('quality-summary').textContent=`Score ${q.averageQualityScore} · Conformance failures ${q.conformanceFailures} · Instability ${q.runtimeInstabilitySignals} · Anomalies ${q.anomalyAlerts}`;
+  }
+
+  async function loadIncidents(){
+    const data=await fetchJson(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`);
+    const body=document.getElementById('incidents-body');
+    body.innerHTML='';
+    (data.items||[]).forEach(i=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i.occurredAtUtc}</td><td><span class="badge ${sevClass(i.severity)}">${i.severity}/${i.eventType}</span></td><td>${i.destination}</td><td>${i.summary}</td><td class="text-end">${i.attemptCount}</td>`;
+      body.appendChild(tr);
+    });
   }
 
   async function decideOptimization(id, action){
     const operatorId=prompt('Enter operator id for optimization audit:'); if(!operatorId) return;
     const authorityContext='human-governed';
     const scheduledForUtc=action==='schedule-rollout'?new Date(Date.now()+3600000).toISOString():null;
-    await fetch(`/admin/execution/optimization/${id}/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operatorId,authorityContext,notes:'decision from optimization center',scheduledForUtc})});
+    await fetchJson(`/admin/execution/optimization/${id}/${action}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({operatorId,authorityContext,notes:'decision from optimization center',scheduledForUtc})});
+    notify(`Optimization ${action} completed.`, 'success');
     await loadOptimization();
   }
 
@@ -85,12 +152,15 @@
     items.forEach(x=>{
       const tr=document.createElement('tr');
       const sim=x.latestSimulation?`${x.latestSimulation.summary} (risk Δ ${x.latestSimulation.projectedRiskDelta})`:'missing simulation';
-      tr.innerHTML=`<td>${domain}</td><td>${x.recommendation.suggestedChange}</td><td>${x.recommendation.confidenceScore}</td><td>${sim}</td><td><button class="btn btn-sm btn-outline-success me-1" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="approve">Approve</button><button class="btn btn-sm btn-outline-danger me-1" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="reject">Reject</button><button class="btn btn-sm btn-outline-primary" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="schedule-rollout">Schedule</button></td>`;
+      tr.innerHTML=`<td>${domain}</td><td>${x.recommendation.suggestedChange}</td><td>${x.recommendation.confidenceScore}</td><td>${sim}</td><td><button class="btn btn-sm btn-outline-success me-1" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="approve" type="button">Approve</button><button class="btn btn-sm btn-outline-danger me-1" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="reject" type="button">Reject</button><button class="btn btn-sm btn-outline-primary" data-opt-id="${x.recommendation.recommendationId}" data-opt-action="schedule-rollout" type="button">Schedule</button></td>`;
       body.appendChild(tr);
     });
   }
 
-  async function loadOptimization(){const r=await fetch('/admin/execution/optimization?take=10'); if(!r.ok)return; const data=await r.json(); const body=document.getElementById('optimization-body'); body.innerHTML='';
+  async function loadOptimization(){
+    const data=await fetchJson('/admin/execution/optimization?take=10');
+    const body=document.getElementById('optimization-body');
+    body.innerHTML='';
     appendOptimizationRows(data.runtimeRecommendations||[], 'runtime');
     appendOptimizationRows(data.governanceOptimization||[], 'governance');
     appendOptimizationRows(data.uxOptimization||[], 'ux');
@@ -99,16 +169,21 @@
     document.querySelectorAll('[data-opt-action]').forEach(b=>b.addEventListener('click',()=>decideOptimization(b.dataset.optId,b.dataset.optAction)));
   }
 
-
   async function decideInsight(id, decision){
     const operatorId=prompt('Enter operator id for audit:'); if(!operatorId) return;
-    const authorityContext='operator-governed';
-    await fetch(`/admin/execution/autonomous-insights/${id}/${decision}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operatorId,authorityContext,notes:'decision from command center'})});
+    await fetchJson(`/admin/execution/autonomous-insights/${id}/${decision}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({operatorId,authorityContext:'operator-governed',notes:'decision from command center'})});
+    notify(`Autonomous insight ${decision} completed.`, 'success');
     await loadAutonomy();
   }
-  async function loadAutonomy(){const r=await fetch('/admin/execution/autonomous-insights?take=15'); if(!r.ok)return; const data=await r.json(); const items=data.items||[]; const body=document.getElementById('autonomy-body'); body.innerHTML='';
-    items.forEach(x=>{const tr=document.createElement('tr'); const riskBadge=x.riskScore>=0.8?'bg-red-lt':(x.riskScore>=0.5?'bg-yellow-lt':'bg-green-lt');
-      tr.innerHTML=`<td><span class="badge bg-blue-lt">AI</span> ${x.proposedAction}</td><td><span class="badge ${riskBadge}">${x.riskScore}</span></td><td>${x.confidenceScore}</td><td>${x.impactScope}</td><td><button class="btn btn-sm btn-outline-success me-1" data-ai-id="${x.insightId}" data-ai-decision="approve">Approve</button><button class="btn btn-sm btn-outline-danger" data-ai-id="${x.insightId}" data-ai-decision="reject">Reject</button></td>`;
+
+  async function loadAutonomy(){
+    const data=await fetchJson('/admin/execution/autonomous-insights?take=15');
+    const body=document.getElementById('autonomy-body');
+    body.innerHTML='';
+    (data.items||[]).forEach(x=>{
+      const tr=document.createElement('tr');
+      const riskBadge=x.riskScore>=0.8?'bg-red-lt':(x.riskScore>=0.5?'bg-yellow-lt':'bg-green-lt');
+      tr.innerHTML=`<td><span class="badge bg-blue-lt">AI</span> ${x.proposedAction}</td><td><span class="badge ${riskBadge}">${x.riskScore}</span></td><td>${x.confidenceScore}</td><td>${x.impactScope}</td><td><button class="btn btn-sm btn-outline-success me-1" data-ai-id="${x.insightId}" data-ai-decision="approve" type="button">Approve</button><button class="btn btn-sm btn-outline-danger" data-ai-id="${x.insightId}" data-ai-decision="reject" type="button">Reject</button></td>`;
       body.appendChild(tr);
     });
     document.querySelectorAll('[data-ai-decision]').forEach(b=>b.addEventListener('click',()=>decideInsight(b.dataset.aiId,b.dataset.aiDecision)));
@@ -118,14 +193,32 @@
     const reason=prompt(`Confirm ${command}. Enter reason:`); if(!reason) return;
     const risk=document.querySelector(`[data-command="${command}"]`)?.dataset.risk ?? 'medium';
     const confirmation=prompt(`Risk level ${risk.toUpperCase()}. Type CONFIRM to execute ${command}.`); if(confirmation!=='CONFIRM') return;
-    await fetch(`/admin/execution/operations/${command}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason,impactScope:'global-runtime',authorityContext:'operator',rollbackPlan:'Use queue replay or manual restore'})});
+    await fetchJson(`/admin/execution/operations/${command}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({reason,impactScope:'global-runtime',authorityContext:'operator',rollbackPlan:'Use queue replay or manual restore'})});
+    notify(`Operator command ${command} executed successfully.`, 'success');
     await refresh();
   }
 
-  async function refresh(){await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents(),loadAutonomy(),loadOptimization()]);}
-  document.querySelectorAll('[data-command]').forEach(b=>b.addEventListener('click',()=>runCommand(b.dataset.command)));
-  document.getElementById('refresh-monitoring').addEventListener('click',refresh);
-  setInterval(()=>{loadHealth();loadStream();},5000);
+  async function refresh(){
+    if(state.loading) return;
+    setLoading(true);
+    clearNotification();
+    try {
+      await Promise.all([loadHealth(),loadStream(),loadGovernance(),loadCapability(),loadQuality(),loadIncidents(),loadAutonomy(),loadOptimization()]);
+    } catch(error) {
+      notify(`Command center refresh failed: ${error.message}`, 'danger');
+      console.error('Command center refresh failed', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  document.querySelectorAll('[data-command]').forEach(b=>b.addEventListener('click',()=>runCommand(b.dataset.command).catch(error=>{
+    notify(`Operator command failed: ${error.message}`, 'danger');
+    console.error('Operator action failed', error);
+  })));
+
+  refreshButton.addEventListener('click',refresh);
+  setInterval(()=>{loadHealth().catch(()=>{});loadStream().catch(()=>{});},5000);
   await refresh();
 })();
 </script>
