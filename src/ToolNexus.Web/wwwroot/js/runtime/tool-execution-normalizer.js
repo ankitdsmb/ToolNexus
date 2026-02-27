@@ -1,8 +1,8 @@
 import { safeInitScheduler } from './safe-init-scheduler.js';
 import { createRuntimeLogger } from './runtime-logger.js';
-import { runtimeObserver } from './runtime-observer.js';
 
 const logger = createRuntimeLogger({ source: 'tool-execution-normalizer' });
+let hasLoggedInitContextInjected = false;
 
 function shouldGuardLifecycleDiagnostics() {
   return Boolean(import.meta?.env?.DEV || window.ToolNexusLogging?.runtimeDebugEnabled === true);
@@ -172,7 +172,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     return instance;
   }
 
-  async function init() {
+  async function init(lifecycleContextOverride) {
     if (capability?.needsDOMReady) {
       await safeInitScheduler();
     }
@@ -185,40 +185,25 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
         }
 
         if (!(root instanceof Element)) {
-          throw new Error('[Runtime] lifecycle init requires DOM root');
+          throw new Error(`[RuntimeLifecycle] init called without valid root for ${slug}`);
         }
 
-        const lifecycleContext = instance ?? context;
-        let initValue;
-        try {
-          initValue = await target.init(lifecycleContext, root, context?.manifest, context);
-        } catch (error) {
-          const canRetryWithRootFirst = !(lifecycleContext instanceof Element) && (root instanceof Element);
-          if (!canRetryWithRootFirst) {
-            throw error;
-          }
+        const manifest = context?.manifest;
+        const safeLifecycleContext = lifecycleContextOverride ?? {
+          root,
+          toolRoot: root,
+          executionContext: context,
+          manifest,
+          slug
+        };
 
-          const retryPayload = {
-            slug,
-            mode,
-            originalError: error?.message ?? String(error),
-            retryStrategy: 'root-first'
-          };
-
-          logger.warn('Retrying normalized init with root-first signature.', {
-            slug,
-            mode,
-            originalError: error?.message ?? String(error)
-          });
-          runtimeObserver.emit('runtime_lifecycle_retry', {
-            ...retryPayload,
-            toolSlug: slug,
-            metadata: retryPayload
-          });
-          initValue = await target.init(root, context?.manifest, context);
+        if (!hasLoggedInitContextInjected) {
+          hasLoggedInitContextInjected = true;
+          console.info('[RuntimeLifecycle] init context injected');
+          logger.info('[RuntimeLifecycle] init context injected', { slug, mode });
         }
 
-        return initValue;
+        return await target.init(safeLifecycleContext, root, manifest, context);
       });
     }
 
@@ -252,9 +237,18 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
 
   /* wrap init call */
   const originalInit = normalized.init;
-  normalized.init = async (...args) => {
-    auditLifecycleCall(slug, 'init', args[0]);
-    return originalInit(...args);
+  normalized.init = async () => {
+    const manifest = context?.manifest;
+    const safeLifecycleContext = {
+      root,
+      toolRoot: root,
+      executionContext: context,
+      manifest,
+      slug
+    };
+
+    auditLifecycleCall(slug, 'init', safeLifecycleContext);
+    return originalInit(safeLifecycleContext);
   };
 
   /* expose report globally */
