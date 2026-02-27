@@ -830,9 +830,10 @@ export function createToolRuntime({
     runtimeIdentity.uiMode = uiMode;
     const safeResolveLifecycle = async () => {
       let module = {};
+      let lifecycleContract = inspectLifecycleContract(module);
       if (!modulePath) {
         setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_mode_no_module_path');
-        return { module, importFailed: false, autoSelected: true };
+        return { module, lifecycleContract, importFailed: false, autoSelected: true };
       }
 
       const moduleImportStartedAt = now();
@@ -842,7 +843,7 @@ export function createToolRuntime({
       try {
         module = await importModule(modulePath);
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
-        const lifecycleContract = inspectLifecycleContract(module);
+        lifecycleContract = inspectLifecycleContract(module);
         emit('lifecycle_contract_evaluated', {
           toolSlug: slug,
           metadata: lifecycleContract
@@ -889,21 +890,36 @@ export function createToolRuntime({
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
-      return { module, importFailed, autoSelected: false };
+      return { module, lifecycleContract, importFailed, autoSelected: false };
     };
 
-    const { module: loadedModule, importFailed } = await safeResolveLifecycle();
+    const { module: loadedModule, lifecycleContract, importFailed } = await safeResolveLifecycle();
     const enforceCustomForTier = complexityTier >= 4;
-    const shouldUseAutoModule = uiMode === 'auto' || importFailed || !modulePath;
+    const templateIsLegacyOrMinimal = validation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
+      || validation.detectedLayoutType === LAYOUT_TYPES.MINIMAL_LAYOUT;
+    const shouldForceImportedLifecycle = Boolean(
+      modulePath
+      && !importFailed
+      && lifecycleContract?.compliant
+      && validation.isValid
+    );
+    const shouldUseAutoModule = !shouldForceImportedLifecycle
+      && (importFailed || !modulePath || templateIsLegacyOrMinimal);
     if (shouldUseAutoModule) {
       if (importFailed) {
         setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_FALLBACK, 'auto_loaded_after_custom_runtime_failure');
+      } else if (!modulePath) {
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_loaded_without_custom_module_path');
+      } else if (templateIsLegacyOrMinimal) {
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_loaded_for_legacy_or_minimal_template');
       } else {
-        const reason = uiMode === 'auto' ? 'auto_mode_selected' : 'auto_loaded_without_custom_module_path';
-        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, reason);
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_mode_selected');
       }
     } else {
-      setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE, 'custom_runtime_loaded');
+      const resolutionReason = shouldForceImportedLifecycle
+        ? 'custom_runtime_forced_lifecycle_contract'
+        : 'custom_runtime_loaded';
+      setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE, resolutionReason);
     }
 
     const runtimeIdentityTags = syncRuntimeIdentity(root, { modulePath });
