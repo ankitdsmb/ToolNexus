@@ -1,5 +1,6 @@
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services.Policies;
+using static ToolNexus.Application.Services.Pipeline.UniversalExecutionEngine;
 
 namespace ToolNexus.Application.Services.Pipeline.Steps;
 
@@ -12,12 +13,28 @@ public sealed class ValidationStep(IToolManifestGovernance governance, IToolExec
         var manifest = governance.FindBySlug(context.ToolId);
         if (manifest is null)
         {
-            return new ToolExecutionResponse(false, string.Empty, $"Tool '{context.ToolId}' not found.", true);
+            context.Response = new ToolExecutionResponse(false, string.Empty, $"Tool '{context.ToolId}' not found.", true);
+            context.Items[AdapterResolutionStatusContextKey] = "validation_denied";
+            context.Items[ConformanceValidContextKey] = "false";
+            context.Items[ConformanceNormalizedContextKey] = "true";
+            context.Items[ConformanceIssueCountContextKey] = "1";
+            context.Items[ConformanceStatusContextKey] = "validation_denied";
+            context.Items[ConformanceIssuesContextKey] = "[\"manifest_not_found\"]";
+            await next(context, cancellationToken);
+            return context.Response!;
         }
 
         if (!manifest.SupportedActions.Contains(context.Action, StringComparer.OrdinalIgnoreCase))
         {
-            return new ToolExecutionResponse(false, string.Empty, "Action is not supported for this tool.");
+            context.Response = new ToolExecutionResponse(false, string.Empty, "Action is not supported for this tool.");
+            context.Items[AdapterResolutionStatusContextKey] = "validation_denied";
+            context.Items[ConformanceValidContextKey] = "false";
+            context.Items[ConformanceNormalizedContextKey] = "true";
+            context.Items[ConformanceIssueCountContextKey] = "1";
+            context.Items[ConformanceStatusContextKey] = "validation_denied";
+            context.Items[ConformanceIssuesContextKey] = "[\"unsupported_action\"]";
+            await next(context, cancellationToken);
+            return context.Response!;
         }
 
         context.Manifest = manifest;

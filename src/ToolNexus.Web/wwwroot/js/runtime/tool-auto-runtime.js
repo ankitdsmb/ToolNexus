@@ -371,11 +371,14 @@ function renderFallbackWarningBadge(doc, unifiedControl) {
 }
 
 function resolveAutoRuntimeToolRoot(root) {
-  const toolRoot = root?.querySelector?.('[data-tool-root]') || root;
-  const runtimeContainer = root?.querySelector?.('[data-runtime-container]')
-    ?? (root?.matches?.('[data-runtime-container]') ? root : null);
+  const toolRoot = root?.querySelector?.('[data-tool-shell]')
+    ?? root?.querySelector?.('[data-tool-root]')
+    ?? root;
 
-  if (runtimeContainer && toolRoot?.closest?.('[data-runtime-container]') !== runtimeContainer) {
+  const canonicalHost = root?.querySelector?.('[data-tool-shell]')
+    ?? (root?.matches?.('[data-tool-shell]') ? root : null);
+
+  if (canonicalHost && toolRoot !== canonicalHost && toolRoot?.closest?.('[data-tool-shell]') !== canonicalHost) {
     throw new Error('AUTO_RUNTIME_CONTRACT_VIOLATION');
   }
 

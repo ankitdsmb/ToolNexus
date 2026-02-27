@@ -118,6 +118,11 @@ public sealed class UniversalExecutionEngine(
         {
             context.Items[AdapterNameContextKey] = "none";
             context.Items[AdapterResolutionStatusContextKey] = "admission_denied";
+            context.Items[ConformanceValidContextKey] = "false";
+            context.Items[ConformanceNormalizedContextKey] = "true";
+            context.Items[ConformanceIssueCountContextKey] = "1";
+            context.Items[ConformanceStatusContextKey] = "admission_denied";
+            context.Items[ConformanceIssuesContextKey] = "[\"admission_denied\"]";
 
             return AttachRuntimeIdentity(context, new UniversalToolExecutionResult(
                 false,
@@ -148,6 +153,11 @@ public sealed class UniversalExecutionEngine(
         {
             context.Items[AdapterNameContextKey] = "LegacyDotNetStrategy";
             context.Items[AdapterResolutionStatusContextKey] = "legacy";
+            context.Items[ConformanceValidContextKey] = "true";
+            context.Items[ConformanceNormalizedContextKey] = "false";
+            context.Items[ConformanceIssueCountContextKey] = "0";
+            context.Items[ConformanceStatusContextKey] = "legacy_passthrough";
+            context.Items[ConformanceIssuesContextKey] = "[]";
 
             var response = await legacyExecutionStrategy.ExecuteAsync(
                 request.ToolId,
@@ -168,6 +178,11 @@ public sealed class UniversalExecutionEngine(
         {
             context.Items[AdapterNameContextKey] = "none";
             context.Items[AdapterResolutionStatusContextKey] = "missing";
+            context.Items[ConformanceValidContextKey] = "false";
+            context.Items[ConformanceNormalizedContextKey] = "true";
+            context.Items[ConformanceIssueCountContextKey] = "1";
+            context.Items[ConformanceStatusContextKey] = "fallback_missing_adapter";
+            context.Items[ConformanceIssuesContextKey] = "[\"missing_adapter\"]";
 
             return AttachRuntimeIdentity(context, new UniversalToolExecutionResult(
                 false,

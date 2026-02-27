@@ -59,10 +59,6 @@ function hasNode(scope, nodeName) {
     return false;
   }
 
-  if (nodeName === 'data-runtime-container') {
-    return hasSelector(scope, selector) || Boolean(scope.closest?.(selector));
-  }
-
   return hasSelector(scope, selector);
 }
 
@@ -82,7 +78,9 @@ function detectLayoutType(scope) {
     || hasSelector(scope, '.tool-controls')
     || hasSelector(scope, '.tool-result')
     || hasSelector(scope, '#inputEditor')
-    || hasSelector(scope, '#outputField');
+    || hasSelector(scope, '#outputField')
+    || hasSelector(scope, '[data-tool-root]')
+    || hasSelector(scope, '[data-tool-actions]');
 
   if (hasLegacyStructure) {
     return LAYOUT_TYPES.LEGACY_LAYOUT;

@@ -8,7 +8,7 @@ describe('tool DOM contract validator', () => {
     const result = validateToolDom(root);
 
     expect(result.isValid).toBe(false);
-    expect(result.missingNodes).toContain('data-tool-root');
+    expect(result.missingNodes).toContain('data-tool-shell');
     expect(result.missingNodes).toContain('data-tool-output');
     expect(result.detectedLayoutType).toBe('LEGACY_LAYOUT');
   });
@@ -16,14 +16,13 @@ describe('tool DOM contract validator', () => {
   test('passes when canonical contract nodes are present', () => {
     const root = document.createElement('div');
     root.innerHTML = `
-      <section data-runtime-container="true"><section data-tool-root="true">
-        <header data-tool-header="true"></header>
-        <div data-tool-body="true">
-          <section data-tool-input="true"></section>
-          <section data-tool-output="true"></section>
-          <div data-tool-actions="true"></div>
-        </div>
-      </section></section>
+      <section data-tool-shell="true">
+        <header data-tool-context="true"></header>
+        <section data-tool-input="true"></section>
+        <section data-tool-status="true"></section>
+        <section data-tool-output="true"></section>
+        <footer data-tool-followup="true"></footer>
+      </section>
     `;
 
     const result = validateToolDom(root);
@@ -31,6 +30,5 @@ describe('tool DOM contract validator', () => {
     expect(result.isValid).toBe(true);
     expect(result.missingNodes).toEqual([]);
     expect(result.detectedLayoutType).toBe('MODERN_LAYOUT');
-    expect(result.missingNodes).not.toContain('data-runtime-container');
   });
 });
