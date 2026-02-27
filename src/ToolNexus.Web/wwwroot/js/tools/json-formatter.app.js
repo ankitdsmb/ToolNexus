@@ -175,7 +175,7 @@ export function createJsonFormatterApp(root) {
       let monacoLoaded = false;
 
   try {
-    state.monaco = await ensureMonacoLoaded();
+    state.monaco = await loadMonacoSafe();
     monacoLoaded = Boolean(state.monaco?.editor);
   } catch (e) {
     console.warn('[json-formatter] Monaco unavailable → fallback editor');
