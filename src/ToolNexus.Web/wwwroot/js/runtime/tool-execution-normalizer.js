@@ -165,10 +165,24 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           throw new Error('[Runtime] lifecycle init requires DOM root');
         }
 
-        const initValue = await target.init(instance ?? context, root, context?.manifest, context);
-        if (mode === 'modern.lifecycle' && typeof target?.runTool === 'function') {
-          await target.runTool(instance ?? context, root, context?.manifest, context);
+        const lifecycleContext = instance ?? context;
+        let initValue;
+        try {
+          initValue = await target.init(lifecycleContext, root, context?.manifest, context);
+        } catch (error) {
+          const canRetryWithRootFirst = !(lifecycleContext instanceof Element) && (root instanceof Element);
+          if (!canRetryWithRootFirst) {
+            throw error;
+          }
+
+          logger.warn('Retrying normalized init with root-first signature.', {
+            slug,
+            mode,
+            originalError: error?.message ?? String(error)
+          });
+          initValue = await target.init(root, context?.manifest, context);
         }
+
         return initValue;
       });
     }
