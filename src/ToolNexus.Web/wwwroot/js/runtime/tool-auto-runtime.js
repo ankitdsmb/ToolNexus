@@ -461,6 +461,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
 
       const run = async () => {
         unifiedControl.clearErrors();
+        unifiedControl.setStatus('validating');
 
         const payload = {};
         try {
@@ -475,6 +476,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             }
           }
         } catch (error) {
+          unifiedControl.setStatus('warning', 'Warning · Input validation needs attention');
           unifiedControl.showError(error?.message ?? 'Invalid input.');
           return;
         }
@@ -488,7 +490,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         }
 
         runButton.disabled = true;
-        unifiedControl.setStatus('Running…');
+        unifiedControl.setStatus('running');
 
         try {
           runtimeContext?.adapters?.emitTelemetry?.('runtime_execution_boundary_checked', {
@@ -506,10 +508,16 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
 
         try {
           const result = await executeTool({ slug, payload: sanitized });
-          unifiedControl.renderResult(result);
-          unifiedControl.setStatus('Completed');
+          unifiedControl.setStatus('streaming');
+          const hierarchy = unifiedControl.renderResult(result);
+          const completedWithWarnings = hierarchy?.hasWarnings || ignoredFields.length > 0;
+          if (completedWithWarnings) {
+            unifiedControl.setStatus('warning', 'Warning · Completed with runtime notes');
+          } else {
+            unifiedControl.setStatus('success');
+          }
         } catch (error) {
-          unifiedControl.setStatus('Execution failed');
+          unifiedControl.setStatus('failed');
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;
