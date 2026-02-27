@@ -68,11 +68,7 @@ describe('tool-platform-kernel', () => {
     const kernel = getToolPlatformKernel();
 
     expect(() => kernel.registerTool({ id: 'broken-root', root: undefined, init: () => ({}) }))
-      .toThrow('[ToolKernel] Invalid root passed to registerTool()');
-    expect(() => kernel.registerTool({ id: 'broken-root', root: undefined, init: () => ({}) }))
-      .toThrow('Received: undefined');
-    expect(() => kernel.registerTool({ id: 'broken-root', root: undefined, init: () => ({}) }))
-      .toThrow('Callsite: registerTool()');
+      .toThrow('[ToolKernel] registerTool received invalid root. Lifecycle context missing root.');
   });
 
 });

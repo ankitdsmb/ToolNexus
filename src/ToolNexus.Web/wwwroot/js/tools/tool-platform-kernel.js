@@ -45,34 +45,48 @@ class ToolPlatformKernel {
     );
   }
 
-  normalizeToolRoot(rootOrContext, callsite = 'registerTool()') {
-    let cursor = rootOrContext;
-    let normalizedRoot = null;
-
-    while (cursor && normalizedRoot == null) {
-      if (this.isHTMLElement(cursor)) {
-        normalizedRoot = cursor;
-        break;
-      }
-
-      if (this.isHTMLElement(cursor?.root)) {
-        normalizedRoot = cursor.root;
-        break;
-      }
-
-      if (this.isHTMLElement(cursor?.toolRoot)) {
-        normalizedRoot = cursor.toolRoot;
-        break;
-      }
-
-      cursor = cursor?.context;
+  normalizeRoot(input, visited = new Set()) {
+    if (this.isHTMLElement(input)) {
+      return input;
     }
+
+    if (!input || typeof input !== 'object') {
+      return null;
+    }
+
+    if (visited.has(input)) {
+      return null;
+    }
+
+    visited.add(input);
+
+    const candidateKeys = [
+      'toolRoot',
+      'root',
+      'context',
+      'executionContext',
+      'lifecycleContext',
+      'runtimeContext',
+      'handle'
+    ];
+
+    for (const key of candidateKeys) {
+      const resolved = this.normalizeRoot(input[key], visited);
+      if (resolved) {
+        return resolved;
+      }
+    }
+
+    return null;
+  }
+
+  normalizeToolRoot(rootOrContext) {
+    const normalizedRoot = this.normalizeRoot(rootOrContext);
 
     if (!this.isHTMLElement(normalizedRoot)) {
-      throw new Error('Tool runtime error: invalid root passed to registerTool()');
+      throw new Error('[ToolKernel] registerTool received invalid root. Lifecycle context missing root.');
     }
 
-    this.ensureRootId(normalizedRoot, callsite);
     return normalizedRoot;
   }
 
@@ -81,10 +95,12 @@ class ToolPlatformKernel {
       throw new Error('registerTool requires id, root, and init().');
     }
 
-    const normalizedRoot = this.normalizeToolRoot(root, 'registerTool()');
+    const normalizedRoot = this.normalizeToolRoot(root);
     if (!normalizedRoot || !(normalizedRoot instanceof Element)) {
-      throw new Error('[ToolKernel] Invalid root provided. Tool must use runtime lifecycle root.');
+      throw new Error('[ToolKernel] registerTool received invalid root. Lifecycle context missing root.');
     }
+
+    this.ensureRootId(normalizedRoot, 'registerTool()');
 
     const toolKey = this.createToolKey(id, normalizedRoot, 'registerTool()');
     const existing = this.tools.get(toolKey);
@@ -173,11 +189,16 @@ class ToolPlatformKernel {
     this.tools.delete(toolKey);
   }
 
-  destroyToolById(id, root) {
+  destroyToolById(id, rootOrContext) {
+    const root = this.normalizeToolRoot(rootOrContext);
     this.destroy(this.createToolKey(id, root, 'destroyToolById()'));
   }
 
   createToolKey(id, root, callsite = 'createToolKey()') {
+    if (!root) {
+      throw new Error('createToolKey called without root');
+    }
+
     return `${id}:${this.ensureRootId(root, callsite)}`;
   }
 
@@ -193,7 +214,8 @@ class ToolPlatformKernel {
     return generated;
   }
 
-  getLifecycleState(id, root) {
+  getLifecycleState(id, rootOrContext) {
+    const root = this.normalizeToolRoot(rootOrContext);
     return this.tools.get(this.createToolKey(id, root, 'getLifecycleState()'))?.state ?? 'missing';
   }
 
@@ -201,7 +223,8 @@ class ToolPlatformKernel {
     return this.tools.size;
   }
 
-  getLastError(id, root) {
+  getLastError(id, rootOrContext) {
+    const root = this.normalizeToolRoot(rootOrContext);
     return this.tools.get(this.createToolKey(id, root, 'getLastError()'))?.error ?? null;
   }
 
