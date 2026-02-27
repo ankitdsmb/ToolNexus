@@ -7,10 +7,19 @@ cd "$ROOT_DIR"
 echo "=== ToolNexus Maintenance (Strict Stabilization Mode) ==="
 
 CONNECTION_STRING="${TOOLNEXUS_DB_CONNECTION:-${ConnectionStrings__DefaultConnection:-}}"
+MAINTENANCE_MODE="${1:-full}"
+
+if [ "$MAINTENANCE_MODE" != "full" ] && [ "$MAINTENANCE_MODE" != "quick" ]; then
+  echo "ERROR: invalid maintenance mode '$MAINTENANCE_MODE'. Use 'full' or 'quick'."
+  exit 1
+fi
+
 if [ -z "$CONNECTION_STRING" ]; then
   echo "ERROR: TOOLNEXUS_DB_CONNECTION or ConnectionStrings__DefaultConnection must be set."
   exit 1
 fi
+
+echo "[Maintenance] Mode: $MAINTENANCE_MODE"
 
 echo "[Maintenance] Deterministic .NET package restore..."
 dotnet restore ToolNexus.sln --nologo /p:RestoreUseStaticGraphEvaluation=true /p:ContinuousIntegrationBuild=true
@@ -42,7 +51,15 @@ dotnet ef migrations has-pending-model-changes \
 echo "[Maintenance] Bootstrap gate (must pass before tests)..."
 ./scripts/bootstrap-validation.sh
 
-echo "[Maintenance] Running ordered test pipeline..."
+if [ "$MAINTENANCE_MODE" = "quick" ]; then
+  echo "[Maintenance] Quick mode: running core regression suite."
+  dotnet test ToolNexus.sln -c Debug --no-build --verbosity minimal
+  npm test
+  echo "=== ToolNexus maintenance (quick) completed successfully ==="
+  exit 0
+fi
+
+echo "[Maintenance] Full mode: running ordered test pipeline..."
 dotnet test ToolNexus.sln -c Debug --no-build --verbosity minimal
 npm test
 npm run test:playwright:smoke
