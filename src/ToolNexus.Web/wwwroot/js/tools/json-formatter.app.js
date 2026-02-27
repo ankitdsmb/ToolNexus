@@ -25,12 +25,17 @@ export function createJsonFormatterApp(root) {
   };
 
   const createFallbackEditor = (host, { readOnly = false } = {}) => {
-    const textarea = document.createElement('textarea');
+    const existingEditor = host?.querySelector(':scope > .json-formatter-fallback-editor');
+    const textarea = existingEditor ?? document.createElement('textarea');
+
     textarea.className = 'json-formatter-fallback-editor';
     textarea.readOnly = readOnly;
     textarea.spellcheck = false;
     textarea.setAttribute('aria-label', readOnly ? 'JSON output editor' : 'JSON input editor');
-    host.replaceChildren(textarea);
+
+    if (!existingEditor) {
+      host.appendChild(textarea);
+    }
 
     return {
       getValue: () => textarea.value,
