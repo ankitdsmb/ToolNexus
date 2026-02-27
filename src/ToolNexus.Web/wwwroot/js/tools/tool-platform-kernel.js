@@ -3,7 +3,7 @@ const TOOL_ROOT_ID_PREFIX = 'tool-root-';
 
 function noop() {}
 
-function normalizeToolRoot(rootLike) {
+function normalizeRoot(rootLike) {
   if (rootLike instanceof Element) return rootLike;
   if (rootLike?.toolRoot instanceof Element) return rootLike.toolRoot;
   if (rootLike?.root instanceof Element) return rootLike.root;
@@ -32,7 +32,7 @@ function resolveLifecycleInitRoot(args = []) {
 
   return {
     lifecycleContext,
-    root: normalizeToolRoot(rootCandidate)
+    root: normalizeRoot(rootCandidate)
   };
 }
 
@@ -262,13 +262,26 @@ function resetToolPlatformKernelForTesting() {
   globalKernel = undefined;
 }
 
+const normalizeToolRoot = normalizeRoot;
+
+const registerTool = (options) => getToolPlatformKernel().registerTool(options);
+const destroyToolById = (id, rootOrContext) => getToolPlatformKernel().destroyToolById(id, rootOrContext);
+
 if (typeof normalizeToolRoot !== 'function') {
   throw new Error('[KernelContract] normalizeToolRoot export missing');
 }
 
+// EXPORT CONTRACT (RUNTIME-CRITICAL)
+// Backward compatibility aliases in this section are intentionally stable.
+// Do not remove/rename without keeping alias exports for existing tool imports.
 export {
-  getToolPlatformKernel,
   normalizeToolRoot,
+  getToolPlatformKernel,
+  registerTool,
+  destroyToolById
+};
+
+export {
   resolveLifecycleInitRoot,
   resetToolPlatformKernelForTesting
 };
