@@ -63,7 +63,7 @@ public sealed class ToolManifestLoaderTests
         {
           "slug": "json-formatter",
           "viewName": "JsonFormatter",
-          "dependencies": ["/lib/monaco/vs/loader.js", "/js/exists.js"],
+          "dependencies": ["/js/exists.js", "/js/missing.js"],
           "styles": ["/css/tools/exists.css", "/css/tools/missing.css"]
         }
         """);

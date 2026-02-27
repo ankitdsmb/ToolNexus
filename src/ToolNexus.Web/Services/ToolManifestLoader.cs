@@ -8,8 +8,6 @@ namespace ToolNexus.Web.Services;
 
 public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebHostEnvironment hostEnvironment) : IToolManifestLoader
 {
-    private const string MonacoLoaderPath = "/lib/monaco/vs/loader.js";
-
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -165,13 +163,6 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        if (slug.Contains("json-formatter", StringComparison.OrdinalIgnoreCase)
-            && normalized.All(x => !string.Equals(x, MonacoLoaderPath, StringComparison.OrdinalIgnoreCase))
-            && IsExistingWebAssetPath(MonacoLoaderPath))
-        {
-            normalized.Add(MonacoLoaderPath);
-        }
-
         var filtered = normalized
             .Where(path =>
             {
@@ -184,12 +175,6 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
                 return false;
             })
             .ToArray();
-
-        if (slug.Contains("json-formatter", StringComparison.OrdinalIgnoreCase)
-            && filtered.All(x => !string.Equals(x, MonacoLoaderPath, StringComparison.OrdinalIgnoreCase)))
-        {
-            logger.LogWarning("Monaco loader is unavailable for '{ToolSlug}'. Runtime will continue without Monaco dependency.", slug);
-        }
 
         return filtered;
     }
