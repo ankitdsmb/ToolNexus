@@ -168,28 +168,23 @@ export function createJsonFormatterApp(root) {
   return {
     async init() {
       if (!dom.jsonEditor || !dom.outputEditor) {
-        throw new Error('Editor containers missing.');
+        console.warn('[json-formatter] Editor containers missing; skipping editor initialization.');
+        return;
       }
 
       /* ========= MONACO REAL FIX ========= */
-      let monacoLoaded = false;
+      try {
+        state.monaco = await loadMonacoSafe();
+        if (!state.monaco?.editor) {
+          throw new Error('Monaco editor API unavailable after loader resolution.');
+        }
 
-  try {
-    state.monaco = await loadMonacoSafe();
-    monacoLoaded = Boolean(state.monaco?.editor);
-  } catch (e) {
-    console.warn('[json-formatter] Monaco unavailable → fallback editor');
-  }
+        state.inputModel = state.monaco.editor.createModel(
+          window.ToolNexusConfig?.jsonExampleInput ?? '',
+          'json'
+        );
 
-      if (monacoLoaded) {
-        state.inputModel =
-          state.monaco.editor.createModel(
-            window.ToolNexusConfig?.jsonExampleInput ?? '',
-            'json'
-          );
-
-        state.outputModel =
-          state.monaco.editor.createModel('', 'json');
+        state.outputModel = state.monaco.editor.createModel('', 'json');
 
         const shared = {
           theme: JSON_FORMATTER_CONFIG.monacoTheme,
@@ -198,19 +193,18 @@ export function createJsonFormatterApp(root) {
           fontSize: 14
         };
 
-        state.inputEditor =
-          state.monaco.editor.create(dom.jsonEditor, {
-            ...shared,
-            model: state.inputModel
-          });
+        state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
+          ...shared,
+          model: state.inputModel
+        });
 
-        state.outputEditor =
-          state.monaco.editor.create(dom.outputEditor, {
-            ...shared,
-            model: state.outputModel,
-            readOnly: true
-          });
-      } else {
+        state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
+          ...shared,
+          model: state.outputModel,
+          readOnly: true
+        });
+      } catch (e) {
+        console.warn('[json-formatter] Monaco failed, fallback editor', e);
         state.inputEditor = createFallbackEditor(dom.jsonEditor);
         state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
         state.inputModel = state.inputEditor;
