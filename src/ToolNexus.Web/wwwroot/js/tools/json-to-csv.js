@@ -13,8 +13,20 @@ const DELIMITER_MAP = {
   tab: '\t'
 };
 
-function resolveRoot() {
-  return document.querySelector('.tool-page[data-slug="json-to-csv"]') ?? document.querySelector('[data-tool="json-to-csv"]') ?? document;
+function resolveRoot(rootOrContext) {
+  if (rootOrContext instanceof Element) return rootOrContext;
+  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
+  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
+  return null;
+}
+
+function requireRuntimeRoot(rootOrContext) {
+  const root = resolveRoot(rootOrContext);
+  if (!root) {
+    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
+  }
+
+  return root;
 }
 
 function resolveOptions(options = {}) {
@@ -28,7 +40,8 @@ function resolveOptions(options = {}) {
   };
 }
 
-export function create(root = resolveRoot()) {
+export function create(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   if (!root) return null;
 
   return getToolPlatformKernel().registerTool({
@@ -39,14 +52,16 @@ export function create(root = resolveRoot()) {
   });
 }
 
-export function init(root = resolveRoot()) {
+export function init(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   const handle = create(root);
   if (!handle) return null;
   handle.init();
   return handle;
 }
 
-export function destroy(root = resolveRoot()) {
+export function destroy(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   if (!root) return;
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }

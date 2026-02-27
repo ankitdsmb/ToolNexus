@@ -442,28 +442,25 @@ export async function runTool(action, input) {
   }
 }
 
-function resolveRoot() {
-  return document.querySelector('.tool-page[data-slug="case-converter"]');
+function resolveRoot(rootOrContext) {
+  if (rootOrContext instanceof Element) return rootOrContext;
+  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
+  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
+  return null;
 }
 
-function resolveRootFromContext(rootOrContext) {
-  if (rootOrContext instanceof Element) {
-    return rootOrContext;
+function requireRuntimeRoot(rootOrContext) {
+  const root = resolveRoot(rootOrContext);
+  if (!root) {
+    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
   }
 
-  if (rootOrContext?.root instanceof Element) {
-    return rootOrContext.root;
-  }
-
-  if (rootOrContext?.toolRoot instanceof Element) {
-    return rootOrContext.toolRoot;
-  }
-
-  return resolveRoot();
+  return root;
 }
 
-export function create(rootOrContext = resolveRoot()) {
-  const root = resolveRootFromContext(rootOrContext);
+
+export function create(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   if (!root) {
     return null;
   }
@@ -480,8 +477,9 @@ export function create(rootOrContext = resolveRoot()) {
   });
 }
 
-export function init(rootOrContext = resolveRoot()) {
-  const handle = create(rootOrContext);
+export function init(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
+  const handle = create(root);
   if (!handle) {
     return null;
   }
@@ -490,10 +488,8 @@ export function init(rootOrContext = resolveRoot()) {
   return handle;
 }
 
-export function destroy(root = resolveRoot()) {
-  if (!root) {
-    return;
-  }
+export function destroy(rootOrContext) {
+  const root = requireRuntimeRoot(rootOrContext);
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
