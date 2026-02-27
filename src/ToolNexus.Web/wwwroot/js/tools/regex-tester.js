@@ -38,13 +38,9 @@ export function create(context) {
 // lifecycle init (mount only)
 // execution handled via runTool
 export function init(context) {
-  const root = resolveRoot(context);
+  const root = context?.root || context?.toolRoot || context;
   if (!(root instanceof Element)) {
-    throw new Error(`[${TOOL_ID}] invalid lifecycle root`);
-  }
-
-  if (!root) {
-    return context ?? null;
+    throw new Error('Invalid mount root');
   }
 
   return {

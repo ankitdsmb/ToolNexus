@@ -32,13 +32,15 @@ export function create(root) {
 }
 
 export function init(context) {
-  if (!context?.root) {
-    return context ?? null;
+  const root = context?.root || context?.toolRoot || context;
+  if (!(root instanceof Element)) {
+    throw new Error('Invalid mount root');
   }
 
   return {
-    ...context,
-    handle: mountCsvToJson(context.root)
+    ...(typeof context === 'object' && context ? context : {}),
+    root,
+    handle: mountCsvToJson(root)
   };
 }
 
@@ -76,5 +78,4 @@ export function destroyCsvToJsonApp(doc = document) {
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
-
 

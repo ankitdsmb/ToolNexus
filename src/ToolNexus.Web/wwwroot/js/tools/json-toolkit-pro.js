@@ -129,8 +129,13 @@ export function create(context) {
 }
 
 export function init(context) {
+  const root = context?.root || context?.toolRoot || context;
+  if (!(root instanceof Element)) {
+    throw new Error('Invalid mount root');
+  }
+
   try {
-    const handle = create(rootOrContext);
+    const handle = create(root);
     handle?.init();
     return handle;
   } catch (error) {
@@ -144,4 +149,3 @@ export function destroy(context) {
 
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
-
