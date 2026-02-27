@@ -42,15 +42,15 @@ describe('tool-platform-kernel root normalization', () => {
     expect(handle.root).toBe(root);
   });
 
-  test('registerTool(runtime execution context)', () => {
+  test('registerTool({executionContext:{root}})', () => {
     const root = document.createElement('section');
-    const executionContext = {
+    const executionContextPayload = {
       executionContext: {
-        toolRoot: root
+        root
       }
     };
 
-    const handle = registerWith(executionContext);
+    const handle = registerWith(executionContextPayload);
     expect(handle.root).toBe(root);
   });
 });
