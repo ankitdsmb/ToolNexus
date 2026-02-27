@@ -16,6 +16,12 @@
             <button id="generate-contract" class="btn btn-sm btn-outline-primary" type="button">3) Auto-generate from idea</button>
             <button id="validate-json" class="btn btn-sm btn-primary" type="button">4) Validate JSON</button>
             <button id="create-draft" class="btn btn-sm btn-success" type="button">5) Create Draft Tool</button>
+            <button id="inspect-runtime" class="btn btn-sm btn-outline-dark" type="button">6) Runtime Inspection</button>
+            <button id="contract-suggestions" class="btn btn-sm btn-outline-dark" type="button">7) Contract Suggestions</button>
+            <button id="apply-suggestions" class="btn btn-sm btn-outline-warning" type="button">8) Apply Suggestions (JSON Patch)</button>
+            <button id="submit-approval" class="btn btn-sm btn-outline-primary" type="button">9) Submit Approval</button>
+            <button id="approve-draft" class="btn btn-sm btn-outline-success" type="button">10) Approve</button>
+            <button id="reject-draft" class="btn btn-sm btn-outline-danger" type="button">11) Reject</button>
         </div>
         <label for="tool-idea" class="form-label">Tool idea or name (optional)</label>
         <input id="tool-idea" class="form-control mb-3" type="text" placeholder="e.g. JSON Path Inspector" />
@@ -23,6 +29,7 @@
         <textarea id="ai-json" class="form-control" rows="14" spellcheck="false"></textarea>
         <div id="import-status" class="small mt-2 text-secondary">Waiting for JSON payload.</div>
         <div id="import-errors" class="mt-2"></div>
+        <pre id="inspection-output" class="small bg-light p-2 mt-2 mb-0"></pre>
         <a id="preview-link" class="btn btn-sm btn-dark mt-3 d-none" href="#">Open Admin Preview</a>
     </div>
 </div>
@@ -40,6 +47,8 @@
   const errorsEl = document.getElementById('import-errors');
   const previewLink = document.getElementById('preview-link');
   let cachedTemplate = null;
+  let currentSlug = null;
+  let lastSuggestions = [];
 
   const setStatus = (message, isError = false) => {
     statusEl.textContent = message;
@@ -154,6 +163,7 @@
 
     const draft = await response.json();
     setStatus(`Draft created for slug '${draft.slug}' with ShadowOnly governance default.`);
+    currentSlug = draft.slug;
     previewLink.href = `/admin/ai-capability-factory/import/preview/${encodeURIComponent(draft.slug)}`;
     previewLink.classList.remove('d-none');
     await loadDashboard();
@@ -182,6 +192,123 @@
     render('draft-queue', data.draftQueue, x => `${x.toolSlug} · ${x.status} · quality ${x.draftQualityScore}`);
     render('validation-reports', data.validationReports, x => `${x.draftId} · passed=${x.passed}`);
   };
+
+
+
+  const inspectionEl = document.getElementById('inspection-output');
+  const setInspection = (payload) => {
+    inspectionEl.textContent = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
+  };
+
+  const requireSlug = () => {
+    if (!currentSlug) {
+      setStatus('Create draft first to continue workflow.', true);
+      return null;
+    }
+    return currentSlug;
+  };
+
+  document.getElementById('inspect-runtime').addEventListener('click', async () => {
+    const slug = requireSlug();
+    if (!slug) return;
+    const response = await fetch(`/admin/ai-capability-factory/import/${encodeURIComponent(slug)}/runtime-inspection`);
+    if (!response.ok) {
+      setStatus('Runtime inspection failed.', true);
+      return;
+    }
+
+    const result = await response.json();
+    setInspection(result);
+    setStatus(`Runtime inspection completed for '${slug}'.`);
+  });
+
+  document.getElementById('contract-suggestions').addEventListener('click', async () => {
+    const slug = requireSlug();
+    if (!slug) return;
+    const response = await fetch(`/admin/ai-capability-factory/import/${encodeURIComponent(slug)}/suggestions`);
+    if (!response.ok) {
+      setStatus('Suggestion analysis failed.', true);
+      return;
+    }
+
+    const result = await response.json();
+    lastSuggestions = result.suggestions || [];
+    setInspection(result);
+    setStatus(`Loaded ${lastSuggestions.length} contract suggestion(s).`);
+  });
+
+  document.getElementById('apply-suggestions').addEventListener('click', async () => {
+    const slug = requireSlug();
+    if (!slug) return;
+    if (!lastSuggestions.length) {
+      setStatus('Load suggestions first.', true);
+      return;
+    }
+
+    const operations = lastSuggestions.filter(x => x.suggestedValue !== undefined).map(x => ({
+      op: x.jsonPointerPath === '/files/-' ? 'add' : 'replace',
+      path: x.jsonPointerPath,
+      value: x.suggestedValue
+    }));
+
+    const response = await fetch(`/admin/ai-capability-factory/import/${encodeURIComponent(slug)}/patch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ operations, correlationId: 'admin-ui-json-patch', tenantId: 'admin', requestedBy: 'admin-ui' })
+    });
+
+    if (!response.ok) {
+      setStatus('Patch update failed.', true);
+      return;
+    }
+
+    const record = await response.json();
+    setInspection(record);
+    setStatus(`JSON patch update applied. Version=${record.version}.`);
+  });
+
+  const decision = async (approve) => {
+    const slug = requireSlug();
+    if (!slug) return;
+    const path = approve ? 'decision' : 'decision';
+    const response = await fetch(`/admin/ai-capability-factory/import/${encodeURIComponent(slug)}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approve, correlationId: approve ? 'admin-ui-approve' : 'admin-ui-reject', tenantId: 'admin', decidedBy: 'admin-ui', comment: approve ? 'Approved in admin flow' : 'Rejected in admin flow' })
+    });
+
+    if (!response.ok) {
+      setStatus('Approval decision failed.', true);
+      return;
+    }
+
+    const record = await response.json();
+    setInspection(record);
+    setStatus(`Decision applied: ${record.approvalStatus}.`);
+  };
+
+  document.getElementById('submit-approval').addEventListener('click', async () => {
+    const slug = requireSlug();
+    if (!slug) return;
+    const response = await fetch(`/admin/ai-capability-factory/import/${encodeURIComponent(slug)}/submit-approval`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correlationId: 'admin-ui-submit-approval', tenantId: 'admin', requestedBy: 'admin-ui', comment: 'Ready for approval review' })
+    });
+
+    if (!response.ok) {
+      setStatus('Submit approval failed.', true);
+      return;
+    }
+
+    const record = await response.json();
+    setInspection(record);
+    setStatus(`Submitted for approval. Status=${record.approvalStatus}.`);
+  });
+
+  document.getElementById('approve-draft').addEventListener('click', async () => await decision(true));
+  document.getElementById('reject-draft').addEventListener('click', async () => await decision(false));
+
 
   loadDashboard();
 })();

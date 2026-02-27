@@ -30,6 +30,12 @@ public sealed class AiCapabilityFactoryPreviewControllerTests
         public Task<AiToolPackageContract?> GetContractBySlugAsync(string slug, CancellationToken cancellationToken)
             => Task.FromResult<AiToolPackageContract?>(new AiToolPackageContract("v1", slug, "{}", "{}", "{}", "{}", [new AiToolVirtualFile("tool.js", "js", "export default {}")], "{}"));
         public AiToolPackageTemplateResponse GetTemplate() => throw new NotImplementedException();
+
+        public Task<AiRuntimeInspectionResponse?> InspectRuntimeAsync(string slug, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<AiContractSuggestionsResponse?> GetContractSuggestionsAsync(string slug, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<AiToolPackageRecord> ApplyJsonPatchAsync(string slug, AiJsonPatchUpdateRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<AiToolPackageRecord> SubmitForApprovalAsync(string slug, AiApprovalSubmissionRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<AiToolPackageRecord> DecideApprovalAsync(string slug, AiApprovalDecisionRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<AiToolPackageImportValidationResult> ValidateAsync(string jsonPayload, CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 }
