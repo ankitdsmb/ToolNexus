@@ -1,4 +1,5 @@
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 
@@ -85,10 +86,59 @@ public sealed class AiToolPackageImportServiceTests
 
         Assert.Equal("draft-tool", record.Slug);
         Assert.Equal(AiToolPackageStatus.Draft, record.Status);
+        Assert.Equal(AiToolPackageApprovalStatus.Draft, record.ApprovalStatus);
+    }
+
+
+    [Fact]
+    public async Task GetContractSuggestionsAsync_MissingStyles_ReturnsSuggestion()
+    {
+        var repository = new InMemoryAiToolPackageRepository();
+        var service = CreateService(repository);
+        var payload = """
+        {
+          "contractVersion":"v1",
+          "tool":{"slug":"suggest-tool"},
+          "runtime":{"executionAuthority":"ShadowOnly"},
+          "ui":{"viewName":"ToolShell"},
+          "seo":{},
+          "files":[{"path":"tool.js","type":"js","content":"export default {}"}]
+        }
+        """;
+
+        await service.CreateDraftAsync(new AiToolPackageImportRequest(payload, "corr", "tenant"), CancellationToken.None);
+        var suggestions = await service.GetContractSuggestionsAsync("suggest-tool", CancellationToken.None);
+
+        Assert.NotNull(suggestions);
+        Assert.Contains(suggestions!.Suggestions, x => x.Code == "styles-file");
+    }
+
+    [Fact]
+    public async Task ApprovalFlow_SubmitThenApprove_TransitionsState()
+    {
+        var repository = new InMemoryAiToolPackageRepository();
+        var service = CreateService(repository);
+        var payload = """
+        {
+          "contractVersion":"v1",
+          "tool":{"slug":"approve-tool"},
+          "runtime":{},
+          "ui":{},
+          "seo":{},
+          "files":[{"path":"tool.js","type":"js","content":"export default { mount(){ return { destroy(){} }; } };"}]
+        }
+        """;
+
+        await service.CreateDraftAsync(new AiToolPackageImportRequest(payload, "corr", "tenant"), CancellationToken.None);
+        var pending = await service.SubmitForApprovalAsync("approve-tool", new AiApprovalSubmissionRequest("corr2", "tenant", "user", "ready"), CancellationToken.None);
+        var approved = await service.DecideApprovalAsync("approve-tool", new AiApprovalDecisionRequest(true, "corr3", "tenant", "admin", "ok"), CancellationToken.None);
+
+        Assert.Equal(AiToolPackageApprovalStatus.PendingApproval, pending.ApprovalStatus);
+        Assert.Equal(AiToolPackageApprovalStatus.Approved, approved.ApprovalStatus);
     }
 
     private static AiToolPackageImportService CreateService(IAiToolPackageRepository? repository = null)
-        => new(repository ?? new InMemoryAiToolPackageRepository(), new StubToolDefinitionService());
+        => new(repository ?? new InMemoryAiToolPackageRepository(), new StubToolDefinitionService(), NullLogger<AiToolPackageImportService>.Instance);
 
     private sealed class StubToolDefinitionService : IToolDefinitionService
     {
@@ -109,12 +159,47 @@ public sealed class AiToolPackageImportServiceTests
         public Task<AiToolPackageRecord> CreateAsync(AiToolPackageContract contract, string correlationId, string tenantId, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
-            var record = new AiToolPackageRecord(Guid.NewGuid(), contract.Slug, AiToolPackageStatus.Draft, contract.RawJsonPayload, now, now, 1);
+            var record = new AiToolPackageRecord(Guid.NewGuid(), contract.Slug, AiToolPackageStatus.Draft, AiToolPackageApprovalStatus.Draft, contract.RawJsonPayload, now, now, 1, null, null, null);
             records[contract.Slug] = record;
             return Task.FromResult(record);
         }
 
         public Task<AiToolPackageRecord?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
             => Task.FromResult(records.TryGetValue(slug, out var record) ? record : null);
+
+        public Task<AiToolPackageRecord> UpdateAsync(Guid id, string jsonPayload, int expectedVersion, string correlationId, string tenantId, CancellationToken cancellationToken)
+        {
+            var existing = records.Values.First(x => x.Id == id);
+            if (existing.Version != expectedVersion)
+            {
+                throw new InvalidOperationException("version mismatch");
+            }
+
+            var updated = existing with { JsonPayload = jsonPayload, Version = existing.Version + 1, UpdatedUtc = DateTime.UtcNow };
+            records[updated.Slug] = updated;
+            return Task.FromResult(updated);
+        }
+
+        public Task<AiToolPackageRecord> SetApprovalStateAsync(Guid id, AiToolPackageApprovalStatus approvalStatus, string? approvalComment, string? approvedBy, DateTime? approvedAtUtc, int expectedVersion, string correlationId, string tenantId, CancellationToken cancellationToken)
+        {
+            var existing = records.Values.First(x => x.Id == id);
+            if (existing.Version != expectedVersion)
+            {
+                throw new InvalidOperationException("version mismatch");
+            }
+
+            var updated = existing with
+            {
+                ApprovalStatus = approvalStatus,
+                LastApprovalComment = approvalComment,
+                ApprovedBy = approvedBy,
+                ApprovedAtUtc = approvedAtUtc,
+                Version = existing.Version + 1,
+                UpdatedUtc = DateTime.UtcNow
+            };
+
+            records[updated.Slug] = updated;
+            return Task.FromResult(updated);
+        }
     }
 }

@@ -261,15 +261,21 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasKey(x => x.Id);
             entity.HasIndex(x => x.Slug).IsUnique();
             entity.HasIndex(x => x.CreatedUtc);
+            entity.HasIndex(x => x.CorrelationId);
+            entity.HasIndex(x => x.TenantId);
             entity.HasIndex(x => new { x.CorrelationId, x.CreatedUtc });
             entity.HasIndex(x => new { x.TenantId, x.CreatedUtc });
             entity.Property(x => x.Slug).HasMaxLength(120);
             entity.Property(x => x.Status).HasMaxLength(24);
+            entity.Property(x => x.ApprovalStatus).HasMaxLength(24);
             entity.Property(x => x.JsonPayload).HasColumnType("jsonb");
             entity.Property(x => x.CreatedUtc).HasColumnType("timestamp with time zone");
             entity.Property(x => x.UpdatedUtc).HasColumnType("timestamp with time zone");
             entity.Property(x => x.CorrelationId).HasMaxLength(120);
             entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.LastApprovalComment).HasMaxLength(2000);
+            entity.Property(x => x.ApprovedBy).HasMaxLength(120);
+            entity.Property(x => x.ApprovedAtUtc).HasColumnType("timestamp with time zone");
             entity.Property(x => x.Version).HasDefaultValue(1);
         });
 

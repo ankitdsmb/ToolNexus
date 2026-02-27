@@ -36,6 +36,36 @@ public sealed class AiCapabilityFactoryController(
     public async Task<ActionResult<AiToolPackageRecord>> Import([FromBody] AiToolPackageImportRequest request, CancellationToken cancellationToken)
         => Ok(await importService.CreateDraftAsync(request, cancellationToken));
 
+
+    [HttpGet("import/{slug}/runtime-inspection")]
+    public async Task<ActionResult<AiRuntimeInspectionResponse>> InspectRuntime(string slug, CancellationToken cancellationToken)
+    {
+        var response = await importService.InspectRuntimeAsync(slug, cancellationToken);
+        return response is null ? NotFound() : Ok(response);
+    }
+
+    [HttpGet("import/{slug}/suggestions")]
+    public async Task<ActionResult<AiContractSuggestionsResponse>> Suggestions(string slug, CancellationToken cancellationToken)
+    {
+        var response = await importService.GetContractSuggestionsAsync(slug, cancellationToken);
+        return response is null ? NotFound() : Ok(response);
+    }
+
+    [HttpPost("import/{slug}/patch")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AiToolPackageRecord>> ApplyPatch(string slug, [FromBody] AiJsonPatchUpdateRequest request, CancellationToken cancellationToken)
+        => Ok(await importService.ApplyJsonPatchAsync(slug, request, cancellationToken));
+
+    [HttpPost("import/{slug}/submit-approval")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AiToolPackageRecord>> SubmitApproval(string slug, [FromBody] AiApprovalSubmissionRequest request, CancellationToken cancellationToken)
+        => Ok(await importService.SubmitForApprovalAsync(slug, request, cancellationToken));
+
+    [HttpPost("import/{slug}/decision")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AiToolPackageRecord>> Decision(string slug, [FromBody] AiApprovalDecisionRequest request, CancellationToken cancellationToken)
+        => Ok(await importService.DecideApprovalAsync(slug, request, cancellationToken));
+
     [HttpGet("import/preview/{slug}/manifest")]
     public async Task<IActionResult> PreviewManifest(string slug, CancellationToken cancellationToken)
     {
