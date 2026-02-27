@@ -1041,7 +1041,12 @@ export function createToolRuntime({
         const childCountAfterLifecycle = root?.childElementCount ?? 0;
         const rootBeforePostMount = root;
         const preValidationRootElement = document.getElementById('tool-root');
-        const postMountScopedValidation = validateDomAtPhase(root, 'post-mount');
+        const toolRoot = root.querySelector('[data-tool-root]') || root;
+        const validationScope = toolRoot.closest('[data-runtime-container]') || toolRoot;
+        const postMountScopedValidation = {
+          scope: validationScope,
+          validation: normalizeDomValidation(validateDomContract(validationScope, { phase: 'post-mount' }))
+        };
         const postMountValidation = postMountScopedValidation.validation;
         const rootAfterPostMount = root;
         const currentToolRootElement = document.getElementById('tool-root');
