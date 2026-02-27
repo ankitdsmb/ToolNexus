@@ -8,7 +8,38 @@ import {
   setErrorState
 } from './json-formatter.dom.js';
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
-import { loadMonacoOnce } from '../runtime/monaco-loader.js';
+
+async function loadMonacoSafely() {
+  try {
+    if (window.monaco?.editor) {
+      return window.monaco;
+    }
+
+    if (!window.require) {
+      return null;
+    }
+
+    window.require.config({
+      paths: {
+        vs: '/lib/monaco/vs'
+      }
+    });
+
+    window.require.onError = console.error;
+
+    await new Promise((resolve, reject) => {
+      window.require(['vs/editor/editor.main'], resolve, reject);
+    });
+
+    if (!window.monaco?.editor) {
+      throw new Error('Monaco loaded but editor missing');
+    }
+
+    return window.monaco;
+  } catch {
+    return null;
+  }
+}
 
 export function createJsonFormatterApp(root) {
   const dom = resolveJsonFormatterDom(root);
@@ -189,17 +220,14 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
-        try {
-          console.debug('[json-formatter] Monaco load start');
-          state.monaco = await loadMonacoOnce();
-          console.debug('[json-formatter] Monaco load complete');
+        state.monaco = await loadMonacoSafely();
+        monacoLoaded = Boolean(state.monaco?.editor);
 
-          if (window.monaco?.editor) {
-            buildMonacoEditors();
-            monacoLoaded = true;
-          }
-        } catch (e) {
-          console.warn('[json-formatter] Monaco unavailable → fallback editor', e);
+        if (monacoLoaded) {
+          console.debug('[json-formatter] Monaco loaded successfully');
+          buildMonacoEditors();
+        } else {
+          console.warn('[json-formatter] Monaco unavailable → fallback editor');
         }
 
         if (!monacoLoaded) {
