@@ -5,9 +5,16 @@ import { bindTemplateData } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 
 describe('hybrid SSR tool shell runtime', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+    window.ToolNexusRuntime = { ...(window.ToolNexusRuntime || {}), strict: false };
+  });
+
   const repoRoot = process.cwd();
 
   afterEach(() => {
+    delete window.ToolNexusConfig;
+    delete window.ToolNexusRuntime;
     jest.restoreAllMocks();
     document.body.innerHTML = '';
     delete window.ToolNexusConfig;

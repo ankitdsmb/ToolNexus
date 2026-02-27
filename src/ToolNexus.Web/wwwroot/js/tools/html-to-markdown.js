@@ -1,13 +1,16 @@
 import { createHtmlToMarkdownApp } from './html-to-markdown.app.js';
 import { getDefaultHtmlToMarkdownOptions, runHtmlToMarkdown } from './html-to-markdown.api.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'html-to-markdown';
 
 function resolveRoot(context) {
-  const root = context?.root || context?.toolRoot || context;
-  return root instanceof Element ? root : null;
+  if (context?.handle?.id === TOOL_ID && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  return normalizeToolRoot(context);
 }
 
 function requireRuntimeRoot(context) {

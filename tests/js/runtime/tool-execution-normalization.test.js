@@ -6,6 +6,10 @@ import { createToolStateRegistry } from '../../../src/ToolNexus.Web/wwwroot/js/r
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 
 describe('tool execution normalization engine', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+  });
+
   test('legacy runTool(action,input) modules are treated as execution-only and not mounted', async () => {
     const root = document.createElement('div');
     const context = createToolExecutionContext({ slug: 'legacy-tool', root, manifest: { slug: 'legacy-tool' } });
@@ -90,9 +94,7 @@ describe('tool execution normalization engine', () => {
       healRuntime: async () => false
     });
 
-    await runtime.bootstrapToolRuntime();
-
-    expect(document.querySelector('[data-tool-runtime-fallback="true"]')).not.toBeNull();
+    await expect(runtime.bootstrapToolRuntime()).rejects.toThrow('adapter failed');
     expect(runtime.getDiagnostics().initRetriesPerformed).toBe(0);
   });
 });

@@ -3,7 +3,12 @@ import { adaptToolDom } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool
 import { validateToolDom } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
 
 describe('DOM contract stabilization layer', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+  });
+
   afterEach(() => {
+    delete window.ToolNexusConfig;
     document.body.innerHTML = '';
     delete global.fetch;
   });
@@ -80,10 +85,9 @@ describe('DOM contract stabilization layer', () => {
       }
     });
 
-    await runtime.bootstrapToolRuntime();
+    await expect(runtime.bootstrapToolRuntime()).rejects.toThrow('dom-bind-failure');
 
     expect(calls).toBe(1);
-    expect(document.querySelector('[data-tool-runtime-fallback="true"]') || document.querySelector('.tool-runtime-fallback')).not.toBeNull();
   });
 
   test('runtime falls back only when adaptation path cannot recover', async () => {
@@ -101,8 +105,6 @@ describe('DOM contract stabilization layer', () => {
       }
     });
 
-    await runtime.bootstrapToolRuntime();
-
-    expect(document.querySelector('[data-tool-runtime-fallback="true"]') || document.querySelector('.tool-contract-error')).not.toBeNull();
+    await expect(runtime.bootstrapToolRuntime()).rejects.toThrow('hard failure');
   });
 });

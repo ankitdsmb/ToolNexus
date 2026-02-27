@@ -1,3 +1,4 @@
+import { normalizeToolRoot } from './tool-platform-kernel.js';
 const TOOL_SLUG = 'text-intelligence-analyzer';
 const ACTION = 'analyze';
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -14,8 +15,11 @@ function normalizePathPrefix(pathPrefix) {
 }
 
 function resolveRoot(context) {
-  const root = context?.root || context?.toolRoot || context;
-  return root instanceof Element ? root : null;
+  if (context?.handle?.id === TOOL_SLUG && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  return normalizeToolRoot(context);
 }
 
 function requireRuntimeRoot(context) {

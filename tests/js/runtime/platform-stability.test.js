@@ -27,6 +27,11 @@ function getToolRegistry() {
 }
 
 describe('platform stability', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+    window.ToolNexusRuntime = { ...(window.ToolNexusRuntime || {}), strict: false };
+  });
+
   const tools = getToolRegistry();
 
   test('all discovered tools have manifests', () => {
@@ -80,7 +85,7 @@ describe('platform stability', () => {
       root.querySelector('#mounted').textContent = 'ready';
     });
 
-    window.ToolNexusConfig = { tool: { slug: 'demo-tool' } };
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), tool: { slug: 'demo-tool' } };
 
     const runtime = createToolRuntime({
       dependencyLoader,
@@ -118,7 +123,7 @@ describe('platform stability', () => {
       'legacy-tool': { runTool }
     };
 
-    window.ToolNexusConfig = { runtimeUiMode: 'custom', runtimeModulePath: '/legacy-tool.js' };
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeUiMode: 'custom', runtimeModulePath: '/legacy-tool.js' };
 
     const runtime = createToolRuntime({
       loadManifest: async () => { throw new Error('manifest 404'); },

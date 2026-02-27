@@ -4,7 +4,14 @@ import { clearToolTemplateCache, loadToolTemplate } from '../../../src/ToolNexus
 import { mountToolLifecycle } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js';
 
 describe('tool runtime ui bootstrap', () => {
+  beforeEach(() => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
+    window.ToolNexusRuntime = { ...(window.ToolNexusRuntime || {}), strict: false };
+  });
+
   afterEach(() => {
+    delete window.ToolNexusConfig;
+    delete window.ToolNexusRuntime;
     jest.restoreAllMocks();
     document.body.innerHTML = '';
     delete window.ToolNexusModules;

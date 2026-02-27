@@ -100,7 +100,7 @@ class ToolPlatformKernel {
     const normalizedRoot = this.normalizeToolRoot(root);
 
     if (!normalizedRoot) {
-      throw new Error('[ToolKernel] invalid root passed');
+      throw new Error('[ToolKernel] Invalid tool root passed to registerTool');
     }
 
     if (this.isDevelopmentMode()) {
