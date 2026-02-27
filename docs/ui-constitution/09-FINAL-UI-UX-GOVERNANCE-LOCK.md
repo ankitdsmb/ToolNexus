@@ -1,9 +1,9 @@
 # 09 — FINAL UI/UX GOVERNANCE LOCK
 
-Status: **Authoritative / Locked**
+Status: **Authoritative / Locked**  
 Scope: All ToolNexus UI implementation, templates, and AI-assisted UI changes.
 
-This document finalizes and locks the ToolNexus UI/UX architecture. It may be polished for clarity, but its architectural meaning is immutable.
+This document is the final governance lock for ToolNexus UI/UX architecture. Wording may be refined for clarity, but architectural intent and constraints are immutable.
 
 ---
 
@@ -14,7 +14,7 @@ ToolNexus is an **Execution Workspace Platform**.
 ToolNexus is **not**:
 - a marketing website,
 - an article-first platform,
-- a set of simple standalone tool pages.
+- a simple collection of standalone tool pages.
 
 Canonical execution lifecycle (immutable):
 
@@ -37,8 +37,8 @@ Immutable layout zones:
 - OPTIONAL SPONSORED / ADS ZONE
 
 Rules:
-- The structure never changes per tool.
-- Tools render only inside their owned zones.
+- Structure never changes per tool.
+- Tools render inside owned zones only.
 - Layout remains stable during execution.
 
 Text architecture diagram:
@@ -80,46 +80,46 @@ Mandatory anchors:
 ### `data-tool-shell`
 - Owner: Platform.
 - Purpose: Root ToolShell boundary and structural container.
-- Allowed modifications: Data-state attributes (e.g., mode/template/status hooks), non-structural classes.
-- Forbidden modifications: Renaming, removing, duplicating, reparenting, or replacing the root structure.
+- Allowed modifications: Data-state attributes (for mode/template/status hooks), non-structural classes.
+- Forbidden modifications: Renaming, removing, duplicating, reparenting, or replacing the root shell structure.
 
 ### `data-tool-context`
-- Owner: Platform layout; runtime/governance capsules via platform bindings.
-- Purpose: Render execution context (authority, policy, runtime identity, lifecycle, etc.).
-- Allowed modifications: Capsule value/content updates through approved bindings.
-- Forbidden modifications: Relocation, replacement, structural mutation, or hiding required context contract.
+- Owner: Platform layout; runtime/governance capsules through platform bindings.
+- Purpose: Render execution context (authority, policy, runtime identity, lifecycle, related execution metadata).
+- Allowed modifications: Capsule content/value updates through approved bindings.
+- Forbidden modifications: Relocation, replacement, structural mutation, or hiding required context signals.
 
 ### `data-tool-input`
-- Owner: Panel frame = Platform; form content = Tool (schema-first preferred).
-- Purpose: Collect request/configuration input.
-- Allowed modifications: Tool input fields and validation UI inside approved content area.
-- Forbidden modifications: Collapsing/removing/repositioning the panel, or moving core controls outside anchor.
+- Owner: Panel frame = Platform; form payload = Tool (schema-first preferred).
+- Purpose: Collect request and execution configuration input.
+- Allowed modifications: Tool-specific input fields and validation UI inside the approved content boundary.
+- Forbidden modifications: Collapsing/removing/repositioning the panel, or moving core controls outside the anchor.
 
 ### `data-tool-status`
 - Owner: Platform status presenter with runtime state payload.
 - Purpose: Always-visible execution state surface.
-- Allowed modifications: State/value transitions and approved status details.
-- Forbidden modifications: Hiding, removing, replacing, or relocating status block.
+- Allowed modifications: Approved state transitions and status details.
+- Forbidden modifications: Hiding, removing, replacing, or relocating the status surface.
 
 ### `data-tool-output`
 - Owner: Panel frame = Platform; output payload = Runtime/tool adapters.
 - Purpose: Primary execution output surface.
-- Allowed modifications: Render result/guide/examples/log views inside output area.
-- Forbidden modifications: Moving execution dynamics outside output region or mutating panel structure/order.
+- Allowed modifications: Rendering Result/Guide/Examples/Logs views inside the output boundary.
+- Forbidden modifications: Moving execution dynamics outside the output panel or mutating panel hierarchy/order.
 
 ### `data-tool-followup`
-- Owner: Platform action bar and policy; tool actions via approved metadata.
+- Owner: Platform action bar + governance policy; tool actions via approved metadata.
 - Purpose: Workflow continuation actions after or around execution.
-- Allowed modifications: Registering eligible follow-up actions through platform contracts.
-- Forbidden modifications: Arbitrary layout systems, relocation, or bypass of platform action governance.
+- Allowed modifications: Registering eligible actions through platform contracts.
+- Forbidden modifications: Ad hoc layout systems, relocation, or bypass of platform follow-up governance.
 
 ### `data-tool-sponsored` (optional)
 - Owner: Platform monetization/configuration governance.
 - Purpose: Optional sponsored continuation module beneath follow-up actions.
-- Allowed modifications: Config-driven sponsored content rendering when enabled.
+- Allowed modifications: Config-driven sponsored content rendering when explicitly enabled.
 - Forbidden modifications: Mandatory rendering, execution interruption, or placement outside designated zone.
 
-Legacy tools must map into these anchors without creating alternate shell structures.
+Legacy tools must map into these anchors and must not create alternate shell structures.
 
 ---
 
@@ -147,7 +147,7 @@ Mode control:
 
 ## SECTION 5 — OUTPUT TAB SYSTEM (FINAL)
 
-Output tabs live inside the right output panel only.
+Output tabs belong inside the output panel only.
 
 Tabs:
 - Result
@@ -158,7 +158,7 @@ Tabs:
 Rules:
 - Tabs are interpretations/views of execution output.
 - Guide markdown is secondary.
-- Execution output remains the default tab.
+- Execution output is always the default tab.
 
 ---
 
@@ -171,7 +171,7 @@ Markdown is allowed only for:
 
 Rules:
 - Markdown renders inside output tabs.
-- Markdown tabs are hidden by default.
+- Markdown tabs remain hidden by default.
 - Markdown should be server-rendered when possible for SEO.
 - ToolShell is not an article page.
 
@@ -194,15 +194,15 @@ Final model:
 
 Rules:
 - Overview page carries ranking weight.
-- Execution page is optimized for workflow UX.
+- Execution page is optimized for execution UX.
 
 ---
 
 ## SECTION 8 — RELATED TOOLS STRATEGY
 
 Rules:
-- Full related-tool discovery belongs on the overview page.
-- ToolShell exposes lightweight contextual suggestions only.
+- Full related-tool discovery appears on the overview page.
+- ToolShell shows lightweight contextual suggestions only.
 - In ToolShell, related tools appear in the follow-up action bar.
 
 Purpose:
@@ -216,12 +216,12 @@ Rules:
 - Ads never interrupt execution workflow.
 - Ads may appear only on:
   - overview pages, or
-  - optional sponsored zone below follow-up bar.
+  - the optional sponsored zone below the follow-up bar.
 
 Ads must be:
 - optional,
-- configuration-controlled,
-- removable without layout break.
+- controllable via configuration,
+- hidden without layout break.
 
 Preferred monetization:
 - sponsored tools and workflow continuation surfaces.
@@ -258,7 +258,7 @@ Application contract:
 Rules:
 - Design tokens are the single source of truth.
 - No per-tool layout systems.
-- Execution density is preferred over marketing whitespace.
+- Execution density is preferred.
 - Shell controls spacing rhythm and layout boundaries.
 
 Template CSS must remain scoped and non-structural.
