@@ -1,5 +1,5 @@
 import { getKeyboardEventManager } from './keyboard-event-manager.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const VIEWER_STATE = {
@@ -824,11 +824,15 @@ export function create(context) {
 // lifecycle init (mount only)
 // execution handled via runTool
 // MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const handle = create(root);
   if (!handle) return null;
-  handle.init();
+  handle?.init?.();
   return handle;
 }
 

@@ -1,4 +1,4 @@
-import { normalizeToolRoot } from './tool-platform-kernel.js';
+import { normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 const TOOL_SLUG = 'text-intelligence-analyzer';
 const ACTION = 'analyze';
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -180,8 +180,12 @@ export function mount(context) {
   };
 }
 
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const created = create(root);
   if (!created) {
     return null;

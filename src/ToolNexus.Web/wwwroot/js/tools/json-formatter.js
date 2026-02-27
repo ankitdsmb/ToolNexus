@@ -1,6 +1,6 @@
 import { createJsonFormatterApp } from './json-formatter.app.js';
 import { runJsonFormatter } from './json-formatter.api.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-formatter';
@@ -36,13 +36,18 @@ export function create(context) {
 // lifecycle init (mount only)
 // execution handled via runTool
 // MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
-export async function init(context) {
-  const handle = create(context);
+export async function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
+  const handle = create(root);
   if (!handle) {
     return { mounted: false };
   }
 
-  await handle.init();
+  await handle?.init?.();
 
   return {
     mounted: true,

@@ -10,7 +10,7 @@ import {
   transformRowsToObjects
 } from './csv-to-json.api.js';
 import { createCsvToJsonApp, TOOL_ID } from './csv-to-json.app.js';
-import { getToolPlatformKernel } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const MODULE_KEY = 'csv-to-json';
@@ -31,14 +31,14 @@ export function create(root) {
   return { root, handle: null };
 }
 
-export function init(context) {
-  const root = context?.root || context?.toolRoot || context;
+export function init(...args) {
+  const { lifecycleContext, root } = resolveLifecycleInitRoot(args);
   if (!(root instanceof Element)) {
-    throw new Error('Invalid mount root');
+    throw new Error('[Lifecycle] invalid root');
   }
 
   return {
-    ...(typeof context === 'object' && context ? context : {}),
+    ...(typeof lifecycleContext === 'object' && lifecycleContext ? lifecycleContext : {}),
     root,
     handle: mountCsvToJson(root)
   };

@@ -3,7 +3,7 @@ import { normalizeRows } from './json-to-csv/normalizer.js';
 import { buildCsv } from './json-to-csv/csv-engine.js';
 import { toUserError } from './json-to-csv/errors.js';
 import { mountJsonToCsvTool } from './json-to-csv/ui.js';
-import { getToolPlatformKernel, normalizeToolRoot } from './tool-platform-kernel.js';
+import { getToolPlatformKernel, normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
 import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
 
 const TOOL_ID = 'json-to-csv';
@@ -54,11 +54,15 @@ export function create(context) {
   });
 }
 
-export function init(context) {
-  const root = requireRuntimeRoot(context);
+export function init(...args) {
+  const { root } = resolveLifecycleInitRoot(args);
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
   const handle = create(root);
   if (!handle) return null;
-  handle.init();
+  handle?.init?.();
   return handle;
 }
 
