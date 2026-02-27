@@ -62,13 +62,4 @@ export function initRegexTesterApp(doc = document) {
   return mountRegexTester(root);
 }
 
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initRegexTesterApp(document), { once: true });
-  } else {
-    initRegexTesterApp(document);
-  }
-}
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[MODULE_KEY] = { create, init, runTool, destroy, initRegexTesterApp };

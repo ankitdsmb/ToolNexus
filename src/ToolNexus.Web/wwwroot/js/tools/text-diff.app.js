@@ -90,7 +90,8 @@ export class TextDiffApp {
       const view = createDiffView(viewRows, this.dom.viewModeSelect.value, this.dom.scrollSyncToggle);
       this.cleanupView();
       this.cleanupView = view.cleanup;
-      this.dom.diffOutput.replaceChildren(view.node);
+      this.dom.diffOutput.textContent = "";
+      this.dom.diffOutput.appendChild(view.node);
 
       if (rows.length > MAX_RENDER_LINES) {
         const notice = document.createElement('p');
@@ -127,7 +128,7 @@ export class TextDiffApp {
       this.dom.leftInput.value = '';
       this.dom.rightInput.value = '';
       this.cleanupView();
-      this.dom.diffOutput.replaceChildren();
+      this.dom.diffOutput.textContent = "";
       this.dom.diffSummary.textContent = 'Added: 0 · Removed: 0 · Changed: 0';
     }, { signal });
 

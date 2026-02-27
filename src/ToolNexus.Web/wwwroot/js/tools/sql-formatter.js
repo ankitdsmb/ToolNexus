@@ -35,9 +35,4 @@ export async function runTool(action, input, options = {}) {
   return runSqlFormatter(action, input, options);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[TOOL_ID] = { runTool, create, init, destroy };

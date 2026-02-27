@@ -152,5 +152,3 @@ export function destroy(root = resolveRoot()) {
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules[TOOL_ID] = { create, init, destroy };

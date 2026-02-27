@@ -479,9 +479,4 @@ export function destroy(root = resolveRoot()) {
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
 
-window.ToolNexusModules = window.ToolNexusModules || {};
-window.ToolNexusModules['base64-decode'] = { runTool, create, init, destroy };
