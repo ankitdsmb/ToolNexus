@@ -24,6 +24,10 @@ const EXECUTION_STATES = Object.freeze({
     label: 'Warning · Completed with runtime notes',
     tone: 'warning'
   },
+  uncertain: {
+    label: 'Uncertain · Verify outcome before relying on result',
+    tone: 'warning'
+  },
   failed: {
     label: 'Failed · Execution did not complete',
     tone: 'danger'
@@ -106,8 +110,10 @@ function createOutputContent(doc) {
       </details>
     </section>
     <section class="tn-unified-tool-control__output-block" data-output-tier="supporting">
-      <p class="tn-unified-tool-control__output-label">Supporting explanation</p>
-      <pre class="tn-unified-tool-control__supporting">Awaiting execution context.</pre>
+      <p class="tn-unified-tool-control__output-label">Interpretation layer</p>
+      <p class="tn-unified-tool-control__supporting" data-ai-layer="interpretation">Interpretation summary: Awaiting execution context.</p>
+      <p class="tn-unified-tool-control__supporting" data-ai-layer="confidence">Confidence: Pending execution.</p>
+      <p class="tn-unified-tool-control__supporting" data-ai-layer="next-action">Next recommended action: Run execution to generate guidance.</p>
     </section>
     <section class="tn-unified-tool-control__output-block" data-output-tier="metadata">
       <p class="tn-unified-tool-control__output-label">Metadata</p>
@@ -158,6 +164,42 @@ function splitOutputPayload(payload) {
     diagnostics,
     hasWarnings
   };
+}
+
+function resolveInterpretationSummary(hierarchy) {
+  if (hierarchy.supporting) {
+    return `Interpretation summary: ${toShortText(hierarchy.supporting)}`;
+  }
+
+  return 'Interpretation summary: Runtime returned raw evidence without explanatory narrative.';
+}
+
+function resolveConfidencePhrase({ hasWarnings, hasDiagnostics, hasMetadata, hasSupporting }) {
+  if (hasWarnings) {
+    return 'Confidence: Warning signal present — review runtime notes before operational use.';
+  }
+
+  if (!hasSupporting && !hasMetadata && hasDiagnostics) {
+    return 'Confidence: Uncertain outcome — diagnostics exist but interpretation context is limited.';
+  }
+
+  return 'Confidence: High confidence — execution completed with structured evidence.';
+}
+
+function resolveNextAction({ hasWarnings, hasSupporting, hasMetadata }) {
+  if (hasWarnings) {
+    return 'Next recommended action: Inspect diagnostics and adjust inputs, then rerun for clean conformance.';
+  }
+
+  if (!hasSupporting) {
+    return 'Next recommended action: Validate key fields against domain expectations before downstream usage.';
+  }
+
+  if (!hasMetadata) {
+    return 'Next recommended action: Capture execution metadata in follow-up run for stronger auditability.';
+  }
+
+  return 'Next recommended action: Proceed to follow-up action bar to continue workflow.';
 }
 
 export function createUnifiedToolControl({
@@ -217,6 +259,14 @@ export function createUnifiedToolControl({
   status.textContent = EXECUTION_STATES.idle.label;
   status.setAttribute('role', 'status');
 
+  const intent = doc.createElement('p');
+  intent.className = 'tn-unified-tool-control__status-note';
+  intent.textContent = 'AI intent: Prepare to execute your request through governed runtime flow.';
+
+  const guidance = doc.createElement('p');
+  guidance.className = 'tn-unified-tool-control__status-note';
+  guidance.textContent = 'Guidance: Add inputs and run when ready.';
+
   const suggestionBadge = doc.createElement('button');
   suggestionBadge.type = 'button';
   suggestionBadge.className = 'tool-btn tn-unified-tool-control__suggestion-badge';
@@ -228,7 +278,7 @@ export function createUnifiedToolControl({
   suggestionReason.hidden = true;
 
   actions.replaceChildren(runButton, suggestionBadge, suggestionReason);
-  contractStatus.replaceChildren(status);
+  contractStatus.replaceChildren(status, intent, guidance);
 
   const output = contractOutput;
   output.className = 'tn-unified-tool-control__output';
@@ -239,6 +289,8 @@ export function createUnifiedToolControl({
   const details = output.querySelector('.tn-unified-tool-control__details');
   const result = output.querySelector('.tn-unified-tool-control__result');
   const supporting = output.querySelector('.tn-unified-tool-control__supporting');
+  const confidence = output.querySelector('[data-ai-layer="confidence"]');
+  const nextAction = output.querySelector('[data-ai-layer="next-action"]');
   const metadata = output.querySelector('.tn-unified-tool-control__metadata');
   const diagnostics = output.querySelector('.tn-unified-tool-control__diagnostics');
   details.hidden = true;
@@ -277,6 +329,12 @@ export function createUnifiedToolControl({
 
       status.textContent = overrideLabel || stateOrLabel;
     },
+    setIntent(message) {
+      intent.textContent = message || 'AI intent: Prepare to execute your request through governed runtime flow.';
+    },
+    setGuidance(message) {
+      guidance.textContent = message || 'Guidance: Add inputs and run when ready.';
+    },
     showError(message) {
       const panel = doc.createElement('div');
       panel.className = 'tool-auto-runtime__error';
@@ -310,9 +368,25 @@ export function createUnifiedToolControl({
     renderResult(payload) {
       const hierarchy = splitOutputPayload(payload);
       const serialized = safeStringify(payload);
+      const hasSupporting = Boolean(hierarchy.supporting);
+      const hasMetadata = Boolean(hierarchy.metadata);
+      const hasDiagnostics = Boolean(hierarchy.diagnostics);
+      const confidencePhrase = resolveConfidencePhrase({
+        hasWarnings: hierarchy.hasWarnings,
+        hasDiagnostics,
+        hasMetadata,
+        hasSupporting
+      });
+
       preview.textContent = toShortText(hierarchy.primary);
       result.textContent = serialized;
-      supporting.textContent = hierarchy.supporting ? safeStringify(hierarchy.supporting) : 'No supporting explanation returned.';
+      supporting.textContent = resolveInterpretationSummary(hierarchy);
+      confidence.textContent = confidencePhrase;
+      nextAction.textContent = resolveNextAction({
+        hasWarnings: hierarchy.hasWarnings,
+        hasSupporting,
+        hasMetadata
+      });
       metadata.textContent = hierarchy.metadata ? safeStringify(hierarchy.metadata) : 'No metadata returned.';
       diagnostics.textContent = hierarchy.diagnostics ? safeStringify(hierarchy.diagnostics) : 'No diagnostics reported.';
       details.hidden = serialized.length <= INLINE_PREVIEW_LIMIT;
