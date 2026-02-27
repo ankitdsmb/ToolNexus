@@ -234,3 +234,38 @@ This phase plan explicitly preserves:
 - Execution observability and telemetry visibility.
 
 Phase 2 is therefore a **refresh + conformance hardening** plan, not an architecture rewrite.
+
+---
+
+## 11) Implementation Notes (2026-02-27)
+
+### Implemented files
+- `src/ToolNexus.Web/wwwroot/css/design-tokens.css`
+- `src/ToolNexus.Web/wwwroot/css/ui-system.css`
+- `src/ToolNexus.Web/wwwroot/css/site.css`
+- `src/ToolNexus.Web/Views/Tools/ToolShell.cshtml`
+
+### What was implemented
+1. **Spacing normalization and density tightening**
+   - Reduced runtime shell section gaps and context rail spacing to increase visible execution content per viewport.
+   - Introduced runtime-specific density tokens (`--runtime-density-gap`, `--runtime-density-padding`, `--runtime-status-padding`) and applied them to unified control regions.
+   - Reduced runtime minimum shell height and compacted panel internals without changing anchor order/placement.
+
+2. **Typography and rhythm refinement**
+   - Migrated unified runtime title/subtitle/body sizing to type tokens (`--type-h3`, `--type-caption`, `--type-body`, `--type-micro`) and line-height tokens.
+   - Standardized field labels, hints, and group headings to tokenized, compact rhythm.
+
+3. **Execution visibility clarity**
+   - Updated default status copy to lifecycle-oriented wording (`Request · Ready`) in `data-tool-status`.
+   - Strengthened status visual affordance using a tokenized status capsule surface (`--runtime-status-surface`) while preserving the same status anchor and semantics.
+   - Clarified workspace guidance copy to emphasize stable input region + output evidence flow.
+
+4. **Token enforcement and hardcoded style reduction**
+   - Removed hardcoded pixel values in unified runtime controls where practical and replaced with governance tokens.
+   - Replaced hardcoded error colors in runtime error states with semantic tokens (`--danger`, `--danger-soft`).
+   - Added dedicated runtime input/output/status surface tokens (`--runtime-input-surface`, `--runtime-output-surface`, `--runtime-status-surface`) to avoid ad hoc per-component color decisions.
+
+### Architecture conformance confirmation
+- ToolShell contract anchors were not changed or reordered.
+- Lifecycle model remains unchanged and still maps to canonical pipeline phases.
+- Refresh stayed within presentation layer (CSS + non-structural text updates only).

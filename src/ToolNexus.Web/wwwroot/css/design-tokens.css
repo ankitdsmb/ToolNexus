@@ -44,10 +44,17 @@ TOKENS
   --space-2xl: 48px;
 
 
-  --section-gap: 80px;
-  --subsection-gap: 48px;
-  --internal-gap: 24px;
-  --runtime-context-gap: 96px;
+  --section-gap: 64px;
+  --subsection-gap: 32px;
+  --internal-gap: 20px;
+  --runtime-context-gap: 56px;
+
+  --runtime-density-gap: var(--space-xs);
+  --runtime-density-padding: var(--space-xs);
+  --runtime-status-padding: var(--space-1);
+  --runtime-input-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
+  --runtime-output-surface: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg-primary));
+  --runtime-status-surface: color-mix(in srgb, var(--accent-soft) 28%, var(--bg-secondary));
 
   --radius-sm: 8px;
   --radius-md: 10px;
