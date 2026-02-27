@@ -146,17 +146,18 @@ function createLifecycleSignatureError(slug, details = {}) {
 
 function validateLifecycleInitSignature(initFn, slug) {
   if (typeof initFn !== 'function') {
-    return true;
+    return 'STRICT';
   }
 
   if (Number(initFn.length ?? 0) > 1) {
-    throw createLifecycleSignatureError(slug, {
-      reason: 'init must declare a single lifecycleContext argument',
+    logger.warn('[LifecycleNormalizer] signature mismatch; using adaptive init', {
+      slug,
       declaredArity: Number(initFn.length ?? 0)
     });
+    return 'ADAPTIVE';
   }
 
-  return true;
+  return 'STRICT';
 }
 
 export function normalizeToolExecution(toolModule, capability = {}, { slug = '', root, context } = {}) {
@@ -216,7 +217,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           throw new Error(`[RuntimeLifecycle] init called without valid root for ${slug}`);
         }
 
-        validateLifecycleInitSignature(target.init, slug);
+        const initSignatureMode = validateLifecycleInitSignature(target.init, slug);
 
         const manifest = context?.manifest;
         const safeLifecycleContext = lifecycleContextOverride ?? {
@@ -243,7 +244,58 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           logger.info('[RuntimeLifecycle] init context injected', { slug, mode });
         }
 
-        return await target.init(safeLifecycleContext);
+        if (initSignatureMode !== 'ADAPTIVE') {
+          return await target.init(safeLifecycleContext);
+        }
+
+        const adaptiveInitAttempts = [
+          {
+            signature: 'init(context, root, manifest)',
+            invoke: () => target.init(context, root, manifest)
+          },
+          {
+            signature: 'init(root, manifest, context)',
+            invoke: () => target.init(root, manifest, context)
+          },
+          {
+            signature: 'init({ root, toolRoot: root, context, manifest })',
+            invoke: () => target.init({ root, toolRoot: root, context, manifest })
+          },
+          {
+            signature: 'init(root)',
+            invoke: () => target.init(root)
+          },
+          {
+            signature: 'init()',
+            invoke: () => target.init()
+          }
+        ];
+
+        const adaptiveErrors = [];
+
+        for (let index = 0; index < adaptiveInitAttempts.length; index += 1) {
+          const attempt = adaptiveInitAttempts[index];
+          try {
+            const result = await attempt.invoke();
+            logger.warn('[LifecycleNormalizer] adaptive init path used', {
+              slug,
+              attemptIndex: index + 1,
+              successfulSignature: attempt.signature
+            });
+            return result;
+          } catch (error) {
+            adaptiveErrors.push({
+              attemptIndex: index + 1,
+              signature: attempt.signature,
+              message: error?.message
+            });
+          }
+        }
+
+        throw createLifecycleSignatureError(slug, {
+          reason: 'adaptive init attempts failed',
+          attempts: adaptiveErrors
+        });
       });
     }
 
