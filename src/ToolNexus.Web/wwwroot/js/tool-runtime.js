@@ -1469,7 +1469,12 @@ export function createToolRuntime({
 }
 
 export async function loadManifest(slug) {
-  const response = await fetch(`/tools/manifest/${encodeURIComponent(slug)}`, {
+  const endpointTemplate = window.ToolNexusConfig?.manifestEndpoint;
+  const manifestUrl = endpointTemplate
+    ? endpointTemplate.replace("{slug}", encodeURIComponent(slug))
+    : `/tools/manifest/${encodeURIComponent(slug)}`;
+
+  const response = await fetch(manifestUrl, {
     headers: { Accept: 'application/json' }
   });
 

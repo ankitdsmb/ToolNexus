@@ -45,6 +45,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<GenerationValidationReportEntity> GenerationValidationReports => Set<GenerationValidationReportEntity>();
     public DbSet<GenerationSandboxReportEntity> GenerationSandboxReports => Set<GenerationSandboxReportEntity>();
     public DbSet<GenerationDecisionEntity> GenerationDecisions => Set<GenerationDecisionEntity>();
+    public DbSet<AiToolPackageEntity> AiToolPackages => Set<AiToolPackageEntity>();
     public DbSet<IntelligenceNodeEntity> IntelligenceNodes => Set<IntelligenceNodeEntity>();
     public DbSet<IntelligenceEdgeEntity> IntelligenceEdges => Set<IntelligenceEdgeEntity>();
     public DbSet<IntelligenceSnapshotEntity> IntelligenceSnapshots => Set<IntelligenceSnapshotEntity>();
@@ -252,6 +253,25 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.NextAttemptAtUtc).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
+
+
+        modelBuilder.Entity<AiToolPackageEntity>(entity =>
+        {
+            entity.ToTable("AiToolPackages");
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => x.Slug).IsUnique();
+            entity.HasIndex(x => x.CreatedUtc);
+            entity.HasIndex(x => new { x.CorrelationId, x.CreatedUtc });
+            entity.HasIndex(x => new { x.TenantId, x.CreatedUtc });
+            entity.Property(x => x.Slug).HasMaxLength(120);
+            entity.Property(x => x.Status).HasMaxLength(24);
+            entity.Property(x => x.JsonPayload).HasColumnType("jsonb");
+            entity.Property(x => x.CreatedUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.UpdatedUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CorrelationId).HasMaxLength(120);
+            entity.Property(x => x.TenantId).HasMaxLength(120);
+            entity.Property(x => x.Version).HasDefaultValue(1);
+        });
 
         modelBuilder.Entity<PlatformSignalEntity>(entity =>
         {
