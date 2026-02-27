@@ -3,42 +3,13 @@ const TOOL_ROOT_ID_PREFIX = 'tool-root-';
 
 function noop() {}
 
-function normalizeToolRootInput(input) {
-  if (!input) {
-    return null;
+function normalizeToolRoot(rootLike) {
+  if (rootLike instanceof Element) return rootLike;
+  if (rootLike?.root instanceof Element) return rootLike.root;
+  if (rootLike?.toolRoot instanceof Element) return rootLike.toolRoot;
+  if (rootLike?.executionContext?.root instanceof Element) {
+    return rootLike.executionContext.root;
   }
-
-  if (input instanceof Element) {
-    return input;
-  }
-
-  const candidates = [
-    input.root,
-    input.toolRoot,
-    input.element,
-    input.host,
-    input.context?.root,
-    input.context?.toolRoot,
-    input.context?.element,
-    input.context?.host,
-    input.executionContext?.root,
-    input.executionContext?.toolRoot,
-    input.executionContext?.element,
-    input.executionContext?.host,
-    input.handle?.root,
-    input.handle?.toolRoot,
-    input.instance?.root,
-    input.instance?.toolRoot,
-    input.runtime?.root,
-    input.runtime?.toolRoot
-  ];
-
-  for (const value of candidates) {
-    if (value instanceof Element) {
-      return value;
-    }
-  }
-
   return null;
 }
 
@@ -89,7 +60,7 @@ class ToolPlatformKernel {
   }
 
   normalizeToolRoot(input) {
-    return normalizeToolRootInput(input);
+    return normalizeToolRoot(input);
   }
 
   registerTool({ id, root, init, destroy }) {
@@ -255,7 +226,7 @@ class ToolPlatformKernel {
 
 let globalKernel;
 
-export function getToolPlatformKernel() {
+function getToolPlatformKernel() {
   if (!globalKernel) {
     globalKernel = new ToolPlatformKernel();
   }
@@ -263,11 +234,17 @@ export function getToolPlatformKernel() {
   return globalKernel;
 }
 
-export function normalizeToolRoot(rootOrContext) {
-  return getToolPlatformKernel().normalizeToolRoot(rootOrContext, 'normalizeToolRoot()');
-}
-
-export function resetToolPlatformKernelForTesting() {
+function resetToolPlatformKernelForTesting() {
   globalKernel?.resetForTesting();
   globalKernel = undefined;
 }
+
+if (typeof normalizeToolRoot !== 'function') {
+  throw new Error('[KernelContract] normalizeToolRoot export missing');
+}
+
+export {
+  getToolPlatformKernel,
+  normalizeToolRoot,
+  resetToolPlatformKernelForTesting
+};
