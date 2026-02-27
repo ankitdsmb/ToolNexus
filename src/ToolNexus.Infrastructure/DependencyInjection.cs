@@ -66,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<ICapabilityMarketplaceRepository, EfCapabilityMarketplaceRepository>();
         services.AddScoped<IRuntimeIncidentRepository, EfRuntimeIncidentRepository>();
         services.AddScoped<IAiCapabilityFactoryRepository, EfAiCapabilityFactoryRepository>();
+        services.AddScoped<IAiToolPackageRepository, EfAiToolPackageRepository>();
         services.AddScoped<EfAdminAnalyticsRepository>();
         services.AddScoped<IAdminAnalyticsRepository>(sp =>
             new CachingAdminAnalyticsRepository(

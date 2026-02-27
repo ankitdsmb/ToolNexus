@@ -9,7 +9,9 @@ namespace ToolNexus.Api.Controllers.Admin;
 [ApiController]
 [Route("api/admin/ai-capability-factory")]
 [Authorize(Policy = AdminPolicyNames.AdminRead)]
-public sealed class AiCapabilityFactoryController(IAiCapabilityFactoryService service) : ControllerBase
+public sealed class AiCapabilityFactoryController(
+    IAiCapabilityFactoryService service,
+    IAiToolPackageImportService importService) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AiCapabilityFactoryDashboard>> GetDashboard([FromQuery] int take = 50, CancellationToken cancellationToken = default)
@@ -44,4 +46,18 @@ public sealed class AiCapabilityFactoryController(IAiCapabilityFactoryService se
     [Authorize(Policy = AdminPolicyNames.AdminWrite)]
     public async Task<ActionResult<AiGenerationDecisionRecord>> Activate(Guid draftId, [FromBody] AiGenerationDecisionRequest request, CancellationToken cancellationToken)
         => Ok(await service.ActivateAsync(draftId, request, cancellationToken));
+
+    [HttpGet("import/template")]
+    public ActionResult<AiToolPackageTemplateResponse> GetImportTemplate()
+        => Ok(importService.GetTemplate());
+
+    [HttpPost("import/validate")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AiToolPackageImportValidationResult>> ValidateImport([FromBody] AiToolPackageImportRequest request, CancellationToken cancellationToken)
+        => Ok(await importService.ValidateAsync(request.JsonPayload, cancellationToken));
+
+    [HttpPost("import")]
+    [Authorize(Policy = AdminPolicyNames.AdminWrite)]
+    public async Task<ActionResult<AiToolPackageRecord>> Import([FromBody] AiToolPackageImportRequest request, CancellationToken cancellationToken)
+        => Ok(await importService.CreateDraftAsync(request, cancellationToken));
 }

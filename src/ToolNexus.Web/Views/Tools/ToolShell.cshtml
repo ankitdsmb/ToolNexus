@@ -102,6 +102,7 @@
             apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
             toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
             runtimeModulePath: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeModulePath)),
+            manifestEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ManifestEndpoint)),
             tool: {
                 slug: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Slug)),
                 title: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Title)),
@@ -114,6 +115,7 @@
             runtimeUiMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeUiMode)),
             runtimeComplexityTier: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeComplexityTier)),
             runtimeEnvironment: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>().EnvironmentName)),
+            isAdmin: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IsAdminPreview)),
             runtimeLogEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint)),
             runtimeRoutes: {
                 clientLogEndpoints: [@Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint))]
