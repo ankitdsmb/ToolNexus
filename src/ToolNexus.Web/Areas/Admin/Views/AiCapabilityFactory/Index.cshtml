@@ -1,22 +1,130 @@
 @{
-    ViewData["Title"] = "AI Capability Factory";
+    ViewData["Title"] = "Capability Studio · AI Import";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">AI Capability Factory</h2>
-    <small class="text-secondary">Governed AI tool generation queue for operator-reviewed onboarding.</small>
+    <h2 class="mb-0">Capability Studio · AI Import</h2>
+    <small class="text-secondary">Import AI capability packages as Draft + ShadowOnly for admin preview.</small>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">AI Import Workflow</div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button id="download-template" class="btn btn-sm btn-outline-secondary" type="button">1) Download JSON template</button>
+            <button id="copy-prompt" class="btn btn-sm btn-outline-secondary" type="button">2) Copy AI prompt</button>
+            <button id="validate-json" class="btn btn-sm btn-primary" type="button">4) Validate JSON</button>
+            <button id="create-draft" class="btn btn-sm btn-success" type="button">5) Create Draft Tool</button>
+        </div>
+        <label for="ai-json" class="form-label">3) Paste AI output JSON</label>
+        <textarea id="ai-json" class="form-control" rows="14" spellcheck="false"></textarea>
+        <div id="import-status" class="small mt-2 text-secondary">Waiting for JSON payload.</div>
+        <div id="import-errors" class="mt-2"></div>
+        <a id="preview-link" class="btn btn-sm btn-dark mt-3 d-none" href="#">Open Admin Preview</a>
+    </div>
 </div>
 
 <div class="row g-3">
     <div class="col-lg-6"><div class="card"><div class="card-header">Draft Queue</div><div class="card-body"><ul id="draft-queue" class="mb-0"></ul></div></div></div>
     <div class="col-lg-6"><div class="card"><div class="card-header">Validation Reports</div><div class="card-body"><ul id="validation-reports" class="mb-0"></ul></div></div></div>
-    <div class="col-lg-6"><div class="card"><div class="card-header">Sandbox Results</div><div class="card-body"><ul id="sandbox-results" class="mb-0"></ul></div></div></div>
-    <div class="col-lg-6"><div class="card"><div class="card-header">Approval Workflow</div><div class="card-body"><ul id="approval-workflow" class="mb-0"></ul></div></div></div>
-    <div class="col-12"><div class="card"><div class="card-header">Generated Tool Performance</div><div class="card-body"><ul id="generated-performance" class="mb-0"></ul></div></div></div>
 </div>
 
 <script>
 (() => {
+  const payloadEl = document.getElementById('ai-json');
+  const statusEl = document.getElementById('import-status');
+  const errorsEl = document.getElementById('import-errors');
+  const previewLink = document.getElementById('preview-link');
+  let cachedTemplate = null;
+
+  const setStatus = (message, isError = false) => {
+    statusEl.textContent = message;
+    statusEl.className = isError ? 'small mt-2 text-danger' : 'small mt-2 text-secondary';
+  };
+
+  const setErrors = (errors) => {
+    errorsEl.innerHTML = '';
+    if (!errors?.length) return;
+    const ul = document.createElement('ul');
+    ul.className = 'text-danger small mb-0';
+    errors.forEach(e => {
+      const li = document.createElement('li');
+      li.textContent = e;
+      ul.appendChild(li);
+    });
+    errorsEl.appendChild(ul);
+  };
+
+  const loadTemplate = async () => {
+    if (cachedTemplate) return cachedTemplate;
+    const response = await fetch('/admin/ai-capability-factory/import/template');
+    if (!response.ok) throw new Error('Template load failed.');
+    cachedTemplate = await response.json();
+    return cachedTemplate;
+  };
+
+  document.getElementById('download-template').addEventListener('click', async () => {
+    const template = await loadTemplate();
+    const blob = new Blob([template.jsonTemplate], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'toolnexus-ai-import-template.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('copy-prompt').addEventListener('click', async () => {
+    const template = await loadTemplate();
+    await navigator.clipboard.writeText(template.prompt);
+    setStatus('Prompt copied to clipboard.');
+  });
+
+  document.getElementById('validate-json').addEventListener('click', async () => {
+    setErrors([]);
+    previewLink.classList.add('d-none');
+    const response = await fetch('/admin/ai-capability-factory/import/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonPayload: payloadEl.value, correlationId: 'admin-ui-validation', tenantId: 'admin' })
+    });
+
+    if (!response.ok) {
+      setStatus('Validation request failed.', true);
+      return;
+    }
+
+    const result = await response.json();
+    if (!result.isValid) {
+      setStatus('Validation failed.', true);
+      setErrors(result.errors || []);
+      return;
+    }
+
+    setStatus('Validation passed. Draft import is allowed.');
+  });
+
+  document.getElementById('create-draft').addEventListener('click', async () => {
+    setErrors([]);
+    previewLink.classList.add('d-none');
+    const response = await fetch('/admin/ai-capability-factory/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonPayload: payloadEl.value, correlationId: 'admin-ui-import', tenantId: 'admin' })
+    });
+
+    if (!response.ok) {
+      setStatus('Draft creation failed.', true);
+      return;
+    }
+
+    const draft = await response.json();
+    setStatus(`Draft created for slug '${draft.slug}' with ShadowOnly governance default.`);
+    previewLink.href = `/admin/ai-capability-factory/import/preview/${encodeURIComponent(draft.slug)}`;
+    previewLink.classList.remove('d-none');
+    await loadDashboard();
+  });
+
   const render = (id, items, formatter) => {
     const list = document.getElementById(id);
     list.innerHTML = '';
@@ -33,20 +141,14 @@
     });
   };
 
-  const load = async () => {
+  const loadDashboard = async () => {
     const response = await fetch('/admin/ai-capability-factory/dashboard?take=25');
-    if (!response.ok) {
-      return;
-    }
-
+    if (!response.ok) return;
     const data = await response.json();
     render('draft-queue', data.draftQueue, x => `${x.toolSlug} · ${x.status} · quality ${x.draftQualityScore}`);
     render('validation-reports', data.validationReports, x => `${x.draftId} · passed=${x.passed}`);
-    render('sandbox-results', data.sandboxResults, x => `${x.draftId} · ${x.executionBehavior} · ${x.conformanceCompliance}`);
-    render('approval-workflow', data.approvalWorkflow, x => `${x.operatorId} · ${x.action} · ${x.telemetryEventName}`);
-    render('generated-performance', data.generatedToolPerformance, x => `${x.toolSlug} · ${x.status} · ${x.riskLevel}`);
   };
 
-  load();
+  loadDashboard();
 })();
 </script>

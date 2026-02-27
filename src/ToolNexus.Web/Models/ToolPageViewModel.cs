@@ -12,6 +12,8 @@ public sealed class ToolPageViewModel
     public string? RuntimeCssPath { get; init; }
     public string RuntimeUiMode { get; init; } = "auto";
     public int RuntimeComplexityTier { get; init; } = 1;
+    public string? ManifestEndpoint { get; init; }
+    public bool IsAdminPreview { get; init; }
     public ToolContent? Content { get; init; }
     public IReadOnlyCollection<RelatedToolViewModel> RelatedTools { get; init; } = [];
     public IReadOnlyCollection<RelatedToolViewModel> SameCategoryTools { get; init; } = [];
