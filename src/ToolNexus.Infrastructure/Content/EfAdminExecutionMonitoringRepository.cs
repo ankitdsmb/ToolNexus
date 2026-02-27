@@ -225,14 +225,32 @@ public sealed class EfAdminExecutionMonitoringRepository(ToolNexusContentDbConte
     public async Task<QualityIntelligenceSnapshot> GetQualityIntelligenceAsync(CancellationToken cancellationToken)
     {
         var latestWindow = DateTime.UtcNow.AddDays(-7);
-        var qualityScores = dbContext.ToolQualityScores.AsNoTracking().Where(x => x.TimestampUtc >= latestWindow);
-        var avg = await qualityScores.Select(x => (decimal?)x.Score).AverageAsync(cancellationToken) ?? 0m;
+        var avg = await TryGetAverageQualityScoreAsync(latestWindow, cancellationToken);
 
         var conformanceFailures = await dbContext.ExecutionConformanceResults.CountAsync(x => !x.IsValid, cancellationToken);
         var runtimeInstability = await dbContext.RuntimeIncidents.CountAsync(x => x.Severity == "critical" || x.Severity == "warning", cancellationToken);
         var anomalies = await dbContext.ToolAnomalySnapshots.CountAsync(cancellationToken);
 
         return new QualityIntelligenceSnapshot(Math.Round(avg, 2), conformanceFailures, runtimeInstability, anomalies);
+    }
+
+    private async Task<decimal> TryGetAverageQualityScoreAsync(DateTime latestWindow, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var qualityScores = dbContext.ToolQualityScores.AsNoTracking().Where(x => x.TimestampUtc >= latestWindow);
+            return await qualityScores.Select(x => (decimal?)x.Score).AverageAsync(cancellationToken) ?? 0m;
+        }
+        catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn)
+        {
+            return 0m;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1
+                                         && (ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase)
+                                             || ex.Message.Contains("no such column", StringComparison.OrdinalIgnoreCase)))
+        {
+            return 0m;
+        }
     }
 
     private async Task<bool> EnsureRuntimeIncidentSchemaAvailableAsync(CancellationToken cancellationToken)
