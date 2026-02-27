@@ -2,10 +2,6 @@ import { createJsonFormatterApp } from './json-formatter.app.js';
 
 const TOOL_ID = 'json-formatter';
 
-/**
- * ALWAYS resolve full tool article.
- * Runtime may pass different scopes.
- */
 function resolveRoot(rootOrContext) {
   if (rootOrContext instanceof Element) {
     return (
@@ -25,46 +21,43 @@ function resolveRoot(rootOrContext) {
   return document.querySelector('[data-tool="json-formatter"]');
 }
 
-/* ===================================================
-   RUNTIME LIFECYCLE CONTRACT (FIXED)
-=================================================== */
+/* ================================
+   MODERN LIFECYCLE (CRITICAL)
+================================ */
 
-export function create(rootOrContext) {
-  const root = resolveRoot(rootOrContext);
+export async function create(context) {
+  const root = resolveRoot(context);
 
   if (!root) {
     console.warn('[json-formatter] root not found');
     return null;
   }
 
-  // IMPORTANT:
-  // runtime expects REAL app instance — NOT kernel handle
   const app = createJsonFormatterApp(root);
-  return app;
+
+  return {
+    mounted: true,
+    cleanup: () => app?.destroy?.(),
+    app
+  };
 }
 
-export function init(appOrRoot) {
-  const app =
-    appOrRoot?.init && appOrRoot?.destroy
-      ? appOrRoot
-      : create(appOrRoot);
+export async function init(context) {
+  const root = resolveRoot(context);
+  if (!root) return { mounted: false };
 
-  if (!app) return null;
+  const app = createJsonFormatterApp(root);
+  await app.init();
 
-  app.init?.();
-  return app;
+  return {
+    mounted: true,
+    cleanup: () => app?.destroy?.()
+  };
 }
 
-export function destroy(appOrRoot) {
-  if (appOrRoot?.destroy) {
-    appOrRoot.destroy();
-    return;
-  }
-
-  const root = resolveRoot(appOrRoot);
+export function destroy(context) {
+  const root = resolveRoot(context);
   if (!root) return;
 
-  // optional safeguard cleanup
-  root.querySelectorAll('.json-formatter-fallback-editor')
-    .forEach(el => el.remove());
+  // optional explicit cleanup
 } 
