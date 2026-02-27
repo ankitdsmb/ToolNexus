@@ -65,9 +65,5 @@ export function destroy(rootOrContext = resolveRoot()) {
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-});
-
 window.ToolNexusModules = window.ToolNexusModules || {};
 window.ToolNexusModules['json-formatter'] = { create, init, destroy };
