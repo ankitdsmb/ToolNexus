@@ -88,18 +88,18 @@ describe('tool runtime ui bootstrap', () => {
   });
 
 
-  test('kernel initialize lifecycle works', async () => {
+  test('kernel initialize lifecycle is not used by strict adapter', async () => {
     const initialize = jest.fn(async () => {});
     window.ToolNexusKernel = { initialize };
 
-    await mountToolLifecycle({
+    await expect(mountToolLifecycle({
       module: {},
       slug: 'kernel-tool',
       root: document.createElement('div'),
       manifest: {}
-    });
+    })).resolves.toEqual(expect.objectContaining({ mounted: false, mode: 'none' }));
 
-    expect(initialize).toHaveBeenCalledTimes(1);
+    expect(initialize).toHaveBeenCalledTimes(0);
   });
 
   test('legacy window lifecycle works', async () => {

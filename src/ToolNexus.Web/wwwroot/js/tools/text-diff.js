@@ -27,6 +27,7 @@ export function create(root) {
   return { root, handle: null };
 }
 
+// MOUNT ONLY — DO NOT EXECUTE BUSINESS LOGIC HERE
 export function init(context) {
   const root = context?.root || context?.toolRoot || context;
   if (!(root instanceof Element)) {
