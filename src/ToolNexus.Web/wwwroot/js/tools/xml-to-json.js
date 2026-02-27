@@ -5,19 +5,11 @@ import { getToolPlatformKernel } from './tool-platform-kernel.js';
 const TOOL_ID = 'xml-to-json';
 
 function resolveRoot(rootOrContext) {
-  if (rootOrContext instanceof Element) return rootOrContext;
-  if (rootOrContext?.root instanceof Element) return rootOrContext.root;
-  if (rootOrContext?.toolRoot instanceof Element) return rootOrContext.toolRoot;
-  return null;
+  return rootOrContext;
 }
 
 function requireRuntimeRoot(rootOrContext) {
-  const root = resolveRoot(rootOrContext);
-  if (!root) {
-    throw new Error('Tool runtime error: missing runtime root. Tool must use runtime lifecycle root.');
-  }
-
-  return root;
+  return resolveRoot(rootOrContext);
 }
 
 export function create(rootOrContext) {
@@ -27,7 +19,7 @@ export function create(rootOrContext) {
   return getToolPlatformKernel().registerTool({
     id: TOOL_ID,
     root,
-    init: () => createXmlToJsonApp(root),
+    init: (normalizedRoot) => createXmlToJsonApp(normalizedRoot),
     destroy: (app) => app?.destroy?.()
   });
 }
