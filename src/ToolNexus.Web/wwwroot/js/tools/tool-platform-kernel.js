@@ -5,8 +5,13 @@ function noop() {}
 
 function normalizeToolRoot(rootLike) {
   if (rootLike instanceof Element) return rootLike;
-  if (rootLike?.root instanceof Element) return rootLike.root;
   if (rootLike?.toolRoot instanceof Element) return rootLike.toolRoot;
+  if (rootLike?.root instanceof Element) return rootLike.root;
+  if (rootLike?.context?.toolRoot instanceof Element) return rootLike.context.toolRoot;
+  if (rootLike?.context?.root instanceof Element) return rootLike.context.root;
+  if (rootLike?.executionContext?.toolRoot instanceof Element) {
+    return rootLike.executionContext.toolRoot;
+  }
   if (rootLike?.executionContext?.root instanceof Element) {
     return rootLike.executionContext.root;
   }
