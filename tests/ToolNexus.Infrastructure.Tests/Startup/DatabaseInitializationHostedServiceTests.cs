@@ -47,4 +47,23 @@ public sealed class DatabaseInitializationHostedServiceTests
         Assert.True(timeoutResult);
         Assert.False(structuralResult);
     }
+
+    [Fact]
+    public async Task EnsureOptimizationLedgerSchemaAsync_NonPostgresProvider_NoOp()
+    {
+        var services = new ServiceCollection();
+        services.AddDbContext<ToolNexusContentDbContext>(options => options.UseSqlite("Data Source=:memory:"));
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
+
+        var method = typeof(DatabaseInitializationHostedService)
+            .GetMethod("EnsureOptimizationLedgerSchemaAsync", BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(method);
+
+        var task = (Task?)method!.Invoke(null, [dbContext, CancellationToken.None]);
+        Assert.NotNull(task);
+        await task!;
+    }
 }
