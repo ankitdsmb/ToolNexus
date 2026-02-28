@@ -12,48 +12,48 @@ const OUTCOME_CLASSES = Object.freeze({
 });
 const EXECUTION_STATES = Object.freeze({
   idle: {
-    label: 'Idle · Ready for request',
+    label: 'Ready',
     tone: 'neutral'
   },
   validating: {
-    label: 'Validating · Checking input',
+    label: 'Validating',
     tone: 'progress'
   },
   running: {
-    label: 'Running · Authority and runtime active',
+    label: 'Running',
     tone: 'progress'
   },
   streaming: {
-    label: 'Streaming · Output evidence arriving',
+    label: 'Streaming output',
     tone: 'progress'
   },
   success: {
-    label: 'Success · Execution complete',
+    label: 'Completed',
     tone: 'success'
   },
   warning: {
-    label: 'Warning · Completed with runtime notes',
+    label: 'Completed with notes',
     tone: 'warning'
   },
   uncertain: {
-    label: 'Uncertain · Verify outcome before relying on result',
+    label: 'Review required',
     tone: 'warning'
   },
   failed: {
-    label: 'Failed · Execution did not complete',
+    label: 'Execution failed',
     tone: 'danger'
   }
 });
 
 const RUN_BUTTON_LABELS = Object.freeze({
-  idle: 'Run',
+  idle: 'Run Tool',
   validating: 'Validating...',
   running: 'Running...',
   streaming: 'Processing...',
-  success: 'Run Again',
-  warning: 'Run Again (Check warnings)',
-  failed: 'Retry',
-  uncertain: 'Run Again (Review uncertainty)'
+  success: 'Run Tool Again',
+  warning: 'Run Tool Again',
+  failed: 'Retry Run',
+  uncertain: 'Run Tool Again'
 });
 
 function safeStringify(payload) {
@@ -705,7 +705,7 @@ export function createUnifiedToolControl({
 
   const executionHint = doc.createElement('span');
   executionHint.className = 'tn-unified-tool-control__execution-hint';
-  executionHint.textContent = 'Runtime execution';
+  executionHint.textContent = 'Primary execution action';
 
   const status = doc.createElement('p');
   status.className = 'tn-unified-tool-control__status';
@@ -763,7 +763,13 @@ export function createUnifiedToolControl({
       icon: resolveIcon(icon ?? manifest?.icon),
       title: title ?? normalizeTitle(slug, manifest),
       intent: subtitle ?? resolveSubtitle(manifest),
-      meta: `Tool: ${slug ?? manifest?.slug ?? 'runtime'} · Governed execution`
+      meta: `Tool: ${slug ?? manifest?.slug ?? 'runtime'} · Governed execution`,
+      badges: {
+        authority: 'Governed',
+        runtime: manifest?.runtime ?? manifest?.runtimeType ?? 'Unified',
+        policy: 'Admitted',
+        status: 'Ready'
+      }
     });
   }
 

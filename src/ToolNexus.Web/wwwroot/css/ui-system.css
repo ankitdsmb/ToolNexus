@@ -497,6 +497,47 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   box-shadow: var(--runtime-identity-shadow);
 }
 
+
+:where(.tool-shell-page__workspace) {
+  gap: var(--runtime-workspace-gap);
+}
+
+:where(.tool-shell-page__workspace-head) {
+  align-items: flex-start;
+  padding-inline: var(--space-1);
+}
+
+:where(.tool-shell-page__workspace-label) {
+  font-size: var(--type-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:where(.tool-shell-page__workspace-hint) {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--text-muted);
+}
+
+:where(.tool-shell-page__runtime) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
+  grid-template-areas:
+    "context context"
+    "input output"
+    "followup output";
+  gap: var(--runtime-workspace-gap);
+  padding: var(--runtime-workspace-padding);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+  background: var(--runtime-workspace-surface);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+:where(.tool-shell-page__runtime > [data-tool-context="true"]) { grid-area: context; }
+:where(.tool-shell-page__runtime > [data-tool-input="true"]) { grid-area: input; align-self: start; }
+:where(.tool-shell-page__runtime > .tn-tool-panel[aria-label="Tool output workspace"]) { grid-area: output; align-self: start; }
+:where(.tool-shell-page__runtime > [data-tool-followup="true"]) { grid-area: followup; align-self: start; }
+
 :where(.tool-identity-header__content h1) {
   font-size: clamp(1.85rem, 2.5vw, 2.5rem);
   line-height: var(--line-tight);
@@ -517,6 +558,37 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   font-size: var(--type-micro);
   color: var(--text-muted);
   letter-spacing: 0.02em;
+}
+
+
+:where(.tn-unified-tool-control__capsules) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+:where(.tn-unified-tool-control__capsule) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--color-border));
+  background: var(--runtime-badge-surface);
+  font-size: var(--type-micro);
+  line-height: 1.2;
+}
+
+:where(.tn-unified-tool-control__capsule-label) {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+:where(.tn-unified-tool-control__capsule-value) {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 :where(.tool-shell-page__hero-meta .chip) {
@@ -550,8 +622,11 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run) {
-  min-width: 180px;
+  min-width: 220px;
+  min-height: calc(var(--control-lg) + 6px);
+  padding-inline: var(--space-md);
   font-size: var(--type-body);
+  font-weight: 800;
 }
 
 :where(.tn-unified-tool-control__output) {
@@ -582,7 +657,10 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-article-prose) {
-  max-width: min(100%, 76ch);
+  max-width: min(100%, 78ch);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: var(--runtime-doc-surface);
 }
 
 :where(.tool-article-prose section, .tool-article-prose article) {
@@ -593,7 +671,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where(.tool-article-prose h2) {
   font-size: var(--type-h2);
   line-height: var(--line-tight);
-  margin: var(--space-4) 0 var(--space-2);
+  margin: var(--space-5) 0 var(--space-2);
 }
 
 :where(.tool-article-prose h3) {
@@ -607,6 +685,22 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   color: var(--text-secondary);
 }
 
+
+
+@media (max-width: 1080px) {
+  :where(.tool-shell-page__runtime) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "context"
+      "input"
+      "followup"
+      "output";
+  }
+
+  :where(.tn-unified-tool-control__capsules) {
+    justify-content: flex-start;
+  }
+}
 @media (max-width: 900px) {
   :where(.tn-unified-tool-control__actions) {
     flex-direction: column;

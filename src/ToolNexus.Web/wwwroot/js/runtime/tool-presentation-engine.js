@@ -38,13 +38,25 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     icon,
     title,
     intent,
-    meta
+    meta,
+    badges
   } = {}) {
     if (!context) {
       return null;
     }
 
     ensureClass(context, ['tn-unified-tool-control__header', 'tn-tool-header']);
+    const normalizedBadges = [
+      { label: 'Authority', value: badges?.authority ?? 'Governed' },
+      { label: 'Runtime', value: badges?.runtime ?? 'Unified' },
+      { label: 'Policy', value: badges?.policy ?? 'Admitted' },
+      { label: 'Status', value: badges?.status ?? 'Ready' }
+    ];
+
+    const badgesMarkup = normalizedBadges
+      .map((badge) => `<span class="tn-unified-tool-control__capsule"><span class="tn-unified-tool-control__capsule-label">${escapeHtml(normalizeText(badge.label))}</span><span class="tn-unified-tool-control__capsule-value">${escapeHtml(normalizeText(badge.value))}</span></span>`)
+      .join('');
+
     context.innerHTML = `
       <span class="tn-unified-tool-control__icon" aria-hidden="true">${escapeHtml(icon)}</span>
       <div class="tn-unified-tool-control__title-wrap">
@@ -52,6 +64,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
         <p>${escapeHtml(normalizeText(intent, 'Unified tool execution control.'))}</p>
         <p class="tn-unified-tool-control__meta">${escapeHtml(normalizeText(meta, 'Authority-governed execution context active.'))}</p>
       </div>
+      <div class="tn-unified-tool-control__capsules" aria-label="Execution context badges">${badgesMarkup}</div>
     `;
 
     return context;
@@ -82,7 +95,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
 
     const hintNode = executionHint ?? doc.createElement('span');
     if (!executionHint) {
-      hintNode.textContent = 'Runtime execution';
+      hintNode.textContent = 'Primary execution action';
     }
     ensureClass(hintNode, ['tn-unified-tool-control__execution-hint']);
 
