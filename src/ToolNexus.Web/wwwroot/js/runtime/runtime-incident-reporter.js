@@ -55,12 +55,12 @@ function normalizePayloadType(payloadType) {
 function normalizeIncident(incident) {
   const toolSlug = sanitizeString(incident?.toolSlug, 120) || 'unknown-tool';
   const phase = ['bootstrap', 'mount', 'execute'].includes(incident?.phase) ? incident.phase : 'execute';
-  const errorType = ['contract_violation', 'runtime_error'].includes(incident?.errorType) ? incident.errorType : 'runtime_error';
+  const errorType = ['contract_violation', 'contract_drift', 'runtime_error'].includes(incident?.errorType) ? incident.errorType : 'runtime_error';
   const message = sanitizeString(incident?.message, 1200) || 'runtime incident';
   const stack = sanitizeString(incident?.stack, 4000);
   const payloadType = normalizePayloadType(incident?.payloadType);
   const timestamp = sanitizeString(incident?.timestamp, 60) || new Date().toISOString();
-  const severity = errorType === 'contract_violation' ? 'warning' : 'critical';
+  const severity = ['contract_violation', 'contract_drift'].includes(errorType) ? 'warning' : 'critical';
 
   return { toolSlug, phase, errorType, message, severity, stack, payloadType, timestamp };
 }

@@ -258,7 +258,7 @@ if (app.Environment.IsDevelopment())
                     initializationDurationMs = "number",
                     dependencyLoadMs = "number"
                 },
-                errorCategory = "dom_contract_issue|lifecycle_error|dependency_failure|manifest_missing|unknown_runtime_exception"
+                errorCategory = "dom_contract_issue|contract_drift|lifecycle_error|dependency_failure|manifest_missing|unknown_runtime_exception"
             }
         },
         source = "window.ToolNexus.runtime.getObservabilitySnapshot()"

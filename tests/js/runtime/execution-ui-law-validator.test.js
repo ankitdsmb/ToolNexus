@@ -55,3 +55,29 @@ describe('execution ui law validator', () => {
     expect(result.violations.some((v) => v.ruleId === 'RULE_9')).toBe(true);
   });
 });
+
+
+test('detects shell-anchor css ownership violations for rules 1, 7 and 10', () => {
+  const style = document.createElement('style');
+  style.textContent = '[data-tool-shell] { display: grid; grid-template-columns: 1fr 1fr; }';
+  document.head.appendChild(style);
+
+  document.body.innerHTML = `
+    <div data-tool-shell="true">
+      <div data-tool-status="true">READY</div>
+      <section class="tool-runtime-widget" style="gap: 8px;">
+        <header class="tool-local-header"></header>
+        <div class="tool-local-actions" style="height: 44px;"><button data-tool-primary-action>Run</button></div>
+        <div class="tool-local-body"><textarea style="height: 320px;"></textarea></div>
+      </section>
+    </div>
+  `;
+
+  const result = validateExecutionUiLaw(document.body);
+  expect(result.violations.some((v) => v.ruleId === 'RULE_1')).toBe(true);
+  expect(result.violations.some((v) => v.ruleId === 'RULE_7')).toBe(true);
+  expect(result.violations.some((v) => v.ruleId === 'RULE_10')).toBe(true);
+  expect(result.score).toBe(79);
+
+  style.remove();
+});

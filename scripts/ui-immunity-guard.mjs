@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { EXECUTION_UI_IMMUNITY, scoreFromViolations, severityForRule } from '../src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-immunity-constants.js';
 
 const repoRoot = resolve('.');
 const webRoot = join(repoRoot, 'src/ToolNexus.Web/wwwroot');
@@ -30,12 +31,6 @@ function getToolName(filePath) {
   return filePath.split('/').pop().replace(/\.(css|html)$/u, '');
 }
 
-function severityFromRule(ruleId) {
-  if (['RULE_1', 'RULE_2', 'RULE_6', 'RULE_7', 'RULE_10'].includes(ruleId)) return 'critical';
-  if (['RULE_4', 'RULE_9'].includes(ruleId)) return 'high';
-  return 'medium';
-}
-
 function parseBlocks(cssText) {
   const blocks = [];
   const regex = /([^{}]+)\{([^}]*)\}/gmu;
@@ -53,7 +48,7 @@ function addViolation(target, violation) {
 function scanCssFile(filePath, toolResult) {
   const css = readFileSync(filePath, 'utf8');
   const blocks = parseBlocks(css);
-  const shellSelectors = config.forbiddenCss.shellSelectors;
+  const shellSelectors = EXECUTION_UI_IMMUNITY.shellSelectors;
 
   for (const block of blocks) {
     const selector = block.selector;
@@ -63,7 +58,7 @@ function scanCssFile(filePath, toolResult) {
       if (config.forbiddenCss.shellLayoutProperties.some((prop) => body.includes(prop))) {
         addViolation(toolResult, {
           ruleId: 'RULE_1',
-          severity: severityFromRule('RULE_1'),
+          severity: severityForRule('RULE_1'),
           message: `Tool CSS controls shell layout via selector: ${selector}`,
           file: filePath
         });
@@ -71,7 +66,7 @@ function scanCssFile(filePath, toolResult) {
 
       addViolation(toolResult, {
         ruleId: 'RULE_7',
-        severity: severityFromRule('RULE_7'),
+        severity: severityForRule('RULE_7'),
         message: `Tool CSS targets shell or data-tool-* anchors: ${selector}`,
         file: filePath
       });
@@ -80,7 +75,7 @@ function scanCssFile(filePath, toolResult) {
     if (/grid-template-columns\s*:/u.test(body) && shellSelectors.some((shellSel) => selector.includes(shellSel))) {
       addViolation(toolResult, {
         ruleId: 'RULE_10',
-        severity: severityFromRule('RULE_10'),
+        severity: severityForRule('RULE_10'),
         message: `Shell layout redefined by tool CSS: ${selector}`,
         file: filePath
       });
@@ -89,7 +84,7 @@ function scanCssFile(filePath, toolResult) {
     if (/\b100vh\b/u.test(body)) {
       addViolation(toolResult, {
         ruleId: 'RULE_3',
-        severity: severityFromRule('RULE_3'),
+        severity: severityForRule('RULE_3'),
         message: '100vh lock detected (density/layout risk)',
         file: filePath
       });
@@ -98,7 +93,7 @@ function scanCssFile(filePath, toolResult) {
     if (/position\s*:\s*absolute/u.test(body) && /(runtime|tool-local-body|tool-runtime-widget|tool-shell)/u.test(selector)) {
       addViolation(toolResult, {
         ruleId: 'RULE_3',
-        severity: severityFromRule('RULE_3'),
+        severity: severityForRule('RULE_3'),
         message: `Absolute positioning affecting runtime layout: ${selector}`,
         file: filePath
       });
@@ -107,7 +102,7 @@ function scanCssFile(filePath, toolResult) {
     if (/overflow\s*:\s*hidden/u.test(body) && /(runtime|tool-local-body|tool-runtime-widget|tool-shell)/u.test(selector)) {
       addViolation(toolResult, {
         ruleId: 'RULE_3',
-        severity: severityFromRule('RULE_3'),
+        severity: severityForRule('RULE_3'),
         message: `overflow:hidden on runtime container: ${selector}`,
         file: filePath
       });
@@ -117,7 +112,7 @@ function scanCssFile(filePath, toolResult) {
     if (fixedHeightMatch && Number(fixedHeightMatch[1]) > thresholds.fixedHeightMaxPx) {
       addViolation(toolResult, {
         ruleId: 'RULE_3',
-        severity: severityFromRule('RULE_3'),
+        severity: severityForRule('RULE_3'),
         message: `Fixed height ${fixedHeightMatch[1]}px exceeds threshold ${thresholds.fixedHeightMaxPx}px`,
         file: filePath
       });
@@ -129,7 +124,7 @@ function scanCssFile(filePath, toolResult) {
       if (gap < thresholds.minGapPx || gap > thresholds.maxGapPx) {
         addViolation(toolResult, {
           ruleId: 'RULE_3',
-          severity: severityFromRule('RULE_3'),
+          severity: severityForRule('RULE_3'),
           message: `Gap ${gap}px outside allowed range (${thresholds.minGapPx}-${thresholds.maxGapPx}px)`,
           file: filePath
         });
@@ -146,7 +141,7 @@ function scanTemplate(filePath, toolResult) {
     if (!html.includes(cls)) {
       addViolation(toolResult, {
         ruleId: 'RULE_2',
-        severity: severityFromRule('RULE_2'),
+        severity: severityForRule('RULE_2'),
         message: `Missing required template class: ${cls}`,
         file: filePath
       });
@@ -158,7 +153,7 @@ function scanTemplate(filePath, toolResult) {
     if (html.includes(anchor)) {
       addViolation(toolResult, {
         ruleId: 'RULE_2',
-        severity: severityFromRule('RULE_2'),
+        severity: severityForRule('RULE_2'),
         message: `Template recreates shell anchor: ${anchor}`,
         file: filePath
       });
@@ -169,23 +164,21 @@ function scanTemplate(filePath, toolResult) {
   if (nestedWidgetCount > 1) {
     addViolation(toolResult, {
       ruleId: 'RULE_6',
-      severity: severityFromRule('RULE_6'),
+      severity: severityForRule('RULE_6'),
       message: `Nested runtime containers detected (count: ${nestedWidgetCount})`,
       file: filePath
     });
   }
 
-  const actionSections = [...html.matchAll(/<section[^>]*class="[^"]*tool-local-actions[^"]*"[^>]*>([\s\S]*?)<\/section>/gu)];
-  for (const section of actionSections) {
-    const primaryCount = (section[1].match(/\bdata-tool-primary-action\b/gu) ?? []).length;
-    if (primaryCount !== 1) {
-      addViolation(toolResult, {
-        ruleId: 'RULE_4',
-        severity: severityFromRule('RULE_4'),
-        message: `Expected exactly one primary action, found ${primaryCount}`,
-        file: filePath
-      });
-    }
+  const actionsRoot = html.match(/<div class="tool-runtime-widget">([\s\S]*?)<\/div>\s*$/u)?.[1] ?? html;
+  const primaryCount = (actionsRoot.match(/\bdata-tool-primary-action\b/gu) ?? []).length;
+  if (primaryCount !== 1) {
+    addViolation(toolResult, {
+      ruleId: 'RULE_4',
+      severity: severityForRule('RULE_4'),
+      message: `Expected exactly one primary action per tool, found ${primaryCount}`,
+      file: filePath
+    });
   }
 }
 
@@ -235,7 +228,7 @@ for (const [, entry] of results) {
   totalViolations += entry.violations.length;
   const severity = normalizeSeverity(entry.violations);
   const uniqRecommendations = [...new Set(entry.violations.map(recommendationFor))];
-  const scorePenalty = entry.violations.reduce((sum, v) => sum + (v.severity === 'critical' ? 8 : v.severity === 'high' ? 5 : 2), 0);
+  const scorePenalty = EXECUTION_UI_IMMUNITY.score.base - scoreFromViolations(entry.violations);
   weightedDeductions += scorePenalty;
   hasFailures ||= entry.violations.length > 0;
 
@@ -248,7 +241,7 @@ for (const [, entry] of results) {
   });
 }
 
-const executionUiScore = Math.max(0, 100 - weightedDeductions);
+const executionUiScore = Math.max(0, EXECUTION_UI_IMMUNITY.score.base - weightedDeductions);
 
 mkdirSync(reportDir, { recursive: true });
 const reportPayload = {
