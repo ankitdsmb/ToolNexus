@@ -74,10 +74,6 @@ ENTERPRISE UI SYSTEM
   display: block;
 }
 
-:where(.tool-runtime-widget .tool-local-surface) {
-  min-height: 0;
-}
-
 :where(#tool-root[data-tool-root="true"]) {
   min-height: 24rem;
   contain: layout paint style;
