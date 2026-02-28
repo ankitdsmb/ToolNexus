@@ -68,6 +68,31 @@ describe('tool runtime ui bootstrap', () => {
     expect(document.querySelector('#formatBtn')).not.toBeNull();
   });
 
+
+  test('runtime hands template loader the root handoff container', async () => {
+    document.body.innerHTML = `
+      <div id="tool-root" data-tool-slug="root-handoff" data-tool-shell="true">
+        <section data-tool-input="true"></section>
+        <section data-tool-output="true"></section>
+      </div>
+    `;
+
+    const templateLoader = jest.fn(async () => {});
+    const runtime = createToolRuntime({
+      loadManifest: async () => ({ modulePath: '/module.js', uiMode: 'custom', complexityTier: 2 }),
+      importModule: async () => ({ init: () => {} }),
+      dependencyLoader: { loadDependencies: async () => {} },
+      templateLoader,
+      lifecycleAdapter: async () => ({ mounted: false, mode: 'none' })
+    });
+
+    await runtime.bootstrapToolRuntime();
+
+    const root = document.getElementById('tool-root');
+    expect(templateLoader).toHaveBeenCalledWith('root-handoff', root, expect.any(Object));
+    expect(templateLoader.mock.calls[0][1].querySelector('[data-tool-output]')).not.toBeNull();
+  });
+
   test('lifecycle adapter chooses module mount first', async () => {
     const mount = jest.fn(async () => {});
     const init = jest.fn(() => {});

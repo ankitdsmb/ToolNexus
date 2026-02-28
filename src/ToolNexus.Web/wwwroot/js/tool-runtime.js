@@ -938,9 +938,7 @@ export function createToolRuntime({
       const templateStartedAt = now();
       emit('template_load_start', { toolSlug: slug });
       try {
-        const templateTarget = hasToolShellContract(root)
-          ? getCanonicalToolRoot()
-          : root;
+        const templateTarget = root;
         await templateLoader(slug, templateTarget, { templatePath: manifest.templatePath });
         logger.info('[RuntimeOwnership] template target = root', { slug, target: '#tool-root' });
         logger.info('[RuntimeOwnership] shell anchors preserved', { slug, immutableAnchors: true });
