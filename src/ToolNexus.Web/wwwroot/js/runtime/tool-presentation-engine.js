@@ -32,6 +32,8 @@ function collapseSection(section, hasContent) {
   section.hidden = !hasContent;
 }
 
+import { iconMarkup } from './icon-system.js';
+
 export function createToolPresentationEngine({ doc = document } = {}) {
   function renderIdentityBlock({
     context,
@@ -52,12 +54,13 @@ export function createToolPresentationEngine({ doc = document } = {}) {
       { label: 'Policy', value: badges?.policy ?? 'Admitted' }
     ];
 
+    const badgeIcons = { Authority: 'shield', Runtime: 'gauge', Policy: 'spark' };
     const badgesMarkup = normalizedBadges
-      .map((badge) => `<span class="tn-unified-tool-control__capsule"><span class="tn-unified-tool-control__capsule-label">${escapeHtml(normalizeText(badge.label))}</span><span class="tn-unified-tool-control__capsule-value">${escapeHtml(normalizeText(badge.value))}</span></span>`)
+      .map((badge) => `<span class="tn-unified-tool-control__capsule"><span class="tn-icon" aria-hidden="true">${iconMarkup(badgeIcons[badge.label] || 'runtime')}</span><span class="tn-unified-tool-control__capsule-label">${escapeHtml(normalizeText(badge.label))}</span><span class="tn-unified-tool-control__capsule-value">${escapeHtml(normalizeText(badge.value))}</span></span>`)
       .join('');
 
     context.innerHTML = `
-      <span class="tn-unified-tool-control__icon" aria-hidden="true">${escapeHtml(icon)}</span>
+      <span class="tn-unified-tool-control__icon" aria-hidden="true">${iconMarkup(icon)}</span>
       <div class="tn-unified-tool-control__title-wrap">
         <h2>${escapeHtml(normalizeText(title, 'Tool runtime'))}</h2>
         <p>${escapeHtml(normalizeText(intent, 'Unified tool execution control.'))}</p>
@@ -141,7 +144,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     if (!primary.querySelector('.tn-unified-tool-control__output-label')) {
       const label = doc.createElement('p');
       label.className = 'tn-unified-tool-control__output-label';
-      label.textContent = 'Primary result';
+      label.innerHTML = `<span class=\"tn-icon\" aria-hidden=\"true\">${iconMarkup('runtime')}</span>Primary result`;
       primary.append(label);
     }
     if (!primary.querySelector('.tn-unified-tool-control__preview')) {
@@ -166,7 +169,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     if (!supporting.querySelector('.tn-unified-tool-control__output-label')) {
       const label = doc.createElement('p');
       label.className = 'tn-unified-tool-control__output-label';
-      label.textContent = 'Explanation';
+      label.innerHTML = `<span class=\"tn-icon\" aria-hidden=\"true\">${iconMarkup('spark')}</span>Explanation`;
       supporting.append(label);
     }
     const ensureSupportingLine = (layer, message) => {
@@ -188,7 +191,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     if (!metadata.querySelector('.tn-unified-tool-control__output-label')) {
       const label = doc.createElement('p');
       label.className = 'tn-unified-tool-control__output-label';
-      label.textContent = 'Metadata';
+      label.innerHTML = `<span class=\"tn-icon\" aria-hidden=\"true\">${iconMarkup('gauge')}</span>Metadata`;
       metadata.append(label);
     }
     if (!metadata.querySelector('.tn-unified-tool-control__metadata')) {
@@ -202,7 +205,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     if (!diagnostics.querySelector('.tn-unified-tool-control__output-label')) {
       const label = doc.createElement('p');
       label.className = 'tn-unified-tool-control__output-label';
-      label.textContent = 'Runtime diagnostics';
+      label.innerHTML = `<span class=\"tn-icon\" aria-hidden=\"true\">${iconMarkup('warning')}</span>Runtime diagnostics`;
       diagnostics.append(label);
     }
     if (!diagnostics.querySelector('.tn-unified-tool-control__diagnostics')) {

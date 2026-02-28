@@ -54,21 +54,25 @@
            Canonical anchor contract must remain stable for runtime guards and telemetry. *@
         <section id="tool-root" class="tool-shell-page__runtime" data-tool-shell="true" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
             <header data-tool-context="true" data-tool-header="true" class="tn-tool-header" aria-label="Tool execution context">
-                <span class="tool-context-pill tool-context-pill--authority">Authority: UnifiedAuthoritative</span>
-                <span class="tool-context-pill">Runtime .NET Core</span>
-                <span class="tool-context-pill">Policy: Conformance v1</span>
-                <span class="tool-context-pill">Lifecycle: Ready</span>
+                <span class="tool-context-pill tool-context-pill--authority"><span class="tn-skeleton-chip"></span>Authority: UnifiedAuthoritative</span>
+                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Runtime .NET Core</span>
+                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Policy: Conformance v1</span>
+                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Lifecycle: Ready</span>
             </header>
-            <div data-tool-status="true" data-runtime-status-primary="true" class="tool-execution-status runtime-metrics-row" role="status" aria-live="polite">Idle · Ready for request</div>
-            <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel" aria-label="Follow-up actions">
-                <button type="button" disabled>Preparing runtime</button>
+            <div data-tool-status="true" data-runtime-status-primary="true" class="tool-execution-status runtime-metrics-row tn-runtime-skeleton" role="status" aria-live="polite">
+                <span class="tn-skeleton-chip"></span>
+                <span>Initializing runtime context…</span>
+            </div>
+            <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel tn-toolbar-skeleton" aria-label="Follow-up actions">
+                <button type="button" disabled><span class="tn-skeleton-chip"></span>Preparing runtime</button>
+                <button type="button" disabled class="tool-btn tool-btn--ghost"><span class="tn-skeleton-chip"></span>Loading actions</button>
             </footer>
             @* ToolShell framing only: no shell-defined editor/result grid ownership.
                Template/lifecycle runtime mounts directly into this full-width host. *@
             <section data-tool-content-host="true" class="tool-runtime-content-host" aria-label="Tool content host">
                 @* Canonical extension anchors are preserved; tool widget owns content within them. *@
-                <section data-tool-input="true" aria-label="Tool input extension slot"></section>
-                <section data-tool-output="true" aria-label="Tool output extension slot"></section>
+                <section data-tool-input="true" aria-label="Tool input extension slot" class="tn-editor-skeleton"></section>
+                <section data-tool-output="true" aria-label="Tool output extension slot" class="tn-editor-skeleton"></section>
             </section>
         </section>
     </section>

@@ -1,4 +1,5 @@
 import { createToolPresentationEngine } from './tool-presentation-engine.js';
+import { ensureIcon, iconMarkup } from './icon-system.js';
 
 // ARCHITECTURE LOCKED
 // DO NOT MODIFY WITHOUT COUNCIL APPROVAL
@@ -95,19 +96,19 @@ function resolveSubtitle(manifest) {
 function resolveIcon(iconName = '') {
   const normalized = String(iconName || '').trim().toLowerCase();
   const icons = {
-    code: '</>',
-    json: '{ }',
-    terminal: '>_',
-    database: 'DB',
-    api: 'API',
-    regex: '.*',
-    text: 'TXT',
-    convert: '⇄',
-    hash: '#',
-    web: 'WWW'
+    code: 'runtime',
+    json: 'runtime',
+    terminal: 'gauge',
+    database: 'gauge',
+    api: 'spark',
+    regex: 'spark',
+    text: 'runtime',
+    convert: 'wand',
+    hash: 'shield',
+    web: 'runtime'
   };
 
-  return icons[normalized] ?? icons.code;
+  return icons[normalized] ?? 'runtime';
 }
 
 function pickFirstValue(source, keys = []) {
@@ -751,13 +752,14 @@ export function createUnifiedToolControl({
 
   const executionHint = doc.createElement('span');
   executionHint.className = 'tn-unified-tool-control__execution-hint';
-  executionHint.textContent = 'Primary execution action';
+  executionHint.textContent = 'Ready to execute';
 
   const status = doc.createElement('p');
   status.className = 'tn-unified-tool-control__status';
   status.dataset.executionState = 'idle';
   status.textContent = EXECUTION_STATES.idle.label;
   status.setAttribute('role', 'status');
+  ensureIcon(status, 'runtime');
 
   const intent = doc.createElement('p');
   intent.className = 'tn-unified-tool-control__status-note';
@@ -770,12 +772,15 @@ export function createUnifiedToolControl({
   const suggestionBadge = doc.createElement('button');
   suggestionBadge.type = 'button';
   suggestionBadge.className = 'tool-btn tn-unified-tool-control__suggestion-badge';
-  suggestionBadge.textContent = '⚡ Suggested Tool';
+  suggestionBadge.textContent = 'Suggested Tool';
   suggestionBadge.hidden = true;
 
   const suggestionReason = doc.createElement('span');
   suggestionReason.className = 'tn-unified-tool-control__suggestion-reason';
   suggestionReason.hidden = true;
+
+  ensureIcon(runButton, 'play');
+  ensureIcon(suggestionBadge, 'wand');
 
   const { primaryActions, secondaryActions } = presentationEngine.renderActionHierarchy({
     actionsHost: actions,
@@ -850,6 +855,16 @@ export function createUnifiedToolControl({
         status.textContent = overrideLabel || mapped.label;
         runButton.dataset.runtimeState = normalized;
         runButton.textContent = RUN_BUTTON_LABELS[normalized] ?? RUN_BUTTON_LABELS.idle;
+        ensureIcon(runButton, normalized === 'failed' ? 'warning' : 'play');
+        if (normalized === 'success') {
+          ensureIcon(status, 'success');
+        } else if (normalized === 'warning' || normalized === 'uncertain') {
+          ensureIcon(status, 'warning');
+        } else if (normalized === 'failed') {
+          ensureIcon(status, 'error');
+        } else {
+          ensureIcon(status, 'runtime');
+        }
         return;
       }
 
@@ -868,10 +883,10 @@ export function createUnifiedToolControl({
       classificationWhy.textContent = message || 'Why this result is classified this way: Awaiting runtime evidence.';
     },
     showError(message) {
-      const panel = doc.createElement('div');
+      const panel = doc.createElement('section');
       panel.className = 'tool-auto-runtime__error';
       panel.setAttribute('role', 'alert');
-      panel.textContent = message;
+      panel.innerHTML = `<div class="tool-auto-runtime__error-title"><span class="tn-icon" aria-hidden="true">${iconMarkup('error')}</span>Execution issue</div><p>${String(message ?? 'Execution failed.').replaceAll('<','&lt;')}</p><p class="tool-auto-runtime__error-guidance">Review input constraints and rerun.</p>`;
       errors.append(panel);
     },
     clearErrors() {
