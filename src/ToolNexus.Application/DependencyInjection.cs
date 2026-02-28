@@ -4,6 +4,7 @@ using ToolNexus.Application.Options;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Insights;
 using ToolNexus.Application.Services.Pipeline;
+using ToolNexus.Application.Tools.DocumentConverter;
 using Microsoft.Extensions.Options;
 
 namespace ToolNexus.Application;
@@ -109,6 +110,7 @@ public static class DependencyInjection
         services.AddScoped<IRuntimeIncidentService, RuntimeIncidentService>();
         services.AddScoped<IAiCapabilityFactoryService, AiCapabilityFactoryService>();
         services.AddScoped<IAiToolPackageImportService, AiToolPackageImportService>();
+        services.AddScoped<DocumentConverterService>();
         services.AddSingleton<IStartupPhaseService, ManifestStartupValidator>();
         services.AddSingleton<IStartupPhaseService, PlatformCacheWarmupHostedService>();
         services.AddSingleton<IStartupPhaseService, ManifestExecutorAlignmentValidator>();

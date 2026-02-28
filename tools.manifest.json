@@ -415,6 +415,24 @@
           }
         }
       }
+    },
+    {
+      "slug": "document-converter",
+      "title": "Document Converter",
+      "category": "documents",
+      "actions": [
+        "convert"
+      ],
+      "seoTitle": "Document Converter (DOCX \u21c4 PDF) | ToolNexus",
+      "seoDescription": "Convert DOCX to PDF and PDF to DOCX using secure server-side processing.",
+      "exampleInput": "Upload a DOCX or PDF file and choose conversion mode.",
+      "runtimeLanguage": "dotnet",
+      "executionCapability": "standard",
+      "modulePath": "/js/tools/document-converter.js",
+      "templatePath": "/tool-templates/document-converter.html",
+      "styles": [
+        "/css/pages/document-converter.css"
+      ]
     }
   ]
 }
