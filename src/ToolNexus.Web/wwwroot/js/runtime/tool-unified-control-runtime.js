@@ -29,19 +29,19 @@ const EXECUTION_STATES = Object.freeze({
     tone: 'progress'
   },
   success: {
-    label: 'Completed',
+    label: 'Execution completed successfully',
     tone: 'success'
   },
   warning: {
-    label: 'Completed with notes',
+    label: 'Completed with guidance',
     tone: 'warning'
   },
   uncertain: {
-    label: 'Review required',
+    label: 'Review required before next run',
     tone: 'warning'
   },
   failed: {
-    label: 'Execution failed',
+    label: 'Execution failed — action required',
     tone: 'danger'
   }
 });
@@ -763,11 +763,11 @@ export function createUnifiedToolControl({
 
   const intent = doc.createElement('p');
   intent.className = 'tn-unified-tool-control__status-note';
-  intent.textContent = 'AI intent: Prepare to execute your request through governed runtime flow.';
+  intent.textContent = 'Execution path is ready. Governance and runtime checks are active.';
 
   const guidance = doc.createElement('p');
   guidance.className = 'tn-unified-tool-control__status-note';
-  guidance.textContent = 'Guidance: Add inputs and run when ready.';
+  guidance.textContent = 'Next: Add input and run (Ctrl+Enter).';
 
   const suggestionBadge = doc.createElement('button');
   suggestionBadge.type = 'button';
@@ -817,7 +817,7 @@ export function createUnifiedToolControl({
       icon: resolveIcon(icon ?? manifest?.icon),
       title: title ?? normalizeTitle(slug, manifest),
       intent: subtitle ?? resolveSubtitle(manifest),
-      meta: `Tool: ${slug ?? manifest?.slug ?? 'runtime'} · Governed execution`,
+      meta: `Tool: ${slug ?? manifest?.slug ?? 'runtime'} · Governed runtime`,
       badges: {
         authority: 'Governed',
         runtime: manifest?.runtime ?? manifest?.runtimeType ?? 'Unified',
@@ -871,13 +871,13 @@ export function createUnifiedToolControl({
       status.textContent = overrideLabel || stateOrLabel;
     },
     setIntent(message) {
-      intent.textContent = message || 'AI intent: Prepare to execute your request through governed runtime flow.';
+      intent.textContent = message || 'Execution path is ready. Governance and runtime checks are active.';
     },
     setGuidance(message) {
-      guidance.textContent = message || 'Guidance: Add inputs and run when ready.';
+      guidance.textContent = message || 'Next: Add input and run (Ctrl+Enter).';
     },
     setNextAction(message) {
-      nextAction.textContent = message || 'Next recommended action: Run execution to generate guidance.';
+      nextAction.textContent = message || 'Next action: Run execution.';
     },
     setClassificationWhy(message) {
       classificationWhy.textContent = message || 'Why this result is classified this way: Awaiting runtime evidence.';
@@ -886,7 +886,7 @@ export function createUnifiedToolControl({
       const panel = doc.createElement('section');
       panel.className = 'tool-auto-runtime__error';
       panel.setAttribute('role', 'alert');
-      panel.innerHTML = `<div class="tool-auto-runtime__error-title"><span class="tn-icon" aria-hidden="true">${iconMarkup('error')}</span>Execution issue</div><p>${String(message ?? 'Execution failed.').replaceAll('<','&lt;')}</p><p class="tool-auto-runtime__error-guidance">Review input constraints and rerun.</p>`;
+      panel.innerHTML = `<div class="tool-auto-runtime__error-title"><span class="tn-icon" aria-hidden="true">${iconMarkup('error')}</span>Execution issue</div><p>${String(message ?? 'Execution failed.').replaceAll('<','&lt;')}</p><p class="tool-auto-runtime__error-guidance">Next: verify input and run again.</p>`;
       errors.append(panel);
     },
     clearErrors() {

@@ -528,8 +528,8 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
       const run = async () => {
         emptyStateHint.hidden = true;
         unifiedControl.clearErrors();
-        unifiedControl.setIntent('AI intent: Validate request shape before runtime execution.');
-        unifiedControl.setGuidance('Guidance: Ensure required fields are complete.');
+        unifiedControl.setIntent('Validating request shape and required fields.');
+        unifiedControl.setGuidance('Next: complete required fields.');
         unifiedControl.setStatus('validating');
 
         const payload = {};
@@ -545,9 +545,9 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             }
           }
         } catch (error) {
-          unifiedControl.setStatus('warning', 'Warning · Input validation needs attention');
-          unifiedControl.setIntent('AI intent: Stop execution until request validity is restored.');
-          unifiedControl.setGuidance('Guidance: Correct highlighted input issues and rerun.');
+          unifiedControl.setStatus('warning', 'Input validation requires action');
+          unifiedControl.setIntent('Execution paused until validation passes.');
+          unifiedControl.setGuidance('Next: correct highlighted fields and run again.');
           unifiedControl.showError(error?.message ?? 'Invalid input.');
           return;
         }
@@ -561,8 +561,8 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         }
 
         runButton.disabled = true;
-        unifiedControl.setIntent('AI intent: Execute request through authority resolution and runtime processing.');
-        unifiedControl.setGuidance('Guidance: Runtime is active; wait for evidence and interpretation.');
+        unifiedControl.setIntent('Executing through authority resolution and runtime processing.');
+        unifiedControl.setGuidance('Next: wait for runtime evidence.');
         unifiedControl.setStatus('running');
 
         try {
@@ -582,8 +582,8 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         try {
           const result = await executeTool({ slug, payload: sanitized });
           unifiedControl.setStatus('streaming');
-          unifiedControl.setIntent('AI intent: Assemble output evidence and interpretation for your request.');
-          unifiedControl.setGuidance('Guidance: Review interpretation summary and confidence before follow-up actions.');
+          unifiedControl.setIntent('Assembling output evidence and interpretation.');
+          unifiedControl.setGuidance('Next: review summary and confidence before follow-up actions.');
           const runtimeWarningCount = ignoredFields.length;
           const enforcedOutcomeClass = runtimeWarningCount > 0 ? 'warning_partial' : undefined;
           const runtimeReasons = runtimeWarningCount > 0
@@ -633,7 +633,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           });
 
           if (outcomeClass === 'warning_partial') {
-            unifiedControl.setStatus('warning', 'Warning · Completed with runtime notes');
+            unifiedControl.setStatus('warning', 'Completed with runtime guidance');
           } else if (outcomeClass === 'uncertain_result') {
             unifiedControl.setStatus('uncertain');
           } else {
@@ -643,7 +643,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           const tonePrefix = buildObservationTonePrefix(observationPatterns);
           const guidanceLine = `${runtimeReasoning.guidance.join(' ')}`;
           unifiedControl.setIntent(adaptive.intent);
-          unifiedControl.setGuidance(tonePrefix ? `Guidance: ${tonePrefix} ${guidanceLine}` : `Guidance: ${guidanceLine}`);
+          unifiedControl.setGuidance(tonePrefix ? `Next: ${tonePrefix} ${guidanceLine}` : `Next: ${guidanceLine}`);
           if (optimizationInsight.repeatedPatternDetected) {
             unifiedControl.setNextAction(`Optimization insight: ${optimizationInsight.optimizationHint}`);
           }
@@ -653,7 +653,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             reasons: ['execution error path was triggered']
           });
           unifiedControl.setStatus('failed');
-          unifiedControl.setIntent('AI intent: Report failed execution path with recoverable guidance.');
+          unifiedControl.setIntent('Execution failed on runtime path.');
           const failedReasoning = buildRuntimeReasoning({
             outcomeClass: 'failed',
             explanationReasons: ['execution error path was triggered']
@@ -666,7 +666,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             });
           }
           unifiedControl.setClassificationWhy(`Why this result is classified this way: ${stableFailedReasoning.runtimeReasoning.reasons.join('; ')}.`);
-          unifiedControl.setGuidance(`Guidance: ${stableFailedReasoning.runtimeReasoning.guidance.join(' ')}`);
+          unifiedControl.setGuidance(`Next: ${stableFailedReasoning.runtimeReasoning.guidance.join(' ')}`);
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;

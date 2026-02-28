@@ -211,6 +211,7 @@ ENTERPRISE UI SYSTEM
   row-gap: var(--space-1);
   padding-top: var(--space-2);
   border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  min-height: 56px;
 }
 
 :where(.tn-unified-tool-control__shortcut) {
@@ -237,19 +238,17 @@ ENTERPRISE UI SYSTEM
   font-size: var(--type-body);
   font-weight: 700;
   border-width: 2px;
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 24%, transparent);
-  transition: transform 140ms ease, box-shadow 180ms ease, filter 160ms ease;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 20%, transparent);
+  transition: box-shadow 140ms ease, background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 :where(.tn-unified-tool-control__run:hover:not(:disabled)) {
-  transform: translateY(-1px);
-  filter: saturate(1.08);
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 30%, transparent);
+  filter: none;
+  box-shadow: 0 7px 16px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 :where(.tn-unified-tool-control__run:active:not(:disabled)) {
-  transform: translateY(0);
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: 0 5px 12px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 :where(.tn-unified-tool-control__run:focus-visible) {
@@ -299,6 +298,7 @@ ENTERPRISE UI SYSTEM
   background: var(--runtime-status-surface);
   padding: var(--runtime-status-padding) var(--space-2);
   width: fit-content;
+  min-height: 30px;
 }
 
 
@@ -342,6 +342,7 @@ ENTERPRISE UI SYSTEM
   background: var(--runtime-output-surface);
   display: grid;
   gap: var(--runtime-density-gap);
+  min-height: 260px;
 }
 
 :where(.tn-unified-tool-control__output-block) {
@@ -849,6 +850,16 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, opacity 150ms ease;
 }
 
+:where(.tn-unified-tool-control__status, [data-tool-status="true"])::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  opacity: 0;
+  flex: 0 0 12px;
+}
+
 :where(.tn-unified-tool-control__status[data-execution-state="running"],
   .tn-unified-tool-control__status[data-execution-state="validating"],
   .tn-unified-tool-control__status[data-execution-state="streaming"],
@@ -858,18 +869,10 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   isolation: isolate;
 }
 
-:where(.tn-unified-tool-control__status[data-execution-state="running"],
-  .tn-unified-tool-control__status[data-execution-state="validating"],
-  .tn-unified-tool-control__status[data-execution-state="streaming"],
-  [data-tool-status="true"].is-running,
-  [data-tool-status="true"].is-validating,
-  [data-tool-status="true"].is-streaming)::before {
-  content: '';
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-pill);
+:where(.tn-unified-tool-control__status.is-loading-visible, [data-tool-status="true"].is-loading-visible)::before {
   border: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-top-color: color-mix(in srgb, var(--accent) 84%, transparent);
+  opacity: 1;
   animation: tn-runtime-spin 700ms linear infinite;
 }
 
@@ -878,7 +881,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   transition: box-shadow 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
 
-:where(.tn-unified-tool-control__output.is-processing)::after,
+:where(.tn-unified-tool-control__output.is-processing.is-processing-visible)::after,
 :where(.tn-unified-tool-control__output[data-execution-state="running"])::after {
   content: '';
   position: absolute;
@@ -891,7 +894,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run.is-primed) {
-  animation: tn-action-pulse 360ms ease-out;
+  animation: tn-action-pulse 180ms ease-out;
 }
 
 :where(.tn-unified-tool-control__status[data-execution-state="success"]) {
@@ -921,8 +924,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 @keyframes tn-action-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 38%, transparent); transform: scale(0.98); }
-  100% { box-shadow: 0 0 0 10px transparent; transform: scale(1); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 24%, transparent); }
+  100% { box-shadow: 0 0 0 6px transparent; }
 }
 
 /* Premium execution polish phase */
@@ -942,7 +945,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run, .tool-btn, .tn-unified-tool-control__status, .tn-unified-tool-control__output, .runtime-doc-disclosure, .tool-auto-runtime__field input, .tool-auto-runtime__field textarea) {
-  transition: background-color 150ms ease-out, border-color 150ms ease-out, box-shadow 160ms ease-out, color 140ms ease-out, opacity 140ms ease-out, transform 150ms ease-out;
+  transition: background-color 120ms linear, border-color 120ms linear, box-shadow 140ms linear, color 120ms linear, opacity 120ms linear;
 }
 
 :where(.tn-unified-tool-control__run) {
@@ -952,17 +955,33 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run:hover:not(:disabled)) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 26%, transparent);
+  box-shadow: 0 5px 12px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 :where(.tool-btn:active:not(:disabled), .tn-unified-tool-control__run:active:not(:disabled)) {
-  transform: translateY(0);
+  transform: none;
 }
 
 :where(.tn-unified-tool-control__actions-secondary .tool-btn) {
   border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
   background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
+}
+
+:where(.tn-unified-tool-control__actions .tool-btn,
+  .tn-unified-tool-control__run,
+  [data-tool-followup="true"] .tool-btn,
+  [data-tool-followup="true"] button) {
+  min-height: 36px;
+}
+
+:where(.tn-unified-tool-control__run:disabled,
+  .tn-unified-tool-control__actions .tool-btn:disabled,
+  [data-tool-followup="true"] .tool-btn:disabled,
+  [data-tool-followup="true"] button:disabled) {
+  opacity: 0.64;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  border-color: color-mix(in srgb, var(--color-border) 90%, transparent);
 }
 
 :where(.tool-btn.is-acknowledged) {
@@ -1024,9 +1043,9 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-runtime-toast-region) {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
+  position: absolute;
+  right: var(--space-2);
+  top: var(--space-2);
   display: grid;
   gap: 6px;
   z-index: var(--z-toast);
@@ -1039,7 +1058,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
   font-size: var(--type-caption);
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateY(-2px);
 }
 
 :where(.tn-runtime-toast.is-visible) {
@@ -1067,6 +1086,22 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   margin: 4px 0 0;
   color: var(--text-muted);
   font-size: var(--type-micro);
+}
+
+:where([data-tool-output="true"] ::-webkit-scrollbar) {
+  width: 10px;
+  height: 10px;
+}
+
+:where([data-tool-output="true"] ::-webkit-scrollbar-thumb) {
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, var(--color-border) 82%, transparent);
+}
+
+:where([data-tool-output="true"] ::selection) {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 :where(.tool-auto-runtime__empty-state) {
