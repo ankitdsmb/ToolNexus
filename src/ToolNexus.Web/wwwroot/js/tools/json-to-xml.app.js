@@ -131,6 +131,10 @@ class JsonToXmlApp {
   }
 
   destroy() {
+    if (!this.dom) {
+      return;
+    }
+
     this.disposeKeyboard?.();
     this.disposeKeyboard = null;
     window.clearTimeout(this.autoTimer);
