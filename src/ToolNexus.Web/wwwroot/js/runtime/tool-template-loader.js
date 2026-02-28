@@ -36,8 +36,6 @@ function validateGenericTemplateContract(markup) {
   }
 }
 
-
-
 function sanitizeTemplateMarkup(markup) {
   const container = document.createElement('div');
   container.innerHTML = markup;
@@ -52,26 +50,64 @@ function sanitizeTemplateMarkup(markup) {
 
   return container.innerHTML;
 }
-function resolveRootHandoffTarget(root) {
+
+function resolveTemplateMountMode() {
+  const configured = String(window.ToolNexusConfig?.runtimeTemplateMountMode ?? 'content-host').trim().toLowerCase();
+  return configured === 'legacy' ? 'legacy' : 'content-host';
+}
+
+function emitMountTargetTelemetry(slug, mountTarget, mountMode) {
+  console.info(`runtime.template.mountTarget = ${mountTarget}`, { slug, mountMode, mountTarget });
+}
+
+function resolveRootHandoffTarget(root, slug) {
   const canonicalRoot = root?.id === 'tool-root'
     ? root
     : root?.querySelector?.('#tool-root') ?? root;
-  const runtimeZone = canonicalRoot?.querySelector?.('[data-tool-runtime]');
-  if (!runtimeZone) {
-    throw new Error('tool-template-loader: missing [data-tool-runtime] mount zone.');
+
+  const mountMode = resolveTemplateMountMode();
+  const candidates = mountMode === 'legacy'
+    ? [
+      { key: 'input', selector: '[data-tool-input]' },
+      { key: 'content-host', selector: '[data-tool-content-host]' },
+      { key: 'root', selector: null }
+    ]
+    : [
+      { key: 'content-host', selector: '[data-tool-content-host]' },
+      { key: 'input', selector: '[data-tool-input]' },
+      { key: 'root', selector: null }
+    ];
+
+  let host = null;
+  let mountTarget = 'root';
+  for (const candidate of candidates) {
+    const resolved = candidate.selector
+      ? canonicalRoot?.querySelector?.(candidate.selector)
+      : canonicalRoot;
+    if (resolved) {
+      host = resolved;
+      mountTarget = candidate.key;
+      break;
+    }
   }
 
-  const host = runtimeZone;
+  if (!host) {
+    throw new Error('tool-template-loader: missing mount zone ([data-tool-content-host] -> [data-tool-input] -> #tool-root).');
+  }
+
   const existing = host?.querySelector?.(':scope > [data-runtime-template-handoff]');
   if (existing) {
+    emitMountTargetTelemetry(slug, mountTarget, mountMode);
     return existing;
   }
 
   const handoff = document.createElement('section');
   handoff.setAttribute('data-runtime-template-handoff', 'true');
+  handoff.dataset.runtimeTemplateMountTarget = mountTarget;
   handoff.className = 'tool-runtime-template-handoff';
   handoff.setAttribute('aria-label', 'Tool runtime template handoff');
-  host?.prepend(handoff);
+  host.prepend(handoff);
+  emitMountTargetTelemetry(slug, mountTarget, mountMode);
   return handoff;
 }
 
@@ -86,9 +122,8 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
 
   const cached = templateCache.get(slug);
   if (cached) {
-    const target = resolveRootHandoffTarget(root);
+    const target = resolveRootHandoffTarget(root, slug);
     target.innerHTML = sanitizeTemplateMarkup(cached);
-    console.info('[RuntimeOwnership] template target = [data-tool-runtime]', { slug, cached: true });
     console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
     console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
     return cached;
@@ -115,9 +150,8 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
     : rawTemplate;
 
   templateCache.set(slug, template);
-  const target = resolveRootHandoffTarget(root);
+  const target = resolveRootHandoffTarget(root, slug);
   target.innerHTML = sanitizeTemplateMarkup(template);
-  console.info('[RuntimeOwnership] template target = [data-tool-runtime]', { slug, cached: false });
   console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
   console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
 

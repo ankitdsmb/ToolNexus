@@ -524,8 +524,9 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "context"
-    "runtime"
-    "followup";
+    "status"
+    "followup"
+    "content";
   gap: var(--runtime-workspace-gap);
   padding: var(--runtime-workspace-padding);
   border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
@@ -534,8 +535,10 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__runtime > [data-tool-context="true"]) { grid-area: context; }
-:where(.tool-shell-page__runtime > [data-tool-runtime="true"]) { grid-area: runtime; align-self: start; width: 100%; }
+:where(.tool-shell-page__runtime > [data-tool-status="true"]) { grid-area: status; align-self: start; }
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) { grid-area: followup; align-self: start; }
+:where(.tool-shell-page__runtime > [data-tool-content-host="true"]) { grid-area: content; align-self: start; width: 100%; }
+:where(.tool-shell-page__runtime > [data-tool-content-host="true"] > [data-tool-runtime="true"]) { width: 100%; }
 
 :where(.tool-identity-header__content h1) {
   font-size: clamp(1.85rem, 2.5vw, 2.5rem);
@@ -686,13 +689,20 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 
 
+
+:where([data-tool-content-host="true"]) {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+}
 @media (max-width: 1080px) {
   :where(.tool-shell-page__runtime) {
     grid-template-columns: 1fr;
     grid-template-areas:
       "context"
-      "runtime"
-      "followup";
+      "status"
+      "followup"
+      "content";
   }
 
   :where(.tn-unified-tool-control__capsules) {
