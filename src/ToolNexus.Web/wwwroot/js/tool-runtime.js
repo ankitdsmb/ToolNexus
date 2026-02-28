@@ -274,6 +274,49 @@ export function createToolRuntime({
     return hasToolShellContract(root);
   }
 
+  function ensureToolShellAnchors(root) {
+    if (!root) {
+      return { ready: false, repaired: false };
+    }
+
+    root.setAttribute('data-tool-shell', 'true');
+    if (!root.hasAttribute('data-tool-root')) {
+      root.setAttribute('data-tool-root', 'true');
+    }
+
+    const contracts = [
+      { selector: '[data-tool-context]', tagName: 'header', className: 'tn-tool-header', text: 'Runtime context' },
+      { selector: '[data-tool-input]', tagName: 'section', className: 'tn-tool-panel', text: 'Input area loading…' },
+      { selector: '[data-tool-status]', tagName: 'div', className: 'tool-execution-status', text: 'Idle · Ready for request' },
+      { selector: '[data-tool-output]', tagName: 'section', className: '', text: 'Output preview loading…' },
+      { selector: '[data-tool-followup]', tagName: 'footer', className: 'tool-execution-panel', text: '' }
+    ];
+
+    let repaired = false;
+    for (const contract of contracts) {
+      if (root.querySelector(contract.selector)) {
+        continue;
+      }
+
+      const node = document.createElement(contract.tagName);
+      const attr = contract.selector.replace('[', '').replace(']', '').split('=')[0];
+      node.setAttribute(attr, 'true');
+      if (contract.className) {
+        node.className = contract.className;
+      }
+      if (contract.text) {
+        node.textContent = contract.text;
+      }
+      root.appendChild(node);
+      repaired = true;
+    }
+
+    return {
+      ready: hasToolShellContract(root),
+      repaired
+    };
+  }
+
   function renderRuntimeErrorState(root, { slug, message }) {
     const shell = root?.querySelector?.('[data-tool-shell]');
     if (!shell) {
@@ -295,12 +338,15 @@ export function createToolRuntime({
   }
 
   function resolveValidationScope(root, phase = 'unspecified') {
-    const scope = root ?? null;
+    const canonicalRoot = document.getElementById('tool-root');
+    const scope = canonicalRoot && root && (root === canonicalRoot || canonicalRoot.contains(root))
+      ? canonicalRoot
+      : (root ?? canonicalRoot ?? null);
 
     logger.info('[DomContract] validation scope resolved', {
       phase,
-      rootTag: String(root?.tagName ?? root?.nodeName ?? '').toLowerCase(),
-      rootId: root?.id ?? '',
+      rootTag: String((canonicalRoot ?? root)?.tagName ?? (canonicalRoot ?? root)?.nodeName ?? '').toLowerCase(),
+      rootId: (canonicalRoot ?? root)?.id ?? '',
       rootClass: root?.className ?? '',
       isRootToolRoot: root?.id === 'tool-root',
       scopeTag: String(scope?.tagName ?? scope?.nodeName ?? '').toLowerCase(),
@@ -876,7 +922,10 @@ export function createToolRuntime({
       const templateStartedAt = now();
       emit('template_load_start', { toolSlug: slug });
       try {
-        await templateLoader(slug, root, { templatePath: manifest.templatePath });
+        const templateTarget = hasToolShellContract(root)
+          ? (root.querySelector('[data-tool-output]') ?? root)
+          : root;
+        await templateLoader(slug, templateTarget, { templatePath: manifest.templatePath });
         emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
         return true;
       } catch (error) {
@@ -889,6 +938,7 @@ export function createToolRuntime({
 
     const templateLoaded = await safeLoadTemplate();
     restoreSsrSnapshot(root, mountPlan);
+    ensureToolShellAnchors(root);
 
     templateBinder(root, window.ToolNexusConfig ?? {});
 
@@ -1231,12 +1281,7 @@ export function createToolRuntime({
         const childCountAfterLifecycle = root?.childElementCount ?? 0;
         const rootBeforePostMount = root;
         const preValidationRootElement = document.getElementById('tool-root');
-        const toolRoot = root.querySelector('[data-tool-root]') || root;
-        const validationScope = toolRoot.closest('[data-runtime-container]') || toolRoot;
-        const postMountScopedValidation = {
-          scope: validationScope,
-          validation: normalizeDomValidation(validateDomContract(validationScope, { phase: 'post-mount' }))
-        };
+        const postMountScopedValidation = validateDomAtPhase(root, 'post-mount');
         const postMountValidation = postMountScopedValidation.validation;
         const rootAfterPostMount = root;
         const currentToolRootElement = document.getElementById('tool-root');
