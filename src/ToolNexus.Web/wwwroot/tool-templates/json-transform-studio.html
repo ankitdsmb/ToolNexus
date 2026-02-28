@@ -1,0 +1,44 @@
+<div class="json-transform-runtime">
+  <header class="tool-local-header">
+    <h2 data-bind="tool.title"></h2>
+    <p>Transform and analyze JSON data.</p>
+  </header>
+
+  <section class="tool-actions">
+    <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
+    <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
+    <button id="flattenBtn" class="tool-btn" type="button">Flatten</button>
+    <button id="extractKeysBtn" class="tool-btn" type="button">Extract Keys</button>
+    <button id="filterPathsBtn" class="tool-btn" type="button">Filter Paths</button>
+    <button id="clearBtn" class="tool-btn" type="button">Clear</button>
+    <label class="json-transform-filter" for="pathFilterInput">Paths
+      <input id="pathFilterInput" type="text" placeholder="$.user.id, $.items[0].name" />
+    </label>
+  </section>
+
+  <section class="tool-editors">
+    <section class="tool-editor-panel">
+      <h3>Input JSON</h3>
+      <textarea id="inputEditor" class="json-editor" spellcheck="false" aria-label="Input JSON"></textarea>
+    </section>
+
+    <section class="tool-editor-panel">
+      <h3>Output JSON</h3>
+      <textarea id="outputEditor" class="json-editor" spellcheck="false" aria-label="Output JSON" readonly></textarea>
+    </section>
+  </section>
+
+  <section class="tool-editor-panel">
+    <h3>Execution Diagnostics</h3>
+    <pre id="diagnosticsOutput" class="json-diagnostics"></pre>
+  </section>
+
+  <section class="tool-metrics">
+    <p><span>Execution time</span><strong id="metricDuration">0 ms</strong></p>
+    <p><span>Input size</span><strong id="metricInputSize">0 chars</strong></p>
+    <p><span>Output size</span><strong id="metricOutputSize">0 chars</strong></p>
+    <p><span>Throughput</span><strong id="metricThroughput">0 chars/ms</strong></p>
+  </section>
+
+  <section id="errorBox" hidden></section>
+</div>

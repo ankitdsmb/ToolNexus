@@ -1,0 +1,12 @@
+{
+  "slug": "json-transform-studio",
+  "viewName": "ToolShell",
+  "category": "",
+  "modulePath": "/js/tools/json-transform-studio.js",
+  "templatePath": "/tool-templates/json-transform-studio.html",
+  "dependencies": [],
+  "styles": [
+    "/css/pages/json-transform-studio.css"
+  ],
+  "cssPath": "/css/pages/json-transform-studio.css"
+}
