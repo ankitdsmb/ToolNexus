@@ -966,7 +966,7 @@ export function createToolRuntime({
       try {
         const templateTarget = root;
         await templateLoader(slug, templateTarget, { templatePath: manifest.templatePath });
-        logger.info('[RuntimeOwnership] template target = root', { slug, target: '#tool-root' });
+        logger.info('[RuntimeOwnership] template target = content-host', { slug, target: '[data-tool-content-host]' });
         logger.info('[RuntimeOwnership] shell anchors preserved', { slug, immutableAnchors: true });
         logger.info('[RuntimeOwnership] no mutation performed', { slug, mutation: 'none' });
         emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });

@@ -398,7 +398,7 @@ describe('tool runtime ui bootstrap', () => {
     expect(lifecycleAdapter).toHaveBeenCalled();
   });
 
-  test('legacy mount mode keeps input anchor handoff compatibility', async () => {
+  test('legacy mount mode is normalized to content host handoff ownership', async () => {
     window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeTemplateMountMode: 'legacy' };
     const root = document.createElement('div');
     root.innerHTML = `
@@ -414,7 +414,8 @@ describe('tool runtime ui bootstrap', () => {
     }));
 
     await loadToolTemplate('legacy-mode-tool', root);
-    expect(root.querySelector('[data-tool-input] [data-runtime-template-handoff]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-input] [data-runtime-template-handoff]')).toBeNull();
+    expect(root.querySelector('[data-tool-content-host] [data-runtime-template-handoff]')).not.toBeNull();
   });
 
   test('content host shell anchors remain intact and output panel is not mounted empty', async () => {
