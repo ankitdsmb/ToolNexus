@@ -1,7 +1,1 @@
-.csv-viewer-runtime.tool-runtime-widget {
-  display: block;
-}
-
-.csv-viewer-runtime .tool-local-surface {
-  min-height: 0;
-}
+/* Runtime shell ownership moved to ui-system.css. */

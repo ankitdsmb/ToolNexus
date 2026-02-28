@@ -1,7 +1,1 @@
-.json-toolkit-pro-runtime.tool-runtime-widget {
-  display: block;
-}
-
-.json-toolkit-pro-runtime .tool-local-surface {
-  min-height: 0;
-}
+/* Runtime shell ownership moved to ui-system.css. */

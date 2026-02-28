@@ -1,7 +1,1 @@
-.html-to-markdown-runtime.tool-runtime-widget {
-  display: block;
-}
-
-.html-to-markdown-runtime .tool-local-surface {
-  min-height: 0;
-}
+/* Runtime shell ownership moved to ui-system.css. */

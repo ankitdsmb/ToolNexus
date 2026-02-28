@@ -1,7 +1,1 @@
-.json-to-xml-runtime.tool-runtime-widget {
-  display: block;
-}
-
-.json-to-xml-runtime .tool-local-surface {
-  min-height: 0;
-}
+/* Runtime shell ownership moved to ui-system.css. */
