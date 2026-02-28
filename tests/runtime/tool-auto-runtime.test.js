@@ -51,7 +51,7 @@ describe('tool auto runtime', () => {
     module.init(state, host, { addCleanup() {} });
 
     expect(host.querySelector('[data-tool-shell]')).toBe(runtimeContainer);
-    expect(host.querySelector('[data-preexisting]')).toBeNull();
+    expect(host.querySelector('[data-preexisting]')).not.toBeNull();
     expect(host.querySelector('[data-tool-shell].tn-unified-tool-control')).not.toBeNull();
   });
 

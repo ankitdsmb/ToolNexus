@@ -67,7 +67,10 @@ describe('runtime DOM contract immunity', () => {
         modulePath: `/js/tools/${slug}.js`
       }),
       templateLoader: async (_slug, target) => {
-        target.innerHTML = '<section class="tool-ui">template ready</section>';
+        const handoff = document.createElement('section');
+        handoff.setAttribute('data-runtime-template-handoff', 'true');
+        handoff.innerHTML = '<section class="tool-ui">template ready</section>';
+        target.append(handoff);
       },
       dependencyLoader: { loadDependencies: async () => {} },
       importModule: async () => ({

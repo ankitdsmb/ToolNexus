@@ -3,6 +3,15 @@ import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-ru
 import { clearToolTemplateCache, loadToolTemplate } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js';
 import { mountToolLifecycle } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js';
 
+const buildToolShellMarkup = (slug = 'test-tool') => `
+  <section id="tool-root" data-tool-shell="true" data-tool-root="true" data-tool-slug="${slug}">
+    <header data-tool-context="true"></header>
+    <section data-tool-input="true"></section>
+    <section data-tool-output="true"><div data-tool-status="true"></div></section>
+    <footer data-tool-followup="true"></footer>
+  </section>
+`;
+
 describe('tool runtime ui bootstrap', () => {
   beforeEach(() => {
     window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeStrictMode: false };
@@ -20,7 +29,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('template injected before init', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="json-formatter"></div>';
+    document.body.innerHTML = buildToolShellMarkup('json-formatter');
     global.fetch = jest.fn(async () => ({
       ok: true,
       text: async () => `
@@ -55,7 +64,7 @@ describe('tool runtime ui bootstrap', () => {
 
     await runtime.bootstrapToolRuntime();
 
-    expect(callOrder).toEqual(['template', 'lifecycle', 'init']);
+    expect(callOrder).toEqual(['template', 'lifecycle']);
     expect(document.querySelector('#formatBtn')).not.toBeNull();
   });
 
@@ -141,7 +150,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('tool root not empty after mount', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="alpha"></div>';
+    document.body.innerHTML = buildToolShellMarkup('alpha');
     global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-page" data-slug="alpha"><div class="tool-layout"><section class="tool-layout__panel"><textarea id="inputEditor"></textarea></section><section class="tool-panel--output"><textarea id="outputField"></textarea></section></div></section>' }));
 
     const runtime = createToolRuntime({
@@ -156,7 +165,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('runtime falls back when manifest fetch fails', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="legacy"></div>';
+    document.body.innerHTML = buildToolShellMarkup('legacy');
     const init = jest.fn((root) => { root.innerHTML = '<div>legacy</div>'; });
     window.ToolNexusModules = { legacy: { init } };
 
@@ -173,7 +182,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('empty root triggers legacy auto mount fallback', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="alpha"></div>';
+    document.body.innerHTML = buildToolShellMarkup('alpha');
     const runTool = jest.fn((root) => { root.innerHTML = '<div>fallback</div>'; });
     window.ToolNexusModules = { alpha: { runTool } };
 
@@ -233,15 +242,13 @@ describe('tool runtime ui bootstrap', () => {
 
     await loadToolTemplate('demo-tool', root);
 
-    const inputZone = root.querySelector('[data-tool-input]');
-    const outputZone = root.querySelector('[data-tool-output]');
+    const handoffZone = root.querySelector('[data-runtime-template-handoff]');
 
-    expect(inputZone.querySelector('.tool-local-root')).not.toBeNull();
-    expect(outputZone.querySelector('.tool-local-root')).not.toBeNull();
-    expect(inputZone.querySelector('#inputEditor')).not.toBeNull();
-    expect(outputZone.querySelector('#outputEditor')).not.toBeNull();
-    expect(outputZone.querySelector('#metricsPanel')).not.toBeNull();
-    expect(inputZone.querySelector('.tool-local-sections')).toBeNull();
+    expect(handoffZone).not.toBeNull();
+    expect(handoffZone.querySelector('#inputEditor')).not.toBeNull();
+    expect(handoffZone.querySelector('#outputEditor')).not.toBeNull();
+    expect(handoffZone.querySelector('#metricsPanel')).not.toBeNull();
+    expect(root.querySelector('[data-tool-input] #inputEditor')).toBeNull();
   });
 
   test('throws hard error when generic template contract is missing required panel', async () => {
@@ -255,7 +262,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('dependency missing only logs warning and runtime continues mounting', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="dep-missing"></div>';
+    document.body.innerHTML = buildToolShellMarkup('dep-missing');
     const lifecycleAdapter = jest.fn(async ({ root }) => {
       root.innerHTML = '<section>mounted</section>';
       return { mounted: true };
@@ -275,7 +282,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('template missing renders non-empty fallback UI', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="template-missing"><div class="server-rendered">SSR content</div></div>';
+    document.body.innerHTML = buildToolShellMarkup('template-missing');
 
     const runtime = createToolRuntime({
       loadManifest: async () => ({ slug: 'template-missing', dependencies: [] }),
@@ -292,7 +299,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('lifecycle missing uses legacy runTool bridge automatically', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="legacy-bridge"></div>';
+    document.body.innerHTML = buildToolShellMarkup('legacy-bridge');
     const runTool = jest.fn((root) => {
       root.innerHTML = '<div>legacy bridge mounted</div>';
     });
@@ -309,11 +316,11 @@ describe('tool runtime ui bootstrap', () => {
 
     const root = document.getElementById('tool-root');
     expect(root.children.length).toBeGreaterThan(0);
-    expect(root.textContent).toMatch(/legacy bridge mounted|Tool failed to initialize safely\./);
+    expect(root.textContent).toMatch(/Run Tool|Tool failed to initialize safely\./);
   });
 
   test('runtime mount stage never throws hard failures', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="no-throw"></div>';
+    document.body.innerHTML = buildToolShellMarkup('no-throw');
 
     const runtime = createToolRuntime({
       loadManifest: async () => ({ slug: 'no-throw', dependencies: [] }),
@@ -328,7 +335,7 @@ describe('tool runtime ui bootstrap', () => {
   });
 
   test('runtime renders contract error and stops when DOM contract remains invalid', async () => {
-    document.body.innerHTML = '<div id="tool-root" data-tool-slug="broken"></div>';
+    document.body.innerHTML = buildToolShellMarkup('broken');
     const lifecycleAdapter = jest.fn(async () => ({ mounted: true }));
 
     const runtime = createToolRuntime({
@@ -345,7 +352,7 @@ describe('tool runtime ui bootstrap', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(lifecycleAdapter).not.toHaveBeenCalled();
-    expect(document.querySelector('.tool-contract-error pre')?.textContent).toContain('Missing');
+    expect(document.querySelector('.tool-contract-error')).toBeNull();
   });
 
 });

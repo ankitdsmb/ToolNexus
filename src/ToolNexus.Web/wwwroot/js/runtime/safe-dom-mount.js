@@ -7,7 +7,8 @@ export function safeDomMount(root, mode = 'enhance') {
   const ssrSnapshot = hadSsrMarkup ? Array.from(root.childNodes).map((node) => node.cloneNode(true)) : [];
 
   if (mode === 'replace') {
-    root.replaceChildren();
+    root.dataset.runtimeReplaceRequested = 'true';
+    root.dataset.runtimeMutationSkipped = 'true';
   }
 
   if (mode === 'legacy') {

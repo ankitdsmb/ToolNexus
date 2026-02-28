@@ -107,15 +107,21 @@ function resolveTemplateNodes(markup) {
   return { inputNodes, outputNodes, runtimeClassName: runtimeRoot.className || "" };
 }
 
-function resolveToolShellInjectionTarget(root) {
-  const outputZone = root.querySelector('[data-tool-output]');
-  const inputZone = root.querySelector('[data-tool-input]');
-
-  if (inputZone && outputZone) {
-    return { inputZone, outputZone, hasToolShellAnchors: true };
+function resolveRootHandoffTarget(root) {
+  const canonicalRoot = root?.id === 'tool-root'
+    ? root
+    : root?.querySelector?.('#tool-root') ?? root;
+  const existing = canonicalRoot?.querySelector?.('[data-runtime-template-handoff]');
+  if (existing) {
+    return existing;
   }
 
-  return { inputZone: root, outputZone: root, hasToolShellAnchors: false };
+  const handoff = document.createElement('section');
+  handoff.setAttribute('data-runtime-template-handoff', 'true');
+  handoff.className = 'tool-runtime-template-handoff';
+  handoff.setAttribute('aria-label', 'Tool runtime template handoff');
+  canonicalRoot?.append(handoff);
+  return handoff;
 }
 
 export async function loadToolTemplate(slug, root, { fetchImpl = fetch, templatePath } = {}) {
@@ -129,20 +135,11 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
 
   const cached = templateCache.get(slug);
   if (cached) {
-    const target = resolveToolShellInjectionTarget(root);
-    const { inputNodes, outputNodes, runtimeClassName } = resolveTemplateNodes(cached);
-
-    if (!target.hasToolShellAnchors) {
-      target.inputZone.innerHTML = cached;
-      return cached;
-    }
-
-    const inputRoot = toToolLocalRoot('tool-local-root tool-local-root--input', runtimeClassName);
-    const outputRoot = toToolLocalRoot('tool-local-root tool-local-root--output', runtimeClassName);
-    inputRoot.append(...inputNodes);
-    outputRoot.append(...outputNodes);
-    target.inputZone.replaceChildren(inputRoot);
-    target.outputZone.replaceChildren(outputRoot);
+    const target = resolveRootHandoffTarget(root);
+    target.innerHTML = cached;
+    console.info('[RuntimeOwnership] template target = root', { slug, cached: true });
+    console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '#tool-root' });
+    console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
     return cached;
   }
 
@@ -167,19 +164,11 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
     : rawTemplate;
 
   templateCache.set(slug, template);
-  const target = resolveToolShellInjectionTarget(root);
-  const { inputNodes, outputNodes, runtimeClassName } = resolveTemplateNodes(template);
-
-  if (!target.hasToolShellAnchors) {
-    target.inputZone.innerHTML = template;
-  } else {
-    const inputRoot = toToolLocalRoot('tool-local-root tool-local-root--input', runtimeClassName);
-    const outputRoot = toToolLocalRoot('tool-local-root tool-local-root--output', runtimeClassName);
-    inputRoot.append(...inputNodes);
-    outputRoot.append(...outputNodes);
-    target.inputZone.replaceChildren(inputRoot);
-    target.outputZone.replaceChildren(outputRoot);
-  }
+  const target = resolveRootHandoffTarget(root);
+  target.innerHTML = template;
+  console.info('[RuntimeOwnership] template target = root', { slug, cached: false });
+  console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '#tool-root' });
+  console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
 
   if (usedLegacyFallback || template.includes('data-template-contract="generic"')) {
     validateGenericTemplateContract(template);

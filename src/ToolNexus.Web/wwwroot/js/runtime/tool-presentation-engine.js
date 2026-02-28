@@ -123,38 +123,97 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     }
 
     ensureClass(outputHost, ['tn-unified-tool-control__output']);
-    outputHost.innerHTML = `
-      <section class="tn-unified-tool-control__output-block tn-unified-tool-control__output-block--primary" data-output-tier="primary">
-        <p class="tn-unified-tool-control__output-label">Primary result</p>
-        <pre class="tn-unified-tool-control__preview">No output yet.</pre>
-        <details class="tn-unified-tool-control__details" hidden>
-          <summary>Expanded result</summary>
-          <pre class="tn-unified-tool-control__result"></pre>
-        </details>
-      </section>
-      <section class="tn-unified-tool-control__output-block" data-output-tier="supporting">
-        <p class="tn-unified-tool-control__output-label">Explanation</p>
-        <p class="tn-unified-tool-control__supporting" data-ai-layer="interpretation">Interpretation summary: Awaiting execution context.</p>
-        <p class="tn-unified-tool-control__supporting" data-ai-layer="classification-why">Why this result is classified this way: Awaiting runtime evidence.</p>
-        <p class="tn-unified-tool-control__supporting" data-ai-layer="confidence">Confidence: Pending execution.</p>
-        <p class="tn-unified-tool-control__supporting" data-ai-layer="next-action">Next recommended action: Run execution to generate guidance.</p>
-      </section>
-      <section class="tn-unified-tool-control__output-block" data-output-tier="metadata">
-        <p class="tn-unified-tool-control__output-label">Metadata</p>
-        <pre class="tn-unified-tool-control__metadata">No metadata yet.</pre>
-      </section>
-      <section class="tn-unified-tool-control__output-block" data-output-tier="diagnostics">
-        <p class="tn-unified-tool-control__output-label">Runtime diagnostics</p>
-        <pre class="tn-unified-tool-control__diagnostics">No diagnostics reported.</pre>
-      </section>
-    `;
 
-    return {
-      primary: outputHost.querySelector('[data-output-tier="primary"]'),
-      supporting: outputHost.querySelector('[data-output-tier="supporting"]'),
-      metadata: outputHost.querySelector('[data-output-tier="metadata"]'),
-      diagnostics: outputHost.querySelector('[data-output-tier="diagnostics"]')
+    const ensureTier = (tier) => {
+      let section = outputHost.querySelector(`[data-output-tier="${tier}"]`);
+      if (!section) {
+        section = doc.createElement('section');
+        section.className = tier === 'primary'
+          ? 'tn-unified-tool-control__output-block tn-unified-tool-control__output-block--primary'
+          : 'tn-unified-tool-control__output-block';
+        section.dataset.outputTier = tier;
+        outputHost.append(section);
+      }
+
+      return section;
     };
+
+    const primary = ensureTier('primary');
+    if (!primary.querySelector('.tn-unified-tool-control__output-label')) {
+      const label = doc.createElement('p');
+      label.className = 'tn-unified-tool-control__output-label';
+      label.textContent = 'Primary result';
+      primary.append(label);
+    }
+    if (!primary.querySelector('.tn-unified-tool-control__preview')) {
+      const preview = doc.createElement('pre');
+      preview.className = 'tn-unified-tool-control__preview';
+      preview.textContent = 'No output yet.';
+      primary.append(preview);
+    }
+    if (!primary.querySelector('.tn-unified-tool-control__details')) {
+      const details = doc.createElement('details');
+      details.className = 'tn-unified-tool-control__details';
+      details.hidden = true;
+      const summary = doc.createElement('summary');
+      summary.textContent = 'Expanded result';
+      const result = doc.createElement('pre');
+      result.className = 'tn-unified-tool-control__result';
+      details.append(summary, result);
+      primary.append(details);
+    }
+
+    const supporting = ensureTier('supporting');
+    if (!supporting.querySelector('.tn-unified-tool-control__output-label')) {
+      const label = doc.createElement('p');
+      label.className = 'tn-unified-tool-control__output-label';
+      label.textContent = 'Explanation';
+      supporting.append(label);
+    }
+    const ensureSupportingLine = (layer, message) => {
+      if (supporting.querySelector(`[data-ai-layer="${layer}"]`)) {
+        return;
+      }
+      const line = doc.createElement('p');
+      line.className = 'tn-unified-tool-control__supporting';
+      line.dataset.aiLayer = layer;
+      line.textContent = message;
+      supporting.append(line);
+    };
+    ensureSupportingLine('interpretation', 'Interpretation summary: Awaiting execution context.');
+    ensureSupportingLine('classification-why', 'Why this result is classified this way: Awaiting runtime evidence.');
+    ensureSupportingLine('confidence', 'Confidence: Pending execution.');
+    ensureSupportingLine('next-action', 'Next recommended action: Run execution to generate guidance.');
+
+    const metadata = ensureTier('metadata');
+    if (!metadata.querySelector('.tn-unified-tool-control__output-label')) {
+      const label = doc.createElement('p');
+      label.className = 'tn-unified-tool-control__output-label';
+      label.textContent = 'Metadata';
+      metadata.append(label);
+    }
+    if (!metadata.querySelector('.tn-unified-tool-control__metadata')) {
+      const node = doc.createElement('pre');
+      node.className = 'tn-unified-tool-control__metadata';
+      node.textContent = 'No metadata yet.';
+      metadata.append(node);
+    }
+
+    const diagnostics = ensureTier('diagnostics');
+    if (!diagnostics.querySelector('.tn-unified-tool-control__output-label')) {
+      const label = doc.createElement('p');
+      label.className = 'tn-unified-tool-control__output-label';
+      label.textContent = 'Runtime diagnostics';
+      diagnostics.append(label);
+    }
+    if (!diagnostics.querySelector('.tn-unified-tool-control__diagnostics')) {
+      const node = doc.createElement('pre');
+      node.className = 'tn-unified-tool-control__diagnostics';
+      node.textContent = 'No diagnostics reported.';
+      diagnostics.append(node);
+    }
+
+    return { primary, supporting, metadata, diagnostics };
   }
 
   function applyOutputVisibility({ outputHost, supporting, metadata, diagnostics } = {}) {

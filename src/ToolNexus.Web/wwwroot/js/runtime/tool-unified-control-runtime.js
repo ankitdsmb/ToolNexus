@@ -776,8 +776,9 @@ export function createUnifiedToolControl({
   const pageShell = shell.closest?.('.tool-shell-page') ?? doc;
   presentationEngine.applyArticleTypography(pageShell);
 
-  inputArea.replaceChildren();
-  output.append(errors);
+  if (!errors.parentElement) {
+    output.append(errors);
+  }
 
   return {
     shell,
@@ -826,7 +827,7 @@ export function createUnifiedToolControl({
       errors.append(panel);
     },
     clearErrors() {
-      errors.replaceChildren();
+      errors.textContent = '';
     },
     hideSuggestion() {
       suggestionBadge.hidden = true;
