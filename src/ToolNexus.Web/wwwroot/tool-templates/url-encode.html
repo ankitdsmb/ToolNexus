@@ -14,6 +14,8 @@
   </span>
  </header>
  <section class="tool-local-actions">
+ 
+  <button type="button" data-tool-primary-action hidden aria-hidden="true" tabindex="-1">Run</button>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
@@ -54,7 +56,7 @@
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste text, URL, or query string" rows="14"></textarea>
    <div class="url-encode-actions">
-    <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button">
+    <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button" data-tool-primary-action>
      Encode
     </button>
     <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">

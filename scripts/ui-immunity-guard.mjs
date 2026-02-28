@@ -175,14 +175,17 @@ function scanTemplate(filePath, toolResult) {
     });
   }
 
-  const primaryCount = (html.match(/(tn-btn--primary|btn-primary|tool-action--primary)/gu) ?? []).length;
-  if (primaryCount !== 1) {
-    addViolation(toolResult, {
-      ruleId: 'RULE_4',
-      severity: severityFromRule('RULE_4'),
-      message: `Expected exactly one primary action, found ${primaryCount}`,
-      file: filePath
-    });
+  const actionSections = [...html.matchAll(/<section[^>]*class="[^"]*tool-local-actions[^"]*"[^>]*>([\s\S]*?)<\/section>/gu)];
+  for (const section of actionSections) {
+    const primaryCount = (section[1].match(/\bdata-tool-primary-action\b/gu) ?? []).length;
+    if (primaryCount !== 1) {
+      addViolation(toolResult, {
+        ruleId: 'RULE_4',
+        severity: severityFromRule('RULE_4'),
+        message: `Expected exactly one primary action, found ${primaryCount}`,
+        file: filePath
+      });
+    }
   }
 }
 

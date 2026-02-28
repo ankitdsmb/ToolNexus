@@ -1,502 +1,214 @@
 {
-  "generatedAt": "2026-02-28T21:24:28.278Z",
+  "generatedAt": "2026-02-28T21:38:00.780Z",
   "strictMode": false,
   "totals": {
     "toolCount": 29,
-    "violations": 33,
-    "executionUiScore": 0
+    "violations": 0,
+    "executionUiScore": 100
   },
   "tools": [
     {
       "tool": "json-formatter",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/json-formatter.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "json-validator",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/json-validator.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "json-to-xml",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/json-to-xml.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "xml-to-json",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/xml-to-json.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "xml-formatter",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/xml-formatter.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "csv-to-json",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/csv-to-json.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "json-to-csv",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/json-to-csv.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "csv-viewer",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/csv-viewer.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "base64-encode",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/base64-encode.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "base64-decode",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/base64-decode.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "url-encode",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/url-encode.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "url-decode",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/url-decode.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "html-formatter",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/html-formatter.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "markdown-to-html",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/markdown-to-html.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "html-to-markdown",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/html-to-markdown.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "css-minifier",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/css-minifier.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "js-minifier",
-      "violationsCount": 2,
-      "severity": "high",
-      "recommendations": [
-        "Adjust spacing/heights to configured density thresholds.",
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_3",
-          "severity": "medium",
-          "message": "Gap 24px outside allowed range (4-20px)",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/css/pages/js-minifier.css"
-        },
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/js-minifier.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "sql-formatter",
-      "violationsCount": 2,
-      "severity": "high",
-      "recommendations": [
-        "Adjust spacing/heights to configured density thresholds.",
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_3",
-          "severity": "medium",
-          "message": "Gap 24px outside allowed range (4-20px)",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/css/pages/sql-formatter.css"
-        },
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/sql-formatter.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "regex-tester",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/regex-tester.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "text-diff",
-      "violationsCount": 3,
-      "severity": "high",
-      "recommendations": [
-        "Adjust spacing/heights to configured density thresholds.",
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_3",
-          "severity": "medium",
-          "message": "Gap 24px outside allowed range (4-20px)",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/css/tools/text-diff.css"
-        },
-        {
-          "ruleId": "RULE_3",
-          "severity": "medium",
-          "message": "Gap 24px outside allowed range (4-20px)",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/css/tools/text-diff.css"
-        },
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/text-diff.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "uuid-generator",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/uuid-generator.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "case-converter",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/case-converter.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "html-entities",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/html-entities.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "yaml-to-json",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/yaml-to-json.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "json-to-yaml",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/json-to-yaml.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "file-merge",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/file-merge.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "json-toolkit-pro",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/json-toolkit-pro.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "text-intelligence-analyzer",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/text-intelligence-analyzer.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     },
     {
       "tool": "document-converter",
-      "violationsCount": 1,
-      "severity": "high",
-      "recommendations": [
-        "Keep exactly one primary action in tool-local-actions."
-      ],
-      "violations": [
-        {
-          "ruleId": "RULE_4",
-          "severity": "high",
-          "message": "Expected exactly one primary action, found 0",
-          "file": "/workspace/ToolNexus/src/ToolNexus.Web/wwwroot/tool-templates/document-converter.html"
-        }
-      ]
+      "violationsCount": 0,
+      "severity": "none",
+      "recommendations": [],
+      "violations": []
     }
   ]
 }

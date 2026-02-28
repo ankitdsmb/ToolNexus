@@ -1,6 +1,6 @@
 .sql-formatter-page {
   display: grid;
-  gap: 24px;
+  gap: var(--space-4);
 }
 
 .sql-formatter-header {

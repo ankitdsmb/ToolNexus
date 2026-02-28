@@ -1,9 +1,9 @@
 # Execution UI Immunity Report
 
-- Generated: 2026-02-28T21:24:28.278Z
+- Generated: 2026-02-28T21:38:00.780Z
 - Strict mode: false
-- Execution UI Score: **0/100**
-- Total Violations: **33**
+- Execution UI Score: **100/100**
+- Total Violations: **0**
 
 ## Validation Rules
 
@@ -21,241 +21,147 @@
 ## Per Tool Results
 
 ### json-formatter
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### json-validator
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### json-to-xml
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### xml-to-json
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### xml-formatter
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### csv-to-json
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### json-to-csv
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### csv-viewer
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### base64-encode
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### base64-decode
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### url-encode
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### url-decode
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### html-formatter
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### markdown-to-html
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### html-to-markdown
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### css-minifier
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### js-minifier
-- Violations: 2
-- Severity: high
-- Status: fail
-  - [RULE_3] (medium) Gap 24px outside allowed range (4-20px)
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Adjust spacing/heights to configured density thresholds.
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### sql-formatter
-- Violations: 2
-- Severity: high
-- Status: fail
-  - [RULE_3] (medium) Gap 24px outside allowed range (4-20px)
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Adjust spacing/heights to configured density thresholds.
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### regex-tester
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### text-diff
-- Violations: 3
-- Severity: high
-- Status: fail
-  - [RULE_3] (medium) Gap 24px outside allowed range (4-20px)
-  - [RULE_3] (medium) Gap 24px outside allowed range (4-20px)
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Adjust spacing/heights to configured density thresholds.
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### uuid-generator
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### case-converter
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### html-entities
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### yaml-to-json
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### json-to-yaml
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### file-merge
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### json-toolkit-pro
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### text-intelligence-analyzer
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
 ### document-converter
-- Violations: 1
-- Severity: high
-- Status: fail
-  - [RULE_4] (high) Expected exactly one primary action, found 0
-- Recommendations:
-  - Keep exactly one primary action in tool-local-actions.
+- Violations: 0
+- Severity: none
+- Status: pass
 
