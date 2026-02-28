@@ -83,10 +83,22 @@
             var isPrimaryDocSection = plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase)
                 || plugin.Equals("QuickStart", StringComparison.OrdinalIgnoreCase);
             <section class="tool-md-section" data-doc-section="@plugin" data-doc-priority="@(isPrimaryDocSection ? "primary" : "secondary")">
-                <h3>@contextPluginLabels[plugin]</h3>
-                <div class="tool-md-content">
-                    @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
-                </div>
+                @if (isPrimaryDocSection)
+                {
+                    <h3>@contextPluginLabels[plugin]</h3>
+                    <div class="tool-md-content">
+                        @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
+                    </div>
+                }
+                else
+                {
+                    <details class="runtime-doc-disclosure">
+                        <summary>@contextPluginLabels[plugin]</summary>
+                        <div class="runtime-doc-disclosure__body tool-md-content">
+                            @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
+                        </div>
+                    </details>
+                }
             </section>
         }
     </aside>

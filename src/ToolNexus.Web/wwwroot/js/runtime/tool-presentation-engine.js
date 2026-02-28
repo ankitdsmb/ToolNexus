@@ -101,7 +101,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     primaryActions.replaceChildren(runButton, hintNode);
 
     const secondaryItems = Array.isArray(secondaryNodes)
-      ? secondaryNodes.filter(Boolean)
+      ? secondaryNodes.filter(Boolean).slice(0, 2)
       : [];
 
     if (secondaryItems.length) {

@@ -1,9 +1,12 @@
 :where(.tool-runtime-widget) {
+  --exec-gap-tight: 6px;
+  --exec-gap-normal: 10px;
+  --exec-gap-loose: 14px;
   width: 100%;
   margin: 0;
   padding: clamp(10px, 1vw, 14px);
   display: grid;
-  gap: clamp(8px, 0.8vw, 12px);
+  gap: var(--exec-gap-tight);
   align-content: start;
   background: transparent;
 }
@@ -57,7 +60,7 @@
 :where(.tool-runtime-widget .tool-local-body) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(8px, 0.9vw, 12px);
+  gap: var(--exec-gap-normal);
   min-height: 400px;
   align-items: stretch;
 }
@@ -84,7 +87,7 @@
 }
 
 :where(.tool-runtime-widget .tool-local-metrics) {
-  margin-top: 0;
+  margin-top: var(--exec-gap-tight);
   display: flex;
   flex-wrap: wrap;
   align-items: center;

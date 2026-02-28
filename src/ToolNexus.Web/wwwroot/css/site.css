@@ -1899,10 +1899,13 @@ RESPONSIVE
 
 /* Workspace normalization: execution-first runtime shell */
 .tool-shell-page--workspace {
-  --execution-gap: clamp(12px, 1.2vw, 18px);
+  --execution-gap: var(--exec-gap-loose);
   --execution-padding: clamp(14px, 1.4vw, 20px);
   --runtime-card-radius: 14px;
   --runtime-card-border: 1px solid #d8e0ea;
+  --exec-gap-tight: 6px;
+  --exec-gap-normal: 10px;
+  --exec-gap-loose: 14px;
   --execution-gap-tight: var(--exec-gap-tight);
   --execution-gap-normal: var(--exec-gap-normal);
   --execution-gap-loose: var(--exec-gap-loose);
@@ -1931,7 +1934,7 @@ RESPONSIVE
 .tool-shell-page--workspace .tool-shell-page__runtime {
   width: 100%;
   max-width: 100%;
-  min-height: clamp(520px, 62vh, 700px);
+  min-height: clamp(540px, 60vh, 680px);
   background: #ffffff;
   border: var(--runtime-card-border);
   border-radius: var(--runtime-card-radius);
@@ -1942,9 +1945,13 @@ RESPONSIVE
     "status"
     "followup"
     "content";
-  gap: var(--execution-gap-normal);
+  gap: var(--execution-gap-tight);
   padding: clamp(12px, 1.1vw, 16px);
   align-content: start;
+}
+
+.tool-shell-page--workspace .tool-shell-page__runtime > [data-tool-content-host="true"] {
+  margin-top: var(--execution-gap-normal);
 }
 
 .tool-shell-page--workspace .tn-tool-panel,
@@ -2028,12 +2035,13 @@ RESPONSIVE
   border-radius: var(--runtime-card-radius);
   background: #f8fafc;
   box-shadow: none;
-  opacity: 0.82;
+  opacity: 0.72;
   padding: clamp(8px, 1vw, 12px);
+  margin-top: var(--execution-gap-loose);
 }
 
 .tool-shell-page--workspace .tool-md-section[data-doc-priority="secondary"] {
-  display: none;
+  display: block;
 }
 
 .tool-shell-page--workspace .runtime-doc-disclosure {
@@ -2074,7 +2082,7 @@ RESPONSIVE
       "status"
       "followup"
       "content";
-    min-height: 64vh;
+    min-height: clamp(540px, 64vh, 680px);
   }
 
   .tool-shell-page--workspace .tn-unified-tool-control__run {
