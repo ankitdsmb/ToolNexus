@@ -23,6 +23,7 @@ import { createRuntimeCrashOverlay } from './runtime/runtime-crash-overlay.js';
 import { guardInvalidLifecycleResult } from './runtime/tool-execution-normalizer.js';
 import { assertDomContractRootsUnchanged, freezeDomContractRoots } from './runtime/tool-dom-contract-guard.js';
 import { isModuleContractError, validateModuleContract } from './runtime/module-contract-validator.js';
+import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runtime/execution-ui-law-validator.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -174,7 +175,8 @@ export function createToolRuntime({
   now = () => (globalThis.performance?.now?.() ?? Date.now()),
   createToolStateRegistry = defaultCreateToolStateRegistry,
   createRuntimeObservability = defaultCreateRuntimeObservability,
-  containerManager = createToolContainerManager({ doc: document })
+  containerManager = createToolContainerManager({ doc: document }),
+  validateExecutionUiLaw = defaultExecutionUiLawValidator
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -1010,6 +1012,26 @@ export function createToolRuntime({
       if (isDevOrTestEnvironment() || isStrictModeEnabled()) {
         throw new Error(errors.join('\n'));
       }
+    }
+
+
+    const uiLawValidation = validateExecutionUiLaw(root, {
+      thresholds: window.ToolNexusConfig?.executionUiDensityThresholds ?? {}
+    });
+
+    if (!uiLawValidation.passed) {
+      emit('ui_law_warning', {
+        toolSlug: slug,
+        metadata: {
+          score: uiLawValidation.score,
+          violations: uiLawValidation.violations
+        }
+      });
+      logger.warn('[ExecutionUiLaw] validation warning; runtime remains available.', {
+        slug,
+        score: uiLawValidation.score,
+        violations: uiLawValidation.violations
+      });
     }
 
     let validation = ensureDomContract(root, slug, capabilitiesAtStart);
