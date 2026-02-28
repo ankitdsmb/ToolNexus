@@ -33,11 +33,11 @@
 }
 
 <article class="tool-shell-page workspace-shell page-shell" aria-label="Tool runtime page">
-    <header class="tool-shell-page__hero workspace-shell__hero tool-panel" aria-label="Tool introduction">
+    <header class="tool-shell-page__hero workspace-shell__hero tool-panel tool-identity-header" aria-label="Tool introduction">
         <p class="tool-section__eyebrow">Runtime workspace</p>
-        <div class="tool-shell-page__hero-main">
+        <div class="tool-shell-page__hero-main tool-identity-header__content">
             <h1>@Model.Tool.Title</h1>
-            <p>@(Model.Content?.Intro ?? Model.Tool.SeoDescription)</p>
+            <p class="tool-identity-header__intent">@(Model.Content?.Intro ?? Model.Tool.SeoDescription)</p>
         </div>
         <div class="tool-shell-page__hero-meta" aria-label="Tool metadata">
             <span class="chip">@Model.Tool.Category</span>
@@ -70,7 +70,7 @@
         </section>
     </section>
 
-    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
+    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
         @foreach (var plugin in contextPlugins)
         {
             @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
