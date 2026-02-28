@@ -24,6 +24,7 @@ import { guardInvalidLifecycleResult } from './runtime/tool-execution-normalizer
 import { assertDomContractRootsUnchanged, freezeDomContractRoots } from './runtime/tool-dom-contract-guard.js';
 import { isModuleContractError, validateModuleContract } from './runtime/module-contract-validator.js';
 import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runtime/execution-ui-law-validator.js';
+import { validateExecutionDensity as defaultExecutionDensityValidator, writeExecutionDensityReport as defaultWriteExecutionDensityReport } from './runtime/execution-density-validator.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -176,7 +177,9 @@ export function createToolRuntime({
   createToolStateRegistry = defaultCreateToolStateRegistry,
   createRuntimeObservability = defaultCreateRuntimeObservability,
   containerManager = createToolContainerManager({ doc: document }),
-  validateExecutionUiLaw = defaultExecutionUiLawValidator
+  validateExecutionUiLaw = defaultExecutionUiLawValidator,
+  validateExecutionDensity = defaultExecutionDensityValidator,
+  writeExecutionDensityReport = defaultWriteExecutionDensityReport
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -1033,6 +1036,44 @@ export function createToolRuntime({
         violations: uiLawValidation.violations
       });
     }
+
+    const densityValidation = validateExecutionDensity(root, {
+      thresholds: window.ToolNexusConfig?.executionDensityThresholds ?? {}
+    });
+
+    emit('density_drift', {
+      toolSlug: slug,
+      category: densityValidation.telemetryCategory,
+      metadata: {
+        score: densityValidation.score,
+        severity: densityValidation.severity,
+        passed: densityValidation.passed,
+        violations: densityValidation.violations,
+        measurements: densityValidation.measurements
+      }
+    });
+
+    if (!densityValidation.passed) {
+      logger.warn('[ExecutionDensityLaw] validation warning; runtime remains available.', {
+        slug,
+        score: densityValidation.score,
+        severity: densityValidation.severity,
+        violations: densityValidation.violations
+      });
+    }
+
+    scheduleNonCriticalTask(() => {
+      Promise.resolve(writeExecutionDensityReport({
+        toolSlug: slug,
+        category: densityValidation.telemetryCategory,
+        score: densityValidation.score,
+        severity: densityValidation.severity,
+        passed: densityValidation.passed,
+        generatedAt: densityValidation.generatedAt,
+        violations: densityValidation.violations,
+        measurements: densityValidation.measurements
+      })).catch(() => {});
+    });
 
     let validation = ensureDomContract(root, slug, capabilitiesAtStart);
     if (!validation.isValid) {
