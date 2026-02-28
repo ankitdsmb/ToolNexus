@@ -1,4 +1,4 @@
-import { buildAdaptiveGuidance, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning, validateRuntimeStability } from './tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, generateRuntimeOptimizationInsight, observeRuntimeReasoning, observeRuntimeStabilitySignals, validateRuntimeStability } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -554,6 +554,13 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           }
           const runtimeReasoning = validatedReasoning.runtimeReasoning;
           const observationPatterns = observeRuntimeReasoning(runtimeObservation, runtimeReasoning);
+          const stabilitySignals = observeRuntimeStabilitySignals(runtimeObservation, validatedReasoning);
+          const optimizationInsight = generateRuntimeOptimizationInsight({
+            runtimeReasoning,
+            observationPatterns,
+            stabilitySignals,
+            observation: runtimeObservation
+          });
           const outcomeClass = runtimeReasoning.outcomeClass;
           const adaptive = buildAdaptiveGuidance({
             outcomeClass,
@@ -572,6 +579,9 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           const guidanceLine = `${runtimeReasoning.guidance.join(' ')}`;
           unifiedControl.setIntent(adaptive.intent);
           unifiedControl.setGuidance(tonePrefix ? `Guidance: ${tonePrefix} ${guidanceLine}` : `Guidance: ${guidanceLine}`);
+          if (optimizationInsight.repeatedPatternDetected) {
+            unifiedControl.setNextAction(`Optimization insight: ${optimizationInsight.optimizationHint}`);
+          }
         } catch (error) {
           observeRuntimeReasoning(runtimeObservation, {
             outcomeClass: 'failed',
