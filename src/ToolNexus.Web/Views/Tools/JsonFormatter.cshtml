@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="~/css/pages/json-formatter.css" asp-append-version="true" />
 }
 
-<article class="json-formatter-page tool-page tool" data-slug="@Model.Tool.Slug" data-tool="json-formatter">
-    <header class="json-formatter-header">
+<div class="tool-runtime-local json-formatter-runtime json-formatter-page tool">
+    <header class="tool-local-header json-formatter-header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
         </div>
         <span class="json-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="json-toolbar" role="toolbar" aria-label="JSON formatter actions">
+    <section class="tool-actions json-toolbar" role="toolbar" aria-label="JSON formatter actions">
         <div class="json-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
@@ -48,8 +48,8 @@
         <p id="errorLocation" class="tool-error-location" hidden></p>
     </section>
 
-    <section class="json-workspace">
-        <section class="json-panel">
+    <section class="tool-editors json-workspace">
+        <section class="tool-editor-panel json-panel">
             <div class="panel-header">
                 <h2>Input JSON</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
@@ -57,7 +57,7 @@
             <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
         </section>
 
-        <section class="json-panel">
+        <section class="tool-editor-panel json-panel">
             <div class="panel-header">
                 <h2>Output JSON</h2>
                 <p id="resultStatus">Ready for formatting.</p>
@@ -66,7 +66,7 @@
         </section>
     </section>
 
-    <section class="json-metrics" aria-live="polite">
+    <section class="tool-metrics json-metrics" aria-live="polite">
         <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
         <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>
@@ -75,7 +75,7 @@
 
     <section id="processingIndicator" class="tool-warning" hidden>Processing large JSON payload…</section>
     <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
-</article>
+</div>
 
 @section Scripts {
     <script>

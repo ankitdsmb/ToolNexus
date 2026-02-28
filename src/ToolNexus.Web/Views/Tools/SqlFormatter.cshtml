@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="~/css/pages/sql-formatter.css" asp-append-version="true" />
 }
 
-<article class="sql-formatter-page tool-page" data-slug="@Model.Tool.Slug">
-    <header class="sql-formatter-header">
+<div class="tool-runtime-local sql-formatter-runtime sql-formatter-page">
+    <header class="tool-local-header sql-formatter-header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="sql-formatter-description">Beautify SQL safely in your browser with dialect-aware, deterministic formatting.</p>
         </div>
         <span class="sql-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="sql-toolbar" role="toolbar" aria-label="SQL formatter actions">
+    <section class="tool-actions sql-toolbar" role="toolbar" aria-label="SQL formatter actions">
         <div class="sql-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="clearBtn" class="tool-btn" type="button">Clear</button>
@@ -80,8 +80,8 @@
         <p id="errorLocation" class="tool-error-location" hidden></p>
     </section>
 
-    <section class="sql-workspace">
-        <section class="sql-panel">
+    <section class="tool-editors sql-workspace">
+        <section class="tool-editor-panel sql-panel">
             <div class="panel-header">
                 <h2>Raw SQL input</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
@@ -89,7 +89,7 @@
             <textarea id="sqlInput" class="sql-editor" spellcheck="false" aria-label="SQL input"></textarea>
         </section>
 
-        <section class="sql-panel">
+        <section class="tool-editor-panel sql-panel">
             <div class="panel-header">
                 <h2>Formatted SQL output</h2>
                 <p id="resultStatus">Ready for formatting.</p>
@@ -98,7 +98,7 @@
         </section>
     </section>
 
-    <section class="sql-metrics" aria-live="polite">
+    <section class="tool-metrics sql-metrics" aria-live="polite">
         <p><span>Input</span><strong id="inputStats">0 chars / 0 lines</strong></p>
         <p><span>Output</span><strong id="outputStats">0 chars / 0 lines</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
@@ -107,7 +107,10 @@
 
     <section id="processingIndicator" class="tool-warning" hidden>Formatting large SQL payload…</section>
     <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
-</article>
+    </section>
+
+
+</div>
 
 @section Scripts {
     <script>

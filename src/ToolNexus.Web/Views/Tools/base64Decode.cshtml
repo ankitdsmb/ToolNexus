@@ -18,21 +18,30 @@
     <meta name="twitter:description" content="@Model.Seo.Description" />
 }
 
-<article class="tool-page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
-    <header class="tool-page__heading">
+<div class="tool-runtime-local base64-decode-runtime base64-decode-shell">
+    <header class="tool-local-header base64-decode-shell__heading">
         <div>
-            <h1>@Model.Tool.Title</h1>
-            <p class="tool-page__description">@Model.Tool.SeoDescription</p>
+            <h2>@Model.Tool.Title</h2>
+            <p class="base64-decode-shell__description">@Model.Tool.SeoDescription</p>
             <p class="privacy-badge">Client-side only · Your input never leaves the browser</p>
         </div>
-        <div class="tool-page__meta" aria-live="polite">
+        <section class="tool-metrics base64-decode-shell__meta" aria-live="polite">
             <p><span>Status</span><strong id="validationState" class="validation-state">Ready</strong></p>
             <p><span>Size</span><strong id="payloadSize">0 B</strong></p>
-        </div>
+        </section>
     </header>
 
-    <section class="tool-layout tool-layout--elite" aria-label="Tool workspace">
-        <section class="tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
+    <section class="tool-actions tool-toolbar__actions" role="toolbar" aria-label="Decode and output actions">
+                <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Decode">Decode</span>
+                </button>
+                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy Result</button>
+                <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
+            </section>
+
+    <section class="tool-editors tool-layout tool-layout--elite" aria-label="Tool workspace">
+        <section class="tool-editor-panel tool-layout__panel tool-panel" aria-labelledby="toolInputHeading">
             <div class="panel-header">
                 <h2 id="toolInputHeading">Input</h2>
                 <div class="panel-header__actions">
@@ -49,7 +58,7 @@
                 </div>
             </div>
 
-            <div class="tool-toolbar__actions" role="toolbar" aria-label="Run and output actions">
+            <div class="base64-inline-actions" role="group" aria-label="Run and output actions">
                 <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
                     <span class="spinner" aria-hidden="true"></span>
                     <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Decode">Decode</span>
@@ -284,7 +293,10 @@
             </ul>
         </div>
     </section>
-</article>
+    </section>
+
+
+</div>
 
 @section Scripts {
     <script>
@@ -315,7 +327,7 @@
 <style>
     /* base64-decode.css - Enhanced styling for Base64 decoder */
 
-    .tool-page {
+    .base64-decode-shell {
         max-width: 1400px;
         margin: 0 auto;
         padding: 2rem 1rem;
@@ -362,18 +374,18 @@
         }
 
     /* Action Selector */
-    .tool-page__action-selector {
+    .base64-decode-shell__action-selector {
         margin-bottom: 1.5rem;
     }
 
-        .tool-page__action-selector label {
+        .base64-decode-shell__action-selector label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--text-secondary, #888);
         }
 
-        .tool-page__action-selector select {
+        .base64-decode-shell__action-selector select {
             width: 100%;
             padding: 0.75rem;
             background: var(--input-bg, #2d2d2d);
@@ -385,11 +397,11 @@
             transition: border-color 0.2s;
         }
 
-            .tool-page__action-selector select:hover {
+            .base64-decode-shell__action-selector select:hover {
                 border-color: var(--primary-color, #4a9eff);
             }
 
-            .tool-page__action-selector select:focus {
+            .base64-decode-shell__action-selector select:focus {
                 outline: none;
                 border-color: var(--primary-color, #4a9eff);
                 box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);

@@ -11,17 +11,23 @@
     <link rel="stylesheet" href="~/css/tools/url-decode.css" asp-append-version="true" />
 }
 
-<article class="url-decode-tool" data-slug="@Model.Tool.Slug" aria-label="URL decode tool">
-    <header class="url-decode-tool__header">
+<div class="tool-runtime-local url-decode-runtime url-decode-tool" aria-label="URL decode tool">
+    <header class="tool-local-header url-decode-tool__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="url-decode-tool__description">Decode URL-encoded text safely with UTF-8 support, tolerant mode, and multiline handling.</p>
         </div>
         <span class="url-decode-tool__badge">Client-side processing</span>
     </header>
 
-    <section class="url-decode-tool__workspace" aria-label="URL decode workspace">
-        <section class="tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeInputHeading">
+    <section class="tool-actions url-decode-tool__actions" aria-label="URL decode actions">
+        <button id="decodeBtn" class="tool-btn tool-btn--primary" type="button">Decode</button>
+        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
+        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
+    </section>
+
+    <section class="tool-editors url-decode-tool__workspace" aria-label="URL decode workspace">
+        <section class="tool-editor-panel tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeInputHeading">
             <div class="url-decode-tool__panel-header">
                 <h2 id="urlDecodeInputHeading">Encoded URL input</h2>
                 <p id="urlDecodeInputCount" class="url-decode-tool__meta">0 chars</p>
@@ -35,15 +41,10 @@
                 <label><input id="plusAsSpaceToggle" type="checkbox" checked /> Decode plus (+) as space</label>
                 <label><input id="strictModeToggle" type="checkbox" checked /> Strict mode</label>
             </div>
-
-            <div class="url-decode-tool__actions">
-                <button id="decodeBtn" class="tool-btn tool-btn--primary" type="button">Decode</button>
-                <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-            </div>
             <p class="url-decode-tool__shortcut"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Decode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeOutputHeading">
+        <section class="tool-editor-panel tool-panel url-decode-tool__panel" aria-labelledby="urlDecodeOutputHeading">
             <div class="url-decode-tool__panel-header">
                 <h2 id="urlDecodeOutputHeading">Decoded output</h2>
                 <p id="urlDecodeStatus" class="url-decode-tool__meta">Ready</p>
@@ -59,14 +60,14 @@
 
             <label for="urlDecodeOutput" class="url-decode-tool__label">Decoded text (rendered as plain text)</label>
             <textarea id="urlDecodeOutput" class="tool-textarea tool-textarea--mono" rows="18" readonly placeholder="Decoded output appears here"></textarea>
-
-            <div class="url-decode-tool__actions">
-                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
-            </div>
             <p id="urlDecodeOutputCount" class="url-decode-tool__meta">0 chars</p>
         </section>
     </section>
-</article>
+
+    <section class="tool-metrics" aria-live="polite">
+        <p>Runtime status is available in the output panel.</p>
+    </section>
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/url-decode.js" asp-append-version="true"></script>

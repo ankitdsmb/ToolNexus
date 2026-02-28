@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="~/css/pages/json-to-yaml.css" asp-append-version="true" />
 }
 
-<article class="tool-json-yaml" data-slug="@Model.Tool.Slug">
-    <header class="tool-json-yaml__header">
+<div class="tool-runtime-local json-to-yaml-runtime tool-json-yaml">
+    <header class="tool-local-header tool-json-yaml__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="tool-json-yaml__description">Accurate JSON to YAML conversion with deterministic, safe serialization.</p>
         </div>
         <span class="tool-json-yaml__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-json-yaml__controls" aria-label="JSON to YAML options">
+    <section class="tool-actions tool-json-yaml__controls" aria-label="JSON to YAML options">
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy YAML</button>
@@ -50,10 +50,10 @@
         </label>
     </section>
 
-    <p class="tool-json-yaml__status" id="statusText">Ready</p>
+    <section class="tool-metrics"><p class="tool-json-yaml__status" id="statusText">Ready</p></section>
 
-    <section class="tool-json-yaml__workspace" aria-label="JSON to YAML workspace">
-        <section class="tool-json-yaml__panel">
+    <section class="tool-editors tool-json-yaml__workspace" aria-label="JSON to YAML workspace">
+        <section class="tool-editor-panel tool-json-yaml__panel">
             <div class="tool-json-yaml__panel-header">
                 <h2>JSON input</h2>
                 <span>Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear</span>
@@ -61,7 +61,7 @@
             <textarea id="jsonInput" class="tool-json-yaml__editor" spellcheck="false" placeholder='{"service":"toolnexus","enabled":true}'>@Model.Tool.ExampleInput</textarea>
         </section>
 
-        <section class="tool-json-yaml__panel">
+        <section class="tool-editor-panel tool-json-yaml__panel">
             <div class="tool-json-yaml__panel-header">
                 <h2>YAML output</h2>
                 <span id="sizeText">0 object(s) · 0 array(s) · 0 primitive(s)</span>
@@ -74,7 +74,10 @@
         <h3 id="errorTitle">Conversion failed</h3>
         <p id="errorDetail"></p>
     </section>
-</article>
+    </section>
+
+
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/json-to-yaml/index.js" asp-append-version="true"></script>

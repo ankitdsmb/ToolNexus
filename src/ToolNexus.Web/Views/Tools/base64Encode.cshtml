@@ -11,17 +11,22 @@
     <link rel="stylesheet" href="~/css/tools/base64-encode.css" asp-append-version="true" />
 }
 
-<article class="tool-page tool base64-tool" data-tool="base64-encode" data-slug="@Model.Tool.Slug">
-    <header class="base64-tool__header">
+<div class="tool-runtime-local base64-encode-runtime base64-tool">
+    <header class="tool-local-header base64-tool__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
-            <p class="tool-page__description">Encode text or files into Base64 with full UTF-8 and binary support.</p>
+            <h2>@Model.Tool.Title</h2>
+            <p>Encode text or files into Base64 with full UTF-8 and binary support.</p>
         </div>
         <span class="base64-badge" aria-label="Execution scope">Client-side only</span>
     </header>
 
-    <section class="base64-workspace" aria-label="Base64 workspace">
-        <section class="tool-panel base64-panel" aria-labelledby="inputHeading">
+    <section class="tool-actions" aria-label="Base64 actions">
+        <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
+        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
+    </section>
+
+    <section class="tool-editors base64-workspace" aria-label="Base64 workspace">
+        <section class="tool-editor-panel tool-panel base64-panel" aria-labelledby="inputHeading">
             <div class="base64-panel__header">
                 <h2 id="inputHeading">Input</h2>
                 <p id="inputMeta" class="base64-meta">Text mode · 0 B</p>
@@ -48,15 +53,10 @@
             </div>
 
             <p id="warningBanner" class="base64-warning" hidden></p>
-
-            <div class="base64-actions">
-                <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
-                <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-            </div>
             <p class="base64-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Encode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel base64-panel" aria-labelledby="outputHeading">
+        <section class="tool-editor-panel tool-panel base64-panel" aria-labelledby="outputHeading">
             <div class="base64-panel__header">
                 <h2 id="outputHeading">Encoded output</h2>
                 <p id="statusText" class="base64-meta">Ready</p>
@@ -80,16 +80,10 @@
         </section>
     </section>
 
-    @if (Model.Content is not null)
-    {
-        <section class="tool-panel tool-content">
-            <h2 class="tool-content__title">How It Works</h2>
-            <div class="tool-content__body">
-                @Html.Raw(Model.Content.LongArticle)
-            </div>
-        </section>
-    }
-</article>
+    <section class="tool-metrics" aria-live="polite">
+        <p id="statusTextMetric">Status updates are shown in the output panel.</p>
+    </section>
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/base64-encode.js" asp-append-version="true"></script>
