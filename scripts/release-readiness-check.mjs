@@ -5,6 +5,7 @@ const checks = [
   ['npm', ['run', 'check:platform']],
   ['npm', ['run', 'check:design-system']],
   ['node', ['scripts/tool-ecosystem-validate.mjs']],
+  ['node', ['scripts/ui-immunity-guard.mjs']],
   ['node', ['scripts/seo-a11y-guard.mjs']]
 ];
 

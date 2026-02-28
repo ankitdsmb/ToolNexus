@@ -18,7 +18,8 @@
     "test:runtime": "vitest run tests/runtime",
     "env:setup": "bash ./scripts/setup-toolnexus.sh",
     "env:maintenance": "bash ./scripts/maintenance-toolnexus.sh full",
-    "env:maintenance:quick": "bash ./scripts/maintenance-toolnexus.sh quick"
+    "env:maintenance:quick": "bash ./scripts/maintenance-toolnexus.sh quick",
+    "check:ui-immunity": "node scripts/ui-immunity-guard.mjs"
   },
   "devDependencies": {
     "jest": "^30.0.5",

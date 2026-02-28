@@ -1,0 +1,33 @@
+{
+  "strictMode": false,
+  "density": {
+    "minGapPx": 4,
+    "maxGapPx": 20,
+    "buttonPaddingMinPx": 6,
+    "buttonPaddingMaxPx": 20,
+    "toolbarMinHeightPx": 36,
+    "toolbarMaxHeightPx": 72,
+    "editorMinHeightPx": 240,
+    "editorMaxHeightPx": 720,
+    "editorHeightDeltaMaxPx": 40,
+    "fixedHeightMaxPx": 900
+  },
+  "forbiddenCss": {
+    "shellSelectors": [
+      ".tool-shell-page",
+      "[data-tool-shell]",
+      "[data-tool-context]",
+      "[data-tool-status]",
+      "[data-tool-followup]",
+      "[data-tool-input]",
+      "[data-tool-output]",
+      "[data-tool-content-host]"
+    ],
+    "shellLayoutProperties": [
+      "grid-template-columns",
+      "grid-template-areas",
+      "display: grid",
+      "display:grid"
+    ]
+  }
+}
