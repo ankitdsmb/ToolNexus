@@ -717,7 +717,7 @@ function reportToolPageRuntimeIncident({ action, reason }) {
   runtimeIncidentReporter?.report?.({
     toolSlug: slug || 'unknown-tool',
     phase: 'execute',
-    errorType: 'contract_violation',
+    errorType: 'contract_drift',
     message: `Tool page execution skipped due to runtime result mismatch (${reason || 'unknown_reason'}).`,
     payloadType: 'object',
     timestamp: new Date().toISOString(),

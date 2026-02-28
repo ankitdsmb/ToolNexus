@@ -44,7 +44,7 @@ function reportContractViolation({ toolSlug = 'unknown-tool', message, payloadTy
   runtimeIncidentReporter.report({
     toolSlug,
     phase: 'execute',
-    errorType: 'contract_violation',
+    errorType: 'contract_drift',
     message,
     payloadType,
     timestamp: new Date().toISOString()

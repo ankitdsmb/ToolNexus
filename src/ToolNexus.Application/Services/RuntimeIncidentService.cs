@@ -51,7 +51,7 @@ public sealed class RuntimeIncidentService(IRuntimeIncidentRepository repository
         => phase is "bootstrap" or "mount" or "execute" ? phase : "execute";
 
     private static string NormalizeErrorType(string? errorType)
-        => errorType is "contract_violation" or "runtime_error" ? errorType : "runtime_error";
+        => errorType is "contract_violation" or "contract_drift" or "runtime_error" ? errorType : "runtime_error";
 
     private static string NormalizeSeverity(string? severity, string errorType)
     {
@@ -60,7 +60,10 @@ public sealed class RuntimeIncidentService(IRuntimeIncidentRepository repository
             return severity;
         }
 
-        return string.Equals(errorType, "contract_violation", StringComparison.OrdinalIgnoreCase) ? "warning" : "critical";
+        return string.Equals(errorType, "contract_violation", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(errorType, "contract_drift", StringComparison.OrdinalIgnoreCase)
+            ? "warning"
+            : "critical";
     }
 
     private static string? NormalizeCorrelationId(string? correlationId)

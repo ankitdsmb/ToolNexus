@@ -1013,8 +1013,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   padding-top: var(--space-1);
 }
 
-:where([data-tool-content-host="true"] > [data-tool-runtime="true"] .tool-local-body,
-  [data-tool-content-host="true"] > [data-tool-runtime="true"] .tn-tool-body,
+:where([data-tool-content-host="true"] > [data-tool-runtime="true"] .tn-tool-body,
   [data-tool-content-host="true"] > [data-tool-runtime="true"] .tool-layout) {
   gap: var(--exec-gap-normal);
 }

@@ -1,5 +1,6 @@
 const CATEGORY = {
   DOM_CONTRACT_ISSUE: 'dom_contract_issue',
+  CONTRACT_DRIFT: 'contract_drift',
   LIFECYCLE_ERROR: 'lifecycle_error',
   DEPENDENCY_FAILURE: 'dependency_failure',
   MANIFEST_MISSING: 'manifest_missing',
@@ -25,6 +26,10 @@ export function classifyRuntimeError({ stage, message, eventName } = {}) {
 
   if (normalizedStage.includes('dom') || normalizedEvent.includes('dom_contract_failure') || hasText(normalizedMessage, 'dom contract')) {
     return CATEGORY.DOM_CONTRACT_ISSUE;
+  }
+
+  if (normalizedEvent.includes('dom_contract_warning') || hasText(normalizedMessage, 'contract mismatch') || hasText(normalizedMessage, 'contract drift')) {
+    return CATEGORY.CONTRACT_DRIFT;
   }
 
   if (normalizedStage.includes('module') || normalizedStage.includes('lifecycle') || normalizedStage === 'mount' || normalizedEvent.includes('mount_failure') || normalizedEvent.includes('module_import_failure')) {
