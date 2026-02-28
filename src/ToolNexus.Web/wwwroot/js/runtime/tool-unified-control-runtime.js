@@ -43,6 +43,17 @@ const EXECUTION_STATES = Object.freeze({
   }
 });
 
+const RUN_BUTTON_LABELS = Object.freeze({
+  idle: 'Run',
+  validating: 'Validating...',
+  running: 'Running...',
+  streaming: 'Processing...',
+  success: 'Run Again',
+  warning: 'Run Again (Check warnings)',
+  failed: 'Retry',
+  uncertain: 'Run Again (Review uncertainty)'
+});
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -737,7 +748,13 @@ export function createUnifiedToolControl({
   const runButton = doc.createElement('button');
   runButton.type = 'button';
   runButton.className = 'tool-btn tool-btn--primary tn-unified-tool-control__run';
-  runButton.textContent = 'Run';
+  runButton.textContent = RUN_BUTTON_LABELS.idle;
+  runButton.dataset.runtimeState = 'idle';
+  runButton.setAttribute('aria-label', 'Run tool execution');
+
+  const executionHint = doc.createElement('span');
+  executionHint.className = 'tn-unified-tool-control__execution-hint';
+  executionHint.textContent = 'Runtime execution';
 
   const status = doc.createElement('p');
   status.className = 'tn-unified-tool-control__status';
@@ -763,7 +780,7 @@ export function createUnifiedToolControl({
   suggestionReason.className = 'tn-unified-tool-control__suggestion-reason';
   suggestionReason.hidden = true;
 
-  actions.replaceChildren(runButton, suggestionBadge, suggestionReason);
+  actions.replaceChildren(runButton, executionHint, suggestionBadge, suggestionReason);
   contractStatus.replaceChildren(status, intent, guidance);
 
   const output = contractOutput;
@@ -811,6 +828,8 @@ export function createUnifiedToolControl({
         shell.dataset.executionState = normalized;
         status.dataset.executionTone = mapped.tone;
         status.textContent = overrideLabel || mapped.label;
+        runButton.dataset.runtimeState = normalized;
+        runButton.textContent = RUN_BUTTON_LABELS[normalized] ?? RUN_BUTTON_LABELS.idle;
         return;
       }
 
