@@ -1,11 +1,11 @@
-<div class="base64-decode-tool-runtime">
+<div class="tool-runtime-local base64-decode-runtime base64-decode-tool-runtime">
  <header class="tool-local-header">
   <div>
    <h2>
     <span data-bind="tool.title">
     </span>
    </h2>
-   <p class="tool-page__description">
+   <p class="tool-local-description">
     <span data-bind="tool.seoDescription">
     </span>
    </p>
@@ -13,7 +13,7 @@
     Client-side only · Your input never leaves the browser
    </p>
   </div>
-  <div aria-live="polite" class="tool-page__meta">
+  <div aria-live="polite" class="tool-local-meta">
    <p>
     <span>
      Status
@@ -222,191 +222,10 @@
   </section>
  </section>
  <section class="tool-metrics">
-  <section aria-labelledby="toolUxHeading" class="tool-panel tool-ux">
-   <div class="panel-header">
-    <h2 id="toolUxHeading">
-     Developer UX Layer
-    </h2>
-    <p class="panel-header__description">
-     Save and manage your frequently used configurations
-    </p>
-   </div>
-   <div class="tool-ux__grid">
-    <section class="ux-section">
-     <h3 class="ux-section__title">
-      <span>
-       📌 Pinned + Recent
-      </span>
-      <button class="ux-section__action" id="clearRecentBtn" title="Clear recent items">
-       Clear
-      </button>
-     </h3>
-     <ul class="ux-list" id="uxPinnedRecent">
-      <li class="ux-list__empty">
-       No recent items yet
-      </li>
-     </ul>
-    </section>
-    <section class="ux-section">
-     <h3 class="ux-section__title">
-      <span>
-       📋 Run History
-      </span>
-      <button class="ux-section__action" id="clearHistoryBtn" title="Clear history">
-       Clear
-      </button>
-     </h3>
-     <ul class="ux-list" id="uxHistory">
-      <li class="ux-list__empty">
-       No history yet
-      </li>
-     </ul>
-    </section>
-    <section class="ux-section">
-     <h3 class="ux-section__title">
-      <span>
-       📚 Collections
-      </span>
-     </h3>
-     <div class="ux-collection-controls">
-      <div class="ux-collection-input-group">
-       <input class="ux-collection-input" id="collectionNameInput" maxlength="32" placeholder="Collection name" type="text">
-        <button class="tool-btn tool-btn--primary" id="saveCollectionBtn" type="button">
-         Save
-        </button>
-       </input>
-      </div>
-      <p class="ux-collection-hint">
-       Save current config for later use
-      </p>
-     </div>
-     <ul class="ux-list" id="uxCollections">
-      <li class="ux-list__empty">
-       No collections saved
-      </li>
-     </ul>
-    </section>
-   </div>
-  </section>
-  <section aria-atomic="true" aria-live="polite" aria-relevant="additions text" class="toast-region" id="toastRegion">
-  </section>
-  @if (Model.Content is not null)
-    {
-  <section class="tool-panel tool-content">
-   <h2 class="tool-content__title">
-    How It Works
-   </h2>
-   <div class="tool-content__body">
-    @Html.Raw(Model.Content.LongArticle)
-   </div>
-   @if (Model.Content.Features.Any())
-            {
-   <div class="tool-features">
-    <h3>
-     Features
-    </h3>
-    <ul class="tool-features__list">
-     @foreach (var feature in Model.Content.Features)
-                        {
-     <li class="tool-features__item">
-      <span aria-hidden="true" class="tool-features__icon">
-       ✓
-      </span>
-      @feature
-     </li>
-     }
-    </ul>
-   </div>
-   }
-
-            @if (Model.Content.Faqs.Any())
-            {
-   <div class="tool-faq">
-    <h3>
-     Frequently Asked Questions
-    </h3>
-    <div class="tool-faq__list">
-     @foreach (var faq in Model.Content.Faqs)
-                        {
-     <details class="tool-faq__item">
-      <summary class="tool-faq__question">
-       @faq.Question
-      </summary>
-      <div class="tool-faq__answer">
-       @Html.Raw(faq.Answer)
-      </div>
-     </details>
-     }
-    </div>
-   </div>
-   }
-
-            @if (Model.Content.RelatedTools.Any())
-            {
-   <div class="tool-related">
-    <h3>
-     Related Tools
-    </h3>
-    <ul class="tool-related__list">
-     @foreach (var related in Model.Content.RelatedTools)
-                        {
-     <li class="tool-related__item">
-      <a class="tool-related__link" href="/tools/@related.RelatedSlug">
-       @related.RelatedSlug
-      </a>
-     </li>
-     }
-    </ul>
-   </div>
-   }
-  </section>
-  }
-  <section class="tool-panel tool-help">
-   <h2 class="tool-help__title">
-    Need Help?
-   </h2>
-   <div class="tool-help__content">
-    <p>
-     Base64 is a binary-to-text encoding scheme that represents binary data in an ASCII string format.
-    </p>
-    <h4>
-     Common Use Cases:
-    </h4>
-    <ul>
-     <li>
-      Email attachments (MIME)
-     </li>
-     <li>
-      Data URLs in web development
-     </li>
-     <li>
-      Storing binary data in JSON
-     </li>
-     <li>
-      Authentication tokens
-     </li>
-    </ul>
-    <h4>
-     Quick Tips:
-    </h4>
-    <ul>
-     <li>
-      Base64 strings are typically 33% larger than the original data
-     </li>
-     <li>
-      Valid Base64 uses only A-Z, a-z, 0-9, +, /, and = for padding
-     </li>
-     <li>
-      URL-safe Base64 replaces + with - and / with _
-     </li>
-     <li>
-      Use Strict Mode when working with encoded files
-     </li>
-    </ul>
-   </div>
-  </section>
-  <section hidden="" id="errorBox">
-  </section>
+  <p><span>Validation</span><strong id="validationStateMetric">Ready</strong></p>
+  <p><span>Input size</span><strong id="payloadSizeMetric">0 B</strong></p>
+  <p><span>Output size</span><strong id="decodedSizeMetric">0 B</strong></p>
+  <p><span>Status</span><strong id="decodeMetricStatus">Idle</strong></p>
  </section>
 </div>
 

@@ -1,11 +1,11 @@
-<div class="url-encode-tool-runtime">
+<div class="tool-runtime-local url-encode-runtime url-encode-tool-runtime">
  <header class="tool-local-header">
   <div>
    <h2>
     <span data-bind="tool.title">
     </span>
    </h2>
-   <p class="tool-page__description">
+   <p class="tool-local-description">
     Standards-compliant URL encoding with component, full URL, and query-value modes.
    </p>
   </div>
@@ -53,7 +53,7 @@
     Input text
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste text, URL, or query string" rows="14"></textarea>
-   <div class="url-encode-actions" data-tool-actions="">
+   <div class="url-encode-actions">
     <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button">
      Encode
     </button>
@@ -115,9 +115,10 @@
   </section>
  </section>
  <section class="tool-metrics">
-  @if (Model.Content is not null)
-    {
-  }
+  <p><span>Mode</span><strong id="modeMetric">Component</strong></p>
+  <p><span>Input size</span><strong id="inputMetric">0 chars</strong></p>
+  <p><span>Output size</span><strong id="outputMetric">0 chars</strong></p>
+  <p><span>Status</span><strong id="statusMetric">Ready</strong></p>
  </section>
 </div>
 
