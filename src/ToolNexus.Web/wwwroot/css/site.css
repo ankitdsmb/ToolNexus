@@ -548,8 +548,6 @@ details,
 .editor-surface,
 .drop-zone,
 .tree-view,
-#inputEditor,
-#outputEditor,
 .json-editor {
   min-height: 300px;
   border-radius: var(--radius-md);
@@ -561,8 +559,6 @@ details,
 .drop-zone,
 .tree-view { border-style: dashed; }
 
-#inputEditor,
-#outputEditor,
 .json-editor {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -1609,9 +1605,6 @@ RESPONSIVE
 .tool-shell-page__runtime > [data-tool-context="true"] { grid-area: context; }
 .tool-shell-page__runtime > [data-tool-status="true"] { grid-area: status; align-self: start; }
 .tool-shell-page__runtime > [data-tool-followup="true"] { grid-area: followup; align-self: start; }
-.tool-shell-page__runtime > [data-tool-content-host="true"] { grid-area: content; align-self: start; width: 100%; }
-.tool-shell-page__runtime > [data-tool-content-host="true"] > [data-tool-runtime="true"] { width: 100%; }
-
 .tool-shell-page__runtime:focus-within,
 .tool-shell-page__runtime:hover {
   border-color: color-mix(in srgb, var(--accent) 26%, var(--border-default));
@@ -2090,8 +2083,3 @@ RESPONSIVE
   }
 }
 
-:where([data-tool-content-host="true"]) {
-  width: 100%;
-  max-width: 100%;
-  display: block;
-}

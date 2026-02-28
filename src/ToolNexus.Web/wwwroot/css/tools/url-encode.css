@@ -70,8 +70,8 @@
   align-items: center;
 }
 
-#inputEditor,
-#outputEditor {
+.url-encode-tool #inputEditor,
+.url-encode-tool #outputEditor {
   min-height: 320px;
   max-height: 52vh;
   overflow: auto;

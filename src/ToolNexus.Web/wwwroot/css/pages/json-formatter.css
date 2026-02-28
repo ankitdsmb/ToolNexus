@@ -4,19 +4,19 @@
   padding: var(--space-4);
 }
 
-.json-formatter-header {
+.json-formatter-page .json-formatter-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-3);
 }
 
-.json-formatter-description {
+.json-formatter-page .json-formatter-description {
   margin: var(--space-2) 0 0;
   color: var(--text-secondary);
 }
 
-.json-processing-badge {
+.json-formatter-page .json-processing-badge {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
@@ -25,7 +25,7 @@
   font-weight: 600;
 }
 
-.json-toolbar {
+.json-formatter-page .json-toolbar {
   display: grid;
   gap: var(--space-1);
   padding: var(--space-2);
@@ -34,29 +34,29 @@
   background: var(--bg-secondary);
 }
 
-.json-toolbar-row {
+.json-formatter-page .json-toolbar-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
 }
 
-.json-toolbar-row:first-child {
+.json-formatter-page .json-toolbar-row:first-child {
   padding-bottom: var(--space-1);
   border-bottom: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 }
 
-.json-toolbar-row:first-child .tool-btn--primary {
+.json-formatter-page .json-toolbar-row:first-child .tool-btn--primary {
   min-width: 132px;
 }
 
-.tool-toggle {
+.json-formatter-page .tool-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
 }
 
-.tool-select {
+.json-formatter-page .tool-select {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
   background: var(--bg-primary);
@@ -65,36 +65,36 @@
   min-height: 30px;
 }
 
-.json-workspace {
+.json-formatter-page .json-workspace {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
-.json-panel {
+.json-formatter-page .json-panel {
   display: grid;
   gap: var(--space-2);
 }
 
-.panel-header h2,
-.panel-header p {
+.json-formatter-page .panel-header h2,
+.json-formatter-page .panel-header p {
   margin: 0;
 }
 
-.editor-surface {
+.json-formatter-page .editor-surface {
   min-height: 420px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
-.json-metrics {
+.json-formatter-page .json-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-1);
 }
 
-.json-metrics p {
+.json-formatter-page .json-metrics p {
   margin: 0;
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--border-default);
@@ -105,7 +105,7 @@
   gap: var(--space-2);
 }
 
-.tool-error {
+.json-formatter-page .tool-error {
   display: grid;
   gap: var(--space-1);
   padding: var(--space-3);
@@ -114,44 +114,44 @@
   background: color-mix(in srgb, var(--danger-500) 8%, transparent);
 }
 
-.tool-error-title,
-.tool-error-detail,
-.tool-error-location {
+.json-formatter-page .tool-error-title,
+.json-formatter-page .tool-error-detail,
+.json-formatter-page .tool-error-location {
   margin: 0;
 }
 
-.tool-error-location {
+.json-formatter-page .tool-error-location {
   font-family: var(--font-family-mono);
 }
 
-.toast-region {
+.json-formatter-page .toast-region {
   display: grid;
   justify-items: end;
   gap: var(--space-2);
 }
 
-.toast {
+.json-formatter-page .toast {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   background: var(--bg-secondary);
 }
 
-.toast--success {
+.json-formatter-page .toast--success {
   border-color: var(--success-500);
 }
 
-.toast--error {
+.json-formatter-page .toast--error {
   border-color: var(--danger-500);
 }
 
 @media (max-width: 1100px) {
-  .json-workspace,
-  .json-metrics {
+  .json-formatter-page .json-workspace,
+  .json-formatter-page .json-metrics {
     grid-template-columns: 1fr;
   }
 
-  .json-formatter-header {
+  .json-formatter-page .json-formatter-header {
     flex-direction: column;
   }
 }
