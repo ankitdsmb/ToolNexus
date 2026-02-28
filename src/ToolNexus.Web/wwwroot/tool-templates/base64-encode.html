@@ -1,11 +1,11 @@
-<div class="base64-encode-tool-runtime">
+<div class="tool-runtime-local base64-encode-runtime base64-encode-tool-runtime">
  <header class="tool-local-header">
   <div>
    <h2>
     <span data-bind="tool.title">
     </span>
    </h2>
-   <p class="tool-page__description">
+   <p class="tool-local-description">
     Encode text or files into Base64 with full UTF-8 and binary support.
    </p>
   </div>
@@ -127,17 +127,10 @@
   </section>
  </section>
  <section class="tool-metrics">
-  @if (Model.Content is not null)
-    {
-  <section class="tool-panel tool-content">
-   <h2 class="tool-content__title">
-    How It Works
-   </h2>
-   <div class="tool-content__body">
-    @Html.Raw(Model.Content.LongArticle)
-   </div>
-  </section>
-  }
+  <p><span>Mode</span><strong id="runtimeMode">Text</strong></p>
+  <p><span>Input</span><strong id="inputMetric">0 B</strong></p>
+  <p><span>Output</span><strong id="outputMetric">0 B</strong></p>
+  <p><span>Status</span><strong id="encodeMetricStatus">Ready</strong></p>
  </section>
 </div>
 
