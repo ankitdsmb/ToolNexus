@@ -1,3 +1,6 @@
+// ARCHITECTURE LOCKED
+// DO NOT MODIFY WITHOUT COUNCIL APPROVAL
+
 import { buildAdaptiveGuidance, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, generateRuntimeOptimizationInsight, observeRuntimeReasoning, observeRuntimeStabilitySignals, validateRuntimeStability } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
