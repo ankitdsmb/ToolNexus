@@ -33,6 +33,7 @@
   --tn-exec-editor-gap: var(--tn-exec-space-2);
   --tn-exec-editor-padding: var(--tn-exec-space-2);
   --tn-exec-editor-min-height: clamp(260px, 42vh, 540px);
+  --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
   --tn-exec-metrics-gap: var(--tn-exec-space-2);
@@ -72,6 +73,24 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--tn-exec-toolbar-gap);
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn)) {
+  position: relative;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn):is(:nth-child(3), :nth-child(4))) {
+  margin-left: var(--tn-exec-space-2);
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn):nth-child(3))::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--tn-exec-space-2) * -1 - 1px);
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: color-mix(in srgb, var(--border-default) 78%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-body) {
@@ -122,6 +141,38 @@
   overflow: auto;
 }
 
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
+  background: color-mix(in srgb, var(--bg-elevated) 72%, #000 28%);
+  border: var(--tn-exec-border);
+  border-radius: var(--tn-exec-radius-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+  transition: border-color var(--tn-exec-motion-fast) var(--ease-standard), box-shadow var(--tn-exec-motion-fast) var(--ease-standard);
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface):focus-within > :last-child) {
+  border-color: color-mix(in srgb, var(--accent) 54%, var(--border-default));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 2px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(textarea, pre, [contenteditable="true"])) {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-muted) 40%, transparent) transparent;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(textarea, pre, [contenteditable="true"])::-webkit-scrollbar) {
+  width: 9px;
+  height: 9px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(textarea, pre, [contenteditable="true"])::-webkit-scrollbar-thumb) {
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text-muted) 38%, transparent);
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(textarea, pre, [contenteditable="true"])::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-metrics),
 :where(.runtime-metrics-row) {
   margin: 0;
@@ -159,6 +210,24 @@
   border-radius: var(--tn-exec-radius-sm);
   background: transparent;
   color: var(--text-secondary);
+}
+
+:where(.tool-btn--primary, .tn-exec-btn--primary, .tool-btn--secondary, .tn-exec-btn--secondary, .tool-btn--ghost, .tn-exec-btn--ghost) {
+  transition: transform 150ms var(--ease-standard), box-shadow 160ms var(--ease-standard), border-color 160ms var(--ease-standard), opacity 150ms var(--ease-standard), filter 140ms var(--ease-standard);
+}
+
+:where(.tool-btn--primary, .tn-exec-btn--primary):hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+:where(.tool-btn--primary, .tn-exec-btn--primary):active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+:where(.tool-btn--primary, .tn-exec-btn--primary, .tool-btn--secondary, .tn-exec-btn--secondary, .tool-btn--ghost, .tn-exec-btn--ghost):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 85%, white 15%);
+  outline-offset: 2px;
 }
 
 /* Toolbar hierarchy normalization when tools omit explicit button variants. */

@@ -755,3 +755,103 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
     width: 100%;
   }
 }
+
+:where(.tn-icon) {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  line-height: 1;
+}
+
+:where(.tn-icon svg) {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.9;
+}
+
+:where(.tn-unified-tool-control__status, [data-tool-status="true"]) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="running"],
+  .tn-unified-tool-control__status[data-execution-state="validating"],
+  .tn-unified-tool-control__status[data-execution-state="streaming"],
+  [data-tool-status="true"].is-running,
+  [data-tool-status="true"].is-validating,
+  [data-tool-status="true"].is-streaming) {
+  isolation: isolate;
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="running"],
+  .tn-unified-tool-control__status[data-execution-state="validating"],
+  .tn-unified-tool-control__status[data-execution-state="streaming"],
+  [data-tool-status="true"].is-running,
+  [data-tool-status="true"].is-validating,
+  [data-tool-status="true"].is-streaming)::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  border: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-top-color: color-mix(in srgb, var(--accent) 84%, transparent);
+  animation: tn-runtime-spin 700ms linear infinite;
+}
+
+:where(.tn-unified-tool-control__output) {
+  position: relative;
+  transition: box-shadow 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+:where(.tn-unified-tool-control__output.is-processing)::after,
+:where(.tn-unified-tool-control__output[data-execution-state="running"])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 12%, color-mix(in srgb, var(--accent-soft) 24%, transparent) 48%, transparent 84%);
+  transform: translateX(-100%);
+  animation: tn-runtime-shimmer 1.1s ease infinite;
+}
+
+:where(.tn-unified-tool-control__run.is-primed) {
+  animation: tn-action-pulse 360ms ease-out;
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="success"]) {
+  color: color-mix(in srgb, var(--success) 62%, var(--text-primary));
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="warning"],
+  .tn-unified-tool-control__status[data-execution-state="uncertain"]) {
+  color: color-mix(in srgb, var(--warning) 68%, var(--text-primary));
+}
+
+:where(.tn-unified-tool-control__status[data-execution-state="failed"]) {
+  color: color-mix(in srgb, var(--danger) 76%, var(--text-primary));
+}
+
+:where(input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, [role="button"]:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--accent) 78%, white 22%);
+  outline-offset: 2px;
+}
+
+@keyframes tn-runtime-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes tn-runtime-shimmer {
+  to { transform: translateX(100%); }
+}
+
+@keyframes tn-action-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 38%, transparent); transform: scale(0.98); }
+  100% { box-shadow: 0 0 0 10px transparent; transform: scale(1); }
+}
