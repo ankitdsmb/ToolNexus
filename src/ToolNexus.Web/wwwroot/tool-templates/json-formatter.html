@@ -1,6 +1,5 @@
-<div data-runtime-container>
-<article class="json-formatter-page tool-page tool" data-slug="" data-tool="json-formatter" data-tool-root>
-    <header class="json-formatter-header" data-tool-header>
+<div class="json-tool-runtime">
+    <header class="tool-local-header json-formatter-header">
         <div>
             <h1><span data-bind="tool.title"></span></h1>
             <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
@@ -8,7 +7,7 @@
         <span class="json-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="json-toolbar" role="toolbar" aria-label="JSON formatter actions" data-tool-actions>
+    <section class="tool-actions json-toolbar" role="toolbar" aria-label="JSON formatter actions">
         <div class="json-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
@@ -36,8 +35,8 @@
         <p id="errorLocation" class="tool-error-location" hidden></p>
     </section>
 
-        <section class="json-workspace" data-tool-body>
-        <section class="json-panel" data-tool-input>
+    <section class="tool-editors json-workspace">
+        <section class="json-panel">
             <div class="panel-header">
                 <h2>Input JSON</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
@@ -45,7 +44,7 @@
             <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
         </section>
 
-        <section class="json-panel" data-tool-output>
+        <section class="json-panel">
             <div class="panel-header">
                 <h2>Output JSON</h2>
                 <p id="resultStatus">Ready for formatting.</p>
@@ -54,7 +53,7 @@
         </section>
     </section>
 
-    <section class="json-metrics" aria-live="polite">
+    <section class="tool-metrics json-metrics" aria-live="polite">
         <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
         <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>
@@ -63,5 +62,4 @@
 
     <section id="processingIndicator" class="tool-warning" hidden>Processing large JSON payload…</section>
     <section id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></section>
-</article>
 </div>
