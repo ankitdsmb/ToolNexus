@@ -1,0 +1,7 @@
+.case-converter-runtime.tool-runtime-local {
+  display: block;
+}
+
+.case-converter-runtime .tool-editor-panel {
+  min-height: 0;
+}

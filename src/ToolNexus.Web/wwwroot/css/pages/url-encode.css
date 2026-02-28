@@ -1,0 +1,7 @@
+.url-encode-runtime.tool-runtime-local {
+  display: block;
+}
+
+.url-encode-runtime .tool-editor-panel {
+  min-height: 0;
+}

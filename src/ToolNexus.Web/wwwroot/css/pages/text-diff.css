@@ -1,0 +1,7 @@
+.text-diff-runtime.tool-runtime-local {
+  display: block;
+}
+
+.text-diff-runtime .tool-editor-panel {
+  min-height: 0;
+}

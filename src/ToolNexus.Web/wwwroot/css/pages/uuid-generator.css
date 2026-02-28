@@ -1,0 +1,7 @@
+.uuid-generator-runtime.tool-runtime-local {
+  display: block;
+}
+
+.uuid-generator-runtime .tool-editor-panel {
+  min-height: 0;
+}

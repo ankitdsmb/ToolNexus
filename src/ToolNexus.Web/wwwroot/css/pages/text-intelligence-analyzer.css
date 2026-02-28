@@ -1,0 +1,7 @@
+.text-intelligence-analyzer-runtime.tool-runtime-local {
+  display: block;
+}
+
+.text-intelligence-analyzer-runtime .tool-editor-panel {
+  min-height: 0;
+}

@@ -1,0 +1,7 @@
+.regex-tester-runtime.tool-runtime-local {
+  display: block;
+}
+
+.regex-tester-runtime .tool-editor-panel {
+  min-height: 0;
+}
