@@ -957,9 +957,7 @@ export function createToolRuntime({
       const templateStartedAt = now();
       emit('template_load_start', { toolSlug: slug });
       try {
-        const templateTarget = hasToolShellContract(root)
-          ? (root.querySelector('[data-tool-output]') ?? root)
-          : root;
+        const templateTarget = root;
         await templateLoader(slug, templateTarget, { templatePath: manifest.templatePath });
         emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
         return true;
