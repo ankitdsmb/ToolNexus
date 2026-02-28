@@ -53,7 +53,12 @@ function sanitizeTemplateMarkup(markup) {
 
 function resolveTemplateMountMode() {
   const configured = String(window.ToolNexusConfig?.runtimeTemplateMountMode ?? 'content-host').trim().toLowerCase();
-  return configured === 'legacy' ? 'legacy' : 'content-host';
+  if (configured === 'legacy') {
+    console.warn('[RuntimeOwnership] legacy template mount mode is deprecated; enforcing content-host ownership.');
+  }
+
+  // Architecture lock: runtime templates always mount through the ToolShell content host.
+  return 'content-host';
 }
 
 function emitMountTargetTelemetry(slug, mountTarget, mountMode) {
@@ -66,17 +71,12 @@ function resolveRootHandoffTarget(root, slug) {
     : root?.querySelector?.('#tool-root') ?? root;
 
   const mountMode = resolveTemplateMountMode();
-  const candidates = mountMode === 'legacy'
-    ? [
-      { key: 'input', selector: '[data-tool-input]' },
-      { key: 'content-host', selector: '[data-tool-content-host]' },
-      { key: 'root', selector: null }
-    ]
-    : [
-      { key: 'content-host', selector: '[data-tool-content-host]' },
-      { key: 'input', selector: '[data-tool-input]' },
-      { key: 'root', selector: null }
-    ];
+  // ToolShell owns frame, tool widget owns internals:
+  // the only first-class runtime handoff target is data-tool-content-host.
+  const candidates = [
+    { key: 'content-host', selector: '[data-tool-content-host]' },
+    { key: 'root', selector: null }
+  ];
 
   let host = null;
   let mountTarget = 'root';
@@ -92,7 +92,7 @@ function resolveRootHandoffTarget(root, slug) {
   }
 
   if (!host) {
-    throw new Error('tool-template-loader: missing mount zone ([data-tool-content-host] -> [data-tool-input] -> #tool-root).');
+    throw new Error('tool-template-loader: missing mount zone ([data-tool-content-host] -> #tool-root).');
   }
 
   const existing = host?.querySelector?.(':scope > [data-runtime-template-handoff]');
