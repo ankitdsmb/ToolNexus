@@ -1,4 +1,4 @@
-import { buildAdaptiveGuidance, createUnifiedToolControl } from './tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, createUnifiedToolControl } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -543,6 +543,11 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             outcomeClass,
             repeatedWarning: executionMemory.repeatedWarnings > 1
           });
+          const explanationDrivenGuidance = buildAdaptiveGuidanceFromReasons({
+            outcomeClass,
+            explanationReasons: hierarchy?.explanationReasons ?? [],
+            repeatedWarning: executionMemory.repeatedWarnings > 1
+          });
 
           if (outcomeClass === 'warning_partial') {
             unifiedControl.setStatus('warning', 'Warning · Completed with runtime notes');
@@ -553,12 +558,18 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           }
 
           unifiedControl.setIntent(adaptive.intent);
-          unifiedControl.setGuidance(adaptive.guidance);
+          unifiedControl.setGuidance(`Guidance: ${explanationDrivenGuidance}`);
         } catch (error) {
           executionMemory.lastOutcomeClass = 'failed';
           unifiedControl.setStatus('failed');
           unifiedControl.setIntent('AI intent: Report failed execution path with recoverable guidance.');
-          unifiedControl.setGuidance('Guidance: Next step: review failure diagnostics. Rerun: recommended after fixing input/runtime issues. Validation: confirm request assumptions before retry.');
+          const failedReasons = ['execution error path was triggered'];
+          unifiedControl.setClassificationWhy(`Why this result is classified this way: ${failedReasons.join('; ')}.`);
+          const failedGuidance = buildAdaptiveGuidanceFromReasons({
+            outcomeClass: 'failed',
+            explanationReasons: failedReasons
+          });
+          unifiedControl.setGuidance(`Guidance: ${failedGuidance}`);
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;

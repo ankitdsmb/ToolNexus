@@ -118,6 +118,7 @@ function createOutputContent(doc) {
     <section class="tn-unified-tool-control__output-block" data-output-tier="supporting">
       <p class="tn-unified-tool-control__output-label">Interpretation layer</p>
       <p class="tn-unified-tool-control__supporting" data-ai-layer="interpretation">Interpretation summary: Awaiting execution context.</p>
+      <p class="tn-unified-tool-control__supporting" data-ai-layer="classification-why">Why this result is classified this way: Awaiting runtime evidence.</p>
       <p class="tn-unified-tool-control__supporting" data-ai-layer="confidence">Confidence: Pending execution.</p>
       <p class="tn-unified-tool-control__supporting" data-ai-layer="next-action">Next recommended action: Run execution to generate guidance.</p>
     </section>
@@ -228,6 +229,49 @@ function resolveConfidencePhrase({ outcomeClass, evidenceCompleteness, warningCo
   return `Confidence: Strong — evidence completeness ${evidenceCompleteness}/3 with manageable diagnostic load.`;
 }
 
+function buildOutcomeExplanation({ outcomeClass, hasWarnings, hasDiagnostics, hasSupporting, metadataCompleteness, evidenceCompleteness }) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return [
+      'warnings detected in runtime evidence',
+      'diagnostics indicate partial risk exposure'
+    ];
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    const reasons = [];
+    if (metadataCompleteness === 0 || !hasSupporting) {
+      reasons.push('metadata or interpretation context is limited');
+    }
+
+    if (hasDiagnostics) {
+      reasons.push('diagnostics are more dominant than explanatory evidence');
+    }
+
+    if (!reasons.length) {
+      reasons.push(`evidence completeness is low (${evidenceCompleteness}/3)`);
+    }
+
+    return reasons;
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.failed) {
+    return ['execution error path was triggered'];
+  }
+
+  return [
+    'evidence completeness is high for this execution',
+    hasWarnings ? 'warning signals are minimal' : 'no warnings were observed'
+  ];
+}
+
+function resolveClassificationWhyLine(explanationReasons = []) {
+  if (!explanationReasons.length) {
+    return 'Why this result is classified this way: Observable runtime signals are still loading.';
+  }
+
+  return `Why this result is classified this way: ${explanationReasons.join('; ')}.`;
+}
+
 function resolveNextAction({ outcomeClass, repeatedWarning }) {
   if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
     return repeatedWarning
@@ -263,6 +307,28 @@ export function buildAdaptiveGuidance({ outcomeClass, repeatedWarning }) {
     intent: 'AI intent: Confirm outcome is usable for workflow continuation.',
     guidance: 'Guidance: Next step: continue through follow-up actions. Rerun: optional for comparison. Validation: spot-check downstream assumptions.'
   };
+}
+
+export function buildAdaptiveGuidanceFromReasons({ outcomeClass, explanationReasons = [], repeatedWarning = false } = {}) {
+  const reasonsLine = explanationReasons.length > 0
+    ? `Because ${explanationReasons.join(' and ')}, `
+    : 'Because observable runtime evidence is limited, ';
+
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return repeatedWarning
+      ? `${reasonsLine}fix the recurring warning source before rerun.`
+      : `${reasonsLine}inspect warnings, adjust inputs, then rerun.`;
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return `${reasonsLine}rerun with richer context and verify critical fields.`;
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.failed) {
+    return `${reasonsLine}correct the execution error path and retry.`;
+  }
+
+  return `${reasonsLine}proceed with follow-up actions and optional comparative rerun.`;
 }
 
 export function createUnifiedToolControl({
@@ -352,6 +418,7 @@ export function createUnifiedToolControl({
   const details = output.querySelector('.tn-unified-tool-control__details');
   const result = output.querySelector('.tn-unified-tool-control__result');
   const supporting = output.querySelector('.tn-unified-tool-control__supporting');
+  const classificationWhy = output.querySelector('[data-ai-layer="classification-why"]');
   const confidence = output.querySelector('[data-ai-layer="confidence"]');
   const nextAction = output.querySelector('[data-ai-layer="next-action"]');
   const metadata = output.querySelector('.tn-unified-tool-control__metadata');
@@ -398,6 +465,9 @@ export function createUnifiedToolControl({
     setGuidance(message) {
       guidance.textContent = message || 'Guidance: Add inputs and run when ready.';
     },
+    setClassificationWhy(message) {
+      classificationWhy.textContent = message || 'Why this result is classified this way: Awaiting runtime evidence.';
+    },
     showError(message) {
       const panel = doc.createElement('div');
       panel.className = 'tool-auto-runtime__error';
@@ -442,10 +512,19 @@ export function createUnifiedToolControl({
         warningCount: hierarchy.warningCount,
         diagnosticWeight: hierarchy.diagnosticWeight
       });
+      const explanationReasons = buildOutcomeExplanation({
+        outcomeClass,
+        hasWarnings: hierarchy.hasWarnings,
+        hasDiagnostics,
+        hasSupporting,
+        metadataCompleteness: hierarchy.metadataCompleteness,
+        evidenceCompleteness
+      });
 
       preview.textContent = toShortText(hierarchy.primary);
       result.textContent = serialized;
       supporting.textContent = resolveInterpretationSummary(hierarchy);
+      classificationWhy.textContent = resolveClassificationWhyLine(explanationReasons);
       confidence.textContent = confidencePhrase;
       nextAction.textContent = resolveNextAction({
         outcomeClass,
@@ -458,7 +537,8 @@ export function createUnifiedToolControl({
       return {
         ...hierarchy,
         outcomeClass,
-        evidenceCompleteness
+        evidenceCompleteness,
+        explanationReasons
       };
     }
   };

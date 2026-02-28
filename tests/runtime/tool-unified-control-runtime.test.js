@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAdaptiveGuidance, createUnifiedToolControl, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, createUnifiedToolControl, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
 
 function createContractHost() {
   const host = document.createElement('div');
@@ -75,6 +75,7 @@ describe('tool unified control runtime', () => {
     });
     expect(warningHierarchy.outcomeClass).toBe('warning_partial');
     expect(root.textContent).toContain('Cautious');
+    expect(root.textContent).toContain('Why this result is classified this way: warnings detected in runtime evidence; diagnostics indicate partial risk exposure.');
 
     const uncertainHierarchy = control.renderResult({
       output: { maybe: true },
@@ -82,12 +83,20 @@ describe('tool unified control runtime', () => {
     });
     expect(uncertainHierarchy.outcomeClass).toBe('uncertain_result');
     expect(root.textContent).toContain('Limited');
+    expect(root.textContent).toContain('Why this result is classified this way: metadata or interpretation context is limited; diagnostics are more dominant than explanatory evidence.');
   });
 
   test('buildAdaptiveGuidance returns guidance variants by outcome class', () => {
     expect(buildAdaptiveGuidance({ outcomeClass: 'usable_success', repeatedWarning: false }).guidance).toContain('continue through follow-up actions');
     expect(buildAdaptiveGuidance({ outcomeClass: 'warning_partial', repeatedWarning: true }).guidance).toContain('recurring warning pattern');
     expect(buildAdaptiveGuidance({ outcomeClass: 'uncertain_result', repeatedWarning: false }).guidance).toContain('trusted reference');
+  });
+
+  test('buildAdaptiveGuidanceFromReasons binds operator guidance to explanation reasons', () => {
+    expect(buildAdaptiveGuidanceFromReasons({
+      outcomeClass: 'uncertain_result',
+      explanationReasons: ['metadata is limited', 'diagnostics are dominant']
+    })).toContain('Because metadata is limited and diagnostics are dominant');
   });
 
   test('adapter helper can consume runtime context object', () => {
