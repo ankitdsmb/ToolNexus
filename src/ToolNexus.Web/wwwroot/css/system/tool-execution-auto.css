@@ -1,0 +1,74 @@
+:where(.tool-runtime-widget) {
+  --tool-exec-space-1: 6px;
+  --tool-exec-space-2: 10px;
+  --tool-exec-space-3: 14px;
+  --tool-exec-text-xs: 0.8125rem;
+  --tool-exec-text-sm: 0.9375rem;
+
+  margin: 0;
+  padding: var(--tool-exec-space-2);
+  display: grid;
+  gap: var(--tool-exec-space-2);
+  align-content: start;
+  font-size: var(--tool-exec-text-sm);
+  line-height: 1.4;
+}
+
+:where(.tool-runtime-widget .tool-local-header) {
+  margin: 0;
+  padding: 0 0 var(--tool-exec-space-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--tool-exec-space-1) var(--tool-exec-space-2);
+}
+
+:where(.tool-runtime-widget .tool-local-actions) {
+  margin: 0;
+  padding: var(--tool-exec-space-1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tool-exec-space-1);
+}
+
+:where(.tool-runtime-widget .tool-local-body) {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--tool-exec-space-2);
+  align-items: stretch;
+  min-height: min(440px, 62vh);
+}
+
+:where(.tool-runtime-widget .tool-editor-panel) {
+  margin: 0;
+  min-height: min(360px, 56vh);
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--tool-exec-space-1);
+}
+
+:where(.tool-runtime-widget .tool-local-metrics) {
+  margin: 0;
+  padding: var(--tool-exec-space-1) var(--tool-exec-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--tool-exec-space-2);
+  font-size: var(--tool-exec-text-xs);
+  line-height: 1.25;
+}
+
+@media (max-width: 920px) {
+  :where(.tool-runtime-widget .tool-local-body) {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  :where(.tool-runtime-widget .tool-editor-panel) {
+    min-height: 280px;
+  }
+}
