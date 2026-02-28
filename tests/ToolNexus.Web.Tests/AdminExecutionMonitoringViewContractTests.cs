@@ -11,16 +11,16 @@ public sealed class AdminExecutionMonitoringViewContractTests
         var viewPath = Path.Combine(repoRoot, "src", "ToolNexus.Web", "Areas", "Admin", "Views", "ExecutionMonitoring", "Index.cshtml");
         var source = File.ReadAllText(viewPath);
 
-        Assert.Contains("fetch('/admin/execution/health')", source, StringComparison.Ordinal);
-        Assert.Contains("fetch('/admin/execution/stream?take=25')", source, StringComparison.Ordinal);
-        Assert.Contains("fetch('/admin/execution/governance')", source, StringComparison.Ordinal);
-        Assert.Contains("fetch('/admin/execution/capability-lifecycle')", source, StringComparison.Ordinal);
-        Assert.Contains("fetch('/admin/execution/quality')", source, StringComparison.Ordinal);
-        Assert.Contains("fetch(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`)", source, StringComparison.Ordinal);
-        Assert.Contains("fetch('/admin/execution/autonomous-insights?take=15')", source, StringComparison.Ordinal);
-        Assert.Contains("AUTONOMOUS INSIGHTS", source, StringComparison.Ordinal);
-        Assert.Contains("fetch('/admin/execution/optimization?take=10')", source, StringComparison.Ordinal);
-        Assert.Contains("PLATFORM OPTIMIZATION", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/health')", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/stream?take=25')", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/governance')", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/capability-lifecycle')", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/quality')", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson(`/admin/execution/incidents?page=${page}&pageSize=${pageSize}`)", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/autonomous-insights?take=15')", source, StringComparison.Ordinal);
+        Assert.Contains("Autonomous Insights", source, StringComparison.Ordinal);
+        Assert.Contains("fetchJson('/admin/execution/optimization?take=10')", source, StringComparison.Ordinal);
+        Assert.Contains("Platform Optimization", source, StringComparison.Ordinal);
         Assert.Contains("data-command=\"cache-reset\"", source, StringComparison.Ordinal);
         Assert.Contains("data-command=\"queue-drain\"", source, StringComparison.Ordinal);
         Assert.Contains("data-command=\"queue-replay\"", source, StringComparison.Ordinal);
