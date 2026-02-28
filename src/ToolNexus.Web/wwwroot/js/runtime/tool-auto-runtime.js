@@ -366,6 +366,48 @@ function buildFieldGroups(doc, fields) {
 }
 
 
+
+function createEmptyStateHint(doc, controls = []) {
+  const container = doc.createElement('section');
+  container.className = 'tool-auto-runtime__empty-state';
+  container.innerHTML = '<p class="tool-auto-runtime__empty-title">Start with a quick input</p><p class="tool-auto-runtime__empty-copy">Paste data or load the built-in example to execute immediately.</p>';
+
+  const sample = String(globalThis.window?.ToolNexusConfig?.tool?.exampleInput ?? '').trim();
+  if (sample) {
+    const exampleButton = doc.createElement('button');
+    exampleButton.type = 'button';
+    exampleButton.className = 'tool-btn tool-btn--ghost tool-auto-runtime__example-btn';
+    exampleButton.textContent = 'Use example';
+    exampleButton.addEventListener('click', () => {
+      const primary = controls.find(({ input }) => input?.tagName === 'TEXTAREA' || input?.dataset.fieldType === 'json' || input?.type === 'text')?.input;
+      if (primary) {
+        primary.value = sample;
+        primary.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      syncVisibility();
+    });
+    container.append(exampleButton);
+  }
+
+  const hasInput = () => controls.some(({ input }) => {
+    if (!input) return false;
+    if (input.type === 'checkbox') return input.checked;
+    return Boolean(String(input.value ?? '').trim());
+  });
+
+  const syncVisibility = () => {
+    container.hidden = hasInput();
+  };
+
+  controls.forEach(({ input }) => {
+    input?.addEventListener('input', syncVisibility);
+    input?.addEventListener('change', syncVisibility);
+  });
+
+  syncVisibility();
+  return container;
+}
+
 function renderFallbackWarningBadge(doc, unifiedControl) {
   const badge = doc.createElement('p');
   badge.className = 'tool-auto-runtime__resolution-warning';
@@ -476,11 +518,15 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         }
       }
 
+      const emptyStateHint = createEmptyStateHint(doc, controls);
+      unifiedControl.inputArea.prepend(emptyStateHint);
+
       const runButton = unifiedControl.runButton;
 
       const runtimeObservation = createRuntimeObservationState();
 
       const run = async () => {
+        emptyStateHint.hidden = true;
         unifiedControl.clearErrors();
         unifiedControl.setIntent('AI intent: Validate request shape before runtime execution.');
         unifiedControl.setGuidance('Guidance: Ensure required fields are complete.');

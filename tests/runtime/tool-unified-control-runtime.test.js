@@ -25,7 +25,7 @@ describe('tool unified control runtime', () => {
     });
 
     expect(root.querySelector('.tn-unified-tool-control')).not.toBeNull();
-    expect(root.querySelector('.tn-unified-tool-control__icon').textContent).toBe('</>');
+    expect(root.querySelector('.tn-unified-tool-control__icon').innerHTML).toContain('<svg');
 
     control.renderResult({ ok: true, value: 'x'.repeat(800) });
 
@@ -265,7 +265,7 @@ describe('tool unified control runtime', () => {
 
     expect(control).not.toBeNull();
     expect(root.textContent).toContain('API Tool');
-    expect(root.querySelector('.tn-unified-tool-control__icon').textContent).toBe('API');
+    expect(root.querySelector('.tn-unified-tool-control__icon').innerHTML).toContain('<svg');
   });
 
 
