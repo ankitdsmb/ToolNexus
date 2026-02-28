@@ -1,12 +1,12 @@
 :where(.tool-runtime-widget) {
-  --tool-exec-space-1: 6px;
-  --tool-exec-space-2: 10px;
-  --tool-exec-space-3: 14px;
+  --tool-exec-space-1: 4px;
+  --tool-exec-space-2: 8px;
+  --tool-exec-space-3: 10px;
   --tool-exec-text-xs: 0.8125rem;
   --tool-exec-text-sm: 0.9375rem;
 
   margin: 0;
-  padding: var(--tool-exec-space-2);
+  padding: var(--tool-exec-space-1) var(--tool-exec-space-2);
   display: grid;
   gap: var(--tool-exec-space-2);
   align-content: start;
@@ -39,12 +39,12 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--tool-exec-space-2);
   align-items: stretch;
-  min-height: min(440px, 62vh);
+  min-height: min(340px, 54vh);
 }
 
 :where(.tool-runtime-widget .tool-editor-panel) {
   margin: 0;
-  min-height: min(360px, 56vh);
+  min-height: min(280px, 48vh);
   height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -69,6 +69,6 @@
   }
 
   :where(.tool-runtime-widget .tool-editor-panel) {
-    min-height: 280px;
+    min-height: 220px;
   }
 }

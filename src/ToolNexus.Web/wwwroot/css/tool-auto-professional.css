@@ -1,10 +1,10 @@
 :where(.tool-runtime-widget) {
-  --exec-gap-tight: 6px;
-  --exec-gap-normal: 10px;
-  --exec-gap-loose: 14px;
+  --exec-gap-tight: 4px;
+  --exec-gap-normal: 8px;
+  --exec-gap-loose: 10px;
   width: 100%;
   margin: 0;
-  padding: clamp(10px, 1vw, 14px);
+  padding: clamp(8px, 0.9vw, 10px);
   display: grid;
   gap: var(--exec-gap-tight);
   align-content: start;
@@ -16,9 +16,9 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: clamp(8px, 0.8vw, 12px);
+  gap: clamp(4px, 0.6vw, 8px);
   margin: 0;
-  padding-block-end: clamp(6px, 0.8vw, 10px);
+  padding-block-end: clamp(4px, 0.6vw, 6px);
   border-bottom: 1px solid color-mix(in srgb, var(--border-subtle, #324056) 80%, transparent);
 }
 
@@ -32,7 +32,7 @@
 }
 
 :where(.tool-runtime-widget .tool-local-header p) {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   font-size: var(--text-xs, 0.8125rem);
   color: var(--text-muted, #94a3b8);
 }
@@ -40,16 +40,16 @@
 :where(.tool-runtime-widget .tool-local-actions) {
   margin: 0;
   display: grid;
-  gap: 6px;
-  padding: 8px;
+  gap: 4px;
+  padding: 6px;
   border: 1px solid color-mix(in srgb, var(--border-subtle, #324056) 82%, transparent);
   border-radius: var(--radius-md, 0.75rem);
   background: color-mix(in srgb, var(--bg-secondary, #0f172a) 82%, transparent);
 }
 
 :where(.tool-runtime-widget .tool-local-actions .tool-btn) {
-  min-height: 34px;
-  padding-inline: 10px;
+  min-height: 30px;
+  padding-inline: 8px;
   font-size: var(--text-xs, 0.8125rem);
 }
 
@@ -61,7 +61,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--exec-gap-normal);
-  min-height: 400px;
+  min-height: 320px;
   align-items: stretch;
 }
 
@@ -74,15 +74,15 @@
 }
 
 :where(.tool-runtime-widget .tool-local-surface) {
-  min-height: 400px;
+  min-height: 300px;
   height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border: 1px solid color-mix(in srgb, var(--border-subtle, #324056) 82%, transparent);
   border-radius: var(--radius-md, 0.75rem);
-  background: color-mix(in srgb, var(--panel-bg, #0f172a) 90%, var(--bg-secondary, #111827));
+  background: color-mix(in srgb, var(--panel-bg, #0f172a) 86%, var(--bg-secondary, #111827));
   box-shadow: none;
 }
 
@@ -91,8 +91,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
-  padding: 8px 10px;
+  gap: 4px 8px;
+  padding: 6px 8px;
   border: 1px solid color-mix(in srgb, var(--border-subtle, #324056) 84%, transparent);
   border-radius: var(--radius-sm, 0.5rem);
   background: color-mix(in srgb, var(--bg-secondary, #0f172a) 88%, transparent);
