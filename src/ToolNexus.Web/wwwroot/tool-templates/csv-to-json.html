@@ -1,4 +1,4 @@
-<div class="tool-runtime-local csv-to-json-runtime csv-to-json-tool-runtime">
+<div class="tool-runtime-widget tool-runtime-local csv-to-json-runtime csv-to-json-tool-runtime">
  <header class="tool-local-header">
   <div>
    <h2>
@@ -14,7 +14,7 @@
    Client-side processing only
   </span>
  </header>
- <section class="tool-actions">
+ <section class="tool-local-actions tool-actions">
   <button class="tool-btn tool-btn--primary" id="convertBtn" type="button">
    Convert
   </button>
@@ -88,7 +88,7 @@
    <input id="previewRowsInput" min="1" type="number" value="50"/>
   </label>
  </section>
- <section class="tool-local-sections">
+ <section class="tool-local-body tool-local-sections">
   <section class="tool-local-surface">
    <h2>
     CSV Input
@@ -115,7 +115,7 @@
    <textarea class="csv-json-editor" id="jsonOutput" placeholder="JSON output appears here" readonly="" spellcheck="false"></textarea>
   </section>
  </section>
- <section class="tool-metrics">
+ <section class="tool-local-metrics tool-metrics">
   <p aria-live="polite" class="csv-json-status" id="statusText" role="status">
    Ready
   </p>
