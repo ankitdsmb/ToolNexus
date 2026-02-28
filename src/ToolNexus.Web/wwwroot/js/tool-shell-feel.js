@@ -35,11 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const cards = Array.from(page.querySelectorAll('[data-actionable-card="true"]'));
-  const disclosures = Array.from(page.querySelectorAll('.readme-disclosure'));
   const runtime = page.querySelector('.tool-shell-page__runtime');
-  const runtimeShell = page.querySelector('[data-runtime-zone-shell="true"]');
-  const momentumLoop = page.querySelector('[data-momentum-loop="true"]');
   const inlineMountTrigger = page.querySelector('[data-inline-mount-trigger="true"]');
   const inlineMountHost = page.querySelector('[data-inline-mount-host="true"]');
 
@@ -69,20 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  cards.forEach((card) => {
-    card.addEventListener('mouseenter', () => card.classList.add('is-emphasized'));
-    card.addEventListener('mouseleave', () => card.classList.remove('is-emphasized'));
-    card.addEventListener('focus', () => card.classList.add('is-emphasized'));
-    card.addEventListener('blur', () => card.classList.remove('is-emphasized'));
-  });
-
-  disclosures.forEach((disclosure) => {
-    disclosure.addEventListener('toggle', () => {
-      disclosure.classList.add('is-transitioning');
-      window.requestAnimationFrame(() => disclosure.classList.remove('is-transitioning'));
-    });
-  });
-
   if (!runtime) {
     return;
   }
@@ -106,8 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.requestAnimationFrame(() => toast.classList.add('is-visible'));
     window.setTimeout(() => {
       toast.classList.remove('is-visible');
-      window.setTimeout(() => toast.remove(), 180);
-    }, 1600);
+      window.setTimeout(() => toast.remove(), 240);
+    }, 1800);
   };
 
   const syncCommandDockDensity = () => {
@@ -133,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     action.classList.remove('is-acknowledged');
     window.requestAnimationFrame(() => action.classList.add('is-acknowledged'));
-    window.setTimeout(() => action.classList.remove('is-acknowledged'), 160);
+    window.setTimeout(() => action.classList.remove('is-acknowledged'), 120);
 
     if (intent === 'copy') {
       showToast('Copied to clipboard.', 'success');
@@ -158,6 +140,33 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let lastNotifiedState = '';
+  let loadingIndicatorTimer = 0;
+  const clearLoadingIndicatorTimer = () => {
+    if (loadingIndicatorTimer) {
+      window.clearTimeout(loadingIndicatorTimer);
+      loadingIndicatorTimer = 0;
+    }
+  };
+
+  const scheduleLoadingIndicator = (status, output, isLoading) => {
+    clearLoadingIndicatorTimer();
+    if (!status || !output) {
+      return;
+    }
+
+    status.classList.toggle('is-loading-visible', false);
+    output.classList.toggle('is-processing-visible', false);
+
+    if (!isLoading) {
+      return;
+    }
+
+    loadingIndicatorTimer = window.setTimeout(() => {
+      status.classList.add('is-loading-visible');
+      output.classList.add('is-processing-visible');
+    }, 140);
+  };
+
   const syncStatusTone = () => {
     const status = runtime.querySelector('[data-tool-status="true"], .tn-unified-tool-control__status, #resultStatus, .result-indicator');
     if (!status) {
@@ -167,7 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
     status.classList.remove('is-running', 'is-validating', 'is-streaming');
 
     const state = (status.dataset.executionState || status.dataset.runtimeState || '').toLowerCase();
-    if (state === 'running' || state === 'validating' || state === 'streaming') {
+    const isLoading = state === 'running' || state === 'validating' || state === 'streaming';
+    if (isLoading) {
       status.classList.add(`is-${state}`);
     }
 
@@ -188,18 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const output = runtime.querySelector('.tn-unified-tool-control__output');
     if (output) {
-      output.classList.toggle('is-processing', state === 'running' || state === 'streaming');
-    }
-  };
-
-  const signalMomentum = () => {
-    if (!momentumLoop) {
-      return;
+      output.classList.toggle('is-processing', isLoading);
     }
 
-    momentumLoop.hidden = false;
-    momentumLoop.classList.remove('is-active');
-    window.requestAnimationFrame(() => momentumLoop.classList.add('is-active'));
+    scheduleLoadingIndicator(status, output, isLoading);
   };
 
   const monitorExecutionSuccess = () => {
@@ -213,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isSuccessful) {
       page.classList.add('has-runtime-success');
-      signalMomentum();
       return;
     }
 
@@ -258,39 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeObserver.observe(followupHost);
   }
 
-  let pendingFrame = 0;
-  let nextPointerX = 0;
-
-  const applyPointerCue = () => {
-    pendingFrame = 0;
-    const bounds = runtime.getBoundingClientRect();
-    const normalized = (nextPointerX - bounds.left) / Math.max(bounds.width, 1);
-    const pointerX = `${Math.min(Math.max(normalized, 0), 1).toFixed(3)}`;
-    runtime.style.setProperty('--runtime-pointer-x', pointerX);
-    if (runtimeShell) {
-      runtimeShell.style.setProperty('--runtime-pointer-x', pointerX);
-    }
-    page.classList.add('has-pointer-guidance');
-  };
-
-  runtime.addEventListener('pointerleave', () => {
-    page.classList.remove('has-pointer-guidance');
-    runtime.style.setProperty('--runtime-pointer-x', '0.5');
-    if (runtimeShell) {
-      runtimeShell.style.setProperty('--runtime-pointer-x', '0.5');
-    }
-  });
-
-
   window.addEventListener('beforeunload', () => {
+    clearLoadingIndicatorTimer();
     resizeObserver.disconnect();
     observer.disconnect();
   }, { once: true });
-
-  runtime.addEventListener('pointermove', (event) => {
-    nextPointerX = event.clientX;
-    if (!pendingFrame) {
-      pendingFrame = window.requestAnimationFrame(applyPointerCue);
-    }
-  });
 });
