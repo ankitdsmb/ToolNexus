@@ -1,6 +1,6 @@
 .text-diff-page {
   display: grid;
-  gap: 24px;
+  gap: var(--space-4);
   padding: 24px;
 }
 
@@ -44,7 +44,7 @@
 .text-diff-editors {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: var(--space-4);
 }
 
 .text-diff-panel {

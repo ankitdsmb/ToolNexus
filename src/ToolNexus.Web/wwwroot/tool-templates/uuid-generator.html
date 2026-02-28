@@ -13,6 +13,8 @@
   </span>
  </header>
  <section class="tool-local-actions">
+ 
+  <button type="button" data-tool-primary-action hidden aria-hidden="true" tabindex="-1">Run</button>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
@@ -93,7 +95,7 @@
     </label>
    </div>
    <div aria-label="UUID actions" class="uuid-tool__actions" role="toolbar">
-    <button class="tool-btn tool-btn--primary" id="uuidGenerateBtn" type="button">
+    <button class="tool-btn tool-btn--primary" id="uuidGenerateBtn" type="button" data-tool-primary-action>
      Generate
     </button>
     <button class="tool-btn tool-btn--outline" id="uuidClearBtn" type="button">

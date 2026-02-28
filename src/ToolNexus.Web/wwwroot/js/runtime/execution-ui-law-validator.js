@@ -19,7 +19,7 @@ function addViolation(list, ruleId, severity, message) {
 }
 
 function countPrimaryActions(scope) {
-  return scope.querySelectorAll('.tn-btn--primary, .btn-primary, .tool-action--primary, [data-tool-action="execute"], [data-tool-execute], #executeBtn').length;
+  return scope.querySelectorAll('[data-tool-primary-action], .tn-btn--primary, .btn-primary, .tool-action--primary, [data-tool-action="execute"], [data-tool-execute], #executeBtn').length;
 }
 
 function elementHeight(el) {
