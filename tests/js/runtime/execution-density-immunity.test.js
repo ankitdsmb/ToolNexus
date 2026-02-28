@@ -19,13 +19,17 @@ describe('execution density immunity', () => {
 
   test('editor workspace keeps aligned panel height and parity', () => {
     const css = read(runtimeCssPath);
+    const bodyMinHeight = Number(css.match(/tool-local-body\)[\s\S]*?min-height:\s*(\d+)px;/)?.[1] ?? NaN);
     const minHeights = [...css.matchAll(/tool-local-surface[\s\S]*?min-height:\s*(\d+)px;/g)].map((match) => Number(match[1]));
+
+    expect(Number.isFinite(bodyMinHeight)).toBe(true);
     expect(minHeights.length).toBeGreaterThan(0);
-    expect(minHeights.every((height) => height >= 380 && height <= 460)).toBe(true);
+    expect(minHeights.every((height) => height >= 280 && height <= 340)).toBe(true);
 
     const min = Math.min(...minHeights);
     const max = Math.max(...minHeights);
     expect(max - min).toBeLessThanOrEqual(8);
+    expect(bodyMinHeight - min).toBeLessThanOrEqual(40);
   });
 
   test('toolbar hierarchy keeps one primary and at most two secondary actions', () => {
