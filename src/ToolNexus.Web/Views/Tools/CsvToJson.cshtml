@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="~/css/tools/csv-to-json.css" asp-append-version="true" />
 }
 
-<article class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="@Model.Tool.Slug">
-    <header class="csv-json-page__header">
+<div class="tool-runtime-local csv-to-json-runtime csv-json-page">
+    <header class="tool-local-header csv-json-page__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p>@Model.Tool.SeoDescription</p>
         </div>
         <span class="csv-json-page__badge">Client-side processing only</span>
     </header>
 
-    <section class="csv-json-controls" aria-label="CSV conversion controls">
+    <section class="tool-actions csv-json-controls" aria-label="CSV conversion controls">
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy JSON</button>
@@ -81,18 +81,18 @@
         </label>
     </section>
 
-    <p id="statusText" class="csv-json-status" role="status" aria-live="polite">Ready</p>
+    <section class="tool-metrics"><p id="statusText" class="csv-json-status" role="status" aria-live="polite">Ready</p></section>
 
     <div id="errorBox" class="csv-json-error" role="alert" aria-live="assertive" hidden></div>
 
-    <section class="csv-json-layout" aria-label="CSV to JSON workspace">
-        <section class="csv-json-panel">
+    <section class="tool-editors csv-json-layout" aria-label="CSV to JSON workspace">
+        <section class="tool-editor-panel csv-json-panel">
             <h2>CSV Input</h2>
             <p class="csv-json-panel__hint">Ctrl/Cmd + Enter to convert. Ctrl/Cmd + L to clear.</p>
             <textarea id="csvInput" class="csv-json-editor" spellcheck="false">@Model.Tool.ExampleInput</textarea>
         </section>
 
-        <section class="csv-json-panel">
+        <section class="tool-editor-panel csv-json-panel">
             <div class="csv-json-panel__header">
                 <h2>JSON Output</h2>
                 <div class="csv-json-metrics">
@@ -103,7 +103,7 @@
             <textarea id="jsonOutput" class="csv-json-editor" readonly spellcheck="false" placeholder="JSON output appears here"></textarea>
         </section>
     </section>
-</article>
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/csv-to-json.js" asp-append-version="true"></script>

@@ -11,17 +11,23 @@
     <link rel="stylesheet" href="~/css/tools/html-entities.css" asp-append-version="true" />
 }
 
-<article class="html-entities-tool" data-slug="@Model.Tool.Slug" aria-label="HTML entities tool">
-    <header class="html-entities-tool__header">
+<div class="tool-runtime-local html-entities-runtime html-entities-tool">
+    <header class="tool-local-header html-entities-tool__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="html-entities-tool__description">Encode or decode HTML entities safely with deterministic UTF-8 handling.</p>
         </div>
         <span class="html-entities-badge">Client-side processing</span>
     </header>
 
-    <section class="html-entities-workspace" aria-label="HTML entities workspace">
-        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesInputHeading">
+    <section class="tool-actions html-entities-actions" aria-label="HTML entity actions">
+        <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
+        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
+        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
+    </section>
+
+    <section class="tool-editors html-entities-workspace" aria-label="HTML entities workspace">
+        <section class="tool-editor-panel tool-panel html-entities-panel" aria-labelledby="htmlEntitiesInputHeading">
             <div class="html-entities-panel__header">
                 <h2 id="htmlEntitiesInputHeading">Input</h2>
                 <p id="inputStats" class="html-entities-meta">0 chars</p>
@@ -45,14 +51,10 @@
                 <label><input id="preserveFormattingToggle" type="checkbox" checked /> Preserve spaces/newlines</label>
             </div>
 
-            <div class="html-entities-actions">
-                <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
-                <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-            </div>
             <p class="html-entities-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Convert · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
         </section>
 
-        <section class="tool-panel html-entities-panel" aria-labelledby="htmlEntitiesOutputHeading">
+        <section class="tool-editor-panel tool-panel html-entities-panel" aria-labelledby="htmlEntitiesOutputHeading">
             <div class="html-entities-panel__header">
                 <h2 id="htmlEntitiesOutputHeading">Output</h2>
                 <p id="statusText" class="html-entities-meta">Ready</p>
@@ -68,14 +70,14 @@
 
             <label for="outputEditor" class="html-entities-label">Converted text (safe plain text)</label>
             <textarea id="outputEditor" class="tool-textarea tool-textarea--mono" rows="16" readonly placeholder="Output appears here"></textarea>
-
-            <div class="html-entities-actions">
-                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
-            </div>
             <p id="outputStats" class="html-entities-meta">0 chars</p>
         </section>
     </section>
-</article>
+
+    <section class="tool-metrics">
+        <p id="statusMirror">Execution status is displayed in output.</p>
+    </section>
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/html-entities.js" asp-append-version="true"></script>

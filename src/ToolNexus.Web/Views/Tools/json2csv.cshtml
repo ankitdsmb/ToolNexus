@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="~/css/pages/json-to-csv.css" asp-append-version="true" />
 }
 
-<article class="tool-page tool-json-csv" data-slug="@Model.Tool.Slug">
-    <header class="tool-json-csv__header">
+<div class="tool-runtime-local json-to-csv-runtime tool-json-csv">
+    <header class="tool-local-header tool-json-csv__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="tool-json-csv__description">Convert JSON to RFC-compliant CSV with deterministic headers and zero server calls.</p>
         </div>
         <span class="tool-json-csv__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-json-csv__controls" aria-label="Conversion options">
+    <section class="tool-actions tool-json-csv__controls" aria-label="Conversion options">
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy CSV</button>
@@ -55,10 +55,10 @@
         </label>
     </section>
 
-    <p class="tool-json-csv__status" id="statusText">Ready</p>
+    <section class="tool-metrics"><p class="tool-json-csv__status" id="statusText">Ready</p></section>
 
-    <section class="tool-json-csv__workspace" aria-label="JSON to CSV workspace">
-        <section class="tool-json-csv__panel">
+    <section class="tool-editors tool-json-csv__workspace" aria-label="JSON to CSV workspace">
+        <section class="tool-editor-panel tool-json-csv__panel">
             <div class="tool-json-csv__panel-header">
                 <h2>JSON input</h2>
                 <span>Ctrl/Cmd + Enter convert · Ctrl/Cmd + L clear</span>
@@ -66,7 +66,7 @@
             <textarea id="jsonInput" class="tool-json-csv__editor" spellcheck="false" placeholder='[{"name":"Ada","user":{"email":"ada@example.com"}}]'>@Model.Tool.ExampleInput</textarea>
         </section>
 
-        <section class="tool-json-csv__panel">
+        <section class="tool-editor-panel tool-json-csv__panel">
             <div class="tool-json-csv__panel-header">
                 <h2>CSV output preview</h2>
                 <span id="outputStats">0 row(s) · 0 column(s)</span>
@@ -80,7 +80,10 @@
         <p id="errorDetail"></p>
         <p id="errorSuggestion" class="tool-json-csv__error-suggestion"></p>
     </section>
-</article>
+    </section>
+
+
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/json-to-csv/index.js" asp-append-version="true"></script>

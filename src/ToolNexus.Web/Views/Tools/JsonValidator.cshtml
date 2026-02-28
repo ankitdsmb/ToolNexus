@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="~/css/pages/json-validator.css" asp-append-version="true" />
 }
 
-<article class="json-validator-page" data-json-validator>
-    <header class="json-validator-page__header">
+<div class="tool-runtime-local json-validator-runtime json-validator-page">
+    <header class="tool-local-header json-validator-page__header">
         <div>
-            <h1>@Model.Tool.Title</h1>
+            <h2>@Model.Tool.Title</h2>
             <p class="json-validator-page__description">Validate JSON with precise diagnostics and structure insights. Everything runs locally in your browser.</p>
         </div>
         <span class="json-validator-page__badge">Client-side processing</span>
     </header>
 
-    <section class="json-validator-toolbar" role="toolbar" aria-label="JSON validator controls">
+    <section class="tool-actions json-validator-toolbar" role="toolbar" aria-label="JSON validator controls">
         <button id="validateBtn" class="tool-btn tool-btn--primary" type="button">Validate</button>
         <button id="formatBtn" class="tool-btn" type="button">Format JSON</button>
         <button id="copyBtn" class="tool-btn" type="button">Copy JSON</button>
@@ -35,8 +35,8 @@
 
     <section id="processingIndicator" class="json-validator-processing" hidden>Processing JSON payload…</section>
 
-    <section class="json-validator-layout" aria-label="JSON validator workspace">
-        <section class="json-validator-panel">
+    <section class="tool-editors json-validator-layout" aria-label="JSON validator workspace">
+        <section class="tool-editor-panel json-validator-panel">
             <div class="json-validator-panel__header">
                 <h2>Raw JSON Input</h2>
                 <p>Ctrl/Cmd + Enter: Validate · Ctrl/Cmd + L: Clear</p>
@@ -47,7 +47,7 @@
             <textarea id="schemaInput" class="json-validator-editor json-validator-editor--schema" spellcheck="false" hidden placeholder='{"type":"object","properties":{"id":{"type":"number"}},"required":["id"]}'></textarea>
         </section>
 
-        <section class="json-validator-panel">
+        <section class="tool-editor-panel json-validator-panel">
             <div class="json-validator-panel__header">
                 <h2>Validation Result</h2>
                 <p id="resultBadge" class="json-validator-result json-validator-result--idle">Awaiting validation</p>
@@ -64,23 +64,23 @@
                 <p id="errorLocation"></p>
             </section>
 
-            <section class="json-validator-metrics" aria-live="polite">
-                <p><span>Top-level</span><strong id="metricTopLevel">-</strong></p>
-                <p><span>Key count</span><strong id="metricKeyCount">0</strong></p>
-                <p><span>Array length</span><strong id="metricArrayLength">0</strong></p>
-                <p><span>Depth</span><strong id="metricDepth">0</strong></p>
-                <p><span>Characters</span><strong id="metricCharacters">0</strong></p>
-                <p><span>Lines</span><strong id="metricLines">0</strong></p>
-                <p><span>Payload size</span><strong id="metricPayloadSize">0 B</strong></p>
-            </section>
-
             <details id="treeViewPanel" class="json-validator-tree" hidden>
                 <summary>Structure tree</summary>
                 <pre id="treeViewContent"></pre>
             </details>
         </section>
     </section>
-</article>
+
+    <section class="tool-metrics json-validator-metrics" aria-live="polite">
+        <p><span>Top-level</span><strong id="metricTopLevel">-</strong></p>
+        <p><span>Key count</span><strong id="metricKeyCount">0</strong></p>
+        <p><span>Array length</span><strong id="metricArrayLength">0</strong></p>
+        <p><span>Depth</span><strong id="metricDepth">0</strong></p>
+        <p><span>Characters</span><strong id="metricCharacters">0</strong></p>
+        <p><span>Lines</span><strong id="metricLines">0</strong></p>
+        <p><span>Payload size</span><strong id="metricPayloadSize">0 B</strong></p>
+    </section>
+</div>
 
 @section Scripts {
     <script type="module" src="~/js/tools/json-validator/index.js" asp-append-version="true"></script>
