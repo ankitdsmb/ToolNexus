@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, generateRuntimeOptimizationInsight, observeRuntimeReasoning, observeRuntimeStabilitySignals, useUnifiedToolControl, validateRuntimeStability } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, enforceProfessionalLayout, generateRuntimeOptimizationInsight, observeRuntimeReasoning, observeRuntimeStabilitySignals, useUnifiedToolControl, validateRuntimeStability } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
 
 function createContractHost() {
   const host = document.createElement('div');
@@ -267,4 +267,31 @@ describe('tool unified control runtime', () => {
     expect(root.textContent).toContain('API Tool');
     expect(root.querySelector('.tn-unified-tool-control__icon').textContent).toBe('API');
   });
+
+
+  test('enforceProfessionalLayout normalizes missing semantic classes and blocks nested runtime widgets', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <div class="tool-runtime-widget">
+        <header><h1>Title</h1></header>
+        <section class="tool-actions"></section>
+        <section class="tool-local-sections"><div class="panel">A</div></section>
+        <section class="tool-metrics"></section>
+        <div class="tool-runtime-widget"><section class="tool-local-body"></section></div>
+      </div>`;
+
+    const result = enforceProfessionalLayout(root);
+    const widget = root.querySelector('.tool-runtime-widget');
+    const body = widget.querySelector('.tool-local-body');
+
+    expect(result.normalized).toBe(true);
+    expect(result.widgetCount).toBe(2);
+    expect(widget.querySelector(':scope > header')?.classList.contains('tool-local-header')).toBe(true);
+    expect(widget.querySelector(':scope > .tool-actions')?.classList.contains('tool-local-actions')).toBe(true);
+    expect(body).not.toBeNull();
+    expect(body?.classList.contains('single-panel')).toBe(true);
+    expect(root.querySelectorAll('.tool-runtime-widget').length).toBe(1);
+    expect(root.querySelector('.tool-runtime-widget--nested')).not.toBeNull();
+  });
+
 });

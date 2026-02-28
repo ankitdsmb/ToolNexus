@@ -661,6 +661,58 @@ export function buildRuntimeReasoning({
   });
 }
 
+
+
+function applyProfessionalClass(target, className) {
+  if (target && !target.classList.contains(className)) {
+    target.classList.add(className);
+  }
+}
+
+export function enforceProfessionalLayout(root) {
+  if (!root?.querySelectorAll) {
+    return { widgetCount: 0, normalized: false };
+  }
+
+  const widgets = [];
+  if (root.matches?.('.tool-runtime-widget')) {
+    widgets.push(root);
+  }
+  widgets.push(...root.querySelectorAll('.tool-runtime-widget'));
+
+  if (widgets.length === 0) {
+    return { widgetCount: 0, normalized: false };
+  }
+
+  for (const widget of widgets) {
+    const nestedWidgets = widget.querySelectorAll('.tool-runtime-widget');
+    for (const nested of nestedWidgets) {
+      if (nested === widget) {
+        continue;
+      }
+
+      nested.classList.remove('tool-runtime-widget');
+      nested.classList.add('tool-runtime-widget--nested');
+    }
+
+    const header = widget.querySelector(':scope > .tool-local-header, :scope > header');
+    const actions = widget.querySelector(':scope > .tool-local-actions, :scope > .tool-actions, :scope > [role="toolbar"]');
+    const body = widget.querySelector(':scope > .tool-local-body, :scope > .tool-local-sections, :scope > .tool-editors');
+    const metrics = widget.querySelector(':scope > .tool-local-metrics, :scope > .tool-metrics, :scope > [data-tool-zone="status"]');
+
+    applyProfessionalClass(header, 'tool-local-header');
+    applyProfessionalClass(actions, 'tool-local-actions');
+    applyProfessionalClass(body, 'tool-local-body');
+    applyProfessionalClass(metrics, 'tool-local-metrics');
+
+    if (body) {
+      const panelCount = body.children?.length ?? 0;
+      body.classList.toggle('single-panel', panelCount <= 1);
+    }
+  }
+
+  return { widgetCount: widgets.length, normalized: true };
+}
 export function createUnifiedToolControl({
   root,
   doc = root?.ownerDocument ?? document,
@@ -685,6 +737,8 @@ export function createUnifiedToolControl({
   if (!hasContractZones) {
     return null;
   }
+
+  enforceProfessionalLayout(toolRoot);
 
   const shell = toolRoot;
   const presentationEngine = createToolPresentationEngine({ doc });
