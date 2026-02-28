@@ -241,7 +241,43 @@ describe('tool auto runtime', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(host.querySelector('[data-ai-layer="next-action"]').textContent).toContain('Warning repeated across runs');
-    expect(host.textContent).toContain('recurring warning pattern');
+    expect(host.textContent).toContain('Because warnings detected in runtime evidence and diagnostics indicate partial risk exposure, fix the recurring warning source before rerun.');
+  });
+
+
+  test('failed execution renders failed classification explanation in supporting section', async () => {
+    const host = createContractHost();
+    document.body.append(host);
+
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      json: async () => ({ error: 'boom' })
+    }));
+    global.fetch = fetchMock;
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: {
+        uiMode: 'auto',
+        complexityTier: 2,
+        operationSchema: {
+          type: 'object',
+          properties: {
+            text: { type: 'text', title: 'Text value' }
+          }
+        }
+      }
+    });
+
+    const state = module.create(host);
+    module.init(state, host, { addCleanup() {} });
+
+    host.querySelector('#tool-auto-text').value = 'hello';
+    host.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(host.textContent).toContain('Why this result is classified this way: execution error path was triggered.');
+    expect(host.textContent).toContain('Because execution error path was triggered, correct the execution error path and retry.');
   });
 
   test('auto execution sends expected payload and output renders safely', async () => {
