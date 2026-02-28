@@ -16,6 +16,10 @@ export function resolveJsonFormatterDom(root) {
 }
 
 export function setErrorState(dom, error) {
+  if (!dom.errorBox || !dom.errorTitle || !dom.errorDetail || !dom.errorLocation) {
+    return;
+  }
+
   dom.errorTitle.textContent = error.title;
   dom.errorDetail.textContent = `${error.message} ${error.details ?? ''}`.trim();
 
@@ -31,6 +35,10 @@ export function setErrorState(dom, error) {
 }
 
 export function clearErrorState(dom) {
+  if (!dom.errorBox || !dom.errorTitle || !dom.errorDetail || !dom.errorLocation) {
+    return;
+  }
+
   dom.errorBox.hidden = true;
   dom.errorTitle.textContent = '';
   dom.errorDetail.textContent = '';
@@ -39,6 +47,10 @@ export function clearErrorState(dom) {
 }
 
 export function pushToast(dom, message, variant = 'success') {
+  if (!dom.toastRegion) {
+    return;
+  }
+
   while (dom.toastRegion.children.length >= JSON_FORMATTER_CONFIG.maxToasts) {
     dom.toastRegion.firstChild?.remove();
   }
