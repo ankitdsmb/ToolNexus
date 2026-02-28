@@ -59,18 +59,30 @@
 
 :where(.tool-runtime-widget .tool-local-body) {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 34vw, 420px), 1fr));
   gap: var(--exec-gap-normal);
   min-height: 320px;
   align-items: stretch;
 }
 
-:where(.tool-runtime-widget .tool-local-body.single-panel) {
-  grid-template-columns: 1fr;
+:where(.tool-runtime-widget > .tool-local-body:has(> :only-child)) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+:where(.tool-runtime-widget > .tool-local-body:has(> :nth-child(2):last-child)) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
+
+:where(.tool-runtime-widget > .tool-local-body:has(> :nth-child(3))) {
+  grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 30vw, 360px), 1fr)) !important;
 }
 
 :where(.tool-runtime-widget .tool-local-body > *) {
   min-width: 0;
+  min-height: 300px;
+  height: 100%;
+  align-self: stretch;
+  overflow: hidden;
 }
 
 :where(.tool-runtime-widget .tool-local-surface) {
@@ -84,6 +96,18 @@
   border-radius: var(--radius-md, 0.75rem);
   background: color-mix(in srgb, var(--panel-bg, #0f172a) 86%, var(--bg-secondary, #111827));
   box-shadow: none;
+  align-content: stretch;
+}
+
+:where(.tool-runtime-widget :is(.tool-local-surface, .tool-editor-panel) > :first-child) {
+  min-height: 30px;
+  display: flex;
+  align-items: baseline;
+}
+
+:where(.tool-runtime-widget :is(.tool-local-surface, .tool-editor-panel) > :last-child) {
+  min-height: 0;
+  overflow: auto;
 }
 
 :where(.tool-runtime-widget .tool-local-metrics) {
@@ -123,6 +147,29 @@
   border: 1px solid color-mix(in srgb, var(--danger, #ef4444) 42%, var(--border-subtle, #324056));
   background: color-mix(in srgb, var(--danger-soft, rgba(239, 68, 68, 0.24)) 82%, var(--bg-secondary, #111827));
   font-size: var(--text-xs, 0.8125rem);
+}
+
+:where(.tool-runtime-widget > .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn):first-child:not(.tool-btn--secondary):not(.tool-btn--ghost)) {
+  border: 1px solid color-mix(in srgb, var(--accent, #2563eb) 28%, var(--border-subtle, #324056));
+  border-radius: var(--radius-sm, 0.5rem);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #2563eb) 88%, #fff 12%), var(--accent, #2563eb));
+  color: #fff;
+  font-weight: 700;
+}
+
+:where(.tool-runtime-widget > .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn):is(:nth-child(2), :nth-child(3)):not(.tool-btn--primary):not(.tool-btn--ghost)) {
+  border: 1px solid color-mix(in srgb, var(--border-subtle, #324056) 82%, transparent);
+  border-radius: var(--radius-sm, 0.5rem);
+  background: color-mix(in srgb, var(--bg-secondary, #0f172a) 82%, transparent);
+  color: var(--text-primary, #e2e8f0);
+  font-weight: 600;
+}
+
+:where(.tool-runtime-widget > .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn):nth-child(n + 4):not(.tool-btn--primary):not(.tool-btn--secondary)) {
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 0.5rem);
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
 }
 
 
