@@ -344,8 +344,40 @@ export function createRuntimeObservationState() {
     repeatedOutcomeCount: 0,
     repeatedReasonPatterns: [],
     lastGuidanceType: null,
+    _reasonOutcomeClassMap: {},
     _lastOutcomeClass: null,
     _lastReasonSignature: ''
+  };
+}
+
+export function validateRuntimeStability(runtimeReasoning, observation) {
+  const warnings = [];
+  let normalizedReasoning = enforceRuntimeReasoningConsistency(runtimeReasoning);
+  const observationState = observation && typeof observation === 'object' ? observation : null;
+  const reasonSignature = buildReasonSignature(normalizedReasoning.reasons);
+
+  if (observationState && reasonSignature) {
+    const reasonOutcomeClassMap = observationState._reasonOutcomeClassMap && typeof observationState._reasonOutcomeClassMap === 'object'
+      ? observationState._reasonOutcomeClassMap
+      : {};
+    observationState._reasonOutcomeClassMap = reasonOutcomeClassMap;
+
+    const existingOutcomeClass = reasonOutcomeClassMap[reasonSignature];
+    if (existingOutcomeClass && existingOutcomeClass !== normalizedReasoning.outcomeClass) {
+      warnings.push(`deterministic_outcome_violation:${reasonSignature}`);
+      normalizedReasoning = enforceRuntimeReasoningConsistency({
+        ...normalizedReasoning,
+        outcomeClass: existingOutcomeClass
+      });
+    } else {
+      reasonOutcomeClassMap[reasonSignature] = normalizedReasoning.outcomeClass;
+    }
+  }
+
+  return {
+    runtimeReasoning: normalizedReasoning,
+    instabilityDetected: warnings.length > 0,
+    warnings
   };
 }
 
@@ -739,7 +771,7 @@ export function createUnifiedToolControl({
       suggestionReason.hidden = !reason;
       suggestionReason.textContent = reason ?? '';
     },
-    renderResult(payload, { repeatedWarning = false, forcedOutcomeClass, additionalReasons = [] } = {}) {
+    renderResult(payload, { repeatedWarning = false, forcedOutcomeClass, additionalReasons = [], runtimeObservation } = {}) {
       const hierarchy = splitOutputPayload(payload);
       const serialized = safeStringify(payload);
       const evidenceCompleteness = [Boolean(hierarchy.supporting), Boolean(hierarchy.metadata), Boolean(hierarchy.diagnostics)].filter(Boolean).length;
@@ -749,8 +781,10 @@ export function createUnifiedToolControl({
         forcedOutcomeClass,
         additionalReasons
       });
+      const stability = validateRuntimeStability(runtimeReasoning, runtimeObservation);
+      const stableReasoning = stability.runtimeReasoning;
       const confidencePhrase = resolveConfidencePhrase({
-        confidenceLevel: runtimeReasoning.confidenceLevel,
+        confidenceLevel: stableReasoning.confidenceLevel,
         evidenceCompleteness,
         warningCount: hierarchy.warningCount,
         diagnosticWeight: hierarchy.diagnosticWeight
@@ -759,10 +793,10 @@ export function createUnifiedToolControl({
       preview.textContent = toShortText(hierarchy.primary);
       result.textContent = serialized;
       supporting.textContent = resolveInterpretationSummary(hierarchy);
-      classificationWhy.textContent = resolveClassificationWhyLine(runtimeReasoning.reasons);
+      classificationWhy.textContent = resolveClassificationWhyLine(stableReasoning.reasons);
       confidence.textContent = confidencePhrase;
       nextAction.textContent = resolveNextAction({
-        outcomeClass: runtimeReasoning.outcomeClass,
+        outcomeClass: stableReasoning.outcomeClass,
         repeatedWarning
       });
       metadata.textContent = hierarchy.metadata ? safeStringify(hierarchy.metadata) : 'No metadata returned.';
@@ -771,10 +805,11 @@ export function createUnifiedToolControl({
       details.open = false;
       return {
         ...hierarchy,
-        outcomeClass: runtimeReasoning.outcomeClass,
+        outcomeClass: stableReasoning.outcomeClass,
         evidenceCompleteness,
-        explanationReasons: runtimeReasoning.reasons,
-        runtimeReasoning
+        explanationReasons: stableReasoning.reasons,
+        runtimeReasoning: stableReasoning,
+        stability
       };
     }
   };

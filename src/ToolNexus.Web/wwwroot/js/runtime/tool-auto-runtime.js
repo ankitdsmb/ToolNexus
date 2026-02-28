@@ -1,4 +1,4 @@
-import { buildAdaptiveGuidance, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning } from './tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning, validateRuntimeStability } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -529,13 +529,30 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           const hierarchy = unifiedControl.renderResult(result, {
             repeatedWarning: repeatedWarningHint,
             forcedOutcomeClass: enforcedOutcomeClass,
-            additionalReasons: runtimeReasons
+            additionalReasons: runtimeReasons,
+            runtimeObservation
           });
-          const runtimeReasoning = hierarchy?.runtimeReasoning ?? buildRuntimeReasoning({
-            outcomeClass: enforcedOutcomeClass ?? hierarchy?.outcomeClass ?? 'uncertain_result',
-            repeatedWarning: repeatedWarningHint,
-            additionalReasons: runtimeReasons
-          });
+          if (shouldWarnExecutionBoundary(manifest) && hierarchy?.stability?.instabilityDetected) {
+            console.warn('[RuntimeStability] Runtime reasoning instability detected and normalized.', {
+              slug,
+              warnings: hierarchy.stability.warnings
+            });
+          }
+          const validatedReasoning = validateRuntimeStability(
+            hierarchy?.runtimeReasoning ?? buildRuntimeReasoning({
+              outcomeClass: enforcedOutcomeClass ?? hierarchy?.outcomeClass ?? 'uncertain_result',
+              repeatedWarning: repeatedWarningHint,
+              additionalReasons: runtimeReasons
+            }),
+            runtimeObservation
+          );
+          if (shouldWarnExecutionBoundary(manifest) && validatedReasoning.instabilityDetected) {
+            console.warn('[RuntimeStability] Runtime reasoning instability detected and normalized.', {
+              slug,
+              warnings: validatedReasoning.warnings
+            });
+          }
+          const runtimeReasoning = validatedReasoning.runtimeReasoning;
           const observationPatterns = observeRuntimeReasoning(runtimeObservation, runtimeReasoning);
           const outcomeClass = runtimeReasoning.outcomeClass;
           const adaptive = buildAdaptiveGuidance({
@@ -566,8 +583,15 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             outcomeClass: 'failed',
             explanationReasons: ['execution error path was triggered']
           });
-          unifiedControl.setClassificationWhy(`Why this result is classified this way: ${failedReasoning.reasons.join('; ')}.`);
-          unifiedControl.setGuidance(`Guidance: ${failedReasoning.guidance.join(' ')}`);
+          const stableFailedReasoning = validateRuntimeStability(failedReasoning, runtimeObservation);
+          if (shouldWarnExecutionBoundary(manifest) && stableFailedReasoning.instabilityDetected) {
+            console.warn('[RuntimeStability] Runtime reasoning instability detected and normalized.', {
+              slug,
+              warnings: stableFailedReasoning.warnings
+            });
+          }
+          unifiedControl.setClassificationWhy(`Why this result is classified this way: ${stableFailedReasoning.runtimeReasoning.reasons.join('; ')}.`);
+          unifiedControl.setGuidance(`Guidance: ${stableFailedReasoning.runtimeReasoning.guidance.join(' ')}`);
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;

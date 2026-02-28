@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning, useUnifiedToolControl, validateRuntimeStability } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
 
 function createContractHost() {
   const host = document.createElement('div');
@@ -133,6 +133,45 @@ describe('tool unified control runtime', () => {
     expect(observation.repeatedOutcomeCount).toBe(2);
     expect(observation.repeatedReasonPatterns.length).toBe(1);
     expect(observation.lastGuidanceType).toBe('warning');
+  });
+
+  test('validateRuntimeStability preserves deterministic outcome class for repeated reason signals', () => {
+    const observation = createRuntimeObservationState();
+
+    const baseline = validateRuntimeStability({
+      outcomeClass: 'warning_partial',
+      confidenceLevel: 'cautious',
+      reasons: ['warnings detected in runtime evidence'],
+      guidance: ['Because warnings detected in runtime evidence, inspect warnings, adjust inputs, then rerun.']
+    }, observation);
+
+    const unstable = validateRuntimeStability({
+      outcomeClass: 'usable_success',
+      confidenceLevel: 'high',
+      reasons: ['warnings detected in runtime evidence'],
+      guidance: ['Proceed.']
+    }, observation);
+
+    expect(baseline.instabilityDetected).toBe(false);
+    expect(unstable.instabilityDetected).toBe(true);
+    expect(unstable.runtimeReasoning.outcomeClass).toBe('warning_partial');
+    expect(unstable.runtimeReasoning.confidenceLevel).toBe('cautious');
+    expect(unstable.runtimeReasoning.guidance[0]).toContain('Because warnings detected in runtime evidence');
+  });
+
+  test('observation cannot change severity or confidence mapping', () => {
+    const observation = createRuntimeObservationState();
+    const runtimeReasoning = buildRuntimeReasoning({
+      outcomeClass: 'warning_partial',
+      explanationReasons: ['warnings detected in runtime evidence']
+    });
+
+    const before = { ...runtimeReasoning };
+    const patterns = observeRuntimeReasoning(observation, runtimeReasoning);
+
+    expect(patterns.repeatedOutcomeClass).toBe(false);
+    expect(runtimeReasoning.outcomeClass).toBe(before.outcomeClass);
+    expect(runtimeReasoning.confidenceLevel).toBe(before.confidenceLevel);
   });
 
   test('observation tone prefix adapts wording without altering reasoning model', () => {
