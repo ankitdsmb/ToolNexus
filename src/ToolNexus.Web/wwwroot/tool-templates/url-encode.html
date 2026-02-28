@@ -1,74 +1,123 @@
-<div data-runtime-container>
-<article data-tool-root class="tool-page url-encode-tool" data-slug="">
-    <header data-tool-header class="url-encode-tool__header">
-        <div>
-            <h1><span data-bind="tool.title"></span></h1>
-            <p class="tool-page__description">Standards-compliant URL encoding with component, full URL, and query-value modes.</p>
-        </div>
-        <span class="url-encode-badge">Client-side processing</span>
-    </header>
-
-    <section class="url-encode-layout" aria-label="URL encode workspace" data-tool-body>
-        <section class="tool-panel url-encode-panel" aria-labelledby="inputHeading" data-tool-input>
-            <div class="url-encode-panel__header">
-                <h2 id="inputHeading">Raw input</h2>
-                <p id="inputStats" class="url-encode-meta">0 chars · 0 bytes</p>
-            </div>
-
-            <label for="modeSelect" class="url-encode-label">Encoding mode</label>
-            <select id="modeSelect" class="url-encode-select">
-                <option value="component" selected>Encode component (default)</option>
-                <option value="full-url">Encode full URL</option>
-                <option value="query-values">Encode query parameter values only</option>
-            </select>
-
-            <div class="url-encode-options">
-                <label><input id="plusSpaceToggle" type="checkbox" /> Encode spaces as + (form mode)</label>
-                <label><input id="autoEncodeToggle" type="checkbox" checked /> Auto encode on input</label>
-            </div>
-
-            <label for="inputEditor" class="url-encode-label">Input text</label>
-            <textarea id="inputEditor" class="tool-textarea tool-textarea--mono" rows="14" placeholder="Paste text, URL, or query string"></textarea>
-
-            <div class="url-encode-actions" data-tool-actions>
-                <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
-                <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-            </div>
-            <p class="url-encode-shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Encode · <kbd>Ctrl</kbd> + <kbd>L</kbd> Clear</p>
-        </section>
-
-        <section class="tool-panel url-encode-panel" aria-labelledby="outputHeading" data-tool-output>
-            <div class="url-encode-panel__header">
-                <h2 id="outputHeading">Encoded output</h2>
-                <p id="statusText" class="url-encode-meta">Ready</p>
-            </div>
-
-            <div id="loadingState" class="url-encode-loading" hidden>Processing…</div>
-
-            <div id="errorBox" class="url-encode-error" role="alert" hidden>
-                <h3 id="errorTitle"></h3>
-                <p id="errorMessage"></p>
-                <p id="errorAction" class="url-encode-error__action"></p>
-            </div>
-
-            <label for="outputEditor" class="url-encode-label">Encoded text</label>
-            <textarea id="outputEditor" class="tool-textarea tool-textarea--mono" rows="14" readonly placeholder="Encoded output appears here"></textarea>
-            <p id="outputStats" class="url-encode-meta">0 chars</p>
-
-            <div class="url-encode-actions">
-                <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
-            </div>
-        </section>
-    </section>
-
-    @if (Model.Content is not null)
+<div class="url-encode-tool-runtime">
+ <header class="tool-local-header">
+  <div>
+   <h2>
+    <span data-bind="tool.title">
+    </span>
+   </h2>
+   <p class="tool-page__description">
+    Standards-compliant URL encoding with component, full URL, and query-value modes.
+   </p>
+  </div>
+  <span class="url-encode-badge">
+   Client-side processing
+  </span>
+ </header>
+ <section class="tool-actions">
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <div class="url-encode-panel__header">
+    <h2 id="inputHeading">
+     Raw input
+    </h2>
+    <p class="url-encode-meta" id="inputStats">
+     0 chars · 0 bytes
+    </p>
+   </div>
+   <label class="url-encode-label" for="modeSelect">
+    Encoding mode
+   </label>
+   <select class="url-encode-select" id="modeSelect">
+    <option selected="" value="component">
+     Encode component (default)
+    </option>
+    <option value="full-url">
+     Encode full URL
+    </option>
+    <option value="query-values">
+     Encode query parameter values only
+    </option>
+   </select>
+   <div class="url-encode-options">
+    <label>
+     <input id="plusSpaceToggle" type="checkbox"/>
+     Encode spaces as + (form mode)
+    </label>
+    <label>
+     <input checked="" id="autoEncodeToggle" type="checkbox"/>
+     Auto encode on input
+    </label>
+   </div>
+   <label class="url-encode-label" for="inputEditor">
+    Input text
+   </label>
+   <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste text, URL, or query string" rows="14"></textarea>
+   <div class="url-encode-actions" data-tool-actions="">
+    <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button">
+     Encode
+    </button>
+    <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+     Clear input
+    </button>
+   </div>
+   <p class="url-encode-shortcuts">
+    <kbd>
+     Ctrl
+    </kbd>
+    +
+    <kbd>
+     Enter
+    </kbd>
+    Encode ·
+    <kbd>
+     Ctrl
+    </kbd>
+    +
+    <kbd>
+     L
+    </kbd>
+    Clear
+   </p>
+  </section>
+  <section class="tool-editor-panel">
+   <div class="url-encode-panel__header">
+    <h2 id="outputHeading">
+     Encoded output
+    </h2>
+    <p class="url-encode-meta" id="statusText">
+     Ready
+    </p>
+   </div>
+   <div class="url-encode-loading" hidden="" id="loadingState">
+    Processing…
+   </div>
+   <section class="url-encode-error" hidden="" id="errorBox" role="alert">
+    <h3 id="errorTitle">
+    </h3>
+    <p id="errorMessage">
+    </p>
+    <p class="url-encode-error__action" id="errorAction">
+    </p>
+   </section>
+   <label class="url-encode-label" for="outputEditor">
+    Encoded text
+   </label>
+   <textarea class="tool-textarea tool-textarea--mono" id="outputEditor" placeholder="Encoded output appears here" readonly="" rows="14"></textarea>
+   <p class="url-encode-meta" id="outputStats">
+    0 chars
+   </p>
+   <div class="url-encode-actions">
+    <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
+     Copy output
+    </button>
+   </div>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  @if (Model.Content is not null)
     {
-        <section class="tool-panel tool-content">
-            <h2 class="tool-content__title">How It Works</h2>
-            <div class="tool-content__body">
-                @Html.Raw(Model.Content.LongArticle)
-            </div>
-        </section>
-    }
-</article>
+  }
+ </section>
 </div>
+

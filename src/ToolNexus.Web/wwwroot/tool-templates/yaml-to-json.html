@@ -1,58 +1,102 @@
-<div data-runtime-container>
-<article data-tool-root class="tool-yaml-json" data-slug="">
-    <header data-tool-header class="tool-yaml-json__header">
-        <div>
-            <h1><span data-bind="tool.title"></span></h1>
-            <p class="tool-yaml-json__description">Enterprise-safe YAML parsing with deterministic JSON conversion entirely in your browser.</p>
-        </div>
-        <span class="tool-yaml-json__badge">Client-side processing</span>
-    </header>
-
-    <section class="tool-yaml-json__controls" aria-label="YAML to JSON options" data-tool-actions>
-        <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
-        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy JSON</button>
-        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button" disabled>Download .json</button>
-
-        <label class="tool-option"><input id="autoConvertToggle" type="checkbox" /> Auto convert</label>
-        <label class="tool-option"><input id="prettyToggle" type="checkbox" checked /> Pretty JSON</label>
-        <label class="tool-option"><input id="sortKeysToggle" type="checkbox" /> Sort keys</label>
-        <label class="tool-option"><input id="autoTypesToggle" type="checkbox" checked /> Auto type detection</label>
-        <label class="tool-option"><input id="strictStringsToggle" type="checkbox" /> Preserve strings strictly</label>
-        <label class="tool-option"><input id="parseDatesToggle" type="checkbox" /> Parse date-like strings</label>
-
-        <label class="tool-option tool-option--select" for="indentSelect">
-            Indentation
-            <select id="indentSelect">
-                <option value="2" selected>2 spaces</option>
-                <option value="4">4 spaces</option>
-            </select>
-        </label>
-    </section>
-
-    <p class="tool-yaml-json__status" id="statusText">Ready</p>
-
-    <section class="tool-yaml-json__workspace" aria-label="YAML to JSON workspace" data-tool-body>
-        <section class="tool-yaml-json__panel" data-tool-input>
-            <div class="tool-yaml-json__panel-header">
-                <h2>YAML input</h2>
-                <span>Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear</span>
-            </div>
-            <textarea id="yamlInput" class="tool-yaml-json__editor" spellcheck="false" placeholder="service: toolnexus" data-bind="tool.exampleInput"></textarea>
-        </section>
-
-        <section class="tool-yaml-json__panel" data-tool-output>
-            <div class="tool-yaml-json__panel-header">
-                <h2>JSON output</h2>
-                <span id="metricsText">0 line(s) · 0.0 KB · 0 object(s) · 0 array(s) · 0 primitive(s)</span>
-            </div>
-            <textarea id="jsonOutput" class="tool-yaml-json__editor tool-yaml-json__editor--output" readonly spellcheck="false" placeholder="JSON output will appear here"></textarea>
-        </section>
-    </section>
-
-    <section id="errorBox" class="tool-yaml-json__error" role="alert" hidden>
-        <h3 id="errorTitle">YAML parsing failed</h3>
-        <p id="errorDetail"></p>
-    </section>
-</article>
+<div class="yaml-to-json-tool-runtime">
+ <header class="tool-local-header">
+  <div>
+   <h2>
+    <span data-bind="tool.title">
+    </span>
+   </h2>
+   <p class="tool-yaml-json__description">
+    Enterprise-safe YAML parsing with deterministic JSON conversion entirely in your browser.
+   </p>
+  </div>
+  <span class="tool-yaml-json__badge">
+   Client-side processing
+  </span>
+ </header>
+ <section class="tool-actions">
+  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button">
+   Convert
+  </button>
+  <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+   Clear input
+  </button>
+  <button class="tool-btn tool-btn--outline" disabled="" id="copyBtn" type="button">
+   Copy JSON
+  </button>
+  <button class="tool-btn tool-btn--ghost" disabled="" id="downloadBtn" type="button">
+   Download .json
+  </button>
+  <label class="tool-option">
+   <input id="autoConvertToggle" type="checkbox"/>
+   Auto convert
+  </label>
+  <label class="tool-option">
+   <input checked="" id="prettyToggle" type="checkbox"/>
+   Pretty JSON
+  </label>
+  <label class="tool-option">
+   <input id="sortKeysToggle" type="checkbox"/>
+   Sort keys
+  </label>
+  <label class="tool-option">
+   <input checked="" id="autoTypesToggle" type="checkbox"/>
+   Auto type detection
+  </label>
+  <label class="tool-option">
+   <input id="strictStringsToggle" type="checkbox"/>
+   Preserve strings strictly
+  </label>
+  <label class="tool-option">
+   <input id="parseDatesToggle" type="checkbox"/>
+   Parse date-like strings
+  </label>
+  <label class="tool-option tool-option--select" for="indentSelect">
+   Indentation
+   <select id="indentSelect">
+    <option selected="" value="2">
+     2 spaces
+    </option>
+    <option value="4">
+     4 spaces
+    </option>
+   </select>
+  </label>
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <div class="tool-yaml-json__panel-header">
+    <h2>
+     YAML input
+    </h2>
+    <span>
+     Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear
+    </span>
+   </div>
+   <textarea class="tool-yaml-json__editor" data-bind="tool.exampleInput" id="yamlInput" placeholder="service: toolnexus" spellcheck="false"></textarea>
+  </section>
+  <section class="tool-editor-panel">
+   <div class="tool-yaml-json__panel-header">
+    <h2>
+     JSON output
+    </h2>
+    <span id="metricsText">
+     0 line(s) · 0.0 KB · 0 object(s) · 0 array(s) · 0 primitive(s)
+    </span>
+   </div>
+   <textarea class="tool-yaml-json__editor tool-yaml-json__editor--output" id="jsonOutput" placeholder="JSON output will appear here" readonly="" spellcheck="false"></textarea>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  <p class="tool-yaml-json__status" id="statusText">
+   Ready
+  </p>
+  <section class="tool-yaml-json__error" hidden="" id="errorBox" role="alert">
+   <h3 id="errorTitle">
+    YAML parsing failed
+   </h3>
+   <p id="errorDetail">
+   </p>
+  </section>
+ </section>
 </div>
+

@@ -1,72 +1,163 @@
-<div data-runtime-container>
-<article class="json-validator-page" data-json-validator data-tool-root>
-    <header class="json-validator-page__header" data-tool-header="true">
-        <div>
-            <h1></h1>
-            <p class="json-validator-page__description">Validate JSON with precise diagnostics and structure insights. Everything runs locally in your browser.</p>
-        </div>
-        <span class="json-validator-page__badge">Client-side processing</span>
-    </header>
-
-    <section class="json-validator-toolbar" role="toolbar" aria-label="JSON validator controls" data-tool-actions="true">
-        <button id="validateBtn" class="tool-btn tool-btn--primary" type="button">Validate</button>
-        <button id="formatBtn" class="tool-btn" type="button">Format JSON</button>
-        <button id="copyBtn" class="tool-btn" type="button">Copy JSON</button>
-        <button id="downloadBtn" class="tool-btn" type="button">Download Valid JSON</button>
-        <button id="clearBtn" class="tool-btn" type="button">Clear</button>
-
-        <label class="tool-toggle"><input id="autoValidateToggle" type="checkbox" /> Auto validate</label>
-        <label class="tool-toggle"><input id="strictModeToggle" type="checkbox" checked /> Strict mode (object/array top-level)</label>
-        <label class="tool-toggle"><input id="treeViewToggle" type="checkbox" /> Tree view</label>
-        <label class="tool-toggle"><input id="schemaModeToggle" type="checkbox" /> Schema mode</label>
-    </section>
-
-    <section id="processingIndicator" class="json-validator-processing" hidden>Processing JSON payload…</section>
-
-    <section class="json-validator-layout" aria-label="JSON validator workspace" data-tool-body="true">
-        <section class="json-validator-panel" data-tool-input="true">
-            <div class="json-validator-panel__header">
-                <h2>Raw JSON Input</h2>
-                <p>Ctrl/Cmd + Enter: Validate · Ctrl/Cmd + L: Clear</p>
-            </div>
-            <label class="json-validator-panel__label" for="jsonInput">JSON</label>
-            <textarea id="jsonInput" class="json-validator-editor" spellcheck="false"></textarea>
-            <label id="schemaLabel" class="json-validator-panel__label" for="schemaInput" hidden>JSON Schema (optional)</label>
-            <textarea id="schemaInput" class="json-validator-editor json-validator-editor--schema" spellcheck="false" hidden placeholder='{"type":"object","properties":{"id":{"type":"number"}},"required":["id"]}'></textarea>
-        </section>
-
-        <section class="json-validator-panel" data-tool-output="true">
-            <div class="json-validator-panel__header">
-                <h2>Validation Result</h2>
-                <p id="resultBadge" class="json-validator-result json-validator-result--idle">Awaiting validation</p>
-            </div>
-
-            <section id="successBox" class="json-validator-success" hidden>
-                <h3>Valid JSON</h3>
-                <p id="successDetail"></p>
-            </section>
-
-            <section id="errorBox" class="json-validator-error" role="alert" aria-live="assertive" hidden>
-                <h3 id="errorTitle">Invalid JSON</h3>
-                <p id="errorDescription"></p>
-                <p id="errorLocation"></p>
-            </section>
-
-            <section class="json-validator-metrics" aria-live="polite">
-                <p><span>Top-level</span><strong id="metricTopLevel">-</strong></p>
-                <p><span>Key count</span><strong id="metricKeyCount">0</strong></p>
-                <p><span>Array length</span><strong id="metricArrayLength">0</strong></p>
-                <p><span>Depth</span><strong id="metricDepth">0</strong></p>
-                <p><span>Characters</span><strong id="metricCharacters">0</strong></p>
-                <p><span>Lines</span><strong id="metricLines">0</strong></p>
-                <p><span>Payload size</span><strong id="metricPayloadSize">0 B</strong></p>
-            </section>
-
-            <details id="treeViewPanel" class="json-validator-tree" hidden>
-                <summary>Structure tree</summary>
-                <pre id="treeViewContent"></pre>
-            </details>
-        </section>
-    </section>
-</article>
+<div class="json-validator-tool-runtime">
+ <header class="tool-local-header">
+  <div>
+   <h2>
+   </h2>
+   <p class="json-validator-page__description">
+    Validate JSON with precise diagnostics and structure insights. Everything runs locally in your browser.
+   </p>
+  </div>
+  <span class="json-validator-page__badge">
+   Client-side processing
+  </span>
+ </header>
+ <section class="tool-actions">
+  <button class="tool-btn tool-btn--primary" id="validateBtn" type="button">
+   Validate
+  </button>
+  <button class="tool-btn" id="formatBtn" type="button">
+   Format JSON
+  </button>
+  <button class="tool-btn" id="copyBtn" type="button">
+   Copy JSON
+  </button>
+  <button class="tool-btn" id="downloadBtn" type="button">
+   Download Valid JSON
+  </button>
+  <button class="tool-btn" id="clearBtn" type="button">
+   Clear
+  </button>
+  <label class="tool-toggle">
+   <input id="autoValidateToggle" type="checkbox"/>
+   Auto validate
+  </label>
+  <label class="tool-toggle">
+   <input checked="" id="strictModeToggle" type="checkbox"/>
+   Strict mode (object/array top-level)
+  </label>
+  <label class="tool-toggle">
+   <input id="treeViewToggle" type="checkbox"/>
+   Tree view
+  </label>
+  <label class="tool-toggle">
+   <input id="schemaModeToggle" type="checkbox"/>
+   Schema mode
+  </label>
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <div class="json-validator-panel__header">
+    <h2>
+     Raw JSON Input
+    </h2>
+    <p>
+     Ctrl/Cmd + Enter: Validate · Ctrl/Cmd + L: Clear
+    </p>
+   </div>
+   <label class="json-validator-panel__label" for="jsonInput">
+    JSON
+   </label>
+   <textarea class="json-validator-editor" id="jsonInput" spellcheck="false"></textarea>
+   <label class="json-validator-panel__label" for="schemaInput" hidden="" id="schemaLabel">
+    JSON Schema (optional)
+   </label>
+   <textarea class="json-validator-editor json-validator-editor--schema" hidden="" id="schemaInput" placeholder='{"type":"object","properties":{"id":{"type":"number"}},"required":["id"]}' spellcheck="false"></textarea>
+  </section>
+  <section class="tool-editor-panel">
+   <div class="json-validator-panel__header">
+    <h2>
+     Validation Result
+    </h2>
+    <p class="json-validator-result json-validator-result--idle" id="resultBadge">
+     Awaiting validation
+    </p>
+   </div>
+   <section class="json-validator-success" hidden="" id="successBox">
+    <h3>
+     Valid JSON
+    </h3>
+    <p id="successDetail">
+    </p>
+   </section>
+   <section aria-live="assertive" class="json-validator-error" hidden="" id="errorBox" role="alert">
+    <h3 id="errorTitle">
+     Invalid JSON
+    </h3>
+    <p id="errorDescription">
+    </p>
+    <p id="errorLocation">
+    </p>
+   </section>
+   <section aria-live="polite" class="json-validator-metrics">
+    <p>
+     <span>
+      Top-level
+     </span>
+     <strong id="metricTopLevel">
+      -
+     </strong>
+    </p>
+    <p>
+     <span>
+      Key count
+     </span>
+     <strong id="metricKeyCount">
+      0
+     </strong>
+    </p>
+    <p>
+     <span>
+      Array length
+     </span>
+     <strong id="metricArrayLength">
+      0
+     </strong>
+    </p>
+    <p>
+     <span>
+      Depth
+     </span>
+     <strong id="metricDepth">
+      0
+     </strong>
+    </p>
+    <p>
+     <span>
+      Characters
+     </span>
+     <strong id="metricCharacters">
+      0
+     </strong>
+    </p>
+    <p>
+     <span>
+      Lines
+     </span>
+     <strong id="metricLines">
+      0
+     </strong>
+    </p>
+    <p>
+     <span>
+      Payload size
+     </span>
+     <strong id="metricPayloadSize">
+      0 B
+     </strong>
+    </p>
+   </section>
+   <details class="json-validator-tree" hidden="" id="treeViewPanel">
+    <summary>
+     Structure tree
+    </summary>
+    <pre id="treeViewContent"></pre>
+   </details>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  <section class="json-validator-processing" hidden="" id="processingIndicator">
+   Processing JSON payload…
+  </section>
+ </section>
 </div>
+
