@@ -5,7 +5,8 @@ export const TOOL_DOM_CONTRACT = {
     'data-tool-input',
     'data-tool-status',
     'data-tool-output',
-    'data-tool-followup'
+    'data-tool-followup',
+    'data-tool-content-host'
   ],
   nodeSelectors: {
     'data-tool-shell': '[data-tool-shell]',
@@ -13,7 +14,8 @@ export const TOOL_DOM_CONTRACT = {
     'data-tool-input': '[data-tool-input]',
     'data-tool-status': '[data-tool-status]',
     'data-tool-output': '[data-tool-output]',
-    'data-tool-followup': '[data-tool-followup]'
+    'data-tool-followup': '[data-tool-followup]',
+    'data-tool-content-host': '[data-tool-content-host]'
   },
   legacyAliases: {
     'data-tool-shell': ['[data-tool-root]', '.tool-page', '.tool-runtime-fallback'],
@@ -21,7 +23,8 @@ export const TOOL_DOM_CONTRACT = {
     'data-tool-input': ['.tool-controls', '#inputEditor', '.editor-input'],
     'data-tool-status': ['.tn-unified-tool-control__status', '.tool-status', '[role="status"]'],
     'data-tool-output': ['.tool-result', '#outputField', '.tool-panel--output', '.editor-output'],
-    'data-tool-followup': ['[data-tool-actions]', '.tool-actions', '.tool-toolbar', '.tool-controls-actions']
+    'data-tool-followup': ['[data-tool-actions]', '.tool-actions', '.tool-toolbar', '.tool-controls-actions'],
+    'data-tool-content-host': ['[data-tool-runtime]', '.runtime-tool-ui-mount', '[data-runtime-template-handoff]']
   }
 };
 

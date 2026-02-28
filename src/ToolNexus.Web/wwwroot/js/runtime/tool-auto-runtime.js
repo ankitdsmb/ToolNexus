@@ -406,6 +406,9 @@ function renderTierError(root, tier, uiMode) {
   }
 
   if (outputZone) {
+    if (outputZone === toolRoot) {
+      throw new Error('AUTO_RUNTIME_CONTRACT_VIOLATION');
+    }
     outputZone.replaceChildren(panel);
     return;
   }

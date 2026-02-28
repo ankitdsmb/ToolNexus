@@ -71,6 +71,11 @@ function isDevelopmentRuntime() {
   return Boolean(window.ToolNexusLogging?.runtimeDebugEnabled);
 }
 
+function isDevOrTestEnvironment() {
+  const environment = String(window.ToolNexusConfig?.runtimeEnvironment ?? window.ToolNexusConfig?.environment ?? '').trim().toLowerCase();
+  return environment === 'development' || environment === 'test' || environment === 'testing';
+}
+
 function shouldExposeRuntimeErrors() {
   return (
     isDevelopmentEnvironment()
@@ -266,7 +271,8 @@ export function createToolRuntime({
     '[data-tool-input]',
     '[data-tool-status]',
     '[data-tool-output]',
-    '[data-tool-followup]'
+    '[data-tool-followup]',
+    '[data-tool-content-host]'
   ]);
 
   function hasToolShellContract(root) {
@@ -293,77 +299,31 @@ export function createToolRuntime({
 
   function ensureToolShellAnchors(root) {
     if (!root) {
-      return { ready: false, repaired: false };
+      return { ready: false, repaired: false, missing: [...TOOL_SHELL_REQUIRED_SELECTORS] };
     }
 
     const shell = root.matches?.('[data-tool-shell]') ? root : root.querySelector?.('[data-tool-shell]');
     if (!shell) {
-      return { ready: false, repaired: false };
+      return { ready: false, repaired: false, missing: ['[data-tool-shell]'] };
     }
 
-    let repaired = false;
-
-    const ensureAnchor = (selector, factory) => {
-      const existing = shell.querySelector(selector);
-      if (existing) {
-        return existing;
+    const missing = TOOL_SHELL_REQUIRED_SELECTORS.filter((selector) => !shell.querySelector(selector) && !shell.matches(selector));
+    if (missing.length > 0) {
+      const message = `ToolShell canonical anchors missing: ${missing.join(', ')}`;
+      if (isDevOrTestEnvironment()) {
+        throw new Error(message);
       }
 
-      const node = factory();
-      repaired = true;
-      return node;
-    };
-
-    ensureAnchor('[data-tool-context]', () => {
-      const context = document.createElement('header');
-      context.dataset.toolContext = 'true';
-      context.className = 'tn-tool-header';
-      context.setAttribute('aria-label', 'Tool execution context');
-      shell.prepend(context);
-      return context;
-    });
-
-    ensureAnchor('[data-tool-input]', () => {
-      const input = document.createElement('section');
-      input.dataset.toolInput = 'true';
-      input.className = 'tn-tool-panel runtime-input-panel';
-      input.setAttribute('aria-label', 'Tool input panel');
-      shell.append(input);
-      return input;
-    });
-
-    ensureAnchor('[data-tool-output]', () => {
-      const output = document.createElement('section');
-      output.dataset.toolOutput = 'true';
-      output.className = 'tn-tool-panel runtime-execution-panel';
-      output.setAttribute('aria-label', 'Tool output workspace');
-      shell.append(output);
-      return output;
-    });
-
-    ensureAnchor('[data-tool-status]', () => {
-      const output = shell.querySelector('[data-tool-output]') ?? shell;
-      const status = document.createElement('div');
-      status.dataset.toolStatus = 'true';
-      status.className = 'tool-execution-status runtime-metrics-row';
-      status.textContent = 'Idle · Ready for request';
-      output.append(status);
-      return status;
-    });
-
-    ensureAnchor('[data-tool-followup]', () => {
-      const followup = document.createElement('footer');
-      followup.dataset.toolFollowup = 'true';
-      followup.dataset.toolActions = 'true';
-      followup.className = 'tool-execution-panel';
-      followup.setAttribute('aria-label', 'Follow-up actions');
-      shell.append(followup);
-      return followup;
-    });
+      logger.warn('[DomContract] canonical anchors missing; continuing in production compatibility mode.', {
+        missing,
+        runtimeTemplateMountMode: window.ToolNexusConfig?.runtimeTemplateMountMode ?? 'content-host'
+      });
+    }
 
     return {
-      ready: hasToolShellContract(root),
-      repaired
+      ready: missing.length === 0,
+      repaired: false,
+      missing
     };
   }
 
@@ -434,7 +394,8 @@ export function createToolRuntime({
       'data-tool-shell',
       'data-tool-context',
       'data-tool-status',
-      'data-tool-followup'
+      'data-tool-followup',
+      'data-tool-content-host'
     ];
 
     const missing = required.filter((attribute) => !root?.querySelector?.(`[${attribute}]`) && !root?.matches?.(`[${attribute}]`));
@@ -1028,25 +989,27 @@ export function createToolRuntime({
       assertShellIntegrity(root);
     } catch (error) {
       setLastError('dom-contract', error, slug);
-      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors: [error?.message ?? String(error)] } });
-      renderRuntimeErrorState(root, {
-        slug,
-        message: error?.message ?? 'ToolShell integrity validation failed.'
-      });
-      return;
+      const errorMessage = error?.message ?? String(error);
+      emit(isDevOrTestEnvironment() ? 'dom_contract_failure' : 'dom_contract_warning', { toolSlug: slug, metadata: { errors: [errorMessage] } });
+      if (isDevOrTestEnvironment()) {
+        renderRuntimeErrorState(root, {
+          slug,
+          message: errorMessage || 'ToolShell integrity validation failed.'
+        });
+        return;
+      }
+      logger.warn('[DomContract] ToolShell integrity warning (production compatibility mode).', { slug, error: errorMessage });
     }
 
     const contractReady = await waitForToolShellContract(root, 3000);
     if (!contractReady) {
       const errors = ['[DOM CONTRACT ERROR]', ...TOOL_SHELL_REQUIRED_SELECTORS.map((selector) => `Missing node: ${selector}`)];
       const message = `tool-runtime: ToolShell anchors unavailable for "${slug}"`;
-      logger.error(message, errors);
-      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
-      if (isStrictModeEnabled()) {
+      logger.warn(message, errors);
+      emit(isDevOrTestEnvironment() || isStrictModeEnabled() ? 'dom_contract_failure' : 'dom_contract_warning', { toolSlug: slug, metadata: { errors } });
+      if (isDevOrTestEnvironment() || isStrictModeEnabled()) {
         throw new Error(errors.join('\n'));
       }
-      renderContractError(root, errors);
-      return;
     }
 
     let validation = ensureDomContract(root, slug, capabilitiesAtStart);
@@ -1064,12 +1027,11 @@ export function createToolRuntime({
         classification: 'contract_violation'
       });
 
-      if (isStrictModeEnabled()) {
+      if (isDevOrTestEnvironment() || isStrictModeEnabled()) {
         throw new Error(errors.join('\n'));
       }
 
-      renderContractError(root, errors);
-      return;
+      logger.warn('[DomContract] invalid contract tolerated in production compatibility mode.', { slug, errors });
     }
 
     const safeLoadDependencies = async () => {

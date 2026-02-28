@@ -1771,15 +1771,18 @@ RESPONSIVE
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "context"
-    "runtime"
-    "followup";
+    "status"
+    "followup"
+    "content";
   gap: var(--runtime-workspace-gap);
   padding: var(--runtime-workspace-padding);
 }
 
 .tool-shell-page__runtime > [data-tool-context="true"] { grid-area: context; }
-.tool-shell-page__runtime > [data-tool-runtime="true"] { grid-area: runtime; align-self: start; width: 100%; }
+.tool-shell-page__runtime > [data-tool-status="true"] { grid-area: status; align-self: start; }
 .tool-shell-page__runtime > [data-tool-followup="true"] { grid-area: followup; align-self: start; }
+.tool-shell-page__runtime > [data-tool-content-host="true"] { grid-area: content; align-self: start; width: 100%; }
+.tool-shell-page__runtime > [data-tool-content-host="true"] > [data-tool-runtime="true"] { width: 100%; }
 
 .tool-shell-page__runtime:focus-within,
 .tool-shell-page__runtime:hover {
@@ -2041,8 +2044,9 @@ RESPONSIVE
     grid-template-columns: 1fr;
     grid-template-areas:
       "context"
-      "runtime"
-      "followup";
+      "status"
+      "followup"
+      "content";
   }
 }
 
@@ -2104,8 +2108,9 @@ RESPONSIVE
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "context"
-    "runtime"
-    "followup";
+    "status"
+    "followup"
+    "content";
   gap: var(--execution-gap);
   padding: var(--execution-padding);
   align-content: start;
@@ -2231,12 +2236,19 @@ RESPONSIVE
     grid-template-columns: 1fr;
     grid-template-areas:
       "context"
-      "runtime"
-      "followup";
+      "status"
+      "followup"
+      "content";
     min-height: 64vh;
   }
 
   .tool-shell-page--workspace .tn-unified-tool-control__run {
     min-width: 100%;
   }
+}
+
+:where([data-tool-content-host="true"]) {
+  width: 100%;
+  max-width: 100%;
+  display: block;
 }

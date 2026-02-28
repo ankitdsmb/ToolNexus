@@ -784,6 +784,9 @@ export function createUnifiedToolControl({
     secondaryNodes: [suggestionBadge, suggestionReason]
   });
 
+  if (contractStatus === toolRoot) {
+    throw new Error('UNIFIED_CONTROL_CONTRACT_VIOLATION');
+  }
   contractStatus.replaceChildren(status, intent, guidance);
 
   const output = contractOutput;

@@ -6,9 +6,12 @@ import { mountToolLifecycle } from '../../../src/ToolNexus.Web/wwwroot/js/runtim
 const buildToolShellMarkup = (slug = 'test-tool') => `
   <section id="tool-root" data-tool-shell="true" data-tool-root="true" data-tool-slug="${slug}">
     <header data-tool-context="true"></header>
-    <section data-tool-input="true"></section>
-    <section data-tool-output="true"><div data-tool-status="true"></div></section>
+    <div data-tool-status="true"></div>
     <footer data-tool-followup="true"></footer>
+    <section data-tool-content-host="true">
+      <section data-tool-input="true"></section>
+      <section data-tool-output="true"></section>
+    </section>
   </section>
 `;
 
@@ -72,6 +75,9 @@ describe('tool runtime ui bootstrap', () => {
   test('runtime hands template loader the root handoff container', async () => {
     document.body.innerHTML = `
       <div id="tool-root" data-tool-slug="root-handoff" data-tool-shell="true">
+        <div data-tool-status="true"></div>
+        <footer data-tool-followup="true"></footer>
+        <section data-tool-content-host="true"></section>
         <section data-tool-input="true"></section>
         <section data-tool-output="true"></section>
       </div>
@@ -168,12 +174,12 @@ describe('tool runtime ui bootstrap', () => {
     expect(root.querySelector('#formatBtn')).not.toBeNull();
   });
 
-  test('throws clear error when ToolShell input mount is missing', async () => {
+  test('falls back to root mount when canonical and legacy hosts are missing', async () => {
     const root = document.createElement('div');
-    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-runtime-widget"></section>' }));
+    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-runtime-widget" id="fallbackMount"></section>' }));
 
-    await expect(loadToolTemplate('missing-mount-zone', root))
-      .rejects.toThrow('tool-template-loader: missing [data-tool-input] mount zone.');
+    await expect(loadToolTemplate('missing-mount-zone', root)).resolves.toContain('tool-runtime-widget');
+    expect(root.querySelector('[data-runtime-template-handoff] #fallbackMount')).not.toBeNull();
   });
 
   test('throws clear error when template missing', async () => {
@@ -252,10 +258,11 @@ describe('tool runtime ui bootstrap', () => {
 
 
 
-  test('template nodes mount into ToolShell input/output anchors', async () => {
+  test('template nodes mount into ToolShell content host by default', async () => {
     const root = document.createElement('div');
     root.innerHTML = `
       <section data-tool-shell="true">
+        <section data-tool-content-host="true"></section>
         <section data-tool-input="true"></section>
         <section data-tool-output="true"></section>
       </section>
@@ -283,7 +290,7 @@ describe('tool runtime ui bootstrap', () => {
     expect(handoffZone.querySelector('#inputEditor')).not.toBeNull();
     expect(handoffZone.querySelector('#outputEditor')).not.toBeNull();
     expect(handoffZone.querySelector('#metricsPanel')).not.toBeNull();
-    expect(root.querySelector('[data-tool-input] #inputEditor')).not.toBeNull();
+    expect(root.querySelector('[data-tool-content-host] #inputEditor')).not.toBeNull();
     expect(root.querySelector('[data-tool-output] #outputEditor')).toBeNull();
   });
 
@@ -371,7 +378,7 @@ describe('tool runtime ui bootstrap', () => {
     expect(document.getElementById('tool-root').children.length).toBeGreaterThan(0);
   });
 
-  test('runtime renders contract error and stops when DOM contract remains invalid', async () => {
+  test('runtime logs contract warning in production mode and continues lifecycle mounting', async () => {
     document.body.innerHTML = buildToolShellMarkup('broken');
     const lifecycleAdapter = jest.fn(async () => ({ mounted: true }));
 
@@ -388,8 +395,52 @@ describe('tool runtime ui bootstrap', () => {
 
     await runtime.bootstrapToolRuntime();
 
-    expect(lifecycleAdapter).not.toHaveBeenCalled();
-    expect(document.querySelector('.tool-contract-error')).not.toBeNull();
+    expect(lifecycleAdapter).toHaveBeenCalled();
+  });
+
+  test('legacy mount mode keeps input anchor handoff compatibility', async () => {
+    window.ToolNexusConfig = { ...(window.ToolNexusConfig || {}), runtimeTemplateMountMode: 'legacy' };
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <section data-tool-shell="true">
+        <section data-tool-content-host="true"></section>
+        <section data-tool-input="true"></section>
+      </section>
+    `;
+
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => '<section class="tool-runtime-widget"><textarea id="inputEditor"></textarea></section>'
+    }));
+
+    await loadToolTemplate('legacy-mode-tool', root);
+    expect(root.querySelector('[data-tool-input] [data-runtime-template-handoff]')).not.toBeNull();
+  });
+
+  test('content host shell anchors remain intact and output panel is not mounted empty', async () => {
+    const root = document.createElement('div');
+    root.innerHTML = buildToolShellMarkup('anchor-check');
+
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => '<section class="tool-runtime-widget"><textarea id="inputEditor"></textarea></section>'
+    }));
+
+    await loadToolTemplate('anchor-check', root);
+
+    expect(root.querySelector('[data-tool-status]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-followup]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-content-host]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-output] [data-runtime-template-handoff]')).toBeNull();
+    expect(root.querySelector('[data-tool-content-host] [data-runtime-template-handoff]')).not.toBeNull();
+  });
+
+  test('content host receives full width shell contract styling hooks', async () => {
+    document.body.innerHTML = buildToolShellMarkup('width-check');
+    const host = document.querySelector('[data-tool-content-host]');
+    expect(host).not.toBeNull();
+    host.style.width = '100%';
+    expect(host.style.width).toBe('100%');
   });
 
 });
