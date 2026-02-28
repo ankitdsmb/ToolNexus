@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="~/css/tools/file-merge.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local file-merge-runtime file-merge-tool">
+<div class="tool-runtime-widget file-merge-runtime file-merge-tool">
     <header class="tool-local-header file-merge-heading">
         <h2>@Model.Tool.Title</h2>
         <p>@Model.Tool.SeoDescription</p>
     </header>
 
-    <section class="tool-actions file-merge-actions" aria-label="Merge actions">
+    <section class="tool-local-actions file-merge-actions" aria-label="Merge actions">
         <button id="mergeBtn" class="tool-btn tool-btn--primary" type="button">Merge</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy</button>
         <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
@@ -50,7 +50,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics">
+    <section class="tool-local-metrics">
         <p id="mergeStats" class="merge-stats">Files: 0 | In: 0 B | Out: 0 B | Time: 0 ms</p>
     </section>
 </div>

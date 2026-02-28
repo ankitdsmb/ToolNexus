@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/tools/csv-to-json.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local csv-to-json-runtime csv-json-page">
+<div class="tool-runtime-widget csv-to-json-runtime csv-json-page">
     <header class="tool-local-header csv-json-page__header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="csv-json-page__badge">Client-side processing only</span>
     </header>
 
-    <section class="tool-actions csv-json-controls" aria-label="CSV conversion controls">
+    <section class="tool-local-actions csv-json-controls" aria-label="CSV conversion controls">
         <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy JSON</button>
@@ -81,7 +81,7 @@
         </label>
     </section>
 
-    <section class="tool-metrics"><p id="statusText" class="csv-json-status" role="status" aria-live="polite">Ready</p></section>
+    <section class="tool-local-metrics"><p id="statusText" class="csv-json-status" role="status" aria-live="polite">Ready</p></section>
 
     <div id="errorBox" class="csv-json-error" role="alert" aria-live="assertive" hidden></div>
 

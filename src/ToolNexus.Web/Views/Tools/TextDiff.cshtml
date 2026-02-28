@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/tools/text-diff.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local text-diff-runtime text-diff-page">
+<div class="tool-runtime-widget text-diff-runtime text-diff-page">
     <header class="tool-local-header text-diff-page__header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="text-diff-page__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-actions text-diff-controls" aria-label="Diff options">
+    <section class="tool-local-actions text-diff-controls" aria-label="Diff options">
         <button id="compareBtn" class="tool-btn tool-btn--primary" type="button">Compare</button>
         <button id="swapBtn" class="tool-btn tool-btn--outline" type="button">Swap</button>
         <button id="clearBtn" class="tool-btn tool-btn--ghost" type="button">Clear</button>
@@ -60,7 +60,7 @@
         </div>
     </section>
 
-    <section class="tool-metrics text-diff-result" aria-live="polite">
+    <section class="tool-local-metrics text-diff-result" aria-live="polite">
         <div class="text-diff-result__header">
             <strong>Diff Result</strong>
             <p id="diffSummary">Added: 0 · Removed: 0 · Changed: 0</p>
@@ -71,7 +71,7 @@
         <div id="diffOutput" class="text-diff-output"></div>
     </section>
 
-    <section class="tool-metrics"><p class="text-diff-shortcuts">Shortcuts: Ctrl/Cmd + Enter compare, Ctrl/Cmd + L clear.</p></section>
+    <section class="tool-local-metrics"><p class="text-diff-shortcuts">Shortcuts: Ctrl/Cmd + Enter compare, Ctrl/Cmd + L clear.</p></section>
 </div>
 
 @section Scripts {

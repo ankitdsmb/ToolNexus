@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/pages/sql-formatter.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local sql-formatter-runtime sql-formatter-page">
+<div class="tool-runtime-widget sql-formatter-runtime sql-formatter-page">
     <header class="tool-local-header sql-formatter-header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="sql-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="tool-actions sql-toolbar" role="toolbar" aria-label="SQL formatter actions">
+    <section class="tool-local-actions sql-toolbar" role="toolbar" aria-label="SQL formatter actions">
         <div class="sql-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="clearBtn" class="tool-btn" type="button">Clear</button>
@@ -98,7 +98,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics sql-metrics" aria-live="polite">
+    <section class="tool-local-metrics sql-metrics" aria-live="polite">
         <p><span>Input</span><strong id="inputStats">0 chars / 0 lines</strong></p>
         <p><span>Output</span><strong id="outputStats">0 chars / 0 lines</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>

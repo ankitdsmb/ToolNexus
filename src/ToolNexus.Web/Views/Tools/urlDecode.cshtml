@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/tools/url-decode.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local url-decode-runtime url-decode-tool" aria-label="URL decode tool">
+<div class="tool-runtime-widget url-decode-runtime url-decode-tool" aria-label="URL decode tool">
     <header class="tool-local-header url-decode-tool__header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="url-decode-tool__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-actions url-decode-tool__actions" aria-label="URL decode actions">
+    <section class="tool-local-actions url-decode-tool__actions" aria-label="URL decode actions">
         <button id="decodeBtn" class="tool-btn tool-btn--primary" type="button">Decode</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
@@ -64,7 +64,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics" aria-live="polite">
+    <section class="tool-local-metrics" aria-live="polite">
         <p>Runtime status is available in the output panel.</p>
     </section>
 </div>

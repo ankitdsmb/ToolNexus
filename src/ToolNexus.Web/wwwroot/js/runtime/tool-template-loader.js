@@ -8,7 +8,12 @@ function isGenericLoadingTemplate(template, slug) {
 
 function buildGenericContractTemplate(slug) {
   return `
-    <section class="tool-runtime-local tool-local-root" data-slug="${slug}" data-template-contract="generic">
+    <section class="tool-runtime-widget" data-slug="${slug}" data-template-contract="generic">
+      <header class="tool-local-header">
+        <h2>${slug}</h2>
+      </header>
+      <section class="tool-local-actions" aria-label="Tool actions"></section>
+      <section class="tool-local-body">
       <section data-tool-zone="input">
         <label for="inputEditor">Input</label>
         <textarea id="inputEditor" class="tool-editor"></textarea>
@@ -17,6 +22,8 @@ function buildGenericContractTemplate(slug) {
         <label for="outputField">Output</label>
         <textarea id="outputField" class="tool-editor"></textarea>
       </section>
+      </section>
+      <section class="tool-local-metrics"></section>
     </section>
   `;
 }
@@ -29,90 +36,32 @@ function validateGenericTemplateContract(markup) {
   }
 }
 
-const INPUT_TOKENS = ['input', 'action', 'option', 'control', 'config', 'toolbar'];
-const OUTPUT_TOKENS = ['output', 'result', 'preview', 'metric', 'status', 'error', 'report'];
 
-function tokenizeNode(node) {
-  const tokens = [
-    node.id,
-    node.className,
-    node.getAttribute?.('aria-label'),
-    node.getAttribute?.('data-tool-zone')
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
 
-  return tokens;
-}
-
-function isOutputNode(node) {
-  const tokens = tokenizeNode(node);
-  return OUTPUT_TOKENS.some((token) => tokens.includes(token));
-}
-
-function isInputNode(node) {
-  const tokens = tokenizeNode(node);
-  return INPUT_TOKENS.some((token) => tokens.includes(token));
-}
-
-function toToolLocalRoot(className, runtimeClassName = "") {
-  const node = document.createElement('div');
-  node.className = `${className} ${runtimeClassName}`.trim();
-  return node;
-}
-
-function resolveTemplateNodes(markup) {
+function sanitizeTemplateMarkup(markup) {
   const container = document.createElement('div');
   container.innerHTML = markup;
 
-  const runtimeRoot = container.querySelector('.tool-runtime-local') ?? container;
-  const inputNodes = [];
-  const outputNodes = [];
-
-  for (const child of Array.from(runtimeRoot.children)) {
-    if (child.classList.contains('tool-local-sections') || child.classList.contains('tool-editors')) {
-      const panels = Array.from(child.querySelectorAll(':scope > .tool-local-surface, :scope > .tool-editor-panel'));
-      if (panels.length > 0) {
-        const [firstPanel, ...remainingPanels] = panels;
-        inputNodes.push(firstPanel);
-        outputNodes.push(...remainingPanels);
-      }
-      continue;
+  for (const nestedRuntimeContainer of container.querySelectorAll('[data-tool-shell], #tool-root, [data-runtime-container]')) {
+    nestedRuntimeContainer.removeAttribute('data-tool-shell');
+    nestedRuntimeContainer.removeAttribute('data-runtime-container');
+    if (nestedRuntimeContainer.id === 'tool-root') {
+      nestedRuntimeContainer.removeAttribute('id');
     }
-
-    const explicitZone = (child.getAttribute('data-tool-zone') || '').trim().toLowerCase();
-    if (explicitZone === 'output' || explicitZone === 'status') {
-      outputNodes.push(child);
-      continue;
-    }
-
-    if (explicitZone === 'input') {
-      inputNodes.push(child);
-      continue;
-    }
-
-    if (isOutputNode(child) && !isInputNode(child)) {
-      outputNodes.push(child);
-      continue;
-    }
-
-    inputNodes.push(child);
   }
 
-  if (outputNodes.length === 0 && inputNodes.length > 0) {
-    outputNodes.push(inputNodes.pop());
-  }
-
-  return { inputNodes, outputNodes, runtimeClassName: runtimeRoot.className || "" };
+  return container.innerHTML;
 }
-
 function resolveRootHandoffTarget(root) {
   const canonicalRoot = root?.id === 'tool-root'
     ? root
     : root?.querySelector?.('#tool-root') ?? root;
   const inputZone = canonicalRoot?.querySelector?.('[data-tool-input]');
-  const host = inputZone ?? canonicalRoot;
+  if (!inputZone) {
+    throw new Error('tool-template-loader: missing [data-tool-input] mount zone.');
+  }
+
+  const host = inputZone;
   const existing = host?.querySelector?.(':scope > [data-runtime-template-handoff]');
   if (existing) {
     return existing;
@@ -138,9 +87,9 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
   const cached = templateCache.get(slug);
   if (cached) {
     const target = resolveRootHandoffTarget(root);
-    target.innerHTML = cached;
-    console.info('[RuntimeOwnership] template target = root', { slug, cached: true });
-    console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '#tool-root' });
+    target.innerHTML = sanitizeTemplateMarkup(cached);
+    console.info('[RuntimeOwnership] template target = [data-tool-input]', { slug, cached: true });
+    console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
     console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
     return cached;
   }
@@ -167,9 +116,9 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
 
   templateCache.set(slug, template);
   const target = resolveRootHandoffTarget(root);
-  target.innerHTML = template;
-  console.info('[RuntimeOwnership] template target = root', { slug, cached: false });
-  console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '#tool-root' });
+  target.innerHTML = sanitizeTemplateMarkup(template);
+  console.info('[RuntimeOwnership] template target = [data-tool-input]', { slug, cached: false });
+  console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
   console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
 
   if (usedLegacyFallback || template.includes('data-template-contract="generic"')) {

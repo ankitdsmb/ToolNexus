@@ -9,14 +9,14 @@
 
 <link rel="stylesheet" href="~/css/tools/uuid-generator.css" asp-append-version="true" />
 
-<div class="tool-runtime-local uuid-generator-runtime uuid-tool">
+<div class="tool-runtime-widget uuid-generator-runtime uuid-tool">
     <header class="tool-local-header uuid-tool__header">
         <h2>@Model.Tool.Title</h2>
         <p>Generate RFC-compliant UUIDs using secure client-side randomness. No server calls. No telemetry.</p>
         <span class="uuid-tool__badge" aria-label="Security badge">Secure client-side generation</span>
     </header>
 
-    <section class="tool-actions tool-panel uuid-tool__panel" aria-label="UUID controls">
+    <section class="tool-local-actions tool-panel uuid-tool__panel" aria-label="UUID controls">
         <div class="uuid-tool__controls">
             <div class="uuid-tool__field"><label for="uuidVersion">UUID version</label><select id="uuidVersion"><option value="v4" selected>v4 (random, default)</option><option value="v1">v1 (time-based)</option><option value="v7">v7 (time-ordered)</option><option value="nil">Nil UUID</option></select></div>
             <div class="uuid-tool__field"><label for="uuidQuantity">Quantity (1–1000)</label><input id="uuidQuantity" type="number" value="1" min="1" max="1000" /></div>
@@ -53,7 +53,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics">
+    <section class="tool-local-metrics">
         <p id="uuidMetrics" class="shortcut-hint">Count: 0 • Generated: —</p>
         <p class="shortcut-hint">Shortcuts: Ctrl + Enter to generate, Ctrl + L to clear.</p>
     </section>

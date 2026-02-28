@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/pages/json-validator.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local json-validator-runtime json-validator-page">
+<div class="tool-runtime-widget json-validator-runtime json-validator-page">
     <header class="tool-local-header json-validator-page__header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="json-validator-page__badge">Client-side processing</span>
     </header>
 
-    <section class="tool-actions json-validator-toolbar" role="toolbar" aria-label="JSON validator controls">
+    <section class="tool-local-actions json-validator-toolbar" role="toolbar" aria-label="JSON validator controls">
         <button id="validateBtn" class="tool-btn tool-btn--primary" type="button">Validate</button>
         <button id="formatBtn" class="tool-btn" type="button">Format JSON</button>
         <button id="copyBtn" class="tool-btn" type="button">Copy JSON</button>
@@ -71,7 +71,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics json-validator-metrics" aria-live="polite">
+    <section class="tool-local-metrics json-validator-metrics" aria-live="polite">
         <p><span>Top-level</span><strong id="metricTopLevel">-</strong></p>
         <p><span>Key count</span><strong id="metricKeyCount">0</strong></p>
         <p><span>Array length</span><strong id="metricArrayLength">0</strong></p>
