@@ -49,8 +49,7 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     const normalizedBadges = [
       { label: 'Authority', value: badges?.authority ?? 'Governed' },
       { label: 'Runtime', value: badges?.runtime ?? 'Unified' },
-      { label: 'Policy', value: badges?.policy ?? 'Admitted' },
-      { label: 'Status', value: badges?.status ?? 'Ready' }
+      { label: 'Policy', value: badges?.policy ?? 'Admitted' }
     ];
 
     const badgesMarkup = normalizedBadges

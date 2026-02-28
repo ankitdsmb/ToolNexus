@@ -816,8 +816,7 @@ export function createUnifiedToolControl({
       badges: {
         authority: 'Governed',
         runtime: manifest?.runtime ?? manifest?.runtimeType ?? 'Unified',
-        policy: 'Admitted',
-        status: 'Ready'
+        policy: 'Admitted'
       }
     });
   }

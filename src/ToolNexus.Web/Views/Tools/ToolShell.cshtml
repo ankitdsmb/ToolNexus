@@ -52,9 +52,9 @@
                 <span class="tool-context-pill tool-context-pill--authority">Authority: UnifiedAuthoritative</span>
                 <span class="tool-context-pill">Runtime .NET Core</span>
                 <span class="tool-context-pill">Policy: Conformance v1</span>
-                <span class="tool-context-pill tool-context-pill--status">Status: Ready</span>
+                <span class="tool-context-pill">Lifecycle: Ready</span>
             </header>
-            <div data-tool-status="true" class="tool-execution-status runtime-metrics-row" role="status" aria-live="polite">Idle · Ready for request</div>
+            <div data-tool-status="true" data-runtime-status-primary="true" class="tool-execution-status runtime-metrics-row" role="status" aria-live="polite">Idle · Ready for request</div>
             <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel" aria-label="Follow-up actions">
                 <button type="button" disabled>Preparing runtime</button>
             </footer>
@@ -80,7 +80,9 @@
     <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
         @foreach (var plugin in contextPlugins)
         {
-            <section class="tool-md-section" data-doc-section="@plugin">
+            var isPrimaryDocSection = plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase)
+                || plugin.Equals("QuickStart", StringComparison.OrdinalIgnoreCase);
+            <section class="tool-md-section" data-doc-section="@plugin" data-doc-priority="@(isPrimaryDocSection ? "primary" : "secondary")">
                 <h3>@contextPluginLabels[plugin]</h3>
                 <div class="tool-md-content">
                     @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
