@@ -32,28 +32,14 @@
     }
 }
 
-<article class="tool-shell-page workspace-shell page-shell" aria-label="Tool runtime page">
-    <header class="tool-shell-page__hero workspace-shell__hero tool-panel tool-identity-header" aria-label="Tool introduction">
-        <p class="tool-section__eyebrow">Runtime workspace</p>
-        <div class="tool-shell-page__hero-main tool-identity-header__content">
-            <h1>@Model.Tool.Title</h1>
-            <p class="tool-identity-header__intent">@(Model.Content?.Intro ?? Model.Tool.SeoDescription)</p>
-        </div>
-        <div class="tool-shell-page__hero-meta" aria-label="Tool metadata">
-            <span class="chip">@Model.Tool.Category</span>
-            <span class="chip">@Model.Tool.Actions.Count action@(Model.Tool.Actions.Count == 1 ? string.Empty : "s")</span>
-            <span class="chip">@(Model.Tool.IsDeterministic ? "Deterministic" : "Adaptive")</span>
-        </div>
-    </header>
-
+<article class="tool-shell-page tool-shell-page--workspace workspace-shell page-shell" aria-label="Tool runtime page">
     <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace" data-workspace-zone="runtime">
-        <header class="tool-shell-page__workspace-head" aria-label="Runtime hints">
-            <p class="tool-shell-page__workspace-label">INPUT (control) → RUNTIME → OUTPUT (evidence)</p>
-            <p class="tool-shell-page__workspace-hint">Left panel defines request intent; right panel preserves execution evidence, metadata, and diagnostics.</p>
-        </header>
         <section id="tool-root" class="tool-shell-page__runtime" data-tool-shell="true" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
             <header data-tool-context="true" data-tool-header="true" class="tn-tool-header" aria-label="Tool execution context">
-                <h2>@Model.Tool.Title runtime</h2>
+                <span class="tool-context-pill tool-context-pill--authority">Authority: UnifiedAuthoritative</span>
+                <span class="tool-context-pill">Runtime .NET Core</span>
+                <span class="tool-context-pill">Policy: Conformance v1</span>
+                <span class="tool-context-pill tool-context-pill--status">Status: Ready</span>
             </header>
             <section data-tool-input="true" class="tn-tool-panel" aria-label="Tool input panel">
                 <p>Input area loading…</p>
