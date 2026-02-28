@@ -284,6 +284,16 @@ app.MapGet("/api/admin/debug/tools-count", async (ToolNexus.Infrastructure.Data.
     return Results.Ok(result);
 });
 
+app.MapGet("/health/runtime", (DatabaseInitializationState dbInitState) =>
+{
+    var dbConnected = dbInitState.IsReady;
+    return Results.Ok(new
+    {
+        db_connected = dbConnected,
+        execution_ready = dbConnected
+    });
+});
+
 app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics, IConcurrencyObservability concurrencyObservability) =>
 {
     var concurrency = concurrencyObservability.GetHealthSnapshot();

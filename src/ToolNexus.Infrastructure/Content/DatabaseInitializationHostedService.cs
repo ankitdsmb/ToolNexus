@@ -67,8 +67,9 @@ public sealed class DatabaseInitializationHostedService(
 
             var startupError = BuildStartupFailureMessage(ex);
             state.MarkFailed(startupError);
-            logger.LogCritical(ex, "{StartupError}", startupError);
-            throw new InvalidOperationException(startupError, ex);
+            logger.LogWarning(ex,
+                "Database initialization failed during startup. Host will continue in degraded mode with execution disabled until database connectivity is restored. Error: {StartupError}",
+                startupError);
         }
     }
 

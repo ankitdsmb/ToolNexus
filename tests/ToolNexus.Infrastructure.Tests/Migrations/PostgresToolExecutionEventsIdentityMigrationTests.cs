@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
@@ -94,6 +96,8 @@ public sealed class PostgresToolExecutionEventsIdentityMigrationTests
             provider,
             Microsoft.Extensions.Options.Options.Create(new DatabaseInitializationOptions { RunMigrationOnStartup = true }),
             state,
+            new TestHostEnvironment(),
+            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build(),
             NullLogger<DatabaseInitializationHostedService>.Instance);
 
         await service.ExecuteAsync(CancellationToken.None);
@@ -111,5 +115,13 @@ public sealed class PostgresToolExecutionEventsIdentityMigrationTests
         {
             throw new InvalidOperationException("PostgreSQL integration test database unavailable.", ex);
         }
+    }
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Production;
+        public string ApplicationName { get; set; } = "ToolNexus.Tests";
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }
