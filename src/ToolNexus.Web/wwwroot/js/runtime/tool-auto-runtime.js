@@ -1,4 +1,4 @@
-import { createUnifiedToolControl } from './tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, createUnifiedToolControl } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -459,6 +459,11 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
 
       const runButton = unifiedControl.runButton;
 
+      let executionMemory = {
+        lastOutcomeClass: null,
+        repeatedWarnings: 0
+      };
+
       const run = async () => {
         unifiedControl.clearErrors();
         unifiedControl.setIntent('AI intent: Validate request shape before runtime execution.');
@@ -517,26 +522,43 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           unifiedControl.setStatus('streaming');
           unifiedControl.setIntent('AI intent: Assemble output evidence and interpretation for your request.');
           unifiedControl.setGuidance('Guidance: Review interpretation summary and confidence before follow-up actions.');
-          const hierarchy = unifiedControl.renderResult(result);
-          const completedWithWarnings = hierarchy?.hasWarnings || ignoredFields.length > 0;
-          const diagnosticsOnly = !hierarchy?.supporting && !hierarchy?.metadata && Boolean(hierarchy?.diagnostics);
-          if (completedWithWarnings) {
+          const runtimeWarningCount = ignoredFields.length;
+          const repeatedWarning = executionMemory.lastOutcomeClass === 'warning_partial' && runtimeWarningCount > 0;
+          const hierarchy = unifiedControl.renderResult(result, { repeatedWarning });
+          let outcomeClass = hierarchy?.outcomeClass ?? 'uncertain_result';
+          if (runtimeWarningCount > 0 && outcomeClass !== 'failed') {
+            outcomeClass = 'warning_partial';
+          }
+
+          if (outcomeClass === 'warning_partial') {
+            executionMemory.repeatedWarnings = executionMemory.lastOutcomeClass === 'warning_partial'
+              ? executionMemory.repeatedWarnings + 1
+              : 1;
+          } else {
+            executionMemory.repeatedWarnings = 0;
+          }
+
+          executionMemory.lastOutcomeClass = outcomeClass;
+          const adaptive = buildAdaptiveGuidance({
+            outcomeClass,
+            repeatedWarning: executionMemory.repeatedWarnings > 1
+          });
+
+          if (outcomeClass === 'warning_partial') {
             unifiedControl.setStatus('warning', 'Warning · Completed with runtime notes');
-            unifiedControl.setIntent('AI intent: Surface cautionary runtime signals for operator review.');
-            unifiedControl.setGuidance('Guidance: Inspect runtime notes and refine inputs before operational use.');
-          } else if (diagnosticsOnly) {
+          } else if (outcomeClass === 'uncertain_result') {
             unifiedControl.setStatus('uncertain');
-            unifiedControl.setIntent('AI intent: Flag uncertain interpretation due to limited context evidence.');
-            unifiedControl.setGuidance('Guidance: Cross-check output against trusted baseline, then rerun with richer inputs.');
           } else {
             unifiedControl.setStatus('success');
-            unifiedControl.setIntent('AI intent: Confirm execution outcome is ready for workflow continuation.');
-            unifiedControl.setGuidance('Guidance: Use follow-up actions to continue or rerun for comparison.');
           }
+
+          unifiedControl.setIntent(adaptive.intent);
+          unifiedControl.setGuidance(adaptive.guidance);
         } catch (error) {
+          executionMemory.lastOutcomeClass = 'failed';
           unifiedControl.setStatus('failed');
           unifiedControl.setIntent('AI intent: Report failed execution path with recoverable guidance.');
-          unifiedControl.setGuidance('Guidance: Review error details, adjust inputs, and rerun.');
+          unifiedControl.setGuidance('Guidance: Next step: review failure diagnostics. Rerun: recommended after fixing input/runtime issues. Validation: confirm request assumptions before retry.');
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;
