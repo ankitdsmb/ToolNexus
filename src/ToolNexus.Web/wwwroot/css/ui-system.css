@@ -485,3 +485,132 @@ ENTERPRISE UI SYSTEM
   background: color-mix(in srgb, var(--panel-bg) 80%, var(--accent-soft));
   padding: var(--space-xs);
 }
+
+/* ==========================
+TOOL SHELL PROFESSIONAL EXECUTION POLISH
+========================== */
+:where(.tool-identity-header) {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--runtime-card-gap);
+  padding: var(--runtime-surface-padding);
+  border-color: color-mix(in srgb, var(--accent) 12%, var(--color-border));
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+:where(.tool-identity-header__content h1) {
+  font-size: clamp(1.85rem, 2.5vw, 2.5rem);
+  line-height: var(--line-tight);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+:where(.tool-identity-header__intent) {
+  margin: 0;
+  max-width: 68ch;
+  color: var(--text-muted);
+  font-size: var(--type-body);
+  line-height: var(--line-relaxed);
+}
+
+:where(.tool-shell-page__hero-meta .chip) {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--color-border));
+  background: color-mix(in srgb, var(--bg-secondary) 92%, var(--accent-soft));
+}
+
+:where(.tn-unified-tool-control__input) {
+  padding: var(--runtime-surface-padding);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--color-border));
+  box-shadow: 0 8px 20px color-mix(in srgb, black 10%, transparent);
+  gap: var(--runtime-card-gap);
+}
+
+:where(.tn-unified-tool-control__actions) {
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+:where(.tn-unified-tool-control__actions-primary,
+  .tn-unified-tool-control__actions-secondary) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+:where(.tn-unified-tool-control__actions-secondary) {
+  margin-left: auto;
+}
+
+:where(.tn-unified-tool-control__run) {
+  min-width: 180px;
+  font-size: var(--type-body);
+}
+
+:where(.tn-unified-tool-control__output) {
+  padding: var(--runtime-surface-padding);
+  border-color: color-mix(in srgb, var(--success) 18%, var(--color-border));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--success) 8%, transparent);
+}
+
+:where(.tn-unified-tool-control__output-block) {
+  border-color: color-mix(in srgb, var(--color-border) 76%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 96%, transparent);
+}
+
+:where(.tn-unified-tool-control__output-block[data-output-tier="supporting"]) {
+  font-size: var(--type-body);
+  line-height: var(--line-relaxed);
+}
+
+:where(.tn-unified-tool-control__output-block[data-output-tier="metadata"]) .tn-unified-tool-control__metadata {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--type-caption);
+}
+
+:where(.tn-unified-tool-control__output-block[data-output-tier="diagnostics"]) {
+  border-style: dashed;
+  opacity: 0.9;
+}
+
+:where(.tool-article-prose) {
+  max-width: min(100%, 76ch);
+}
+
+:where(.tool-article-prose section, .tool-article-prose article) {
+  display: grid;
+  gap: var(--space-2);
+}
+
+:where(.tool-article-prose h2) {
+  font-size: var(--type-h2);
+  line-height: var(--line-tight);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+:where(.tool-article-prose h3) {
+  font-size: var(--type-h3);
+  margin: var(--space-3) 0 var(--space-1);
+}
+
+:where(.tool-article-prose p, .tool-article-prose li) {
+  max-width: var(--runtime-doc-max-width);
+  line-height: var(--line-relaxed);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+  :where(.tn-unified-tool-control__actions) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  :where(.tn-unified-tool-control__actions-secondary) {
+    margin-left: 0;
+  }
+
+  :where(.tn-unified-tool-control__run) {
+    width: 100%;
+  }
+}

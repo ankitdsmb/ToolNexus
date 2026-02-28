@@ -52,6 +52,9 @@ TOKENS
   --runtime-density-gap: var(--space-xs);
   --runtime-density-padding: var(--space-xs);
   --runtime-status-padding: var(--space-1);
+  --runtime-surface-padding: var(--space-3);
+  --runtime-card-gap: var(--space-3);
+  --runtime-doc-max-width: 72ch;
   --runtime-input-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
   --runtime-output-surface: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg-primary));
   --runtime-status-surface: color-mix(in srgb, var(--accent-soft) 28%, var(--bg-secondary));

@@ -756,6 +756,12 @@ export function createUnifiedToolControl({
   executionHint.className = 'tn-unified-tool-control__execution-hint';
   executionHint.textContent = 'Runtime execution';
 
+  const primaryActions = doc.createElement('div');
+  primaryActions.className = 'tn-unified-tool-control__actions-primary';
+
+  const secondaryActions = doc.createElement('div');
+  secondaryActions.className = 'tn-unified-tool-control__actions-secondary';
+
   const status = doc.createElement('p');
   status.className = 'tn-unified-tool-control__status';
   status.dataset.executionState = 'idle';
@@ -780,7 +786,9 @@ export function createUnifiedToolControl({
   suggestionReason.className = 'tn-unified-tool-control__suggestion-reason';
   suggestionReason.hidden = true;
 
-  actions.replaceChildren(runButton, executionHint, suggestionBadge, suggestionReason);
+  primaryActions.replaceChildren(runButton, executionHint);
+  secondaryActions.replaceChildren(suggestionBadge, suggestionReason);
+  actions.replaceChildren(primaryActions, secondaryActions);
   contractStatus.replaceChildren(status, intent, guidance);
 
   const output = contractOutput;
