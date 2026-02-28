@@ -18,6 +18,18 @@
         "RelatedTools"
     };
 
+    var contextPluginLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Overview"] = "Overview",
+        ["Features"] = "Features",
+        ["QuickStart"] = "Quick Start",
+        ["Guidance"] = "Guidance",
+        ["Examples"] = "Examples",
+        ["UseCases"] = "Use Cases",
+        ["Faq"] = "FAQ",
+        ["RelatedTools"] = "Related Tools"
+    };
+
     var configuration = Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
     var runtimeLogCaptureEnabled = configuration.GetValue<bool>("LoggingOptions:EnableRuntimeLogCapture", true);
     var runtimeLogEndpoint = runtimeLogCaptureEnabled
@@ -59,7 +71,12 @@
     <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
         @foreach (var plugin in contextPlugins)
         {
-            @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
+            <details class="runtime-doc-disclosure">
+                <summary>@contextPluginLabels[plugin]</summary>
+                <div class="runtime-doc-disclosure__body">
+                    @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
+                </div>
+            </details>
         }
     </aside>
     @* SSR section contract anchors:
