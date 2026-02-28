@@ -244,10 +244,18 @@ export function createToolRuntime({
       return;
     }
 
+    const shell = root.matches?.('[data-tool-shell]') ? root : root.querySelector?.('[data-tool-shell]');
+    const outputZone = shell?.querySelector?.('[data-tool-output]') ?? root;
     const errorPanel = document.createElement('div');
     errorPanel.className = 'tool-contract-error';
-    errorPanel.innerHTML = `<h3>Tool Template Contract Failed</h3><pre>${errors.join('\n')}</pre>`;
-    root.replaceChildren(errorPanel);
+
+    const heading = document.createElement('h3');
+    heading.textContent = 'Tool Template Contract Failed';
+    const detail = document.createElement('pre');
+    detail.textContent = errors.join('\n');
+    errorPanel.append(heading, detail);
+
+    outputZone.append(errorPanel);
   }
 
 
@@ -288,41 +296,9 @@ export function createToolRuntime({
       return { ready: false, repaired: false };
     }
 
-    root.setAttribute('data-tool-shell', 'true');
-    if (!root.hasAttribute('data-tool-root')) {
-      root.setAttribute('data-tool-root', 'true');
-    }
-
-    const contracts = [
-      { selector: '[data-tool-context]', tagName: 'header', className: 'tn-tool-header', text: 'Runtime context' },
-      { selector: '[data-tool-input]', tagName: 'section', className: 'tn-tool-panel', text: 'Input area loading…' },
-      { selector: '[data-tool-status]', tagName: 'div', className: 'tool-execution-status', text: 'Idle · Ready for request' },
-      { selector: '[data-tool-output]', tagName: 'section', className: '', text: 'Output preview loading…' },
-      { selector: '[data-tool-followup]', tagName: 'footer', className: 'tool-execution-panel', text: '' }
-    ];
-
-    let repaired = false;
-    for (const contract of contracts) {
-      if (root.querySelector(contract.selector)) {
-        continue;
-      }
-
-      const node = document.createElement(contract.tagName);
-      const attr = contract.selector.replace('[', '').replace(']', '').split('=')[0];
-      node.setAttribute(attr, 'true');
-      if (contract.className) {
-        node.className = contract.className;
-      }
-      if (contract.text) {
-        node.textContent = contract.text;
-      }
-      root.appendChild(node);
-      repaired = true;
-    }
-
     return {
       ready: hasToolShellContract(root),
-      repaired
+      repaired: false
     };
   }
 
@@ -338,11 +314,16 @@ export function createToolRuntime({
     const output = shell.querySelector('[data-tool-output]');
 
     if (status) {
-      status.innerHTML = '<p role="status">Runtime error</p>';
+      status.textContent = 'Runtime error';
+      status.setAttribute('role', 'status');
     }
 
     if (output) {
-      output.innerHTML = `<section class="tool-runtime-fallback__error" role="alert">${message}</section>`;
+      const panel = document.createElement('section');
+      panel.className = 'tool-runtime-fallback__error';
+      panel.setAttribute('role', 'alert');
+      panel.textContent = message;
+      output.append(panel);
     }
   }
 
@@ -959,6 +940,9 @@ export function createToolRuntime({
       try {
         const templateTarget = root;
         await templateLoader(slug, templateTarget, { templatePath: manifest.templatePath });
+        logger.info('[RuntimeOwnership] template target = root', { slug, target: '#tool-root' });
+        logger.info('[RuntimeOwnership] shell anchors preserved', { slug, immutableAnchors: true });
+        logger.info('[RuntimeOwnership] no mutation performed', { slug, mutation: 'none' });
         emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
         return true;
       } catch (error) {
@@ -1309,8 +1293,16 @@ export function createToolRuntime({
             });
 
             if (!retryLegacyResult?.mounted && !root.firstElementChild) {
-              const legacyAutoResult = await legacyAutoInit({ slug, root, manifest, context: executionContext, capabilities });
-              executionContext.addCleanup(legacyAutoResult.cleanup);
+              if (!hasToolShellContract(root)) {
+                const legacyAutoResult = await legacyAutoInit({ slug, root, manifest, context: executionContext, capabilities });
+                executionContext.addCleanup(legacyAutoResult.cleanup);
+              } else {
+                logger.info('[DomAdapter] legacy adapter skipped', {
+                  slug,
+                  phase: 'fallback',
+                  reason: 'toolshell_contract_present'
+                });
+              }
             }
           }
 

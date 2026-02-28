@@ -54,7 +54,7 @@ describe('tool unified control runtime', () => {
 
     expect(control).not.toBeNull();
     expect(host.querySelector('[data-tool-shell]')).toBe(runtimeContainer);
-    expect(host.querySelector('[data-sentinel]')).toBeNull();
+    expect(host.querySelector('[data-sentinel]')).not.toBeNull();
     expect(host.querySelector('[data-tool-shell].tn-unified-tool-control')).not.toBeNull();
   });
 

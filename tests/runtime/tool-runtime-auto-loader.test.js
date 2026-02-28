@@ -11,24 +11,24 @@ describe('tool runtime auto/custom loader', () => {
 
   function setShell(slug = 'auto-tool') {
     document.body.innerHTML = `
-      <div data-runtime-container="true">
-        <div id="tool-root" data-tool-root="true" data-tool-slug="${slug}">
-          <header data-tool-header="true"></header>
-          <section data-tool-body="true">
-            <section data-tool-input="true"></section>
-            <section data-tool-output="true"></section>
-            <div data-tool-actions="true"></div>
-          </section>
-        </div>
-      </div>`;
+      <section id="tool-root" data-tool-root="true" data-tool-shell="true" data-tool-slug="${slug}">
+        <header data-tool-context="true" data-tool-header="true"></header>
+        <section data-tool-input="true"></section>
+        <section>
+          <div data-tool-status="true"></div>
+          <section data-tool-output="true"></section>
+        </section>
+        <footer data-tool-followup="true" data-tool-actions="true"></footer>
+      </section>`;
   }
 
   test('custom runtime success resolves to custom_active mode', async () => {
     setShell('custom-tool');
     window.ToolNexusConfig = { tool: {}, runtimeUiMode: 'custom', runtimeEnvironment: 'Production' };
-    const init = vi.fn((root) => {
-      root.setAttribute('data-custom-mounted', 'true');
-      return { root };
+    const init = vi.fn((context) => {
+      const host = context?.root ?? context;
+      host?.setAttribute?.('data-custom-mounted', 'true');
+      return { root: host };
     });
 
     const runtime = createToolRuntime({
