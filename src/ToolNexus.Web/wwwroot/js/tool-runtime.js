@@ -241,148 +241,43 @@ export function createToolRuntime({
     root.replaceChildren(errorPanel);
   }
 
-  function injectContractFallbackLayout(root, slug) {
+
+
+  const TOOL_SHELL_REQUIRED_SELECTORS = Object.freeze([
+    '[data-tool-shell]',
+    '[data-tool-context]',
+    '[data-tool-input]',
+    '[data-tool-status]',
+    '[data-tool-output]',
+    '[data-tool-followup]'
+  ]);
+
+  function hasToolShellContract(root) {
     if (!root) {
-      return;
+      return false;
     }
 
-    const toolPage = root.querySelector('.tool-page') ?? document.createElement('section');
-    if (!toolPage.classList.contains('tool-page')) {
-      toolPage.classList.add('tool-page');
-    }
-
-    if (!toolPage.getAttribute('data-slug')) {
-      toolPage.setAttribute('data-slug', slug);
-    }
-
-    const layout = document.createElement('div');
-    layout.className = 'tool-layout tn-tool-body';
-    layout.setAttribute('data-tool-body', 'true');
-    layout.innerHTML = `
-      <header class="tn-tool-header" data-tool-header="true"><h2>${slug}</h2></header>
-      <section class="tool-layout__panel tn-tool-panel" data-tool-input="true" aria-label="Tool input panel">
-        <textarea id="inputEditor"></textarea>
-      </section>
-      <section class="tool-layout__panel tool-panel--output tn-tool-panel" data-tool-output="true" id="outputField" aria-label="Tool output panel"></section>
-      <footer class="tool-actions" data-tool-actions="true"></footer>
-    `;
-
-    toolPage.setAttribute('data-tool-root', 'true');
-    toolPage.setAttribute('data-runtime-container', 'true');
-    toolPage.appendChild(layout);
-    if (!toolPage.parentElement) {
-      root.appendChild(toolPage);
-    }
+    return TOOL_SHELL_REQUIRED_SELECTORS.every((selector) =>
+      Boolean(root.matches?.(selector) || root.querySelector?.(selector)));
   }
 
-
-
-  function createToolShellScaffold(doc, slug) {
-    const shell = doc.createElement('section');
-    shell.className = 'tn-tool-shell tool-runtime-shell';
-    shell.dataset.toolShell = 'true';
-    shell.dataset.toolSlug = slug;
-
-    const context = doc.createElement('header');
-    context.className = 'tn-tool-header';
-    context.dataset.toolContext = 'true';
-
-    const body = doc.createElement('section');
-    body.className = 'tn-tool-body';
-
-    const input = doc.createElement('section');
-    input.className = 'tn-tool-panel';
-    input.dataset.toolInput = 'true';
-
-    const outputColumn = doc.createElement('section');
-    outputColumn.className = 'tn-tool-panel';
-
-    const status = doc.createElement('section');
-    status.className = 'tn-tool-status';
-    status.dataset.toolStatus = 'true';
-
-    const output = doc.createElement('section');
-    output.className = 'tn-tool-output';
-    output.dataset.toolOutput = 'true';
-
-    outputColumn.append(status, output);
-    body.append(input, outputColumn);
-
-    const followup = doc.createElement('footer');
-    followup.className = 'tn-tool-footer';
-    followup.dataset.toolFollowup = 'true';
-
-    shell.append(context, body, followup);
-    return shell;
-  }
-
-  function ensureToolShellAnchors(root, slug) {
-    if (!root) {
-      return null;
-    }
-
-    const doc = root.ownerDocument ?? document;
-    const anchorHost = root.querySelector('[data-runtime-container]')
-      ?? root.querySelector('[data-tool-root]')
-      ?? root;
-    let shell = anchorHost.querySelector?.('[data-tool-shell]') ?? root.querySelector('[data-tool-shell]');
-
-    if (!shell) {
-      shell = createToolShellScaffold(doc, slug);
-      if (anchorHost.childElementCount === 0) {
-        anchorHost.append(shell);
-      } else {
-        anchorHost.prepend(shell);
+  async function waitForToolShellContract(root, timeout = 3000) {
+    const start = now();
+    while ((now() - start) < timeout) {
+      if (hasToolShellContract(root)) {
+        return true;
       }
+
+      await new Promise((resolve) => setTimeout(resolve, 16));
     }
 
-    if (!shell.dataset.toolSlug) {
-      shell.dataset.toolSlug = slug;
-    }
-
-    const ensureZone = (selector, tagName, className, datasetKey) => {
-      let node = shell.querySelector(selector);
-      if (!node) {
-        node = doc.createElement(tagName);
-        node.className = className;
-        node.dataset[datasetKey] = 'true';
-        shell.append(node);
-      }
-      return node;
-    };
-
-    const context = ensureZone('[data-tool-context]', 'header', 'tn-tool-header', 'toolContext');
-    const input = ensureZone('[data-tool-input]', 'section', 'tn-tool-panel', 'toolInput');
-    const status = ensureZone('[data-tool-status]', 'section', 'tn-tool-status', 'toolStatus');
-    const output = ensureZone('[data-tool-output]', 'section', 'tn-tool-output', 'toolOutput');
-    const followup = ensureZone('[data-tool-followup]', 'footer', 'tn-tool-footer', 'toolFollowup');
-
-    if (!context.parentElement || context.parentElement !== shell) {
-      shell.prepend(context);
-    }
-
-    if (!followup.parentElement || followup.parentElement !== shell) {
-      shell.append(followup);
-    }
-
-    if (status.parentElement !== shell && status.parentElement !== output) {
-      shell.append(status);
-    }
-
-    if (!input.parentElement || input.parentElement !== shell) {
-      shell.append(input);
-    }
-
-    if (!output.parentElement || output.parentElement !== shell) {
-      shell.append(output);
-    }
-
-    return shell;
+    return hasToolShellContract(root);
   }
 
   function renderRuntimeErrorState(root, { slug, message }) {
-    const shell = ensureToolShellAnchors(root, slug);
+    const shell = root?.querySelector?.('[data-tool-shell]');
     if (!shell) {
+      logger.warn('[RuntimeError] ToolShell anchors missing; runtime error details could not be rendered.', { slug });
       return;
     }
 
@@ -400,13 +295,7 @@ export function createToolRuntime({
   }
 
   function resolveValidationScope(root, phase = 'unspecified') {
-    const runtimeContainerNode = root?.closest?.('[data-runtime-container]')
-      ?? (root?.matches?.('[data-runtime-container]') ? root : null)
-      ?? root?.querySelector?.('[data-runtime-container]')
-      ?? null;
-    const toolRootNode = root?.querySelector?.('[data-tool-root]') ?? null;
-
-    const scope = runtimeContainerNode ?? toolRootNode ?? root ?? null;
+    const scope = root ?? null;
 
     logger.info('[DomContract] validation scope resolved', {
       phase,
@@ -418,16 +307,14 @@ export function createToolRuntime({
       scopeId: scope?.id ?? '',
       scopeClass: scope?.className ?? '',
       scopeIsToolRoot: scope?.id === 'tool-root',
-      runtimeContainerTag: String(runtimeContainerNode?.tagName ?? runtimeContainerNode?.nodeName ?? '').toLowerCase(),
-      runtimeContainerId: runtimeContainerNode?.id ?? '',
-      toolRootTag: String(toolRootNode?.tagName ?? toolRootNode?.nodeName ?? '').toLowerCase(),
-      toolRootId: toolRootNode?.id ?? ''
+      runtimeContainerTag: '',
+      runtimeContainerId: '',
+      toolRootTag: '',
+      toolRootId: ''
     });
 
     return {
-      scope,
-      runtimeContainerNode,
-      toolRootNode
+      scope
     };
   }
 
@@ -456,20 +343,16 @@ export function createToolRuntime({
 
   function hasCompleteContractAcrossResolvedScopes(root) {
     const resolved = resolveValidationScope(root, 'post-mount-pre-adapter-recheck');
-    const runtimeContainerValidation = normalizeDomValidation(validateDomContract(
-      resolved.runtimeContainerNode,
-      { phase: 'post-mount-runtime-container-recheck' }
-    ));
-    const toolRootValidation = normalizeDomValidation(validateDomContract(
-      resolved.toolRootNode,
-      { phase: 'post-mount-tool-root-recheck' }
+    const rootValidation = normalizeDomValidation(validateDomContract(
+      resolved.scope,
+      { phase: 'post-mount-root-recheck' }
     ));
 
     return {
       resolved,
-      runtimeContainerValidation,
-      toolRootValidation,
-      isContractCompliant: runtimeContainerValidation.isValid || toolRootValidation.isValid
+      runtimeContainerValidation: rootValidation,
+      toolRootValidation: rootValidation,
+      isContractCompliant: rootValidation.isValid
     };
   }
 
@@ -539,12 +422,6 @@ export function createToolRuntime({
 
     scopedValidation = validateDomAtPhase(root, 'pre-mount-after-adapter');
     validation = scopedValidation.validation;
-    if (!validation.isValid) {
-      injectContractFallbackLayout(root, slug);
-      scopedValidation = validateDomAtPhase(root, 'pre-mount-after-fallback');
-      validation = scopedValidation.validation;
-    }
-
     return validation;
   }
 
@@ -578,11 +455,21 @@ export function createToolRuntime({
       return false;
     }
 
-    if (!force && root.firstElementChild) {
+    const shell = root.querySelector('[data-tool-shell]');
+    if (!shell) {
       return false;
     }
 
-    root.innerHTML = `<section class="tool-runtime-fallback tn-tool-shell" data-tool-runtime-fallback="true" data-tool-shell="true"><header class="tn-tool-header" data-tool-context="true"><h2>${slug}</h2><p>Tool failed to initialize safely.</p></header><div class="tn-tool-body"><section class="tn-tool-panel" data-tool-input="true" aria-label="Input panel unavailable"></section><section class="tn-tool-panel" aria-label="Output panel unavailable"><section class="tn-tool-status" data-tool-status="true"><p role="status">Fallback mode active</p></section><section data-tool-output="true"><p>Runtime output unavailable.</p></section></section></div><footer class="tn-tool-footer" data-tool-followup="true"><p>SSR content still available.</p><p class="tool-runtime-fallback__warning">Non-blocking warning: runtime entered compatibility mode.</p></footer></section>`;
+    if (!force && shell.childElementCount > 0) {
+      return false;
+    }
+
+    renderRuntimeErrorState(root, {
+      slug,
+      message: 'Runtime output unavailable.'
+    });
+
+    shell.dataset.runtimeFallback = 'true';
     return true;
   }
 
@@ -1004,7 +891,42 @@ export function createToolRuntime({
     restoreSsrSnapshot(root, mountPlan);
 
     templateBinder(root, window.ToolNexusConfig ?? {});
-    ensureToolShellAnchors(root, slug);
+
+    const contractReady = await waitForToolShellContract(root, 3000);
+    if (!contractReady) {
+      const errors = ['[DOM CONTRACT ERROR]', ...TOOL_SHELL_REQUIRED_SELECTORS.map((selector) => `Missing node: ${selector}`)];
+      const message = `tool-runtime: ToolShell anchors unavailable for "${slug}"`;
+      logger.error(message, errors);
+      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
+      if (isStrictModeEnabled()) {
+        throw new Error(errors.join('\n'));
+      }
+      renderContractError(root, errors);
+      return;
+    }
+
+    let validation = ensureDomContract(root, slug, capabilitiesAtStart);
+    if (!validation.isValid) {
+      const message = `tool-runtime: DOM contract invalid for "${slug}"`;
+      const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
+      logger.error(message, errors);
+      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
+      showRuntimeCrashOverlay(root, {
+        toolSlug: slug,
+        phase: 'dom_contract_failure',
+        errorMessage: message,
+        stack: errors.join('\n'),
+        runtimeIdentity: { ...runtimeIdentity },
+        classification: 'contract_violation'
+      });
+
+      if (isStrictModeEnabled()) {
+        throw new Error(errors.join('\n'));
+      }
+
+      renderContractError(root, errors);
+      return;
+    }
 
     const safeLoadDependencies = async () => {
       const dependencyStartedAt = now();
@@ -1139,35 +1061,6 @@ export function createToolRuntime({
     };
 
     const { module: loadedModule, lifecycleContract, importFailed } = await safeResolveLifecycle();
-    let validation = ensureDomContract(root, slug, capabilitiesAtStart);
-    if (!validation.isValid) {
-      const message = `tool-runtime: DOM contract invalid for "${slug}"`;
-      const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
-      logger.error(message, errors);
-      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
-      showRuntimeCrashOverlay(root, {
-        toolSlug: slug,
-        phase: 'dom_contract_failure',
-        errorMessage: message,
-        stack: errors.join('\n'),
-        runtimeIdentity: { ...runtimeIdentity },
-        classification: 'contract_violation'
-      });
-
-      if (isStrictModeEnabled()) {
-        throw new Error(errors.join('\n'));
-      }
-
-      const canAttemptAutoFallback = Array.isArray(validation.missingNodes)
-        && validation.missingNodes.every((nodeName) => String(nodeName).startsWith('data-'));
-      if (!canAttemptAutoFallback) {
-        renderContractError(root, errors);
-        return;
-      }
-
-      ensureToolShellAnchors(root, slug);
-      validation = ensureDomContract(root, slug, capabilitiesAtStart);
-    }
 
     const enforceCustomForTier = complexityTier >= 4;
     const templateIsLegacyOrMinimal = validation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT

@@ -1,12 +1,18 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 import { validateToolDom } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
 
-const templatesRoot = path.resolve(process.cwd(), 'src/ToolNexus.Web/wwwroot/tool-templates');
-
-function readTemplate(slug) {
-  return fs.readFileSync(path.join(templatesRoot, `${slug}.html`), 'utf8');
+function createShellMarkup() {
+  return `
+    <section data-tool-shell="true">
+      <header data-tool-context="true"></header>
+      <section data-tool-input="true"></section>
+      <section>
+        <div data-tool-status="true"></div>
+        <section data-tool-output="true"></section>
+      </section>
+      <footer data-tool-followup="true"></footer>
+    </section>
+  `;
 }
 
 describe('runtime DOM contract mount order', () => {
@@ -22,12 +28,14 @@ describe('runtime DOM contract mount order', () => {
     delete window.ToolNexusRuntime;
   });
 
-  test('creates ToolShell anchors before mount and keeps runtime error state when module import fails', async () => {
+  test('keeps ToolShell anchors and runtime error state when module import fails', async () => {
+    const events = [];
     document.body.innerHTML = '<div id="tool-root" data-tool-slug="json-formatter"></div>';
     const root = document.getElementById('tool-root');
 
     const runtime = createToolRuntime({
       getRoot: () => root,
+      observer: { emit: (name) => events.push(name) },
       loadManifest: async () => ({
         slug: 'json-formatter',
         dependencies: [],
@@ -37,7 +45,7 @@ describe('runtime DOM contract mount order', () => {
         complexityTier: 2
       }),
       templateLoader: async (_slug, mountRoot) => {
-        mountRoot.innerHTML = readTemplate('json-formatter');
+        mountRoot.innerHTML = createShellMarkup();
       },
       templateBinder: () => {},
       dependencyLoader: { loadDependencies: async () => undefined },
@@ -54,5 +62,7 @@ describe('runtime DOM contract mount order', () => {
     expect(root.querySelector('[data-tool-followup]')).not.toBeNull();
     expect(root.querySelector('[data-tool-shell]')?.dataset.runtimeState).toBe('error');
     expect(validateToolDom(root).isValid).toBe(true);
+    expect(events).toContain('module_import_failure');
+    expect(events).not.toContain('dom_contract_failure');
   });
 });
