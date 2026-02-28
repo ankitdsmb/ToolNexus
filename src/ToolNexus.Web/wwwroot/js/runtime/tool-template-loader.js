@@ -21,10 +21,27 @@ function buildGenericContractTemplate(slug) {
   `;
 }
 
-function validateGenericTemplateContract(root) {
-  if (!root.querySelector('.tool-layout__panel')) {
+function validateGenericTemplateContract(markup) {
+  const probe = document.createElement('div');
+  probe.innerHTML = markup;
+  if (!probe.querySelector('.tool-layout__panel')) {
     throw new Error('Template contract violation.');
   }
+}
+
+function resolveToolShellInjectionTarget(root) {
+  const outputZone = root.querySelector('[data-tool-output]');
+  const inputZone = root.querySelector('[data-tool-input]');
+
+  if (outputZone) {
+    return outputZone;
+  }
+
+  if (inputZone) {
+    return inputZone;
+  }
+
+  return root;
 }
 
 export async function loadToolTemplate(slug, root, { fetchImpl = fetch, templatePath } = {}) {
@@ -38,7 +55,8 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
 
   const cached = templateCache.get(slug);
   if (cached) {
-    root.innerHTML = cached;
+    const target = resolveToolShellInjectionTarget(root);
+    target.innerHTML = cached;
     return cached;
   }
 
@@ -63,10 +81,11 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
     : rawTemplate;
 
   templateCache.set(slug, template);
-  root.innerHTML = template;
+  const target = resolveToolShellInjectionTarget(root);
+  target.innerHTML = template;
 
-  if (usedLegacyFallback || root.querySelector('[data-template-contract="generic"]')) {
-    validateGenericTemplateContract(root);
+  if (usedLegacyFallback || target.querySelector('[data-template-contract="generic"]')) {
+    validateGenericTemplateContract(template);
   }
 
   return template;
