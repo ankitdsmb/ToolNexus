@@ -370,7 +370,7 @@ function buildFieldGroups(doc, fields) {
 function createEmptyStateHint(doc, controls = []) {
   const container = doc.createElement('section');
   container.className = 'tool-auto-runtime__empty-state';
-  container.innerHTML = '<p class="tool-auto-runtime__empty-title">Start with a quick input</p><p class="tool-auto-runtime__empty-copy">Paste data or load the built-in example to execute immediately.</p>';
+  container.innerHTML = '<p class="tool-auto-runtime__empty-title">Start with a quick input</p><p class="tool-auto-runtime__empty-copy">Paste data or load the built-in example, then run with Ctrl+Enter.</p>';
 
   const sample = String(globalThis.window?.ToolNexusConfig?.tool?.exampleInput ?? '').trim();
   if (sample) {
@@ -673,8 +673,22 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
         }
       };
 
+      const handleShortcutRun = (event) => {
+        const isShortcut = (event.ctrlKey || event.metaKey) && event.key === 'Enter';
+        if (!isShortcut || runButton.disabled) {
+          return;
+        }
+
+        event.preventDefault();
+        run();
+      };
+
       runButton.addEventListener('click', run);
-      runtimeContext.addCleanup?.(() => runButton.removeEventListener('click', run));
+      unifiedControl.shell.addEventListener('keydown', handleShortcutRun);
+      runtimeContext.addCleanup?.(() => {
+        runButton.removeEventListener('click', run);
+        unifiedControl.shell.removeEventListener('keydown', handleShortcutRun);
+      });
 
       attachPredictiveSuggestion({ controls, unifiedControl, runtimeContext, slug });
 

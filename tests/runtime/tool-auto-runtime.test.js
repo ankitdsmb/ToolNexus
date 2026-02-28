@@ -125,6 +125,41 @@ describe('tool auto runtime', () => {
 
 
 
+
+
+  test('keyboard shortcut Ctrl+Enter triggers execution from runtime shell', async () => {
+    const host = createContractHost();
+    document.body.append(host);
+
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ output: 'ok', metadata: { run: '1' }, summary: 'done' })
+    }));
+    global.fetch = fetchMock;
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: {
+        uiMode: 'auto',
+        complexityTier: 1,
+        operationSchema: {
+          type: 'object',
+          properties: {
+            payload: { type: 'text', title: 'Payload' }
+          }
+        }
+      }
+    });
+
+    const state = module.create(host);
+    module.init(state, host, { addCleanup() {} });
+
+    host.querySelector('#tool-auto-payload').value = 'hello';
+    host.querySelector('[data-tool-shell]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
   test('forbidden execution override fields are ignored while request remains server-controlled', async () => {
     const host = createContractHost();
     document.body.append(host);
