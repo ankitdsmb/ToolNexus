@@ -199,19 +199,56 @@ describe('tool runtime ui bootstrap', () => {
 
     await loadToolTemplate('alpha-generic', root);
 
-    expect(root.querySelector('.tool-page[data-slug="alpha-generic"]')).not.toBeNull();
-    expect(root.querySelector('.tool-layout')).not.toBeNull();
-    expect(root.querySelector('.tool-layout__panel')).not.toBeNull();
-    expect(root.querySelector('.tool-panel--output')).not.toBeNull();
+    expect(root.querySelector('[data-template-contract="generic"][data-slug="alpha-generic"]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-zone="input"]')).not.toBeNull();
+    expect(root.querySelector('[data-tool-zone="output"]')).not.toBeNull();
     expect(root.querySelector('#inputEditor')).not.toBeNull();
     expect(root.querySelector('#outputField')).not.toBeNull();
+  });
+
+
+
+  test('template nodes mount into ToolShell input/output anchors', async () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <section data-tool-shell="true">
+        <section data-tool-input="true"></section>
+        <section data-tool-output="true"></section>
+      </section>
+    `;
+
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => `
+        <div class="tool-runtime-local demo-runtime">
+          <section class="tool-actions"><button id="runBtn" type="button">Run</button></section>
+          <section class="tool-local-sections">
+            <section class="tool-local-surface"><textarea id="inputEditor"></textarea></section>
+            <section class="tool-local-surface"><textarea id="outputEditor"></textarea></section>
+          </section>
+          <section class="tool-metrics" id="metricsPanel">metrics</section>
+        </div>
+      `
+    }));
+
+    await loadToolTemplate('demo-tool', root);
+
+    const inputZone = root.querySelector('[data-tool-input]');
+    const outputZone = root.querySelector('[data-tool-output]');
+
+    expect(inputZone.querySelector('.tool-local-root')).not.toBeNull();
+    expect(outputZone.querySelector('.tool-local-root')).not.toBeNull();
+    expect(inputZone.querySelector('#inputEditor')).not.toBeNull();
+    expect(outputZone.querySelector('#outputEditor')).not.toBeNull();
+    expect(outputZone.querySelector('#metricsPanel')).not.toBeNull();
+    expect(inputZone.querySelector('.tool-local-sections')).toBeNull();
   });
 
   test('throws hard error when generic template contract is missing required panel', async () => {
     const root = document.createElement('div');
     global.fetch = jest.fn(async () => ({
       ok: true,
-      text: async () => '<section class="tool-page" data-template-contract="generic"><div class="tool-layout"></div></section>'
+      text: async () => '<section class="tool-page" data-template-contract="generic"><div></div></section>'
     }));
 
     await expect(loadToolTemplate('alpha-generic', root)).rejects.toThrow('Template contract violation.');
@@ -302,7 +339,7 @@ describe('tool runtime ui bootstrap', () => {
       dependencyLoader: { loadDependencies: async () => {} },
       importModule: async () => ({}),
       lifecycleAdapter,
-      validateDomContract: () => ({ valid: false, errors: ['[DOM CONTRACT ERROR]', 'Missing selector: .tool-layout'] })
+      validateDomContract: () => ({ valid: false, errors: ['[DOM CONTRACT ERROR]', 'Missing selector: data-tool-shell'] })
     });
 
     await runtime.bootstrapToolRuntime();
