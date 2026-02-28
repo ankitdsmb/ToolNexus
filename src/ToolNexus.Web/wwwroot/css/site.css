@@ -1869,3 +1869,89 @@ RESPONSIVE
   position: relative;
   min-height: 0;
 }
+
+/* Workspace normalization: align tool shell with execution workspace blueprint */
+.tool-shell-page--workspace.workspace-shell {
+  grid-template-columns: 1fr;
+  row-gap: var(--space-md);
+  max-width: min(1480px, calc(100% - 24px));
+}
+
+.tool-shell-page--workspace .workspace-shell__runtime-zone,
+.tool-shell-page--workspace .workspace-shell__context-rail {
+  grid-column: 1;
+  position: static;
+  max-height: none;
+  overflow: visible;
+}
+
+.tool-shell-page--workspace .tool-shell-page__runtime {
+  min-height: clamp(540px, 70vh, 820px);
+  background: #ffffff;
+  border: 1px solid #d7dde8;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+  grid-template-areas:
+    "context context"
+    "input output"
+    "followup followup";
+  gap: 14px;
+  padding: 14px;
+}
+
+.tool-shell-page--workspace .tn-tool-panel,
+.tool-shell-page--workspace [data-tool-context="true"],
+.tool-shell-page--workspace [data-tool-followup="true"] {
+  background: #f8fafc;
+  border: 1px solid #d8e0ea;
+  box-shadow: none;
+}
+
+.tool-shell-page--workspace [data-tool-context="true"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.tool-shell-page--workspace .tool-context-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #e9eef7;
+  color: #23334f;
+  border: 1px solid #cfd9e8;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.tool-shell-page--workspace .tool-context-pill--authority {
+  background: #dbe8ff;
+  border-color: #afc6f7;
+  color: #174ea6;
+}
+
+.tool-shell-page--workspace .tool-context-pill--status {
+  background: #dff4e7;
+  border-color: #a7d6b4;
+  color: #1f7a44;
+}
+
+.tool-shell-page--workspace [data-tool-status="true"] {
+  background: #eef2f7;
+  border: 1px solid #d6dce7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #2f3b52;
+  margin-bottom: 12px;
+}
+
+.tool-shell-page--workspace .tool-shell-page__docs {
+  border: 1px solid #e1e6ef;
+  background: #ffffff;
+}
