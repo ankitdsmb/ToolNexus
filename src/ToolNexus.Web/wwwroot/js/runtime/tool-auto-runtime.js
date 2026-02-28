@@ -1,4 +1,4 @@
-import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, createUnifiedToolControl } from './tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildRuntimeReasoning, createUnifiedToolControl } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -524,11 +524,21 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           unifiedControl.setGuidance('Guidance: Review interpretation summary and confidence before follow-up actions.');
           const runtimeWarningCount = ignoredFields.length;
           const repeatedWarning = executionMemory.lastOutcomeClass === 'warning_partial' && runtimeWarningCount > 0;
-          const hierarchy = unifiedControl.renderResult(result, { repeatedWarning });
-          let outcomeClass = hierarchy?.outcomeClass ?? 'uncertain_result';
-          if (runtimeWarningCount > 0 && outcomeClass !== 'failed') {
-            outcomeClass = 'warning_partial';
-          }
+          const enforcedOutcomeClass = runtimeWarningCount > 0 ? 'warning_partial' : undefined;
+          const runtimeReasons = runtimeWarningCount > 0
+            ? ['client-owned execution fields were ignored at execution boundary']
+            : [];
+          const hierarchy = unifiedControl.renderResult(result, {
+            repeatedWarning,
+            forcedOutcomeClass: enforcedOutcomeClass,
+            additionalReasons: runtimeReasons
+          });
+          const runtimeReasoning = hierarchy?.runtimeReasoning ?? buildRuntimeReasoning({
+            outcomeClass: enforcedOutcomeClass ?? hierarchy?.outcomeClass ?? 'uncertain_result',
+            repeatedWarning,
+            additionalReasons: runtimeReasons
+          });
+          const outcomeClass = runtimeReasoning.outcomeClass;
 
           if (outcomeClass === 'warning_partial') {
             executionMemory.repeatedWarnings = executionMemory.lastOutcomeClass === 'warning_partial'
@@ -543,11 +553,6 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             outcomeClass,
             repeatedWarning: executionMemory.repeatedWarnings > 1
           });
-          const explanationDrivenGuidance = buildAdaptiveGuidanceFromReasons({
-            outcomeClass,
-            explanationReasons: hierarchy?.explanationReasons ?? [],
-            repeatedWarning: executionMemory.repeatedWarnings > 1
-          });
 
           if (outcomeClass === 'warning_partial') {
             unifiedControl.setStatus('warning', 'Warning · Completed with runtime notes');
@@ -558,18 +563,17 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           }
 
           unifiedControl.setIntent(adaptive.intent);
-          unifiedControl.setGuidance(`Guidance: ${explanationDrivenGuidance}`);
+          unifiedControl.setGuidance(`Guidance: ${runtimeReasoning.guidance.join(' ')}`);
         } catch (error) {
           executionMemory.lastOutcomeClass = 'failed';
           unifiedControl.setStatus('failed');
           unifiedControl.setIntent('AI intent: Report failed execution path with recoverable guidance.');
-          const failedReasons = ['execution error path was triggered'];
-          unifiedControl.setClassificationWhy(`Why this result is classified this way: ${failedReasons.join('; ')}.`);
-          const failedGuidance = buildAdaptiveGuidanceFromReasons({
+          const failedReasoning = buildRuntimeReasoning({
             outcomeClass: 'failed',
-            explanationReasons: failedReasons
+            explanationReasons: ['execution error path was triggered']
           });
-          unifiedControl.setGuidance(`Guidance: ${failedGuidance}`);
+          unifiedControl.setClassificationWhy(`Why this result is classified this way: ${failedReasoning.reasons.join('; ')}.`);
+          unifiedControl.setGuidance(`Guidance: ${failedReasoning.guidance.join(' ')}`);
           unifiedControl.showError(error?.message ?? 'Execution failed.');
         } finally {
           runButton.disabled = false;
