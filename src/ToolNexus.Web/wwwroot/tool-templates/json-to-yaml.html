@@ -1,66 +1,113 @@
-<div data-runtime-container>
-<article data-tool-root class="tool-json-yaml" data-slug="">
-    <header data-tool-header class="tool-json-yaml__header">
-        <div>
-            <h1><span data-bind="tool.title"></span></h1>
-            <p class="tool-json-yaml__description">Accurate JSON to YAML conversion with deterministic, safe serialization.</p>
-        </div>
-        <span class="tool-json-yaml__badge">Client-side processing</span>
-    </header>
-
-    <section class="tool-json-yaml__controls" aria-label="JSON to YAML options" data-tool-actions>
-        <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
-        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy YAML</button>
-        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button" disabled>Download .yaml</button>
-
-        <label class="tool-option"><input id="autoConvertToggle" type="checkbox" /> Auto convert</label>
-        <label class="tool-option"><input id="prettyToggle" type="checkbox" checked /> Pretty mode</label>
-        <label class="tool-option"><input id="compactToggle" type="checkbox" /> Compact mode</label>
-        <label class="tool-option"><input id="quoteAllToggle" type="checkbox" /> Quote all strings</label>
-        <label class="tool-option"><input id="sortKeysToggle" type="checkbox" /> Sort keys</label>
-        <label class="tool-option"><input id="multilineToggle" type="checkbox" checked /> Multiline block style</label>
-
-        <label class="tool-option tool-option--select" for="indentSelect">
-            Indentation
-            <select id="indentSelect">
-                <option value="2" selected>2 spaces</option>
-                <option value="4">4 spaces</option>
-            </select>
-        </label>
-
-        <label class="tool-option tool-option--select" for="multilineStyle">
-            Multiline mode
-            <select id="multilineStyle">
-                <option value="literal" selected>Literal (|)</option>
-                <option value="folded">Folded (&gt;)</option>
-            </select>
-        </label>
-    </section>
-
-    <p class="tool-json-yaml__status" id="statusText">Ready</p>
-
-    <section class="tool-json-yaml__workspace" aria-label="JSON to YAML workspace" data-tool-body>
-        <section class="tool-json-yaml__panel" data-tool-input>
-            <div class="tool-json-yaml__panel-header">
-                <h2>JSON input</h2>
-                <span>Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear</span>
-            </div>
-            <textarea id="jsonInput" class="tool-json-yaml__editor" spellcheck="false" placeholder='{"service":"toolnexus","enabled":true}' data-bind="tool.exampleInput"></textarea>
-        </section>
-
-        <section class="tool-json-yaml__panel" data-tool-output>
-            <div class="tool-json-yaml__panel-header">
-                <h2>YAML output</h2>
-                <span id="sizeText">0 object(s) · 0 array(s) · 0 primitive(s)</span>
-            </div>
-            <textarea id="yamlOutput" class="tool-json-yaml__editor tool-json-yaml__editor--output" readonly spellcheck="false" placeholder="YAML output will appear here"></textarea>
-        </section>
-    </section>
-
-    <section id="errorBox" class="tool-json-yaml__error" role="alert" hidden>
-        <h3 id="errorTitle">Conversion failed</h3>
-        <p id="errorDetail"></p>
-    </section>
-</article>
+<div class="json-to-yaml-tool-runtime">
+ <header class="tool-local-header">
+  <div>
+   <h2>
+    <span data-bind="tool.title">
+    </span>
+   </h2>
+   <p class="tool-json-yaml__description">
+    Accurate JSON to YAML conversion with deterministic, safe serialization.
+   </p>
+  </div>
+  <span class="tool-json-yaml__badge">
+   Client-side processing
+  </span>
+ </header>
+ <section class="tool-actions">
+  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button">
+   Convert
+  </button>
+  <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+   Clear input
+  </button>
+  <button class="tool-btn tool-btn--outline" disabled="" id="copyBtn" type="button">
+   Copy YAML
+  </button>
+  <button class="tool-btn tool-btn--ghost" disabled="" id="downloadBtn" type="button">
+   Download .yaml
+  </button>
+  <label class="tool-option">
+   <input id="autoConvertToggle" type="checkbox"/>
+   Auto convert
+  </label>
+  <label class="tool-option">
+   <input checked="" id="prettyToggle" type="checkbox"/>
+   Pretty mode
+  </label>
+  <label class="tool-option">
+   <input id="compactToggle" type="checkbox"/>
+   Compact mode
+  </label>
+  <label class="tool-option">
+   <input id="quoteAllToggle" type="checkbox"/>
+   Quote all strings
+  </label>
+  <label class="tool-option">
+   <input id="sortKeysToggle" type="checkbox"/>
+   Sort keys
+  </label>
+  <label class="tool-option">
+   <input checked="" id="multilineToggle" type="checkbox"/>
+   Multiline block style
+  </label>
+  <label class="tool-option tool-option--select" for="indentSelect">
+   Indentation
+   <select id="indentSelect">
+    <option selected="" value="2">
+     2 spaces
+    </option>
+    <option value="4">
+     4 spaces
+    </option>
+   </select>
+  </label>
+  <label class="tool-option tool-option--select" for="multilineStyle">
+   Multiline mode
+   <select id="multilineStyle">
+    <option selected="" value="literal">
+     Literal (|)
+    </option>
+    <option value="folded">
+     Folded (&gt;)
+    </option>
+   </select>
+  </label>
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <div class="tool-json-yaml__panel-header">
+    <h2>
+     JSON input
+    </h2>
+    <span>
+     Ctrl/Cmd + Enter to convert · Ctrl/Cmd + L to clear
+    </span>
+   </div>
+   <textarea class="tool-json-yaml__editor" data-bind="tool.exampleInput" id="jsonInput" placeholder='{"service":"toolnexus","enabled":true}' spellcheck="false"></textarea>
+  </section>
+  <section class="tool-editor-panel">
+   <div class="tool-json-yaml__panel-header">
+    <h2>
+     YAML output
+    </h2>
+    <span id="sizeText">
+     0 object(s) · 0 array(s) · 0 primitive(s)
+    </span>
+   </div>
+   <textarea class="tool-json-yaml__editor tool-json-yaml__editor--output" id="yamlOutput" placeholder="YAML output will appear here" readonly="" spellcheck="false"></textarea>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  <p class="tool-json-yaml__status" id="statusText">
+   Ready
+  </p>
+  <section class="tool-json-yaml__error" hidden="" id="errorBox" role="alert">
+   <h3 id="errorTitle">
+    Conversion failed
+   </h3>
+   <p id="errorDetail">
+   </p>
+  </section>
+ </section>
 </div>
+

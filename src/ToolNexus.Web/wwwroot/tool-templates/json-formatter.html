@@ -1,7 +1,7 @@
 <div class="json-tool-runtime">
     <header class="tool-local-header json-formatter-header">
         <div>
-            <h1><span data-bind="tool.title"></span></h1>
+            <h2><span data-bind="tool.title"></span></h2>
             <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
         </div>
         <span class="json-processing-badge">Client-side processing</span>
@@ -30,7 +30,7 @@
     </section>
 
     <section class="tool-editors json-workspace">
-        <section class="json-panel">
+        <section class="tool-editor-panel json-panel">
             <div class="panel-header">
                 <h2>Input JSON</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
@@ -38,7 +38,7 @@
             <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
         </section>
 
-        <section class="json-panel">
+        <section class="tool-editor-panel json-panel">
             <div class="panel-header">
                 <h2>Output JSON</h2>
                 <p id="resultStatus">Ready for formatting.</p>
@@ -52,5 +52,6 @@
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
         <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>
         <p><span>Output size</span><strong id="outputStats">0 chars / 0 lines</strong></p>
+            <section id="errorBox" hidden></section>
     </section>
 </div>

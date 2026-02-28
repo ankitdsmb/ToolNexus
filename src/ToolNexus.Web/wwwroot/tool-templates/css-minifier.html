@@ -1,14 +1,19 @@
-<div data-runtime-container>
-<section class="tool-page" data-slug="css-minifier" data-template-contract="generic" data-tool-root data-tool="css-minifier">
-  <header data-tool-header hidden></header>
-  <section data-tool-actions hidden></section>
-  <div class="tool-layout" data-tool-body>
-      <section class="tool-layout__panel" data-tool-input>
-        <textarea id="inputEditor" class="tool-editor"></textarea>
-      </section>
-      <section class="tool-panel--output" data-tool-output>
-        <textarea id="outputField" class="tool-editor"></textarea>
-      </section>
-  </div>
-</section>
+<div class="css-minifier-tool-runtime">
+ <header class="tool-local-header">
+ </header>
+ <section class="tool-actions">
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <textarea class="tool-editor" id="inputEditor"></textarea>
+  </section>
+  <section class="tool-editor-panel">
+   <textarea class="tool-editor" id="outputField"></textarea>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  <section hidden="" id="errorBox">
+  </section>
+ </section>
 </div>
+

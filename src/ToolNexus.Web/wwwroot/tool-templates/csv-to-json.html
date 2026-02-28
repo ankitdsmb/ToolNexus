@@ -1,95 +1,126 @@
-<div data-runtime-container>
-<article data-tool-root class="tool csv-json-page" data-tool="csv-to-json" data-tool-slug="">
-    <header data-tool-header class="csv-json-page__header">
-        <div>
-            <h1><span data-bind="tool.title"></span></h1>
-            <p><span data-bind="tool.seoDescription"></span></p>
-        </div>
-        <span class="csv-json-page__badge">Client-side processing only</span>
-    </header>
-
-    <section class="csv-json-controls" aria-label="CSV conversion controls" data-tool-actions>
-        <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
-        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear</button>
-        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy JSON</button>
-        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download JSON</button>
-
-        <label>Delimiter
-            <select id="delimiterSelect">
-                <option value=",">Comma (,)</option>
-                <option value=";">Semicolon (;)</option>
-                <option value="\t">Tab</option>
-            </select>
-        </label>
-
-        <label>
-            <input type="checkbox" id="useHeaderToggle" checked />
-            First row is header
-        </label>
-
-        <label id="customHeadersField" class="csv-json-controls__custom" hidden>Custom headers
-            <input id="customHeadersInput" type="text" placeholder="name,age,email" />
-        </label>
-
-        <label>
-            <input type="checkbox" id="autoConvertToggle" />
-            Auto-convert
-        </label>
-
-        <label>
-            <input type="checkbox" id="prettyToggle" checked />
-            Pretty JSON
-        </label>
-
-        <label>Indent
-            <select id="indentSelect">
-                <option value="2" selected>2 spaces</option>
-                <option value="4">4 spaces</option>
-                <option value="8">8 spaces</option>
-            </select>
-        </label>
-
-        <label>
-            <input type="checkbox" id="typeDetectToggle" checked />
-            Auto type detection
-        </label>
-
-        <label>
-            <input type="checkbox" id="emptyAsNullToggle" checked />
-            Empty as null
-        </label>
-
-        <label>
-            <input type="checkbox" id="sanitizeToggle" />
-            Sanitize formula cells
-        </label>
-
-        <label>Preview rows
-            <input id="previewRowsInput" type="number" min="1" value="50" />
-        </label>
-    </section>
-
-    <p id="statusText" class="csv-json-status" role="status" aria-live="polite">Ready</p>
-
-    <div id="errorBox" class="csv-json-error" role="alert" aria-live="assertive" hidden></div>
-
-    <section class="csv-json-layout" aria-label="CSV to JSON workspace" data-tool-body>
-        <section class="csv-json-panel" data-tool-input>
-            <h2>CSV Input</h2>
-            <p class="csv-json-panel__hint">Ctrl/Cmd + Enter to convert. Ctrl/Cmd + L to clear.</p>
-            <textarea id="csvInput" class="csv-json-editor" spellcheck="false" data-bind="tool.exampleInput"></textarea>
-        </section>
-
-        <section class="csv-json-panel" data-tool-output>
-            <div class="csv-json-panel__header">
-                <h2>JSON Output</h2>
-                <div class="csv-json-metrics">
-                    <span id="rowCount">Rows: 0</span>
-                    <span id="charCount">Chars: 0</span>
-                </div>
-            </div>
-            <textarea id="jsonOutput" class="csv-json-editor" readonly spellcheck="false" placeholder="JSON output appears here"></textarea>
-        </section>
-    </section>
-</article>
+<div class="csv-to-json-tool-runtime">
+ <header class="tool-local-header">
+  <div>
+   <h2>
+    <span data-bind="tool.title">
+    </span>
+   </h2>
+   <p>
+    <span data-bind="tool.seoDescription">
+    </span>
+   </p>
+  </div>
+  <span class="csv-json-page__badge">
+   Client-side processing only
+  </span>
+ </header>
+ <section class="tool-actions">
+  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button">
+   Convert
+  </button>
+  <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+   Clear
+  </button>
+  <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
+   Copy JSON
+  </button>
+  <button class="tool-btn tool-btn--ghost" id="downloadBtn" type="button">
+   Download JSON
+  </button>
+  <label>
+   Delimiter
+   <select id="delimiterSelect">
+    <option value=",">
+     Comma (,)
+    </option>
+    <option value=";">
+     Semicolon (;)
+    </option>
+    <option value="\t">
+     Tab
+    </option>
+   </select>
+  </label>
+  <label>
+   <input checked="" id="useHeaderToggle" type="checkbox"/>
+   First row is header
+  </label>
+  <label class="csv-json-controls__custom" hidden="" id="customHeadersField">
+   Custom headers
+   <input id="customHeadersInput" placeholder="name,age,email" type="text"/>
+  </label>
+  <label>
+   <input id="autoConvertToggle" type="checkbox"/>
+   Auto-convert
+  </label>
+  <label>
+   <input checked="" id="prettyToggle" type="checkbox"/>
+   Pretty JSON
+  </label>
+  <label>
+   Indent
+   <select id="indentSelect">
+    <option selected="" value="2">
+     2 spaces
+    </option>
+    <option value="4">
+     4 spaces
+    </option>
+    <option value="8">
+     8 spaces
+    </option>
+   </select>
+  </label>
+  <label>
+   <input checked="" id="typeDetectToggle" type="checkbox"/>
+   Auto type detection
+  </label>
+  <label>
+   <input checked="" id="emptyAsNullToggle" type="checkbox"/>
+   Empty as null
+  </label>
+  <label>
+   <input id="sanitizeToggle" type="checkbox"/>
+   Sanitize formula cells
+  </label>
+  <label>
+   Preview rows
+   <input id="previewRowsInput" min="1" type="number" value="50"/>
+  </label>
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <h2>
+    CSV Input
+   </h2>
+   <p class="csv-json-panel__hint">
+    Ctrl/Cmd + Enter to convert. Ctrl/Cmd + L to clear.
+   </p>
+   <textarea class="csv-json-editor" data-bind="tool.exampleInput" id="csvInput" spellcheck="false"></textarea>
+  </section>
+  <section class="tool-editor-panel">
+   <div class="csv-json-panel__header">
+    <h2>
+     JSON Output
+    </h2>
+    <div class="csv-json-metrics">
+     <span id="rowCount">
+      Rows: 0
+     </span>
+     <span id="charCount">
+      Chars: 0
+     </span>
+    </div>
+   </div>
+   <textarea class="csv-json-editor" id="jsonOutput" placeholder="JSON output appears here" readonly="" spellcheck="false"></textarea>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  <p aria-live="polite" class="csv-json-status" id="statusText" role="status">
+   Ready
+  </p>
+  <section aria-live="assertive" class="csv-json-error" hidden="" id="errorBox" role="alert">
+  </div>
+ </section>
 </div>
+

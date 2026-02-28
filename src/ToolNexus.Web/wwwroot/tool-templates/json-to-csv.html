@@ -1,69 +1,113 @@
-<div data-runtime-container>
-<article data-tool-root class="tool-page tool-json-csv" data-slug="">
-    <header data-tool-header class="tool-json-csv__header">
-        <div>
-            <h1></h1>
-            <p class="tool-json-csv__description">Convert JSON to RFC-compliant CSV with deterministic headers and zero server calls.</p>
-        </div>
-        <span class="tool-json-csv__badge">Client-side processing</span>
-    </header>
-
-    <section class="tool-json-csv__controls" aria-label="Conversion options" data-tool-actions>
-        <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">Convert</button>
-        <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
-        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" disabled>Copy CSV</button>
-        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button" disabled>Download CSV</button>
-
-        <label class="tool-option"><input id="autoConvertToggle" type="checkbox" /> Auto convert</label>
-        <label class="tool-option"><input id="flattenToggle" type="checkbox" checked /> Flatten nested</label>
-        <label class="tool-option"><input id="includeNullToggle" type="checkbox" /> Include null values</label>
-        <label class="tool-option"><input id="sanitizeToggle" type="checkbox" checked /> Sanitize formula cells</label>
-        <label class="tool-option"><input id="prettyToggle" type="checkbox" /> Pretty format input</label>
-
-        <label class="tool-option tool-option--select" for="delimiterSelect">
-            <select id="delimiterSelect">
-                <option value="comma">Comma (,)</option>
-                <option value="semicolon">Semicolon (;)</option>
-                <option value="tab">Tab</option>
-            </select>
-        </label>
-
-        <label class="tool-option tool-option--select" for="arrayModeSelect">
-            <select id="arrayModeSelect">
-                <option value="stringify">Stringify</option>
-                <option value="join">Join with separator</option>
-            </select>
-        </label>
-
-        <label class="tool-option tool-option--input" for="arraySeparatorInput">
-            <input id="arraySeparatorInput" type="text" value=", " maxlength="8" />
-        </label>
-    </section>
-
-    <p class="tool-json-csv__status" id="statusText">Ready</p>
-
-    <section class="tool-json-csv__workspace" aria-label="JSON to CSV workspace" data-tool-body>
-        <section class="tool-json-csv__panel" data-tool-input>
-            <div class="tool-json-csv__panel-header">
-                <h2>JSON input</h2>
-                <span>Ctrl/Cmd + Enter convert · Ctrl/Cmd + L clear</span>
-            </div>
-            <textarea id="jsonInput" class="tool-json-csv__editor" spellcheck="false" placeholder='[{"name":"Ada","user":{"email":"ada"}}]'></textarea>
-        </section>
-
-        <section class="tool-json-csv__panel" data-tool-output>
-            <div class="tool-json-csv__panel-header">
-                <h2>CSV output preview</h2>
-                <span id="outputStats">0 row(s) · 0 column(s)</span>
-            </div>
-            <textarea id="csvOutput" class="tool-json-csv__editor tool-json-csv__editor--output" readonly spellcheck="false" placeholder="CSV output will appear here"></textarea>
-        </section>
-    </section>
-
-    <section id="errorBox" class="tool-json-csv__error" role="alert" hidden>
-        <h3 id="errorTitle">Error</h3>
-        <p id="errorDetail"></p>
-        <p id="errorSuggestion" class="tool-json-csv__error-suggestion"></p>
-    </section>
-</article>
+<div class="json-to-csv-tool-runtime">
+ <header class="tool-local-header">
+  <div>
+   <h2>
+   </h2>
+   <p class="tool-json-csv__description">
+    Convert JSON to RFC-compliant CSV with deterministic headers and zero server calls.
+   </p>
+  </div>
+  <span class="tool-json-csv__badge">
+   Client-side processing
+  </span>
+ </header>
+ <section class="tool-actions">
+  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button">
+   Convert
+  </button>
+  <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+   Clear input
+  </button>
+  <button class="tool-btn tool-btn--outline" disabled="" id="copyBtn" type="button">
+   Copy CSV
+  </button>
+  <button class="tool-btn tool-btn--ghost" disabled="" id="downloadBtn" type="button">
+   Download CSV
+  </button>
+  <label class="tool-option">
+   <input id="autoConvertToggle" type="checkbox"/>
+   Auto convert
+  </label>
+  <label class="tool-option">
+   <input checked="" id="flattenToggle" type="checkbox"/>
+   Flatten nested
+  </label>
+  <label class="tool-option">
+   <input id="includeNullToggle" type="checkbox"/>
+   Include null values
+  </label>
+  <label class="tool-option">
+   <input checked="" id="sanitizeToggle" type="checkbox"/>
+   Sanitize formula cells
+  </label>
+  <label class="tool-option">
+   <input id="prettyToggle" type="checkbox"/>
+   Pretty format input
+  </label>
+  <label class="tool-option tool-option--select" for="delimiterSelect">
+   <select id="delimiterSelect">
+    <option value="comma">
+     Comma (,)
+    </option>
+    <option value="semicolon">
+     Semicolon (;)
+    </option>
+    <option value="tab">
+     Tab
+    </option>
+   </select>
+  </label>
+  <label class="tool-option tool-option--select" for="arrayModeSelect">
+   <select id="arrayModeSelect">
+    <option value="stringify">
+     Stringify
+    </option>
+    <option value="join">
+     Join with separator
+    </option>
+   </select>
+  </label>
+  <label class="tool-option tool-option--input" for="arraySeparatorInput">
+   <input id="arraySeparatorInput" maxlength="8" type="text" value=", "/>
+  </label>
+ </section>
+ <section class="tool-editors">
+  <section class="tool-editor-panel">
+   <div class="tool-json-csv__panel-header">
+    <h2>
+     JSON input
+    </h2>
+    <span>
+     Ctrl/Cmd + Enter convert · Ctrl/Cmd + L clear
+    </span>
+   </div>
+   <textarea class="tool-json-csv__editor" id="jsonInput" placeholder='[{"name":"Ada","user":{"email":"ada"}}]' spellcheck="false"></textarea>
+  </section>
+  <section class="tool-editor-panel">
+   <div class="tool-json-csv__panel-header">
+    <h2>
+     CSV output preview
+    </h2>
+    <span id="outputStats">
+     0 row(s) · 0 column(s)
+    </span>
+   </div>
+   <textarea class="tool-json-csv__editor tool-json-csv__editor--output" id="csvOutput" placeholder="CSV output will appear here" readonly="" spellcheck="false"></textarea>
+  </section>
+ </section>
+ <section class="tool-metrics">
+  <p class="tool-json-csv__status" id="statusText">
+   Ready
+  </p>
+  <section class="tool-json-csv__error" hidden="" id="errorBox" role="alert">
+   <h3 id="errorTitle">
+    Error
+   </h3>
+   <p id="errorDetail">
+   </p>
+   <p class="tool-json-csv__error-suggestion" id="errorSuggestion">
+   </p>
+  </section>
+ </section>
 </div>
+
