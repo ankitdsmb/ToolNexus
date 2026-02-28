@@ -4,7 +4,7 @@
     <p>Convert DOCX and PDF files securely.</p>
   </header>
 
-  <section class="tool-local-actions tool-actions">
+  <section class="tool-local-actions">
     <input type="file" id="fileInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
 
     <select id="conversionMode">
@@ -25,12 +25,12 @@
     <section class="tool-local-surface">
       <a id="downloadLink" hidden>Download Result</a>
     </section>
+
+    <section id="errorBox" class="tool-error" hidden></section>
   </section>
 
-  <section class="tool-local-metrics tool-metrics">
+  <section class="tool-local-metrics">
     <span id="executionTime"></span>
     <span id="fileSize"></span>
   </section>
-
-  <section id="errorBox" class="tool-error" hidden></section>
 </div>
