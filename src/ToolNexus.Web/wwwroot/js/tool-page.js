@@ -6,6 +6,7 @@ import {
   normalizeToolPageExecutionResult,
   TOOL_PAGE_RUNTIME_FALLBACK_MESSAGE
 } from './runtime/tool-page-result-normalizer.js';
+import { createToolIntelligenceEngine } from './runtime/tool-intelligence-engine.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 const logger = createRuntimeLogger({ source: 'tool-page' });
@@ -104,8 +105,17 @@ const workflowCompletionSignal = document.getElementById('workflowCompletionSign
 
 const errorMessage = document.getElementById('errorMessage');
 const resultStatus = document.getElementById('resultStatus');
+const runtimeStatusBand = document.getElementById('runtimeStatusBand');
+const detectedFormatBadge = document.getElementById('detectedFormatBadge');
+const confidenceBadge = document.getElementById('confidenceBadge');
+const contextHints = document.getElementById('contextHints');
+const suggestionChips = document.getElementById('suggestionChips');
 const outputField = document.getElementById('outputField');
 const outputEmptyState = document.getElementById('outputEmptyState');
+const emptyStateTitle = document.getElementById('emptyStateTitle');
+const emptyStateHint = document.getElementById('emptyStateHint');
+const emptyStateExample = document.getElementById('emptyStateExample');
+const quickRunBtn = document.getElementById('quickRunBtn');
 const toolOutputHeading = document.getElementById('toolOutputHeading');
 const toastRegion = document.getElementById('toastRegion');
 
@@ -116,6 +126,12 @@ let currentEditorType = 'textarea';
 let persistTimer = 0;
 let pendingLayoutFrame = 0;
 let monacoRuntime = null;
+let lastExecutionDurationMs = 0;
+let lastErrorMessage = '';
+let emptyStateTimer = 0;
+
+const intelligenceEngine = createToolIntelligenceEngine();
+const dismissedHintIds = new Set(readStorageJson(`toolnexus.intel.dismissed.${slug}`, []));
 
 const TOOL_INTELLIGENCE_GRAPH = {
   json: ['json-validator', 'json-to-csv', 'json-to-yaml', 'yaml-to-json'],
@@ -144,6 +160,9 @@ async function init() {
   bindEvents();
   renderUxLists();
   renderWorkflowIntelligence();
+  renderIntelligenceLayer();
+  initializeAdaptiveToolbar();
+  evolveEmptyState();
 
   window.ToolNexusRun = run;
 }
@@ -333,10 +352,13 @@ function bindEvents() {
 
   shareBtn?.addEventListener('click', createShareLink);
   saveCollectionBtn?.addEventListener('click', saveToCollection);
+  quickRunBtn?.addEventListener('click', quickRunFromEmptyState);
 
   actionSelect?.addEventListener('change', () => {
     scheduleSessionPersist();
+    rememberUserPreferences();
     renderSmartContextHint();
+    renderIntelligenceLayer();
   });
 
   if (currentEditorType === 'monaco') {
@@ -344,17 +366,23 @@ function bindEvents() {
     inputEditor.onDidChangeModelContent(() => {
       scheduleSessionPersist();
       renderSmartContextHint();
+      renderIntelligenceLayer();
+      evolveEmptyState();
     });
   } else if (currentEditorType === 'codemirror') {
     inputEditor.addKeyMap({ 'Ctrl-Enter': run, 'Cmd-Enter': run });
     inputEditor.on('change', () => {
       scheduleSessionPersist();
       renderSmartContextHint();
+      renderIntelligenceLayer();
+      evolveEmptyState();
     });
   } else {
     inputTextArea.addEventListener('input', () => {
       scheduleSessionPersist();
       renderSmartContextHint();
+      renderIntelligenceLayer();
+      evolveEmptyState();
     });
     inputTextArea.addEventListener('keydown', (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
@@ -454,6 +482,14 @@ function setResultStatus(state, text) {
   resultStatus.textContent = text;
 }
 
+function setConfidenceState(state) {
+  if (!confidenceBadge || !runtimeStatusBand) return;
+
+  confidenceBadge.hidden = false;
+  confidenceBadge.textContent = `Confidence: ${state.charAt(0).toUpperCase()}${state.slice(1)}`;
+  runtimeStatusBand.dataset.confidence = state;
+}
+
 function setRunningState(running) {
   isRunning = running;
 
@@ -477,13 +513,181 @@ function setRunningState(running) {
 function showError(message) {
   if (!errorMessage) return;
   errorMessage.hidden = false;
-  errorMessage.textContent = message;
+  const intel = intelligenceEngine.inferErrorIntelligence(message);
+  errorMessage.innerHTML = `<strong>${message}</strong><small>${intel.explanation} ${intel.probableCause} ${intel.quickFix}</small>`;
+  lastErrorMessage = message;
+  setConfidenceState('error');
 }
 
 function clearError() {
   if (!errorMessage) return;
   errorMessage.hidden = true;
   errorMessage.textContent = '';
+  lastErrorMessage = '';
+}
+
+function renderContextHints(hints = []) {
+  if (!contextHints) return;
+  contextHints.innerHTML = '';
+
+  hints.forEach((hint) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = `tool-context-hint tool-context-hint--${hint.level || 'info'}`;
+    chip.textContent = hint.text;
+    chip.addEventListener('click', () => {
+      dismissedHintIds.add(hint.id);
+      writeStorageJson(`toolnexus.intel.dismissed.${slug}`, [...dismissedHintIds]);
+      renderIntelligenceLayer();
+    });
+    contextHints.appendChild(chip);
+  });
+}
+
+function applySuggestionCommand(suggestion) {
+  if (!suggestion) return;
+  if (suggestion.command === 'set-action') {
+    const option = actionSelect?.querySelector(`option[value="${CSS.escape(suggestion.value)}"]`);
+    if (option && actionSelect) {
+      actionSelect.value = suggestion.value;
+      renderIntelligenceLayer();
+      showToast(`Action switched to ${suggestion.value}.`, 'info');
+    }
+    return;
+  }
+
+  if (suggestion.command === 'navigate' && suggestion.value) {
+    window.location.href = suggestion.value;
+    return;
+  }
+
+  if (suggestion.command === 'copy') {
+    copyBtn?.click();
+    return;
+  }
+
+  if (suggestion.command === 'download') {
+    downloadBtn?.click();
+  }
+}
+
+function renderSuggestionChips(suggestions = []) {
+  if (!suggestionChips) return;
+  suggestionChips.innerHTML = '';
+
+  suggestions.forEach((suggestion) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'tool-suggestion-chip';
+    button.textContent = suggestion.label;
+    button.addEventListener('click', () => applySuggestionCommand(suggestion));
+    suggestionChips.appendChild(button);
+  });
+}
+
+function renderIntelligenceLayer(latestOutput = '') {
+  const input = getInputValue();
+  const output = latestOutput || getOutputValue();
+  const selectedAction = actionSelect?.value ?? 'run';
+  const context = intelligenceEngine.buildContextHints({ input, selectedAction, dismissed: [...dismissedHintIds] });
+
+  if (detectedFormatBadge) {
+    detectedFormatBadge.hidden = !input.trim();
+    detectedFormatBadge.textContent = context.detection.badge;
+  }
+
+  const isValidJson = context.detection.type === 'json' && !lastErrorMessage;
+  setConfidenceState(intelligenceEngine.classifyConfidence({
+    hasInput: Boolean(input.trim()),
+    hasError: Boolean(lastErrorMessage),
+    warningCount: context.hints.filter((item) => item.level === 'warning').length,
+    isValidJson
+  }));
+
+  renderContextHints(context.hints);
+  renderSuggestionChips(intelligenceEngine.buildActionSuggestions({
+    toolSlug: slug,
+    input,
+    output,
+    selectedAction
+  }));
+
+  applyAdaptiveToolbar({ hasInput: Boolean(input.trim()), hasOutput: Boolean(output.trim()) });
+}
+
+function initializeAdaptiveToolbar() {
+  applyAdaptiveToolbar({ hasInput: hasInput(), hasOutput: Boolean(getOutputValue().trim()) });
+}
+
+function applyAdaptiveToolbar({ hasInput: hasInputValue, hasOutput }) {
+  if (runBtn) runBtn.disabled = isRunning || !hasInputValue;
+  if (copyBtn) copyBtn.hidden = !hasOutput;
+  if (downloadBtn) downloadBtn.hidden = !hasOutput;
+  if (shareBtn) shareBtn.classList.toggle('tool-btn--ghost', !hasOutput);
+}
+
+function evolveEmptyState() {
+  if (!outputEmptyState || !emptyStateHint) return;
+  clearTimeout(emptyStateTimer);
+
+  const hasUserInput = hasInput();
+  if (hasUserInput) {
+    emptyStateTitle && (emptyStateTitle.textContent = 'Ready to execute.');
+    emptyStateHint.textContent = 'Input detected. Run now to generate intelligent suggestions.';
+    if (emptyStateExample) emptyStateExample.hidden = true;
+    if (quickRunBtn) quickRunBtn.hidden = true;
+    return;
+  }
+
+  emptyStateTitle && (emptyStateTitle.textContent = 'No output yet.');
+  emptyStateHint.textContent = 'Paste data to begin.';
+  if (emptyStateExample) emptyStateExample.hidden = true;
+  if (quickRunBtn) quickRunBtn.hidden = true;
+
+  emptyStateTimer = setTimeout(() => {
+    if (hasInput()) return;
+    emptyStateHint.textContent = 'Try the example payload for a quick first run.';
+    if (emptyStateExample) emptyStateExample.hidden = false;
+  }, 1000);
+
+  setTimeout(() => {
+    if (hasInput()) return;
+    if (quickRunBtn) quickRunBtn.hidden = false;
+  }, 2200);
+}
+
+function quickRunFromEmptyState() {
+  if (hasInput()) {
+    run();
+    return;
+  }
+
+  const sample = document.getElementById('sampleInput')?.textContent?.trim() || '{"example": true}';
+  setInputValue(sample);
+  renderIntelligenceLayer();
+  run();
+}
+
+function rememberUserPreferences() {
+  const preference = readStorageJson(`toolnexus.intel.preferences.${slug}`, {});
+  preference.lastAction = actionSelect?.value ?? preference.lastAction ?? 'run';
+  const wrapToggle = document.getElementById('wrapToggle');
+  if (wrapToggle instanceof HTMLInputElement) {
+    preference.wrap = wrapToggle.checked;
+  }
+  writeStorageJson(`toolnexus.intel.preferences.${slug}`, preference);
+}
+
+function hydratePreferences() {
+  const preference = readStorageJson(`toolnexus.intel.preferences.${slug}`, null);
+  if (!preference) return;
+  if (preference.lastAction && actionSelect?.querySelector(`option[value="${CSS.escape(preference.lastAction)}"]`)) {
+    actionSelect.value = preference.lastAction;
+  }
+  const wrapToggle = document.getElementById('wrapToggle');
+  if (wrapToggle instanceof HTMLInputElement && typeof preference.wrap === 'boolean') {
+    wrapToggle.checked = preference.wrap;
+  }
 }
 
 function showToast(message, type = 'info') {
@@ -666,7 +870,9 @@ async function run() {
   const sanitizedInput = sanitizeInput(getInputValue());
 
   try {
+    const startedAt = performance.now();
     setRunningState(true);
+    setResultStatus('running', hasInput() && getUtf8SizeInBytes(getInputValue()) > 12000 ? 'Optimizing large input…' : 'Running tool...');
 
     let normalizedResult = null;
     let insight = null;
@@ -689,17 +895,20 @@ async function run() {
     showToast('Execution completed.', 'success');
 
     const result = normalizedResult?.output || 'No output';
+    lastExecutionDurationMs = Math.round(performance.now() - startedAt);
 
     renderInsight(insight);
     setOutputValue(result);
     storeRecentJsonCandidate(result);
     setOutputState(true);
     setResultStatus('success', 'Output updated');
+    renderResultIntelligence(sanitizedInput, result);
 
     addToolHistory({ slug, action: selectedAction, input: sanitizedInput, output: result });
     scheduleSessionPersist();
     renderUxLists();
     renderSmartContextHint(result);
+    renderIntelligenceLayer(result);
     updateCompletionSignal(result);
   } catch (error) {
     const message = error?.message || 'Unable to run tool due to a network error.';
@@ -711,10 +920,28 @@ async function run() {
     setOutputValue(message);
     setOutputState(true);
     setResultStatus('failure', 'Execution failed');
+    renderResultIntelligence(sanitizedInput, message);
+    renderIntelligenceLayer();
     showToast('Execution failed.', 'error');
   } finally {
     setRunningState(false);
+    rememberUserPreferences();
   }
+}
+
+function renderResultIntelligence(input, output) {
+  const intelligence = intelligenceEngine.buildResultIntelligence({
+    input,
+    output,
+    durationMs: lastExecutionDurationMs,
+    error: lastErrorMessage
+  });
+  const statusLines = [
+    `Execution ${intelligence.durationText}`,
+    intelligence.reductionText,
+    intelligence.quality
+  ];
+  setResultStatus(lastErrorMessage ? 'failure' : 'success', statusLines.join(' · '));
 }
 
 function readStorageJson(key, fallback) {
@@ -793,6 +1020,8 @@ function hydrateSession() {
     setOutputState(true);
     setResultStatus('success', 'Restored from last session');
   }
+
+  hydratePreferences();
 }
 
 function hydrateFromUrl() {
