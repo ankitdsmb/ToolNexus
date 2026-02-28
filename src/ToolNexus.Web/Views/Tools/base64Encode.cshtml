@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/tools/base64-encode.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local base64-encode-runtime base64-tool">
+<div class="tool-runtime-widget base64-encode-runtime base64-tool">
     <header class="tool-local-header base64-tool__header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="base64-badge" aria-label="Execution scope">Client-side only</span>
     </header>
 
-    <section class="tool-actions" aria-label="Base64 actions">
+    <section class="tool-local-actions" aria-label="Base64 actions">
         <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
     </section>
@@ -80,7 +80,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics" aria-live="polite">
+    <section class="tool-local-metrics" aria-live="polite">
         <p id="statusTextMetric">Status updates are shown in the output panel.</p>
     </section>
 </div>

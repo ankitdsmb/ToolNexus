@@ -269,14 +269,14 @@ describe('tool unified control runtime', () => {
   });
 
 
-  test('enforceProfessionalLayout normalizes missing semantic classes and blocks nested runtime widgets', () => {
+  test('enforceProfessionalLayout keeps canonical widget classes and blocks nested runtime widgets', () => {
     const root = document.createElement('div');
     root.innerHTML = `
       <div class="tool-runtime-widget">
-        <header><h1>Title</h1></header>
-        <section class="tool-actions"></section>
-        <section class="tool-local-sections"><div class="panel">A</div></section>
-        <section class="tool-metrics"></section>
+        <header class="tool-local-header"><h1>Title</h1></header>
+        <section class="tool-local-actions"></section>
+        <section class="tool-local-body"><div class="panel">A</div></section>
+        <section class="tool-local-metrics"></section>
         <div class="tool-runtime-widget"><section class="tool-local-body"></section></div>
       </div>`;
 
@@ -286,9 +286,9 @@ describe('tool unified control runtime', () => {
 
     expect(result.normalized).toBe(true);
     expect(result.widgetCount).toBe(2);
-    expect(widget.querySelector(':scope > header')?.classList.contains('tool-local-header')).toBe(true);
-    expect(widget.querySelector(':scope > .tool-actions')?.classList.contains('tool-local-actions')).toBe(true);
-    expect(body).not.toBeNull();
+    expect(widget.querySelector(':scope > .tool-local-header')).not.toBeNull();
+    expect(widget.querySelector(':scope > .tool-local-actions')).not.toBeNull();
+    expect(widget.querySelector(':scope > .tool-local-metrics')).not.toBeNull();
     expect(body?.classList.contains('single-panel')).toBe(true);
     expect(root.querySelectorAll('.tool-runtime-widget').length).toBe(1);
     expect(root.querySelector('.tool-runtime-widget--nested')).not.toBeNull();

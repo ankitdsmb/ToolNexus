@@ -663,11 +663,6 @@ export function buildRuntimeReasoning({
 
 
 
-function applyProfessionalClass(target, className) {
-  if (target && !target.classList.contains(className)) {
-    target.classList.add(className);
-  }
-}
 
 export function enforceProfessionalLayout(root) {
   if (!root?.querySelectorAll) {
@@ -695,20 +690,17 @@ export function enforceProfessionalLayout(root) {
       nested.classList.add('tool-runtime-widget--nested');
     }
 
-    const header = widget.querySelector(':scope > .tool-local-header, :scope > header');
-    const actions = widget.querySelector(':scope > .tool-local-actions, :scope > .tool-actions, :scope > [role="toolbar"]');
-    const body = widget.querySelector(':scope > .tool-local-body, :scope > .tool-local-sections, :scope > .tool-editors');
-    const metrics = widget.querySelector(':scope > .tool-local-metrics, :scope > .tool-metrics, :scope > [data-tool-zone="status"]');
+    const header = widget.querySelector(':scope > .tool-local-header');
+    const actions = widget.querySelector(':scope > .tool-local-actions');
+    const body = widget.querySelector(':scope > .tool-local-body');
+    const metrics = widget.querySelector(':scope > .tool-local-metrics');
 
-    applyProfessionalClass(header, 'tool-local-header');
-    applyProfessionalClass(actions, 'tool-local-actions');
-    applyProfessionalClass(body, 'tool-local-body');
-    applyProfessionalClass(metrics, 'tool-local-metrics');
-
-    if (body) {
-      const panelCount = body.children?.length ?? 0;
-      body.classList.toggle('single-panel', panelCount <= 1);
+    if (!header || !actions || !body || !metrics) {
+      continue;
     }
+
+    const panelCount = body.children?.length ?? 0;
+    body.classList.toggle('single-panel', panelCount <= 1);
   }
 
   return { widgetCount: widgets.length, normalized: true };

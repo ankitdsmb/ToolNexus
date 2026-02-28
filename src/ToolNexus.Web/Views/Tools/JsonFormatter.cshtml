@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/pages/json-formatter.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local json-formatter-runtime json-formatter-page tool">
+<div class="tool-runtime-widget json-formatter-runtime json-formatter-page tool">
     <header class="tool-local-header json-formatter-header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="json-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="tool-actions json-toolbar" role="toolbar" aria-label="JSON formatter actions">
+    <section class="tool-local-actions json-toolbar" role="toolbar" aria-label="JSON formatter actions">
         <div class="json-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
@@ -66,7 +66,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics json-metrics" aria-live="polite">
+    <section class="tool-local-metrics json-metrics" aria-live="polite">
         <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
         <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>

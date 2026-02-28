@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/tools/url-encode.css" asp-append-version="true" />
 }
 
-<div class="tool-runtime-local url-encode-runtime url-encode-tool">
+<div class="tool-runtime-widget url-encode-runtime url-encode-tool">
     <header class="tool-local-header url-encode-tool__header">
         <div>
             <h2>@Model.Tool.Title</h2>
@@ -20,7 +20,7 @@
         <span class="url-encode-badge">Client-side processing</span>
     </header>
 
-    <section class="tool-actions url-encode-actions" aria-label="URL encode actions">
+    <section class="tool-local-actions url-encode-actions" aria-label="URL encode actions">
         <button id="encodeBtn" class="tool-btn tool-btn--primary" type="button">Encode</button>
         <button id="clearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
         <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy output</button>
@@ -70,7 +70,7 @@
         </section>
     </section>
 
-    <section class="tool-metrics" aria-live="polite">
+    <section class="tool-local-metrics" aria-live="polite">
         <p id="statusTextMetric">Execution status is shown in the output panel.</p>
     </section>
 </div>

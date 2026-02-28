@@ -18,20 +18,20 @@
     <meta name="twitter:description" content="@Model.Seo.Description" />
 }
 
-<div class="tool-runtime-local base64-decode-runtime base64-decode-shell">
+<div class="tool-runtime-widget base64-decode-runtime base64-decode-shell">
     <header class="tool-local-header base64-decode-shell__heading">
         <div>
             <h2>@Model.Tool.Title</h2>
             <p class="base64-decode-shell__description">@Model.Tool.SeoDescription</p>
             <p class="privacy-badge">Client-side only · Your input never leaves the browser</p>
         </div>
-        <section class="tool-metrics base64-decode-shell__meta" aria-live="polite">
+        <section class="tool-local-metrics base64-decode-shell__meta" aria-live="polite">
             <p><span>Status</span><strong id="validationState" class="validation-state">Ready</strong></p>
             <p><span>Size</span><strong id="payloadSize">0 B</strong></p>
         </section>
     </header>
 
-    <section class="tool-actions tool-toolbar__actions" role="toolbar" aria-label="Decode and output actions">
+    <section class="tool-local-actions tool-toolbar__actions" role="toolbar" aria-label="Decode and output actions">
                 <button id="runBtn" class="tool-btn tool-btn--primary" type="button" aria-busy="false">
                     <span class="spinner" aria-hidden="true"></span>
                     <span class="tool-btn__label" data-loading-label="Processing…" data-default-label="Decode">Decode</span>

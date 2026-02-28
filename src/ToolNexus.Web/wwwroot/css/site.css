@@ -356,7 +356,7 @@ kbd,
 /* ======================================
 GLOBAL TOOL UI NORMALIZATION (EXECUTION)
 ====================================== */
-.tool-local-root {
+.tool-runtime-widget {
   width: min(100%, 1120px);
   margin: 0;
   padding: var(--space-md);
@@ -365,7 +365,7 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   align-content: start;
 }
 
-.tool-local-root .tool-local-header {
+.tool-runtime-widget .tool-local-header {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -375,9 +375,9 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.tool-local-root .tool-local-header h1,
-.tool-local-root .tool-local-header h2,
-.tool-local-root .tool-local-header h3 {
+.tool-runtime-widget .tool-local-header h1,
+.tool-runtime-widget .tool-local-header h2,
+.tool-runtime-widget .tool-local-header h3 {
   margin: 0;
   font-size: clamp(1.1rem, 1vw + 0.95rem, 1.3rem);
   line-height: var(--line-snug);
@@ -385,7 +385,7 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   color: var(--text-primary);
 }
 
-.tool-local-root .tool-local-header p {
+.tool-runtime-widget .tool-local-header p {
   margin: var(--space-xs) 0 0;
   max-width: 84ch;
   color: var(--text-muted);
@@ -393,7 +393,7 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   line-height: var(--line-base);
 }
 
-.tool-local-root .tool-actions {
+.tool-runtime-widget .tool-local-actions {
   position: sticky;
   top: 0;
   z-index: calc(var(--z-base) + 2);
@@ -408,7 +408,7 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   backdrop-filter: blur(4px);
 }
 
-.tool-local-root .tool-btn {
+.tool-runtime-widget .tool-btn {
   min-height: 36px;
   padding-inline: var(--space-sm);
   border-radius: var(--radius-sm);
@@ -416,23 +416,23 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   font-weight: 600;
 }
 
-.tool-local-root .tool-btn--primary {
+.tool-runtime-widget .tool-btn--primary {
   border-color: color-mix(in srgb, var(--accent-strong) 85%, #000);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.tool-local-root .tool-btn:hover {
+.tool-runtime-widget .tool-btn:hover {
   box-shadow: var(--shadow-sm);
 }
 
-.tool-local-root .tool-local-sections {
+.tool-runtime-widget .tool-local-body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-sm);
   align-items: stretch;
 }
 
-.tool-local-root .tool-local-surface {
+.tool-runtime-widget .tool-local-surface {
   min-height: 360px;
   height: 100%;
   display: grid;
@@ -445,27 +445,27 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   box-shadow: none;
 }
 
-.tool-local-root .tool-local-surface .panel-header h2,
-.tool-local-root .tool-local-surface .panel-header h3,
-.tool-local-root .tool-local-surface .editor-header h2,
-.tool-local-root .tool-local-surface .editor-header h3 {
+.tool-runtime-widget .tool-local-surface .panel-header h2,
+.tool-runtime-widget .tool-local-surface .panel-header h3,
+.tool-runtime-widget .tool-local-surface .editor-header h2,
+.tool-runtime-widget .tool-local-surface .editor-header h3 {
   margin: 0;
   font-size: var(--text-sm);
   line-height: var(--line-tight);
   font-weight: 600;
 }
 
-.tool-local-root .tool-local-surface .panel-header p,
-.tool-local-root .tool-local-surface .editor-header p,
-.tool-local-root .tool-local-surface .editor-hint,
-.tool-local-root .tool-local-surface .field-description {
+.tool-runtime-widget .tool-local-surface .panel-header p,
+.tool-runtime-widget .tool-local-surface .editor-header p,
+.tool-runtime-widget .tool-local-surface .editor-hint,
+.tool-runtime-widget .tool-local-surface .field-description {
   margin: var(--space-xs) 0 0;
   font-size: var(--text-xs);
   color: var(--text-muted);
   line-height: var(--line-base);
 }
 
-.tool-local-root .tool-metrics {
+.tool-runtime-widget .tool-local-metrics {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -476,7 +476,7 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
 }
 
-.tool-local-root .tool-metrics p {
+.tool-runtime-widget .tool-local-metrics p {
   margin: 0;
   display: inline-flex;
   align-items: baseline;
@@ -485,18 +485,18 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
   color: var(--text-muted);
 }
 
-.tool-local-root .tool-metrics p span {
+.tool-runtime-widget .tool-local-metrics p span {
   font-weight: 600;
   color: color-mix(in srgb, var(--text-muted) 92%, var(--text-primary));
 }
 
-.tool-local-root .tool-metrics p strong {
+.tool-runtime-widget .tool-local-metrics p strong {
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.tool-local-root .tool-error {
+.tool-runtime-widget .tool-error {
   margin-top: 0;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-sm);
@@ -530,22 +530,22 @@ GLOBAL TOOL UI NORMALIZATION (EXECUTION)
 }
 
 @media (max-width: 1024px) {
-  .tool-local-root {
+  .tool-runtime-widget {
     padding: var(--space-sm);
     gap: var(--space-sm);
   }
 
-  .tool-local-root .tool-local-surface {
+  .tool-runtime-widget .tool-local-surface {
     min-height: 300px;
   }
 }
 
 @media (max-width: 768px) {
-  .tool-local-root .tool-local-sections {
+  .tool-runtime-widget .tool-local-body {
     grid-template-columns: 1fr;
   }
 
-  .tool-local-root .tool-actions {
+  .tool-runtime-widget .tool-local-actions {
     position: static;
   }
 }

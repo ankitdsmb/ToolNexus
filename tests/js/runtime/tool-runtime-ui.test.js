@@ -160,11 +160,20 @@ describe('tool runtime ui bootstrap', () => {
 
   test('dom elements exist after template load', async () => {
     const root = document.createElement('div');
+    root.innerHTML = '<section data-tool-input="true"></section>';
     global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-page" data-slug="json-formatter"><div class="tool-layout"><section class="tool-layout__panel"><textarea id="inputEditor"></textarea><button id="formatBtn"></button></section><section class="tool-panel--output"><textarea id="outputField"></textarea></section></div></section>' }));
 
     await loadToolTemplate('json-formatter', root);
 
     expect(root.querySelector('#formatBtn')).not.toBeNull();
+  });
+
+  test('throws clear error when ToolShell input mount is missing', async () => {
+    const root = document.createElement('div');
+    global.fetch = jest.fn(async () => ({ ok: true, text: async () => '<section class="tool-runtime-widget"></section>' }));
+
+    await expect(loadToolTemplate('missing-mount-zone', root))
+      .rejects.toThrow('tool-template-loader: missing [data-tool-input] mount zone.');
   });
 
   test('throws clear error when template missing', async () => {
@@ -226,6 +235,7 @@ describe('tool runtime ui bootstrap', () => {
 
   test('generic loading template is upgraded to platform contract scaffold', async () => {
     const root = document.createElement('div');
+    root.innerHTML = '<section data-tool-input="true"></section>';
     global.fetch = jest.fn(async () => ({
       ok: true,
       text: async () => '<section class="tool-generic-template" data-tool-slug="alpha"><div class="tool-generic-template__body">Loading alpha-generic...</div></section>'
@@ -254,13 +264,13 @@ describe('tool runtime ui bootstrap', () => {
     global.fetch = jest.fn(async () => ({
       ok: true,
       text: async () => `
-        <div class="tool-runtime-local demo-runtime">
-          <section class="tool-actions"><button id="runBtn" type="button">Run</button></section>
-          <section class="tool-local-sections">
+        <div class="tool-runtime-widget demo-runtime">
+          <section class="tool-local-actions"><button id="runBtn" type="button">Run</button></section>
+          <section class="tool-local-body">
             <section class="tool-local-surface"><textarea id="inputEditor"></textarea></section>
             <section class="tool-local-surface"><textarea id="outputEditor"></textarea></section>
           </section>
-          <section class="tool-metrics" id="metricsPanel">metrics</section>
+          <section class="tool-local-metrics" id="metricsPanel">metrics</section>
         </div>
       `
     }));
@@ -279,6 +289,7 @@ describe('tool runtime ui bootstrap', () => {
 
   test('throws hard error when generic template contract is missing required panel', async () => {
     const root = document.createElement('div');
+    root.innerHTML = '<section data-tool-input="true"></section>';
     global.fetch = jest.fn(async () => ({
       ok: true,
       text: async () => '<section class="tool-page" data-template-contract="generic"><div></div></section>'
