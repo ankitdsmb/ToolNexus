@@ -78,4 +78,27 @@ describe('auto professional design', () => {
     const articleRail = document.querySelector('.tool-seo');
     expect(articleRail?.classList.contains('tool-article-prose')).toBe(true);
   });
+
+  test('shows keyboard shortcut hint and collapses advanced secondary actions', () => {
+    document.body.innerHTML = '<footer data-actions></footer>';
+    const host = document.querySelector('[data-actions]');
+    const run = document.createElement('button');
+    run.className = 'tool-btn tool-btn--primary';
+    run.textContent = 'Run Tool';
+
+    const engine = createToolPresentationEngine({ doc: document });
+    engine.renderActionHierarchy({
+      actionsHost: host,
+      runButton: run,
+      secondaryNodes: [
+        Object.assign(document.createElement('button'), { textContent: 'Copy' }),
+        Object.assign(document.createElement('button'), { textContent: 'Export' }),
+        Object.assign(document.createElement('button'), { textContent: 'Compare' })
+      ]
+    });
+
+    expect(host.querySelector('.tn-unified-tool-control__shortcut')).not.toBeNull();
+    expect(host.querySelector('.tn-unified-tool-control__actions-advanced')).not.toBeNull();
+  });
+
 });

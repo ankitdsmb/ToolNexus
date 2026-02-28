@@ -54,18 +54,18 @@
            Canonical anchor contract must remain stable for runtime guards and telemetry. *@
         <section id="tool-root" class="tool-shell-page__runtime" data-tool-shell="true" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime">
             <header data-tool-context="true" data-tool-header="true" class="tn-tool-header" aria-label="Tool execution context">
-                <span class="tool-context-pill tool-context-pill--authority"><span class="tn-skeleton-chip"></span>Authority: UnifiedAuthoritative</span>
-                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Runtime .NET Core</span>
-                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Policy: Conformance v1</span>
+                <span class="tool-context-pill tool-context-pill--authority"><span class="tn-skeleton-chip"></span>Authority: Unified Runtime</span>
+                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Runtime: Auto Resolve</span>
+                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Policy: Conformance Guarded</span>
                 <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Lifecycle: Ready</span>
             </header>
             <div data-tool-status="true" data-runtime-status-primary="true" class="tool-execution-status runtime-metrics-row tn-runtime-skeleton" role="status" aria-live="polite">
                 <span class="tn-skeleton-chip"></span>
-                <span>Initializing runtime context…</span>
+                <span>Ready · Initializing execution intelligence…</span>
             </div>
-            <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel tn-toolbar-skeleton" aria-label="Follow-up actions">
-                <button type="button" disabled><span class="tn-skeleton-chip"></span>Preparing runtime</button>
-                <button type="button" disabled class="tool-btn tool-btn--ghost"><span class="tn-skeleton-chip"></span>Loading actions</button>
+            <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel tn-toolbar-skeleton" data-command-dock="true" aria-label="Follow-up actions">
+                <button type="button" disabled><span class="tn-skeleton-chip"></span>Run command</button>
+                <button type="button" disabled class="tool-btn tool-btn--ghost"><span class="tn-skeleton-chip"></span>Command dock loading</button>
             </footer>
             @* ToolShell framing only: no shell-defined editor/result grid ownership.
                Template/lifecycle runtime mounts directly into this full-width host. *@

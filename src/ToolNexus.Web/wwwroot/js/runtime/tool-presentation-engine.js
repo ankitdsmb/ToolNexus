@@ -95,27 +95,52 @@ export function createToolPresentationEngine({ doc = document } = {}) {
     const secondaryActions = doc.createElement('div');
     secondaryActions.className = 'tn-unified-tool-control__actions-secondary';
 
+    const compactShortcut = doc.createElement('span');
+    compactShortcut.className = 'tn-unified-tool-control__shortcut';
+    compactShortcut.innerHTML = '<kbd>Ctrl</kbd> + <kbd>Enter</kbd>';
+
     const hintNode = executionHint ?? doc.createElement('span');
     if (!executionHint) {
       hintNode.textContent = 'Primary execution action';
     }
     ensureClass(hintNode, ['tn-unified-tool-control__execution-hint']);
 
-    primaryActions.replaceChildren(runButton, hintNode);
+    primaryActions.replaceChildren(runButton, hintNode, compactShortcut);
 
-    const secondaryItems = Array.isArray(secondaryNodes)
-      ? secondaryNodes.filter(Boolean).slice(0, 2)
-      : [];
+    const preExistingSecondary = Array.from(actionsHost.children)
+      .filter((node) => node !== runButton && !node.classList?.contains('tn-unified-tool-control__actions-primary') && !node.classList?.contains('tn-unified-tool-control__actions-secondary'));
 
-    if (secondaryItems.length) {
-      secondaryActions.replaceChildren(...secondaryItems);
+    const secondaryItems = [
+      ...preExistingSecondary,
+      ...(Array.isArray(secondaryNodes) ? secondaryNodes.filter(Boolean) : [])
+    ];
+
+    const visibleSecondary = secondaryItems.slice(0, 2);
+    const advancedSecondary = secondaryItems.slice(2);
+
+    if (visibleSecondary.length) {
+      secondaryActions.replaceChildren(...visibleSecondary);
+    }
+
+    let advancedDetails = null;
+    if (advancedSecondary.length) {
+      advancedDetails = doc.createElement('details');
+      advancedDetails.className = 'tn-unified-tool-control__actions-advanced';
+      const summary = doc.createElement('summary');
+      summary.textContent = `More actions (${advancedSecondary.length})`;
+      const advancedBody = doc.createElement('div');
+      advancedBody.className = 'tn-unified-tool-control__actions-advanced-body';
+      advancedBody.replaceChildren(...advancedSecondary);
+      advancedDetails.append(summary, advancedBody);
+      secondaryActions.append(advancedDetails);
     }
 
     actionsHost.replaceChildren(primaryActions, secondaryActions);
 
     return {
       primaryActions,
-      secondaryActions
+      secondaryActions,
+      advancedDetails
     };
   }
 

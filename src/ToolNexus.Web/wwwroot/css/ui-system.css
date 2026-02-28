@@ -213,6 +213,24 @@ ENTERPRISE UI SYSTEM
   border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
 }
 
+:where(.tn-unified-tool-control__shortcut) {
+  font-size: var(--type-micro);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:where(.tn-unified-tool-control__shortcut kbd) {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+}
+
 :where(.tn-unified-tool-control__run) {
   min-height: calc(var(--control-md) + 8px);
   padding-inline: var(--space-sm);
@@ -570,6 +588,29 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   padding: var(--tn-exec-space-2, var(--space-2));
 }
 
+:where(.tool-shell-page__runtime > [data-tool-status="true"]) {
+  min-height: 34px;
+  padding: 6px var(--space-2);
+  border-style: dashed;
+}
+
+:where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: color-mix(in srgb, var(--bg-secondary) 95%, transparent);
+}
+
+:where(.tool-shell-page__runtime > [data-tool-followup="true"].is-compact) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+:where(.tool-shell-page__runtime > [data-tool-followup="true"] button) {
+  min-height: 30px;
+}
+
 :where(.tool-identity-header__content h1) {
   font-size: clamp(1.85rem, 2.5vw, 2.5rem);
   line-height: var(--line-tight);
@@ -651,6 +692,34 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tn-unified-tool-control__actions-secondary) {
   margin-left: auto;
+}
+
+:where(.tn-unified-tool-control__actions-advanced) {
+  display: inline-grid;
+}
+
+:where(.tn-unified-tool-control__actions-advanced > summary) {
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--type-micro);
+  color: var(--text-muted);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  transition: border-color 150ms ease-out, color 150ms ease-out, background-color 150ms ease-out;
+}
+
+:where(.tn-unified-tool-control__actions-advanced[open] > summary) {
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--color-border));
+  background: color-mix(in srgb, var(--accent-soft) 36%, transparent);
+}
+
+:where(.tn-unified-tool-control__actions-advanced-body) {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 :where(.tn-unified-tool-control__run) {
@@ -858,10 +927,11 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 /* Premium execution polish phase */
 :where(.tool-shell-page__runtime) {
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-2);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 22%, transparent), transparent 28%);
 }
 
 :where(.tool-context-pill, .tn-unified-tool-control__capsule) {
@@ -872,7 +942,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run, .tool-btn, .tn-unified-tool-control__status, .tn-unified-tool-control__output, .runtime-doc-disclosure, .tool-auto-runtime__field input, .tool-auto-runtime__field textarea) {
-  transition: background-color 150ms ease-out, border-color 150ms ease-out, box-shadow 160ms ease-out, color 140ms ease-out, opacity 140ms ease-out;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, box-shadow 160ms ease-out, color 140ms ease-out, opacity 140ms ease-out, transform 150ms ease-out;
 }
 
 :where(.tn-unified-tool-control__run) {
@@ -882,12 +952,22 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run:hover:not(:disabled)) {
+  transform: translateY(-1px);
   box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+:where(.tool-btn:active:not(:disabled), .tn-unified-tool-control__run:active:not(:disabled)) {
+  transform: translateY(0);
 }
 
 :where(.tn-unified-tool-control__actions-secondary .tool-btn) {
   border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
   background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
+}
+
+:where(.tool-btn.is-acknowledged) {
+  border-color: color-mix(in srgb, var(--success) 40%, var(--color-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 25%, transparent);
 }
 
 :where(.tn-unified-tool-control__suggestion-badge) {
@@ -912,6 +992,12 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where([data-tool-content-host="true"]) {
   border-top: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
   padding-top: var(--space-1);
+}
+
+:where([data-tool-content-host="true"] > [data-tool-runtime="true"] .tool-local-body,
+  [data-tool-content-host="true"] > [data-tool-runtime="true"] .tn-tool-body,
+  [data-tool-content-host="true"] > [data-tool-runtime="true"] .tool-layout) {
+  gap: var(--exec-gap-normal);
 }
 
 :where(.tn-editor-skeleton) {
