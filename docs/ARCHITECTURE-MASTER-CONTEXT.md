@@ -7,6 +7,8 @@ This document defines immutable platform rules, architecture identity, UX DNA, a
 
 Any implementation MUST align with this file.
 
+Related permanent lock artifact: `docs/PLATFORM-EVOLUTION-FREEZE.md`.
+
 ---
 
 # 1. PLATFORM IDENTITY

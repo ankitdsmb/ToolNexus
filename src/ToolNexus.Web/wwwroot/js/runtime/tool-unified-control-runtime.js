@@ -1,3 +1,6 @@
+// ARCHITECTURE LOCKED
+// DO NOT MODIFY WITHOUT COUNCIL APPROVAL
+
 const INLINE_PREVIEW_LIMIT = 480;
 const OUTCOME_CLASSES = Object.freeze({
   usableSuccess: 'usable_success',
