@@ -73,15 +73,25 @@
     <section class="tool-layout__panel tool-panel tool-panel--output tn-tool-panel" aria-labelledby="toolOutputHeading">
       <div class="panel-header">
         <h2 id="toolOutputHeading">Output</h2>
-        <p id="resultStatus" class="result-indicator result-indicator--idle" role="status" aria-live="polite">Ready</p>
       </div>
+
+      <div id="runtimeStatusBand" class="tool-runtime-status-band" role="status" aria-live="polite">
+        <p id="resultStatus" class="result-indicator result-indicator--idle">Ready</p>
+        <span id="detectedFormatBadge" class="tool-intel-badge" hidden>Detected: Plain text</span>
+        <span id="confidenceBadge" class="tool-intel-badge tool-intel-badge--confidence" hidden>Confidence: Ready</span>
+        <div id="suggestionChips" class="tool-suggestion-chips" aria-label="Suggested actions"></div>
+      </div>
+
+      <div id="contextHints" class="tool-context-hints" aria-live="polite"></div>
 
       <div id="errorMessage" class="tool-error" role="alert" aria-live="assertive" hidden></div>
 
       <div id="outputEmptyState" class="tool-empty-state" role="status" aria-live="polite">
         <span class="tool-empty-state__icon" aria-hidden="true">✦</span>
-        <strong>No output yet.</strong>
-        <span>Run the selected action to render output in this panel.</span>
+        <strong id="emptyStateTitle">No output yet.</strong>
+        <span id="emptyStateHint">Run the selected action to render output in this panel.</span>
+        <span id="emptyStateExample" class="shortcut-hint" hidden>Example: {"name":"ToolNexus","mode":"execute"}</span>
+        <button id="quickRunBtn" class="tool-btn tool-btn--outline" type="button" hidden>Use example + Run</button>
         <span class="shortcut-hint">Tip: use Ctrl/Cmd + Enter for quick run.</span>
       </div>
 
