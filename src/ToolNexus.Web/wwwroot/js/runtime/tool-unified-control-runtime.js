@@ -306,6 +306,104 @@ function resolveNextAction({ outcomeClass, repeatedWarning }) {
   return 'Next recommended action: Proceed with follow-up actions; optional rerun for comparative validation.';
 }
 
+function normalizeReasonSignal(reason) {
+  return String(reason ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function buildReasonSignature(reasons = []) {
+  const normalizedReasons = (Array.isArray(reasons) ? reasons : [])
+    .map(normalizeReasonSignal)
+    .filter(Boolean)
+    .slice(0, 3);
+
+  return normalizedReasons.join('|');
+}
+
+function resolveGuidanceType(outcomeClass) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return 'warning';
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return 'uncertain';
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.failed) {
+    return 'recovery';
+  }
+
+  return 'progress';
+}
+
+export function createRuntimeObservationState() {
+  return {
+    repeatedOutcomeCount: 0,
+    repeatedReasonPatterns: [],
+    lastGuidanceType: null,
+    _lastOutcomeClass: null,
+    _lastReasonSignature: ''
+  };
+}
+
+export function observeRuntimeReasoning(observation, runtimeReasoning) {
+  const state = observation && typeof observation === 'object'
+    ? observation
+    : createRuntimeObservationState();
+  const reasoning = runtimeReasoning ?? {};
+  const outcomeClass = reasoning?.outcomeClass ?? OUTCOME_CLASSES.uncertainResult;
+  const reasonSignature = buildReasonSignature(reasoning?.reasons);
+  const guidanceType = resolveGuidanceType(outcomeClass);
+
+  state.repeatedOutcomeCount = state._lastOutcomeClass === outcomeClass
+    ? state.repeatedOutcomeCount + 1
+    : 1;
+  state.lastGuidanceType = guidanceType;
+
+  const repeatedReasonPattern = state._lastReasonSignature && reasonSignature && state._lastReasonSignature === reasonSignature;
+  if (repeatedReasonPattern) {
+    const existingPattern = state.repeatedReasonPatterns.find((entry) => entry?.pattern === reasonSignature);
+    if (existingPattern) {
+      existingPattern.count += 1;
+    } else {
+      state.repeatedReasonPatterns.push({ pattern: reasonSignature, count: 2 });
+    }
+
+    if (state.repeatedReasonPatterns.length > 5) {
+      state.repeatedReasonPatterns = state.repeatedReasonPatterns.slice(-5);
+    }
+  }
+
+  state._lastOutcomeClass = outcomeClass;
+  state._lastReasonSignature = reasonSignature;
+
+  const hasRepeatedWarningSequence = outcomeClass === OUTCOME_CLASSES.warningPartial && state.repeatedOutcomeCount > 1;
+  return {
+    repeatedOutcomeClass: state.repeatedOutcomeCount > 1,
+    repeatedReasonSignals: repeatedReasonPattern,
+    repeatedWarningSequence: hasRepeatedWarningSequence
+  };
+}
+
+export function buildObservationTonePrefix(patterns = {}) {
+  if (patterns.repeatedWarningSequence) {
+    return 'Similar warnings detected in recent runs.';
+  }
+
+  if (patterns.repeatedReasonSignals) {
+    return 'Reasoning signals are recurring across recent runs.';
+  }
+
+  if (patterns.repeatedOutcomeClass) {
+    return 'Recent runs show a similar outcome trend.';
+  }
+
+  return '';
+}
+
 export function buildAdaptiveGuidance({ outcomeClass, repeatedWarning }) {
   const reasoning = buildRuntimeReasoning({
     outcomeClass,

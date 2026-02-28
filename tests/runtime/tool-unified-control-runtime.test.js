@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildRuntimeReasoning, createUnifiedToolControl, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
 
 function createContractHost() {
   const host = document.createElement('div');
@@ -110,6 +110,44 @@ describe('tool unified control runtime', () => {
     expect(reasoning.confidenceLevel).toBe('cautious');
     expect(reasoning.reasons).toContain('warnings detected in runtime evidence');
     expect(reasoning.guidance[0]).toContain('Because warnings detected in runtime evidence');
+  });
+
+
+  test('runtime observation state tracks repeated outcomes and reason patterns', () => {
+    const observation = createRuntimeObservationState();
+
+    const first = observeRuntimeReasoning(observation, {
+      outcomeClass: 'warning_partial',
+      reasons: ['warnings detected in runtime evidence']
+    });
+
+    const second = observeRuntimeReasoning(observation, {
+      outcomeClass: 'warning_partial',
+      reasons: ['warnings detected in runtime evidence']
+    });
+
+    expect(first.repeatedOutcomeClass).toBe(false);
+    expect(second.repeatedOutcomeClass).toBe(true);
+    expect(second.repeatedReasonSignals).toBe(true);
+    expect(second.repeatedWarningSequence).toBe(true);
+    expect(observation.repeatedOutcomeCount).toBe(2);
+    expect(observation.repeatedReasonPatterns.length).toBe(1);
+    expect(observation.lastGuidanceType).toBe('warning');
+  });
+
+  test('observation tone prefix adapts wording without altering reasoning model', () => {
+    expect(buildObservationTonePrefix({ repeatedWarningSequence: true })).toBe('Similar warnings detected in recent runs.');
+    expect(buildObservationTonePrefix({ repeatedReasonSignals: true })).toBe('Reasoning signals are recurring across recent runs.');
+    expect(buildObservationTonePrefix({ repeatedOutcomeClass: true })).toBe('Recent runs show a similar outcome trend.');
+    expect(buildObservationTonePrefix({})).toBe('');
+
+    const reasoning = buildRuntimeReasoning({
+      outcomeClass: 'warning_partial',
+      explanationReasons: ['warnings detected in runtime evidence']
+    });
+
+    expect(reasoning.outcomeClass).toBe('warning_partial');
+    expect(reasoning.confidenceLevel).toBe('cautious');
   });
 
   test('adapter helper can consume runtime context object', () => {

@@ -1,4 +1,4 @@
-import { buildAdaptiveGuidance, buildRuntimeReasoning, createUnifiedToolControl } from './tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning } from './tool-unified-control-runtime.js';
 import { createToolContextAnalyzer } from './tool-context-analyzer.js';
 
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
@@ -459,10 +459,7 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
 
       const runButton = unifiedControl.runButton;
 
-      let executionMemory = {
-        lastOutcomeClass: null,
-        repeatedWarnings: 0
-      };
+      const runtimeObservation = createRuntimeObservationState();
 
       const run = async () => {
         unifiedControl.clearErrors();
@@ -523,35 +520,27 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
           unifiedControl.setIntent('AI intent: Assemble output evidence and interpretation for your request.');
           unifiedControl.setGuidance('Guidance: Review interpretation summary and confidence before follow-up actions.');
           const runtimeWarningCount = ignoredFields.length;
-          const repeatedWarning = executionMemory.lastOutcomeClass === 'warning_partial' && runtimeWarningCount > 0;
           const enforcedOutcomeClass = runtimeWarningCount > 0 ? 'warning_partial' : undefined;
           const runtimeReasons = runtimeWarningCount > 0
             ? ['client-owned execution fields were ignored at execution boundary']
             : [];
+          const repeatedWarningHint = runtimeObservation._lastOutcomeClass === 'warning_partial'
+            && enforcedOutcomeClass === 'warning_partial';
           const hierarchy = unifiedControl.renderResult(result, {
-            repeatedWarning,
+            repeatedWarning: repeatedWarningHint,
             forcedOutcomeClass: enforcedOutcomeClass,
             additionalReasons: runtimeReasons
           });
           const runtimeReasoning = hierarchy?.runtimeReasoning ?? buildRuntimeReasoning({
             outcomeClass: enforcedOutcomeClass ?? hierarchy?.outcomeClass ?? 'uncertain_result',
-            repeatedWarning,
+            repeatedWarning: repeatedWarningHint,
             additionalReasons: runtimeReasons
           });
+          const observationPatterns = observeRuntimeReasoning(runtimeObservation, runtimeReasoning);
           const outcomeClass = runtimeReasoning.outcomeClass;
-
-          if (outcomeClass === 'warning_partial') {
-            executionMemory.repeatedWarnings = executionMemory.lastOutcomeClass === 'warning_partial'
-              ? executionMemory.repeatedWarnings + 1
-              : 1;
-          } else {
-            executionMemory.repeatedWarnings = 0;
-          }
-
-          executionMemory.lastOutcomeClass = outcomeClass;
           const adaptive = buildAdaptiveGuidance({
             outcomeClass,
-            repeatedWarning: executionMemory.repeatedWarnings > 1
+            repeatedWarning: observationPatterns.repeatedWarningSequence
           });
 
           if (outcomeClass === 'warning_partial') {
@@ -562,10 +551,15 @@ export function createAutoToolRuntimeModule({ manifest, slug }) {
             unifiedControl.setStatus('success');
           }
 
+          const tonePrefix = buildObservationTonePrefix(observationPatterns);
+          const guidanceLine = `${runtimeReasoning.guidance.join(' ')}`;
           unifiedControl.setIntent(adaptive.intent);
-          unifiedControl.setGuidance(`Guidance: ${runtimeReasoning.guidance.join(' ')}`);
+          unifiedControl.setGuidance(tonePrefix ? `Guidance: ${tonePrefix} ${guidanceLine}` : `Guidance: ${guidanceLine}`);
         } catch (error) {
-          executionMemory.lastOutcomeClass = 'failed';
+          observeRuntimeReasoning(runtimeObservation, {
+            outcomeClass: 'failed',
+            reasons: ['execution error path was triggered']
+          });
           unifiedControl.setStatus('failed');
           unifiedControl.setIntent('AI intent: Report failed execution path with recoverable guidance.');
           const failedReasoning = buildRuntimeReasoning({
