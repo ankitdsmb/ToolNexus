@@ -1,10 +1,10 @@
-<div class="document-converter-runtime">
+<div class="tool-runtime-widget document-converter-runtime">
   <header class="tool-local-header">
     <h2 data-bind="tool.title"></h2>
     <p>Convert DOCX and PDF files securely.</p>
   </header>
 
-  <section class="tool-actions">
+  <section class="tool-local-actions tool-actions">
     <input type="file" id="fileInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
 
     <select id="conversionMode">
@@ -17,15 +17,17 @@
     </button>
   </section>
 
-  <section class="tool-local-surface">
-    <div id="conversionStatus">Waiting for file…</div>
+  <section class="tool-local-body">
+    <section class="tool-local-surface">
+      <div id="conversionStatus">Waiting for file…</div>
+    </section>
+
+    <section class="tool-local-surface">
+      <a id="downloadLink" hidden>Download Result</a>
+    </section>
   </section>
 
-  <section class="tool-local-surface">
-    <a id="downloadLink" hidden>Download Result</a>
-  </section>
-
-  <section class="tool-metrics">
+  <section class="tool-local-metrics tool-metrics">
     <span id="executionTime"></span>
     <span id="fileSize"></span>
   </section>

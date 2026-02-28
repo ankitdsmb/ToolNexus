@@ -1,10 +1,10 @@
-<div class="json-transform-runtime">
+<div class="tool-runtime-widget json-transform-runtime">
   <header class="tool-local-header">
     <h2 data-bind="tool.title"></h2>
     <p>Transform and analyze JSON data.</p>
   </header>
 
-  <section class="tool-actions">
+  <section class="tool-local-actions tool-actions">
     <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
     <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
     <button id="flattenBtn" class="tool-btn" type="button">Flatten</button>
@@ -16,7 +16,7 @@
     </label>
   </section>
 
-  <section class="tool-local-sections">
+  <section class="tool-local-body tool-local-sections">
     <section class="tool-local-surface">
       <h3>Input JSON</h3>
       <textarea id="inputEditor" class="json-editor" spellcheck="false" aria-label="Input JSON"></textarea>
@@ -28,12 +28,14 @@
     </section>
   </section>
 
-  <section class="tool-local-surface">
-    <h3>Execution Diagnostics</h3>
-    <pre id="diagnosticsOutput" class="json-diagnostics"></pre>
+  <section class="tool-local-body">
+    <section class="tool-local-surface">
+      <h3>Execution Diagnostics</h3>
+      <pre id="diagnosticsOutput" class="json-diagnostics"></pre>
+    </section>
   </section>
 
-  <section class="tool-metrics">
+  <section class="tool-local-metrics tool-metrics">
     <p><span>Execution time</span><strong id="metricDuration">0 ms</strong></p>
     <p><span>Input size</span><strong id="metricInputSize">0 chars</strong></p>
     <p><span>Output size</span><strong id="metricOutputSize">0 chars</strong></p>
