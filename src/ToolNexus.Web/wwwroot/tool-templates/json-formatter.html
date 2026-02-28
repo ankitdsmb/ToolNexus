@@ -1,5 +1,5 @@
-<div class="tool-runtime-widget tool-runtime-local json-formatter-runtime json-tool-runtime">
-    <header class="tool-local-header json-formatter-header">
+<div class="tool-runtime-widget">
+    <header class="tool-local-header">
         <div>
             <h2><span data-bind="tool.title"></span></h2>
             <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
@@ -7,7 +7,7 @@
         <span class="json-processing-badge">Client-side processing</span>
     </header>
 
-    <section class="tool-local-actions tool-actions json-toolbar" role="toolbar" aria-label="JSON formatter actions">
+    <section class="tool-local-actions" role="toolbar" aria-label="JSON formatter actions">
         <div class="json-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
             <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
@@ -29,7 +29,7 @@
         </div>
     </section>
 
-    <section class="tool-local-body tool-local-sections json-workspace">
+    <section class="tool-local-body">
         <section class="tool-local-surface json-panel">
             <div class="panel-header">
                 <h2>Input JSON</h2>
@@ -47,7 +47,7 @@
         </section>
     </section>
 
-    <section class="tool-local-metrics tool-metrics json-metrics" aria-live="polite">
+    <section class="tool-local-metrics" aria-live="polite">
         <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
         <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>
