@@ -296,9 +296,74 @@ export function createToolRuntime({
       return { ready: false, repaired: false };
     }
 
+    const shell = root.matches?.('[data-tool-shell]') ? root : root.querySelector?.('[data-tool-shell]');
+    if (!shell) {
+      return { ready: false, repaired: false };
+    }
+
+    let repaired = false;
+
+    const ensureAnchor = (selector, factory) => {
+      const existing = shell.querySelector(selector);
+      if (existing) {
+        return existing;
+      }
+
+      const node = factory();
+      repaired = true;
+      return node;
+    };
+
+    ensureAnchor('[data-tool-context]', () => {
+      const context = document.createElement('header');
+      context.dataset.toolContext = 'true';
+      context.className = 'tn-tool-header';
+      context.setAttribute('aria-label', 'Tool execution context');
+      shell.prepend(context);
+      return context;
+    });
+
+    ensureAnchor('[data-tool-input]', () => {
+      const input = document.createElement('section');
+      input.dataset.toolInput = 'true';
+      input.className = 'tn-tool-panel runtime-input-panel';
+      input.setAttribute('aria-label', 'Tool input panel');
+      shell.append(input);
+      return input;
+    });
+
+    ensureAnchor('[data-tool-output]', () => {
+      const output = document.createElement('section');
+      output.dataset.toolOutput = 'true';
+      output.className = 'tn-tool-panel runtime-execution-panel';
+      output.setAttribute('aria-label', 'Tool output workspace');
+      shell.append(output);
+      return output;
+    });
+
+    ensureAnchor('[data-tool-status]', () => {
+      const output = shell.querySelector('[data-tool-output]') ?? shell;
+      const status = document.createElement('div');
+      status.dataset.toolStatus = 'true';
+      status.className = 'tool-execution-status runtime-metrics-row';
+      status.textContent = 'Idle · Ready for request';
+      output.append(status);
+      return status;
+    });
+
+    ensureAnchor('[data-tool-followup]', () => {
+      const followup = document.createElement('footer');
+      followup.dataset.toolFollowup = 'true';
+      followup.dataset.toolActions = 'true';
+      followup.className = 'tool-execution-panel';
+      followup.setAttribute('aria-label', 'Follow-up actions');
+      shell.append(followup);
+      return followup;
+    });
+
     return {
       ready: hasToolShellContract(root),
-      repaired: false
+      repaired
     };
   }
 

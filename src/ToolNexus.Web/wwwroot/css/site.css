@@ -1779,7 +1779,7 @@ RESPONSIVE
 
 .tool-shell-page__runtime > [data-tool-context="true"] { grid-area: context; }
 .tool-shell-page__runtime > [data-tool-input="true"] { grid-area: input; align-self: start; }
-.tool-shell-page__runtime > .tn-tool-panel[aria-label="Tool output workspace"] { grid-area: output; align-self: start; }
+.tool-shell-page__runtime > [data-tool-output="true"] { grid-area: output; align-self: start; }
 .tool-shell-page__runtime > [data-tool-followup="true"] { grid-area: followup; align-self: start; }
 
 .tool-shell-page__runtime:focus-within,

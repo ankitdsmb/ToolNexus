@@ -395,9 +395,22 @@ function renderTierError(root, tier, uiMode) {
   }
 
   const panel = document.createElement('section');
-  panel.className = 'tool-auto-runtime tool-auto-runtime--error tn-tool-shell';
+  panel.className = 'tool-auto-runtime tool-auto-runtime--error';
   panel.append(createExecutionError(document, `Tool UI configuration error: complexity tier ${tier} requires custom UI, but uiMode is "${uiMode}".`));
-  toolRoot.replaceChildren(panel);
+
+  const outputZone = toolRoot.querySelector('[data-tool-output]');
+  const statusZone = toolRoot.querySelector('[data-tool-status]');
+
+  if (statusZone) {
+    statusZone.textContent = 'Runtime configuration error';
+  }
+
+  if (outputZone) {
+    outputZone.replaceChildren(panel);
+    return;
+  }
+
+  toolRoot.append(panel);
 }
 
 export function createAutoToolRuntimeModule({ manifest, slug }) {

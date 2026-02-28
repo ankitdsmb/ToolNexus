@@ -273,7 +273,8 @@ describe('tool runtime ui bootstrap', () => {
     expect(handoffZone.querySelector('#inputEditor')).not.toBeNull();
     expect(handoffZone.querySelector('#outputEditor')).not.toBeNull();
     expect(handoffZone.querySelector('#metricsPanel')).not.toBeNull();
-    expect(root.querySelector('[data-tool-input] #inputEditor')).toBeNull();
+    expect(root.querySelector('[data-tool-input] #inputEditor')).not.toBeNull();
+    expect(root.querySelector('[data-tool-output] #outputEditor')).toBeNull();
   });
 
   test('throws hard error when generic template contract is missing required panel', async () => {
@@ -377,7 +378,7 @@ describe('tool runtime ui bootstrap', () => {
     await runtime.bootstrapToolRuntime();
 
     expect(lifecycleAdapter).not.toHaveBeenCalled();
-    expect(document.querySelector('.tool-contract-error')).toBeNull();
+    expect(document.querySelector('.tool-contract-error')).not.toBeNull();
   });
 
 });
