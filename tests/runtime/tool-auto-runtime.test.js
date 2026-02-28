@@ -241,6 +241,7 @@ describe('tool auto runtime', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(host.querySelector('[data-ai-layer="next-action"]').textContent).toContain('Warning repeated across runs');
+    expect(host.textContent).toContain('Similar warnings detected in recent runs.');
     expect(host.textContent).toContain('fix the recurring warning source before rerun.');
   });
 
