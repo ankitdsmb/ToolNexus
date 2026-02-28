@@ -146,7 +146,7 @@ ENTERPRISE UI SYSTEM
   border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
 }
 
-:where(.tn-unified-tool-control__input) {
+:where(.tn-unified-tool-control__input, .tn-unified-tool-control__input-card) {
   display: grid;
   gap: var(--runtime-density-gap);
   padding: var(--runtime-density-padding);
@@ -493,8 +493,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--runtime-card-gap);
   padding: var(--runtime-surface-padding);
-  border-color: color-mix(in srgb, var(--accent) 12%, var(--color-border));
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: var(--runtime-identity-border);
+  box-shadow: var(--runtime-identity-shadow);
 }
 
 :where(.tool-identity-header__content h1) {
@@ -512,15 +512,22 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   line-height: var(--line-relaxed);
 }
 
+:where(.tn-unified-tool-control__meta) {
+  margin: 0;
+  font-size: var(--type-micro);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
 :where(.tool-shell-page__hero-meta .chip) {
   border-color: color-mix(in srgb, var(--accent) 18%, var(--color-border));
   background: color-mix(in srgb, var(--bg-secondary) 92%, var(--accent-soft));
 }
 
-:where(.tn-unified-tool-control__input) {
+:where(.tn-unified-tool-control__input, .tn-unified-tool-control__input-card) {
   padding: var(--runtime-surface-padding);
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--color-border));
-  box-shadow: 0 8px 20px color-mix(in srgb, black 10%, transparent);
+  border: 1px solid var(--runtime-input-border);
+  box-shadow: var(--runtime-input-shadow);
   gap: var(--runtime-card-gap);
 }
 
@@ -549,8 +556,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tn-unified-tool-control__output) {
   padding: var(--runtime-surface-padding);
-  border-color: color-mix(in srgb, var(--success) 18%, var(--color-border));
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--success) 8%, transparent);
+  border-color: var(--runtime-output-border);
+  box-shadow: var(--runtime-output-shadow);
 }
 
 :where(.tn-unified-tool-control__output-block) {

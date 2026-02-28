@@ -58,6 +58,12 @@ TOKENS
   --runtime-input-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
   --runtime-output-surface: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg-primary));
   --runtime-status-surface: color-mix(in srgb, var(--accent-soft) 28%, var(--bg-secondary));
+  --runtime-identity-border: color-mix(in srgb, var(--accent) 12%, var(--color-border));
+  --runtime-input-border: color-mix(in srgb, var(--accent) 20%, var(--color-border));
+  --runtime-output-border: color-mix(in srgb, var(--success) 18%, var(--color-border));
+  --runtime-identity-shadow: var(--shadow-md);
+  --runtime-input-shadow: var(--shadow-sm);
+  --runtime-output-shadow: var(--shadow-sm);
 
   --radius-sm: 8px;
   --radius-md: 10px;
