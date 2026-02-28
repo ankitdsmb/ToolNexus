@@ -39,6 +39,7 @@ public static class ToolExecutorRegistration
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("json-to-yaml"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("file-merge"));
         services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("text-intelligence-analyzer"));
+        services.AddSingleton<IToolExecutor>(_ => new ManifestMappedToolExecutor("document-converter"));
 
         RegisterGeneratedExecutors(services);
         return services;

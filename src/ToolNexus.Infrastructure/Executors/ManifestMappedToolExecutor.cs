@@ -32,7 +32,8 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
         ["yaml-to-json"] = ["convert"],
         ["json-to-yaml"] = ["convert"],
         ["file-merge"] = ["merge"],
-        ["text-intelligence-analyzer"] = ["analyze"]
+        ["text-intelligence-analyzer"] = ["analyze"],
+        ["document-converter"] = ["convert"]
     };
 
     public override string Slug { get; } = slug;
@@ -87,6 +88,7 @@ public sealed class ManifestMappedToolExecutor(string slug) : ToolExecutorBase
             ("json-to-yaml", "convert") => JsonToYaml(request.Input),
             ("file-merge", "merge") => request.Input,
             ("text-intelligence-analyzer", "analyze") => TextIntelligenceFallback(request.Input),
+            ("document-converter", "convert") => request.Input,
             _ => throw new InvalidOperationException($"Unsupported route: {Slug}/{action}")
         };
 

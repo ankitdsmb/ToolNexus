@@ -1,0 +1,34 @@
+<div class="document-converter-runtime">
+  <header class="tool-local-header">
+    <h2 data-bind="tool.title"></h2>
+    <p>Convert DOCX and PDF files securely.</p>
+  </header>
+
+  <section class="tool-actions">
+    <input type="file" id="fileInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+
+    <select id="conversionMode">
+      <option value="docx-to-pdf">DOCX → PDF</option>
+      <option value="pdf-to-docx">PDF → DOCX</option>
+    </select>
+
+    <button id="convertBtn" class="tool-btn tool-btn--primary" type="button">
+      Convert
+    </button>
+  </section>
+
+  <section class="tool-editor-panel">
+    <div id="conversionStatus">Waiting for file…</div>
+  </section>
+
+  <section class="tool-editor-panel">
+    <a id="downloadLink" hidden>Download Result</a>
+  </section>
+
+  <section class="tool-metrics">
+    <span id="executionTime"></span>
+    <span id="fileSize"></span>
+  </section>
+
+  <section id="errorBox" class="tool-error" hidden></section>
+</div>

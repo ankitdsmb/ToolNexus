@@ -1,0 +1,14 @@
+{
+  "Slug": "document-converter",
+  "ViewName": "ToolShell",
+  "ModulePath": "/js/tools/document-converter.js",
+  "TemplatePath": "/tool-templates/document-converter.html",
+  "Dependencies": [],
+  "CssPath": "/css/pages/document-converter.css",
+  "Styles": [
+    "/css/pages/document-converter.css"
+  ],
+  "Category": "",
+  "UiMode": "auto",
+  "ComplexityTier": 1
+}
