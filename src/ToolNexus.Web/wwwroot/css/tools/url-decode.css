@@ -3,7 +3,7 @@
 .url-decode-tool__description { margin: .5rem 0 0; color: var(--text-muted, #8ea0c9); }
 .url-decode-tool__badge { padding: .375rem .75rem; border-radius: var(--radius-pill, 999px); background: color-mix(in srgb, var(--brand-accent, #5b8cff) 20%, transparent); font-size: .8125rem; }
 .url-decode-tool__workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.url-decode-tool__panel { display: grid; gap: 1rem; padding: 24px; min-height: 560px; }
+.url-decode-tool__panel { display: grid; gap: 1rem; padding: 24px; min-height: 520px; }
 .url-decode-tool__panel-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
 .url-decode-tool__meta { margin: 0; font-size: .8125rem; color: var(--text-muted, #8ea0c9); }
 .url-decode-tool__label { font-weight: 600; }

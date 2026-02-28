@@ -5,11 +5,22 @@
   </h2>
  </header>
  <section class="tool-local-actions">
+  <button id="analyzeButton" type="button">
+   Analyze
+  </button>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
+   <label for="inputEditor">
+    Input text
+   </label>
+   <textarea id="inputEditor" placeholder="Paste text to analyze..." rows="12"></textarea>
   </section>
   <section class="tool-local-surface">
+   <p aria-live="polite" id="analysisStatus" role="status">
+    Ready
+   </p>
+   <pre id="outputViewer">No output yet.</pre>
   </section>
  </section>
  <section class="tool-local-metrics">
@@ -17,4 +28,3 @@
   </section>
  </section>
 </div>
-

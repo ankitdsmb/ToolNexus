@@ -3,7 +3,7 @@
 .html-entities-tool__description { margin: .5rem 0 0; color: var(--text-muted, #8ea0c9); }
 .html-entities-badge { padding: .375rem .75rem; border-radius: var(--radius-pill, 999px); background: color-mix(in srgb, var(--brand-accent, #5b8cff) 20%, transparent); font-size: .8125rem; }
 .html-entities-workspace { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
-.html-entities-panel { padding: 24px; display: grid; gap: 1rem; min-height: 560px; }
+.html-entities-panel { padding: 24px; display: grid; gap: 1rem; min-height: 520px; }
 .html-entities-panel__header { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; }
 .html-entities-meta { margin:0; font-size:.8125rem; color: var(--text-muted,#8ea0c9); }
 .html-entities-mode, .html-entities-actions { display:flex; flex-wrap:wrap; gap:.625rem; }
