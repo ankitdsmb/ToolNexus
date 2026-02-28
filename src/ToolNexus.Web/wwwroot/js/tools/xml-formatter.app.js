@@ -246,6 +246,10 @@ class XmlFormatterApp {
   }
 
   destroy() {
+    if (!this.dom) {
+      return;
+    }
+
     this.disposeKeyboardHandler?.();
     this.disposeKeyboardHandler = null;
 
