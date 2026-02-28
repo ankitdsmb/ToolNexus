@@ -344,9 +344,19 @@ export function createRuntimeObservationState() {
     repeatedOutcomeCount: 0,
     repeatedReasonPatterns: [],
     lastGuidanceType: null,
+    repeatedGuidanceLoopCount: 0,
+    repeatedUnstableSignals: 0,
     _reasonOutcomeClassMap: {},
     _lastOutcomeClass: null,
     _lastReasonSignature: ''
+  };
+}
+
+export function createRuntimeOptimizationInsight() {
+  return {
+    repeatedPatternDetected: false,
+    optimizationHint: '',
+    confidence: 'low'
   };
 }
 
@@ -393,6 +403,9 @@ export function observeRuntimeReasoning(observation, runtimeReasoning) {
   state.repeatedOutcomeCount = state._lastOutcomeClass === outcomeClass
     ? state.repeatedOutcomeCount + 1
     : 1;
+  state.repeatedGuidanceLoopCount = state.lastGuidanceType === guidanceType
+    ? state.repeatedGuidanceLoopCount + 1
+    : 1;
   state.lastGuidanceType = guidanceType;
 
   const repeatedReasonPattern = state._lastReasonSignature && reasonSignature && state._lastReasonSignature === reasonSignature;
@@ -416,8 +429,76 @@ export function observeRuntimeReasoning(observation, runtimeReasoning) {
   return {
     repeatedOutcomeClass: state.repeatedOutcomeCount > 1,
     repeatedReasonSignals: repeatedReasonPattern,
-    repeatedWarningSequence: hasRepeatedWarningSequence
+    repeatedWarningSequence: hasRepeatedWarningSequence,
+    repeatedGuidanceLoop: state.repeatedGuidanceLoopCount > 1
   };
+}
+
+export function observeRuntimeStabilitySignals(observation, stability = {}) {
+  const state = observation && typeof observation === 'object'
+    ? observation
+    : createRuntimeObservationState();
+
+  if (stability.instabilityDetected) {
+    state.repeatedUnstableSignals += 1;
+  } else {
+    state.repeatedUnstableSignals = 0;
+  }
+
+  return {
+    repeatedUnstableSignals: state.repeatedUnstableSignals,
+    repeatedInstabilityDetected: state.repeatedUnstableSignals > 1
+  };
+}
+
+export function generateRuntimeOptimizationInsight({ runtimeReasoning, observationPatterns = {}, stabilitySignals = {}, observation } = {}) {
+  const base = createRuntimeOptimizationInsight();
+  const outcomeClass = runtimeReasoning?.outcomeClass;
+  const hasRepeatedPattern = Boolean(
+    observationPatterns.repeatedWarningSequence
+    || observationPatterns.repeatedReasonSignals
+    || observationPatterns.repeatedOutcomeClass
+    || observationPatterns.repeatedGuidanceLoop
+    || stabilitySignals.repeatedInstabilityDetected
+  );
+
+  if (!hasRepeatedPattern) {
+    return base;
+  }
+
+  if (observationPatterns.repeatedWarningSequence) {
+    return {
+      repeatedPatternDetected: true,
+      optimizationHint: 'refine input constraints to reduce recurring warnings before rerun.',
+      confidence: 'high'
+    };
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult && observationPatterns.repeatedOutcomeClass) {
+    return {
+      repeatedPatternDetected: true,
+      optimizationHint: 'include richer metadata/context so runtime interpretation has stronger evidence.',
+      confidence: observationPatterns.repeatedReasonSignals ? 'high' : 'medium'
+    };
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.failed || stabilitySignals.repeatedInstabilityDetected) {
+    return {
+      repeatedPatternDetected: true,
+      optimizationHint: 'add validation checks before execution to prevent repeated failure or instability loops.',
+      confidence: 'medium'
+    };
+  }
+
+  if (observation?.repeatedGuidanceLoopCount > 1) {
+    return {
+      repeatedPatternDetected: true,
+      optimizationHint: 'adjust request details to break repeated guidance loops and improve run diversity.',
+      confidence: 'low'
+    };
+  }
+
+  return base;
 }
 
 export function buildObservationTonePrefix(patterns = {}) {
@@ -738,6 +819,9 @@ export function createUnifiedToolControl({
     setGuidance(message) {
       guidance.textContent = message || 'Guidance: Add inputs and run when ready.';
     },
+    setNextAction(message) {
+      nextAction.textContent = message || 'Next recommended action: Run execution to generate guidance.';
+    },
     setClassificationWhy(message) {
       classificationWhy.textContent = message || 'Why this result is classified this way: Awaiting runtime evidence.';
     },
@@ -771,7 +855,13 @@ export function createUnifiedToolControl({
       suggestionReason.hidden = !reason;
       suggestionReason.textContent = reason ?? '';
     },
-    renderResult(payload, { repeatedWarning = false, forcedOutcomeClass, additionalReasons = [], runtimeObservation } = {}) {
+    renderResult(payload, {
+      repeatedWarning = false,
+      forcedOutcomeClass,
+      additionalReasons = [],
+      runtimeObservation,
+      optimizationInsight
+    } = {}) {
       const hierarchy = splitOutputPayload(payload);
       const serialized = safeStringify(payload);
       const evidenceCompleteness = [Boolean(hierarchy.supporting), Boolean(hierarchy.metadata), Boolean(hierarchy.diagnostics)].filter(Boolean).length;
@@ -795,10 +885,13 @@ export function createUnifiedToolControl({
       supporting.textContent = resolveInterpretationSummary(hierarchy);
       classificationWhy.textContent = resolveClassificationWhyLine(stableReasoning.reasons);
       confidence.textContent = confidencePhrase;
-      nextAction.textContent = resolveNextAction({
+      const nextActionText = resolveNextAction({
         outcomeClass: stableReasoning.outcomeClass,
         repeatedWarning
       });
+      nextAction.textContent = optimizationInsight?.repeatedPatternDetected
+        ? `Optimization insight: ${optimizationInsight.optimizationHint}`
+        : nextActionText;
       metadata.textContent = hierarchy.metadata ? safeStringify(hierarchy.metadata) : 'No metadata returned.';
       diagnostics.textContent = hierarchy.diagnostics ? safeStringify(hierarchy.diagnostics) : 'No diagnostics reported.';
       details.hidden = serialized.length <= INLINE_PREVIEW_LIMIT;

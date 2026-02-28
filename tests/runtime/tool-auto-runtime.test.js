@@ -240,7 +240,8 @@ describe('tool auto runtime', () => {
     runButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(host.querySelector('[data-ai-layer="next-action"]').textContent).toContain('Warning repeated across runs');
+    expect(host.querySelector('[data-ai-layer="next-action"]').textContent).toContain('Optimization insight:');
+    expect(host.querySelector('[data-ai-layer="next-action"]').textContent).toContain('refine input constraints');
     expect(host.textContent).toContain('Similar warnings detected in recent runs.');
     expect(host.textContent).toContain('fix the recurring warning source before rerun.');
   });

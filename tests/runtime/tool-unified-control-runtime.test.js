@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, observeRuntimeReasoning, useUnifiedToolControl, validateRuntimeStability } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, generateRuntimeOptimizationInsight, observeRuntimeReasoning, observeRuntimeStabilitySignals, useUnifiedToolControl, validateRuntimeStability } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
 
 function createContractHost() {
   const host = document.createElement('div');
@@ -133,6 +133,71 @@ describe('tool unified control runtime', () => {
     expect(observation.repeatedOutcomeCount).toBe(2);
     expect(observation.repeatedReasonPatterns.length).toBe(1);
     expect(observation.lastGuidanceType).toBe('warning');
+  });
+
+  test('runtime observation tracks repeated guidance loops for optimization awareness', () => {
+    const observation = createRuntimeObservationState();
+
+    observeRuntimeReasoning(observation, {
+      outcomeClass: 'warning_partial',
+      reasons: ['warnings detected in runtime evidence']
+    });
+    const second = observeRuntimeReasoning(observation, {
+      outcomeClass: 'warning_partial',
+      reasons: ['warnings detected in runtime evidence']
+    });
+
+    expect(second.repeatedGuidanceLoop).toBe(true);
+    expect(observation.repeatedGuidanceLoopCount).toBe(2);
+  });
+
+  test('runtime optimization insight suggests input refinement for repeated warning patterns', () => {
+    const insight = generateRuntimeOptimizationInsight({
+      runtimeReasoning: { outcomeClass: 'warning_partial' },
+      observationPatterns: {
+        repeatedWarningSequence: true,
+        repeatedReasonSignals: true
+      },
+      stabilitySignals: {}
+    });
+
+    expect(insight.repeatedPatternDetected).toBe(true);
+    expect(insight.optimizationHint).toContain('refine input constraints');
+    expect(insight.confidence).toBe('high');
+  });
+
+  test('runtime optimization insight suggests richer context for recurring uncertainty', () => {
+    const insight = generateRuntimeOptimizationInsight({
+      runtimeReasoning: { outcomeClass: 'uncertain_result' },
+      observationPatterns: {
+        repeatedOutcomeClass: true,
+        repeatedReasonSignals: true
+      },
+      stabilitySignals: {}
+    });
+
+    expect(insight.repeatedPatternDetected).toBe(true);
+    expect(insight.optimizationHint).toContain('richer metadata/context');
+    expect(insight.confidence).toBe('high');
+  });
+
+  test('runtime optimization insight suggests validation checks for repeated instability', () => {
+    const observation = createRuntimeObservationState();
+    const first = observeRuntimeStabilitySignals(observation, { instabilityDetected: true });
+    const second = observeRuntimeStabilitySignals(observation, { instabilityDetected: true });
+
+    expect(first.repeatedInstabilityDetected).toBe(false);
+    expect(second.repeatedInstabilityDetected).toBe(true);
+
+    const insight = generateRuntimeOptimizationInsight({
+      runtimeReasoning: { outcomeClass: 'failed' },
+      observationPatterns: {},
+      stabilitySignals: second
+    });
+
+    expect(insight.repeatedPatternDetected).toBe(true);
+    expect(insight.optimizationHint).toContain('validation checks');
+    expect(insight.confidence).toBe('medium');
   });
 
   test('validateRuntimeStability preserves deterministic outcome class for repeated reason signals', () => {
