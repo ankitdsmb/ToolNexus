@@ -2,6 +2,6 @@
   display: block;
 }
 
-.regex-tester-runtime .tool-editor-panel {
+.regex-tester-runtime .tool-local-surface {
   min-height: 0;
 }
