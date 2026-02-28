@@ -1,0 +1,7 @@
+.csv-to-json-runtime.tool-runtime-local {
+  display: block;
+}
+
+.csv-to-json-runtime .tool-editor-panel {
+  min-height: 0;
+}

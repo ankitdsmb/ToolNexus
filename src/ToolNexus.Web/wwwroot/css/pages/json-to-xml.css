@@ -1,0 +1,7 @@
+.json-to-xml-runtime.tool-runtime-local {
+  display: block;
+}
+
+.json-to-xml-runtime .tool-editor-panel {
+  min-height: 0;
+}

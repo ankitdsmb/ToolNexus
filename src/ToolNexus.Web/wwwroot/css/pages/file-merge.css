@@ -1,0 +1,7 @@
+.file-merge-runtime.tool-runtime-local {
+  display: block;
+}
+
+.file-merge-runtime .tool-editor-panel {
+  min-height: 0;
+}

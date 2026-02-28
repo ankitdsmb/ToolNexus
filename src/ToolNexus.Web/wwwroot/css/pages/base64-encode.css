@@ -1,0 +1,7 @@
+.base64-encode-runtime.tool-runtime-local {
+  display: block;
+}
+
+.base64-encode-runtime .tool-editor-panel {
+  min-height: 0;
+}

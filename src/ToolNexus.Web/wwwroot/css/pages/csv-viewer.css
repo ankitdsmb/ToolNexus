@@ -1,0 +1,7 @@
+.csv-viewer-runtime.tool-runtime-local {
+  display: block;
+}
+
+.csv-viewer-runtime .tool-editor-panel {
+  min-height: 0;
+}

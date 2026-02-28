@@ -1,0 +1,7 @@
+.html-formatter-runtime.tool-runtime-local {
+  display: block;
+}
+
+.html-formatter-runtime .tool-editor-panel {
+  min-height: 0;
+}

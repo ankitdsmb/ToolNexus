@@ -1,0 +1,7 @@
+.html-to-markdown-runtime.tool-runtime-local {
+  display: block;
+}
+
+.html-to-markdown-runtime .tool-editor-panel {
+  min-height: 0;
+}
