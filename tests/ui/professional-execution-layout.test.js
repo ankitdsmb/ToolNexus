@@ -67,4 +67,20 @@ describe('professional execution layout', () => {
       expect(shellView.includes(anchor)).toBe(true);
     }
   });
+
+
+  test('ToolShell loads global auto professional stylesheet and contract-safe anchors', () => {
+    const shellView = readFileSync('src/ToolNexus.Web/Views/Tools/ToolShell.cshtml', 'utf-8');
+    const cssLayer = readFileSync('src/ToolNexus.Web/wwwroot/css/tool-auto-professional.css', 'utf-8');
+
+    expect(shellView).toContain('~/css/tool-auto-professional.css');
+    expect(cssLayer).toContain('.tool-runtime-widget');
+    expect(cssLayer).toContain('max-width: 1400px');
+    expect(cssLayer).toContain('.tool-local-body.single-panel');
+    expect(cssLayer).toContain('[data-tool-dna="editor"]');
+    expect(cssLayer).toContain('[data-tool-dna="converter"]');
+    expect(cssLayer).toContain('[data-tool-dna="utility"]');
+    expect(cssLayer).toContain('[data-tool-dna="analyzer"]');
+  });
+
 });
