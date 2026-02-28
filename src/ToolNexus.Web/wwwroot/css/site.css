@@ -1768,18 +1768,17 @@ RESPONSIVE
   isolation: isolate;
   contain: content;
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "context context"
-    "input output"
-    "followup output";
+    "context"
+    "runtime"
+    "followup";
   gap: var(--runtime-workspace-gap);
   padding: var(--runtime-workspace-padding);
 }
 
 .tool-shell-page__runtime > [data-tool-context="true"] { grid-area: context; }
-.tool-shell-page__runtime > [data-tool-input="true"] { grid-area: input; align-self: start; }
-.tool-shell-page__runtime > [data-tool-output="true"] { grid-area: output; align-self: start; }
+.tool-shell-page__runtime > [data-tool-runtime="true"] { grid-area: runtime; align-self: start; width: 100%; }
 .tool-shell-page__runtime > [data-tool-followup="true"] { grid-area: followup; align-self: start; }
 
 .tool-shell-page__runtime:focus-within,
@@ -2042,9 +2041,8 @@ RESPONSIVE
     grid-template-columns: 1fr;
     grid-template-areas:
       "context"
-      "input"
-      "followup"
-      "output";
+      "runtime"
+      "followup";
   }
 }
 
@@ -2103,11 +2101,11 @@ RESPONSIVE
   border: var(--runtime-card-border);
   border-radius: var(--runtime-card-radius);
   box-shadow: 0 8px 26px rgba(15, 23, 42, 0.10);
-  grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "context context"
-    "input output"
-    "followup output";
+    "context"
+    "runtime"
+    "followup";
   gap: var(--execution-gap);
   padding: var(--execution-padding);
   align-content: start;
@@ -2233,9 +2231,8 @@ RESPONSIVE
     grid-template-columns: 1fr;
     grid-template-areas:
       "context"
-      "input"
-      "followup"
-      "output";
+      "runtime"
+      "followup";
     min-height: 64vh;
   }
 

@@ -56,12 +56,12 @@ function resolveRootHandoffTarget(root) {
   const canonicalRoot = root?.id === 'tool-root'
     ? root
     : root?.querySelector?.('#tool-root') ?? root;
-  const inputZone = canonicalRoot?.querySelector?.('[data-tool-input]');
-  if (!inputZone) {
-    throw new Error('tool-template-loader: missing [data-tool-input] mount zone.');
+  const runtimeZone = canonicalRoot?.querySelector?.('[data-tool-runtime]');
+  if (!runtimeZone) {
+    throw new Error('tool-template-loader: missing [data-tool-runtime] mount zone.');
   }
 
-  const host = inputZone;
+  const host = runtimeZone;
   const existing = host?.querySelector?.(':scope > [data-runtime-template-handoff]');
   if (existing) {
     return existing;
@@ -88,7 +88,7 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
   if (cached) {
     const target = resolveRootHandoffTarget(root);
     target.innerHTML = sanitizeTemplateMarkup(cached);
-    console.info('[RuntimeOwnership] template target = [data-tool-input]', { slug, cached: true });
+    console.info('[RuntimeOwnership] template target = [data-tool-runtime]', { slug, cached: true });
     console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
     console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
     return cached;
@@ -117,7 +117,7 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
   templateCache.set(slug, template);
   const target = resolveRootHandoffTarget(root);
   target.innerHTML = sanitizeTemplateMarkup(template);
-  console.info('[RuntimeOwnership] template target = [data-tool-input]', { slug, cached: false });
+  console.info('[RuntimeOwnership] template target = [data-tool-runtime]', { slug, cached: false });
   console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
   console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
 

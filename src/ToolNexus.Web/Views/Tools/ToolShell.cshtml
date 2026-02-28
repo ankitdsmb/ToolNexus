@@ -54,16 +54,13 @@
                 <span class="tool-context-pill">Policy: Conformance v1</span>
                 <span class="tool-context-pill tool-context-pill--status">Status: Ready</span>
             </header>
-            <section data-tool-input="true" class="tn-tool-panel runtime-input-panel" aria-label="Tool input panel">
-                <div class="runtime-input-editor" aria-label="Input editor area">
-                    <p>Input area loading…</p>
+            <section data-tool-runtime="true" class="tn-tool-panel runtime-execution-panel" aria-label="Tool runtime workspace">
+                <div class="tool-runtime-lifecycle-anchors" aria-hidden="true" hidden>
+                    <div data-tool-input="true"></div>
+                    <div data-tool-output="true"></div>
                 </div>
-                <div class="runtime-input-controls" aria-label="Input controls"></div>
-                <div class="runtime-preparation" aria-label="Runtime preparation"></div>
-            </section>
-            <section data-tool-output="true" class="tn-tool-panel runtime-execution-panel" aria-label="Tool output workspace">
                 <div class="runtime-tool-ui-mount" aria-label="Tool UI mount container">
-                    <p>Output preview loading…</p>
+                    <p>Runtime loading…</p>
                 </div>
                 <section class="runtime-result-panel" aria-label="Result output panel"></section>
                 <div data-tool-status="true" class="tool-execution-status runtime-metrics-row" role="status" aria-live="polite">Idle · Ready for request</div>
