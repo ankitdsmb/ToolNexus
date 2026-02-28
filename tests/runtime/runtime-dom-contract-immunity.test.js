@@ -51,6 +51,7 @@ describe('runtime DOM contract immunity', () => {
     const root = createCanonicalShell(slug);
     const events = [];
     const validationRecords = [];
+    const adapterCalls = [];
 
     const runtime = createToolRuntime({
       observer: {
@@ -74,6 +75,10 @@ describe('runtime DOM contract immunity', () => {
         async init() {},
         async destroy() {}
       }),
+      adaptDomContract: (scope, capabilities) => {
+        adapterCalls.push({ scopeId: scope?.id ?? '', capabilities });
+        return { adapted: false, reason: 'test-spy' };
+      },
       validateDomContract: (scope, options = {}) => {
         const report = validateToolDom(scope, options);
         validationRecords.push({
@@ -96,10 +101,31 @@ describe('runtime DOM contract immunity', () => {
     const domFailures = events.filter((entry) => entry.eventName === 'dom_contract_failure');
     expect(domFailures).toHaveLength(0);
 
+    const canonicalRootValidations = validationRecords.filter((entry) =>
+      entry.phase.startsWith('pre-mount') || entry.phase.startsWith('post-mount'));
+    expect(canonicalRootValidations.length).toBeGreaterThan(0);
+    canonicalRootValidations.forEach((entry) => {
+      expect(entry.scopeId).toBe('tool-root');
+    });
+
+    const shellAnchors = ['data-tool-shell', 'data-tool-context', 'data-tool-status', 'data-tool-followup'];
+    shellAnchors.forEach((anchor) => {
+      const selector = `[${anchor}]`;
+      const present = root.matches(selector) || Boolean(root.querySelector(selector));
+      expect(present).toBe(true);
+    });
+
+    expect(adapterCalls).toHaveLength(0);
+
     const unexpectedLegacyAdapter = consoleInfoSpy.mock.calls.some(([message, payload]) =>
       String(message).includes('[DomAdapter] legacy layout detected')
       && payload?.slug === slug);
     expect(unexpectedLegacyAdapter).toBe(false);
+
+    const legacyCompatibilityEvents = events.filter((entry) =>
+      entry.eventName === 'compatibility_mode_used'
+      && entry.payload?.modeUsed === 'legacy');
+    expect(legacyCompatibilityEvents).toHaveLength(0);
 
     const scopeLogs = consoleInfoSpy.mock.calls
       .filter(([message]) => String(message).includes('[DomContract] validation scope resolved'))

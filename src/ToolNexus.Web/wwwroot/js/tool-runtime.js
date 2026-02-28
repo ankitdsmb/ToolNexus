@@ -123,6 +123,15 @@ function scheduleNonCriticalTask(task) {
   setTimeout(task, 0);
 }
 
+function getCanonicalToolRoot() {
+  const root = document.getElementById('tool-root');
+  if (!root) {
+    throw new Error('ToolShell root missing');
+  }
+
+  return root;
+}
+
 async function runPreviousCleanup(root) {
   const cleanup = root?.[RUNTIME_CLEANUP_KEY];
   if (typeof cleanup !== 'function') {
@@ -153,7 +162,7 @@ export function createToolRuntime({
   createToolExecutionContext = defaultCreateToolExecutionContext,
   legacyExecuteTool = defaultLegacyExecuteTool,
   releaseLegacyInitialization = defaultReleaseLegacyInitialization,
-  getRoot = () => document.getElementById('tool-root'),
+  getRoot = getCanonicalToolRoot,
   loadManifest: loadManifestOverride,
   importModule = (modulePath) => import(modulePath),
   healRuntime = async () => false,
@@ -337,18 +346,15 @@ export function createToolRuntime({
     }
   }
 
-  function resolveValidationScope(root, phase = 'unspecified') {
-    const canonicalRoot = document.getElementById('tool-root');
-    const scope = canonicalRoot && root && (root === canonicalRoot || canonicalRoot.contains(root))
-      ? canonicalRoot
-      : (root ?? canonicalRoot ?? null);
+  function resolveValidationScope(_root, phase = 'unspecified') {
+    const scope = getCanonicalToolRoot();
 
     logger.info('[DomContract] validation scope resolved', {
       phase,
-      rootTag: String((canonicalRoot ?? root)?.tagName ?? (canonicalRoot ?? root)?.nodeName ?? '').toLowerCase(),
-      rootId: (canonicalRoot ?? root)?.id ?? '',
-      rootClass: root?.className ?? '',
-      isRootToolRoot: root?.id === 'tool-root',
+      rootTag: String(scope?.tagName ?? scope?.nodeName ?? '').toLowerCase(),
+      rootId: scope?.id ?? '',
+      rootClass: scope?.className ?? '',
+      isRootToolRoot: scope?.id === 'tool-root',
       scopeTag: String(scope?.tagName ?? scope?.nodeName ?? '').toLowerCase(),
       scopeId: scope?.id ?? '',
       scopeClass: scope?.className ?? '',
@@ -371,6 +377,24 @@ export function createToolRuntime({
       ...resolved,
       validation
     };
+  }
+
+  function isToolShell(root) {
+    return Boolean(root?.querySelector?.('[data-tool-shell]') || root?.matches?.('[data-tool-shell]'));
+  }
+
+  function assertShellIntegrity(root) {
+    const required = [
+      'data-tool-shell',
+      'data-tool-context',
+      'data-tool-status',
+      'data-tool-followup'
+    ];
+
+    const missing = required.filter((attribute) => !root?.querySelector?.(`[${attribute}]`) && !root?.matches?.(`[${attribute}]`));
+    if (missing.length > 0) {
+      throw new Error(`ToolShell integrity violation: missing ${missing.join(', ')}`);
+    }
   }
 
   function logPostMountFailureDiagnostics({ root, scope, phase, validation, mountPlan }) {
@@ -441,6 +465,17 @@ export function createToolRuntime({
         phase: 'pre-mount',
         reason: 'dom_contract_valid',
         detectedLayoutType: validation.detectedLayoutType
+      });
+      return validation;
+    }
+
+    if (isToolShell(root)) {
+      logger.info('[DomAdapter] NO adapter applied', {
+        slug,
+        phase: 'pre-mount',
+        reason: 'toolshell_runtime',
+        detectedLayoutType: validation.detectedLayoutType,
+        missingNodes: validation.missingNodes
       });
       return validation;
     }
@@ -942,6 +977,18 @@ export function createToolRuntime({
 
     templateBinder(root, window.ToolNexusConfig ?? {});
 
+    try {
+      assertShellIntegrity(root);
+    } catch (error) {
+      setLastError('dom-contract', error, slug);
+      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors: [error?.message ?? String(error)] } });
+      renderRuntimeErrorState(root, {
+        slug,
+        message: error?.message ?? 'ToolShell integrity validation failed.'
+      });
+      return;
+    }
+
     const contractReady = await waitForToolShellContract(root, 3000);
     if (!contractReady) {
       const errors = ['[DOM CONTRACT ERROR]', ...TOOL_SHELL_REQUIRED_SELECTORS.map((selector) => `Missing node: ${selector}`)];
@@ -1279,6 +1326,8 @@ export function createToolRuntime({
         }
 
         const childCountAfterLifecycle = root?.childElementCount ?? 0;
+        ensureToolShellAnchors(root);
+        assertShellIntegrity(root);
         const rootBeforePostMount = root;
         const preValidationRootElement = document.getElementById('tool-root');
         const postMountScopedValidation = validateDomAtPhase(root, 'post-mount');
@@ -1312,6 +1361,22 @@ export function createToolRuntime({
               runtimeContainerLayoutType: resolvedScopeRecheck.runtimeContainerValidation.detectedLayoutType,
               toolRootLayoutType: resolvedScopeRecheck.toolRootValidation.detectedLayoutType
             });
+          } else if (isToolShell(root)) {
+            logger.info('[DomAdapter] NO adapter applied', {
+              slug,
+              phase: 'post-mount',
+              reason: 'toolshell_runtime',
+              detectedLayoutType: postMountValidation.detectedLayoutType,
+              missingNodes: postMountValidation.missingNodes
+            });
+            logPostMountFailureDiagnostics({
+              root,
+              scope: postMountScopedValidation.scope,
+              phase: 'post-mount',
+              validation: postMountValidation,
+              mountPlan
+            });
+            throw new Error(`runtime assertion failed: DOM contract incomplete for "${slug}"`);
           } else if (postMountValidation.detectedLayoutType !== LAYOUT_TYPES.LEGACY_LAYOUT) {
             logger.info('[DomAdapter] NO adapter applied', {
               slug,
@@ -1468,7 +1533,13 @@ export function createToolRuntime({
   }
 
   async function bootstrapToolRuntime() {
-    const root = getRoot();
+    let root;
+    try {
+      root = getRoot();
+    } catch (error) {
+      logger.error(error?.message ?? String(error));
+      return;
+    }
     registerDebugValidation(getRoot);
     exposeDiagnosticsApi();
     if (!root) {
