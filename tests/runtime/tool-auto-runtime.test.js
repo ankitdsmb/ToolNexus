@@ -1,6 +1,19 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createAutoToolRuntimeModule } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-auto-runtime.js';
 
+function createContractHost() {
+  const host = document.createElement('div');
+  host.innerHTML = `
+    <section data-tool-shell="true">
+      <header data-tool-context="true"></header>
+      <section data-tool-input="true"></section>
+      <section data-tool-status="true"></section>
+      <section data-tool-output="true"></section>
+      <footer data-tool-followup="true"></footer>
+    </section>`;
+  return host;
+}
+
 describe('tool auto runtime', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -62,7 +75,7 @@ describe('tool auto runtime', () => {
   });
 
   test('tier 1 tools auto-render with fallback JSON input', () => {
-    const host = document.createElement('div');
+    const host = createContractHost();
     document.body.append(host);
 
     const module = createAutoToolRuntimeModule({
@@ -81,7 +94,7 @@ describe('tool auto runtime', () => {
 
 
   test('tier 3 with auto mode is supported without configuration error', () => {
-    const host = document.createElement('div');
+    const host = createContractHost();
     document.body.append(host);
 
     const module = createAutoToolRuntimeModule({
@@ -97,7 +110,7 @@ describe('tool auto runtime', () => {
   });
 
   test('tier 4 with auto mode shows descriptive UI error', () => {
-    const host = document.createElement('div');
+    const host = createContractHost();
     document.body.append(host);
 
     const module = createAutoToolRuntimeModule({
@@ -113,7 +126,7 @@ describe('tool auto runtime', () => {
 
 
   test('forbidden execution override fields are ignored while request remains server-controlled', async () => {
-    const host = document.createElement('div');
+    const host = createContractHost();
     document.body.append(host);
 
     const fetchMock = vi.fn(async () => ({
@@ -184,8 +197,55 @@ describe('tool auto runtime', () => {
     warnSpy.mockRestore();
   });
 
+
+  test('repeated warning detection updates adaptive guidance wording', async () => {
+    const host = createContractHost();
+    document.body.append(host);
+
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ output: 'ok', warnings: ['runtime-note'], diagnostics: { id: 'd1' }, metadata: { run: '1' } })
+    }));
+    global.fetch = fetchMock;
+
+    const module = createAutoToolRuntimeModule({
+      slug: 'auto-tool',
+      manifest: {
+        uiMode: 'auto',
+        complexityTier: 2,
+        runtimeIsDevelopment: true,
+        operationSchema: {
+          type: 'object',
+          properties: {
+            executionAuthority: { type: 'text', title: 'Execution authority' },
+            text: { type: 'text', title: 'Text value' }
+          }
+        }
+      }
+    });
+
+    const state = module.create(host);
+    module.init(state, host, { addCleanup() {} });
+
+    const authorityInput = host.querySelector('#tool-auto-executionAuthority');
+    const textInput = host.querySelector('#tool-auto-text');
+    const runButton = host.querySelector('button');
+
+    authorityInput.value = 'client-override';
+    textInput.value = 'hello';
+
+    runButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    runButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(host.querySelector('[data-ai-layer="next-action"]').textContent).toContain('Warning repeated across runs');
+    expect(host.textContent).toContain('recurring warning pattern');
+  });
+
   test('auto execution sends expected payload and output renders safely', async () => {
-    const host = document.createElement('div');
+    const host = createContractHost();
     document.body.append(host);
 
     const fetchMock = vi.fn(async () => ({

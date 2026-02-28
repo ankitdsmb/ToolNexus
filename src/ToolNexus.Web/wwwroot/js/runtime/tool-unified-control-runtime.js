@@ -1,4 +1,10 @@
 const INLINE_PREVIEW_LIMIT = 480;
+const OUTCOME_CLASSES = Object.freeze({
+  usableSuccess: 'usable_success',
+  warningPartial: 'warning_partial',
+  uncertainResult: 'uncertain_result',
+  failed: 'failed'
+});
 const EXECUTION_STATES = Object.freeze({
   idle: {
     label: 'Idle · Ready for request',
@@ -144,7 +150,8 @@ function splitOutputPayload(payload) {
       supporting: null,
       metadata: null,
       diagnostics: null,
-      hasWarnings: false
+      hasWarnings: false,
+      warningCount: 0
     };
   }
 
@@ -153,17 +160,52 @@ function splitOutputPayload(payload) {
   const metadata = pickFirstValue(payload, ['metadata', 'meta', 'execution', 'snapshot', 'conformance', 'authority']);
   const diagnostics = pickFirstValue(payload, ['diagnostics', 'runtimeDiagnostics', 'logs', 'trace', 'errors', 'warnings']);
   const warningList = payload?.warnings;
-  const hasWarnings = Array.isArray(warningList)
-    ? warningList.length > 0
-    : Boolean(warningList);
+  const warningCount = Array.isArray(warningList)
+    ? warningList.length
+    : (warningList ? 1 : 0);
+  const hasWarnings = warningCount > 0;
+  const diagnosticWeight = diagnostics
+    ? (Array.isArray(diagnostics)
+      ? diagnostics.length
+      : (typeof diagnostics === 'object' ? Object.keys(diagnostics).length : 1))
+    : 0;
+  const metadataCompleteness = metadata
+    ? (typeof metadata === 'object' ? Object.keys(metadata).length : 1)
+    : 0;
 
   return {
     primary,
     supporting,
     metadata,
     diagnostics,
-    hasWarnings
+    hasWarnings,
+    warningCount,
+    diagnosticWeight,
+    metadataCompleteness
   };
+}
+
+function classifyExecutionOutcome(hierarchy) {
+  if (!hierarchy) {
+    return OUTCOME_CLASSES.uncertainResult;
+  }
+
+  if (hierarchy.hasWarnings) {
+    return OUTCOME_CLASSES.warningPartial;
+  }
+
+  const hasDiagnostics = Boolean(hierarchy.diagnostics);
+  const hasSupporting = Boolean(hierarchy.supporting);
+  const metadataCompleteness = Number(hierarchy.metadataCompleteness ?? 0);
+  if (hasDiagnostics && !hasSupporting && metadataCompleteness === 0) {
+    return OUTCOME_CLASSES.uncertainResult;
+  }
+
+  if (!hasSupporting && metadataCompleteness <= 1) {
+    return OUTCOME_CLASSES.uncertainResult;
+  }
+
+  return OUTCOME_CLASSES.usableSuccess;
 }
 
 function resolveInterpretationSummary(hierarchy) {
@@ -174,32 +216,53 @@ function resolveInterpretationSummary(hierarchy) {
   return 'Interpretation summary: Runtime returned raw evidence without explanatory narrative.';
 }
 
-function resolveConfidencePhrase({ hasWarnings, hasDiagnostics, hasMetadata, hasSupporting }) {
-  if (hasWarnings) {
-    return 'Confidence: Warning signal present — review runtime notes before operational use.';
+function resolveConfidencePhrase({ outcomeClass, evidenceCompleteness, warningCount, diagnosticWeight }) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return `Confidence: Cautious — ${warningCount} warning signal(s) with diagnostic weight ${diagnosticWeight}.`;
   }
 
-  if (!hasSupporting && !hasMetadata && hasDiagnostics) {
-    return 'Confidence: Uncertain outcome — diagnostics exist but interpretation context is limited.';
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return `Confidence: Limited — evidence completeness ${evidenceCompleteness}/3, validate against trusted baseline.`;
   }
 
-  return 'Confidence: High confidence — execution completed with structured evidence.';
+  return `Confidence: Strong — evidence completeness ${evidenceCompleteness}/3 with manageable diagnostic load.`;
 }
 
-function resolveNextAction({ hasWarnings, hasSupporting, hasMetadata }) {
-  if (hasWarnings) {
-    return 'Next recommended action: Inspect diagnostics and adjust inputs, then rerun for clean conformance.';
+function resolveNextAction({ outcomeClass, repeatedWarning }) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return repeatedWarning
+      ? 'Next recommended action: Warning repeated across runs — prioritize root-cause fix, then rerun.'
+      : 'Next recommended action: Inspect runtime notes, refine inputs, and rerun for cleaner conformance.';
   }
 
-  if (!hasSupporting) {
-    return 'Next recommended action: Validate key fields against domain expectations before downstream usage.';
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return 'Next recommended action: Validate critical fields manually and rerun with richer context metadata.';
   }
 
-  if (!hasMetadata) {
-    return 'Next recommended action: Capture execution metadata in follow-up run for stronger auditability.';
+  return 'Next recommended action: Proceed with follow-up actions; optional rerun for comparative validation.';
+}
+
+export function buildAdaptiveGuidance({ outcomeClass, repeatedWarning }) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return {
+      intent: 'AI intent: Highlight partial completion and cautionary evidence for operator review.',
+      guidance: repeatedWarning
+        ? 'Guidance: Next step: address recurring warning pattern. Rerun: yes, after adjustment. Validation: verify impacted fields first.'
+        : 'Guidance: Next step: inspect warning diagnostics. Rerun: recommended after refining inputs. Validation: verify key outputs.'
+    };
   }
 
-  return 'Next recommended action: Proceed to follow-up action bar to continue workflow.';
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return {
+      intent: 'AI intent: Mark interpretation uncertainty due to low evidence completeness.',
+      guidance: 'Guidance: Next step: cross-check output with trusted reference. Rerun: recommended with fuller metadata. Validation: confirm critical values.'
+    };
+  }
+
+  return {
+    intent: 'AI intent: Confirm outcome is usable for workflow continuation.',
+    guidance: 'Guidance: Next step: continue through follow-up actions. Rerun: optional for comparison. Validation: spot-check downstream assumptions.'
+  };
 }
 
 export function createUnifiedToolControl({
@@ -365,17 +428,19 @@ export function createUnifiedToolControl({
       suggestionReason.hidden = !reason;
       suggestionReason.textContent = reason ?? '';
     },
-    renderResult(payload) {
+    renderResult(payload, { repeatedWarning = false } = {}) {
       const hierarchy = splitOutputPayload(payload);
       const serialized = safeStringify(payload);
       const hasSupporting = Boolean(hierarchy.supporting);
       const hasMetadata = Boolean(hierarchy.metadata);
       const hasDiagnostics = Boolean(hierarchy.diagnostics);
+      const evidenceCompleteness = [hasSupporting, hasMetadata, hasDiagnostics].filter(Boolean).length;
+      const outcomeClass = classifyExecutionOutcome(hierarchy);
       const confidencePhrase = resolveConfidencePhrase({
-        hasWarnings: hierarchy.hasWarnings,
-        hasDiagnostics,
-        hasMetadata,
-        hasSupporting
+        outcomeClass,
+        evidenceCompleteness,
+        warningCount: hierarchy.warningCount,
+        diagnosticWeight: hierarchy.diagnosticWeight
       });
 
       preview.textContent = toShortText(hierarchy.primary);
@@ -383,15 +448,18 @@ export function createUnifiedToolControl({
       supporting.textContent = resolveInterpretationSummary(hierarchy);
       confidence.textContent = confidencePhrase;
       nextAction.textContent = resolveNextAction({
-        hasWarnings: hierarchy.hasWarnings,
-        hasSupporting,
-        hasMetadata
+        outcomeClass,
+        repeatedWarning
       });
       metadata.textContent = hierarchy.metadata ? safeStringify(hierarchy.metadata) : 'No metadata returned.';
       diagnostics.textContent = hierarchy.diagnostics ? safeStringify(hierarchy.diagnostics) : 'No diagnostics reported.';
       details.hidden = serialized.length <= INLINE_PREVIEW_LIMIT;
       details.open = false;
-      return hierarchy;
+      return {
+        ...hierarchy,
+        outcomeClass,
+        evidenceCompleteness
+      };
     }
   };
 }
