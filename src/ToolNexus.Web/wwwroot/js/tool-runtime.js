@@ -276,6 +276,129 @@ export function createToolRuntime({
   }
 
 
+
+  function createToolShellScaffold(doc, slug) {
+    const shell = doc.createElement('section');
+    shell.className = 'tn-tool-shell tool-runtime-shell';
+    shell.dataset.toolShell = 'true';
+    shell.dataset.toolSlug = slug;
+
+    const context = doc.createElement('header');
+    context.className = 'tn-tool-header';
+    context.dataset.toolContext = 'true';
+
+    const body = doc.createElement('section');
+    body.className = 'tn-tool-body';
+
+    const input = doc.createElement('section');
+    input.className = 'tn-tool-panel';
+    input.dataset.toolInput = 'true';
+
+    const outputColumn = doc.createElement('section');
+    outputColumn.className = 'tn-tool-panel';
+
+    const status = doc.createElement('section');
+    status.className = 'tn-tool-status';
+    status.dataset.toolStatus = 'true';
+
+    const output = doc.createElement('section');
+    output.className = 'tn-tool-output';
+    output.dataset.toolOutput = 'true';
+
+    outputColumn.append(status, output);
+    body.append(input, outputColumn);
+
+    const followup = doc.createElement('footer');
+    followup.className = 'tn-tool-footer';
+    followup.dataset.toolFollowup = 'true';
+
+    shell.append(context, body, followup);
+    return shell;
+  }
+
+  function ensureToolShellAnchors(root, slug) {
+    if (!root) {
+      return null;
+    }
+
+    const doc = root.ownerDocument ?? document;
+    const anchorHost = root.querySelector('[data-runtime-container]')
+      ?? root.querySelector('[data-tool-root]')
+      ?? root;
+    let shell = anchorHost.querySelector?.('[data-tool-shell]') ?? root.querySelector('[data-tool-shell]');
+
+    if (!shell) {
+      shell = createToolShellScaffold(doc, slug);
+      if (anchorHost.childElementCount === 0) {
+        anchorHost.append(shell);
+      } else {
+        anchorHost.prepend(shell);
+      }
+    }
+
+    if (!shell.dataset.toolSlug) {
+      shell.dataset.toolSlug = slug;
+    }
+
+    const ensureZone = (selector, tagName, className, datasetKey) => {
+      let node = shell.querySelector(selector);
+      if (!node) {
+        node = doc.createElement(tagName);
+        node.className = className;
+        node.dataset[datasetKey] = 'true';
+        shell.append(node);
+      }
+      return node;
+    };
+
+    const context = ensureZone('[data-tool-context]', 'header', 'tn-tool-header', 'toolContext');
+    const input = ensureZone('[data-tool-input]', 'section', 'tn-tool-panel', 'toolInput');
+    const status = ensureZone('[data-tool-status]', 'section', 'tn-tool-status', 'toolStatus');
+    const output = ensureZone('[data-tool-output]', 'section', 'tn-tool-output', 'toolOutput');
+    const followup = ensureZone('[data-tool-followup]', 'footer', 'tn-tool-footer', 'toolFollowup');
+
+    if (!context.parentElement || context.parentElement !== shell) {
+      shell.prepend(context);
+    }
+
+    if (!followup.parentElement || followup.parentElement !== shell) {
+      shell.append(followup);
+    }
+
+    if (status.parentElement !== shell && status.parentElement !== output) {
+      shell.append(status);
+    }
+
+    if (!input.parentElement || input.parentElement !== shell) {
+      shell.append(input);
+    }
+
+    if (!output.parentElement || output.parentElement !== shell) {
+      shell.append(output);
+    }
+
+    return shell;
+  }
+
+  function renderRuntimeErrorState(root, { slug, message }) {
+    const shell = ensureToolShellAnchors(root, slug);
+    if (!shell) {
+      return;
+    }
+
+    shell.dataset.runtimeState = 'error';
+    const status = shell.querySelector('[data-tool-status]');
+    const output = shell.querySelector('[data-tool-output]');
+
+    if (status) {
+      status.innerHTML = '<p role="status">Runtime error</p>';
+    }
+
+    if (output) {
+      output.innerHTML = `<section class="tool-runtime-fallback__error" role="alert">${message}</section>`;
+    }
+  }
+
   function resolveValidationScope(root, phase = 'unspecified') {
     const runtimeContainerNode = root?.closest?.('[data-runtime-container]')
       ?? (root?.matches?.('[data-runtime-container]') ? root : null)
@@ -459,7 +582,7 @@ export function createToolRuntime({
       return false;
     }
 
-    root.innerHTML = `<section class="tool-runtime-fallback tn-tool-shell" data-tool-runtime-fallback="true"><header class="tn-tool-header"><h2>${slug}</h2><p>Tool failed to initialize safely.</p></header><div class="tn-tool-body"><section class="tn-tool-panel" aria-label="Input panel unavailable"></section><section class="tn-tool-panel" aria-label="Output panel unavailable"></section></div><footer class="tn-tool-footer"><p>SSR content still available.</p><p class="tool-runtime-fallback__warning">Non-blocking warning: runtime entered compatibility mode.</p></footer></section>`;
+    root.innerHTML = `<section class="tool-runtime-fallback tn-tool-shell" data-tool-runtime-fallback="true" data-tool-shell="true"><header class="tn-tool-header" data-tool-context="true"><h2>${slug}</h2><p>Tool failed to initialize safely.</p></header><div class="tn-tool-body"><section class="tn-tool-panel" data-tool-input="true" aria-label="Input panel unavailable"></section><section class="tn-tool-panel" aria-label="Output panel unavailable"><section class="tn-tool-status" data-tool-status="true"><p role="status">Fallback mode active</p></section><section data-tool-output="true"><p>Runtime output unavailable.</p></section></section></div><footer class="tn-tool-footer" data-tool-followup="true"><p>SSR content still available.</p><p class="tool-runtime-fallback__warning">Non-blocking warning: runtime entered compatibility mode.</p></footer></section>`;
     return true;
   }
 
@@ -881,36 +1004,7 @@ export function createToolRuntime({
     restoreSsrSnapshot(root, mountPlan);
 
     templateBinder(root, window.ToolNexusConfig ?? {});
-
-    let validation = ensureDomContract(root, slug, capabilitiesAtStart);
-    if (!validation.isValid) {
-      const message = `tool-runtime: DOM contract invalid for "${slug}"`;
-      const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
-      logger.error(message, errors);
-      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
-      showRuntimeCrashOverlay(root, {
-        toolSlug: slug,
-        phase: 'dom_contract_failure',
-        errorMessage: message,
-        stack: errors.join('\n'),
-        runtimeIdentity: { ...runtimeIdentity },
-        classification: 'contract_violation'
-      });
-
-      if (isStrictModeEnabled()) {
-        throw new Error(errors.join('\n'));
-      }
-
-      const canAttemptAutoFallback = Array.isArray(validation.missingNodes)
-        && validation.missingNodes.every((nodeName) => String(nodeName).startsWith('data-'));
-      if (!canAttemptAutoFallback) {
-        renderContractError(root, errors);
-        return;
-      }
-
-      injectContractFallbackLayout(root, slug);
-      validation = ensureDomContract(root, slug, capabilitiesAtStart);
-    }
+    ensureToolShellAnchors(root, slug);
 
     const safeLoadDependencies = async () => {
       const dependencyStartedAt = now();
@@ -1014,6 +1108,10 @@ export function createToolRuntime({
             error: error?.message ?? String(error)
           });
         }
+        renderRuntimeErrorState(root, {
+          slug,
+          message: error?.message ?? 'Runtime module failed to load.'
+        });
         showRuntimeCrashOverlay(root, {
           toolSlug: slug,
           phase: 'module_import_failure',
@@ -1041,6 +1139,36 @@ export function createToolRuntime({
     };
 
     const { module: loadedModule, lifecycleContract, importFailed } = await safeResolveLifecycle();
+    let validation = ensureDomContract(root, slug, capabilitiesAtStart);
+    if (!validation.isValid) {
+      const message = `tool-runtime: DOM contract invalid for "${slug}"`;
+      const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
+      logger.error(message, errors);
+      emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
+      showRuntimeCrashOverlay(root, {
+        toolSlug: slug,
+        phase: 'dom_contract_failure',
+        errorMessage: message,
+        stack: errors.join('\n'),
+        runtimeIdentity: { ...runtimeIdentity },
+        classification: 'contract_violation'
+      });
+
+      if (isStrictModeEnabled()) {
+        throw new Error(errors.join('\n'));
+      }
+
+      const canAttemptAutoFallback = Array.isArray(validation.missingNodes)
+        && validation.missingNodes.every((nodeName) => String(nodeName).startsWith('data-'));
+      if (!canAttemptAutoFallback) {
+        renderContractError(root, errors);
+        return;
+      }
+
+      ensureToolShellAnchors(root, slug);
+      validation = ensureDomContract(root, slug, capabilitiesAtStart);
+    }
+
     const enforceCustomForTier = complexityTier >= 4;
     const templateIsLegacyOrMinimal = validation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
       || validation.detectedLayoutType === LAYOUT_TYPES.MINIMAL_LAYOUT;
