@@ -535,7 +535,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tool-shell-page__runtime > [data-tool-context="true"]) { grid-area: context; }
 :where(.tool-shell-page__runtime > [data-tool-input="true"]) { grid-area: input; align-self: start; }
-:where(.tool-shell-page__runtime > .tn-tool-panel[aria-label="Tool output workspace"]) { grid-area: output; align-self: start; }
+:where(.tool-shell-page__runtime > [data-tool-output="true"]) { grid-area: output; align-self: start; }
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) { grid-area: followup; align-self: start; }
 
 :where(.tool-identity-header__content h1) {

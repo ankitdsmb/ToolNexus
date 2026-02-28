@@ -111,7 +111,9 @@ function resolveRootHandoffTarget(root) {
   const canonicalRoot = root?.id === 'tool-root'
     ? root
     : root?.querySelector?.('#tool-root') ?? root;
-  const existing = canonicalRoot?.querySelector?.('[data-runtime-template-handoff]');
+  const inputZone = canonicalRoot?.querySelector?.('[data-tool-input]');
+  const host = inputZone ?? canonicalRoot;
+  const existing = host?.querySelector?.(':scope > [data-runtime-template-handoff]');
   if (existing) {
     return existing;
   }
@@ -120,7 +122,7 @@ function resolveRootHandoffTarget(root) {
   handoff.setAttribute('data-runtime-template-handoff', 'true');
   handoff.className = 'tool-runtime-template-handoff';
   handoff.setAttribute('aria-label', 'Tool runtime template handoff');
-  canonicalRoot?.append(handoff);
+  host?.prepend(handoff);
   return handoff;
 }
 
