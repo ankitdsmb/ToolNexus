@@ -1,3 +1,5 @@
+import { createToolPresentationEngine } from './tool-presentation-engine.js';
+
 // ARCHITECTURE LOCKED
 // DO NOT MODIFY WITHOUT COUNCIL APPROVAL
 
@@ -54,15 +56,6 @@ const RUN_BUTTON_LABELS = Object.freeze({
   uncertain: 'Run Again (Review uncertainty)'
 });
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
 function safeStringify(payload) {
   if (typeof payload === 'string') {
     return payload;
@@ -115,37 +108,6 @@ function resolveIcon(iconName = '') {
   };
 
   return icons[normalized] ?? icons.code;
-}
-
-function createOutputContent(doc) {
-  const output = doc.createElement('section');
-  output.className = 'tn-unified-tool-control__output';
-  output.innerHTML = `
-    <section class="tn-unified-tool-control__output-block tn-unified-tool-control__output-block--primary" data-output-tier="primary">
-      <p class="tn-unified-tool-control__output-label">Primary result</p>
-      <pre class="tn-unified-tool-control__preview">No output yet.</pre>
-      <details class="tn-unified-tool-control__details">
-        <summary>Expanded result</summary>
-        <pre class="tn-unified-tool-control__result"></pre>
-      </details>
-    </section>
-    <section class="tn-unified-tool-control__output-block" data-output-tier="supporting">
-      <p class="tn-unified-tool-control__output-label">Interpretation layer</p>
-      <p class="tn-unified-tool-control__supporting" data-ai-layer="interpretation">Interpretation summary: Awaiting execution context.</p>
-      <p class="tn-unified-tool-control__supporting" data-ai-layer="classification-why">Why this result is classified this way: Awaiting runtime evidence.</p>
-      <p class="tn-unified-tool-control__supporting" data-ai-layer="confidence">Confidence: Pending execution.</p>
-      <p class="tn-unified-tool-control__supporting" data-ai-layer="next-action">Next recommended action: Run execution to generate guidance.</p>
-    </section>
-    <section class="tn-unified-tool-control__output-block" data-output-tier="metadata">
-      <p class="tn-unified-tool-control__output-label">Metadata</p>
-      <pre class="tn-unified-tool-control__metadata">No metadata yet.</pre>
-    </section>
-    <section class="tn-unified-tool-control__output-block" data-output-tier="diagnostics">
-      <p class="tn-unified-tool-control__output-label">Runtime diagnostics</p>
-      <pre class="tn-unified-tool-control__diagnostics">No diagnostics reported.</pre>
-    </section>
-  `;
-  return output;
 }
 
 function pickFirstValue(source, keys = []) {
@@ -725,25 +687,14 @@ export function createUnifiedToolControl({
   }
 
   const shell = toolRoot;
+  const presentationEngine = createToolPresentationEngine({ doc });
   shell.classList.add('tn-unified-tool-control', 'tn-tool-shell', 'tool-auto-runtime');
   shell.dataset.toolSlug = slug ?? '';
   shell.dataset.executionState = 'idle';
 
-  const header = doc.createElement('header');
-  header.className = 'tn-unified-tool-control__header tn-tool-header';
-  header.innerHTML = `
-    <span class="tn-unified-tool-control__icon" aria-hidden="true">${escapeHtml(resolveIcon(icon ?? manifest?.icon))}</span>
-    <div class="tn-unified-tool-control__title-wrap">
-      <h2>${escapeHtml(title ?? normalizeTitle(slug, manifest))}</h2>
-      <p>${escapeHtml(subtitle ?? resolveSubtitle(manifest))}</p>
-    </div>
-  `;
-
-  const inputArea = contractInput;
-  inputArea.className = 'tn-unified-tool-control__input';
+  const inputArea = presentationEngine.styleInputPanel(contractInput);
 
   const actions = contractFollowup;
-  actions.className = 'tn-unified-tool-control__actions';
 
   const runButton = doc.createElement('button');
   runButton.type = 'button';
@@ -755,12 +706,6 @@ export function createUnifiedToolControl({
   const executionHint = doc.createElement('span');
   executionHint.className = 'tn-unified-tool-control__execution-hint';
   executionHint.textContent = 'Runtime execution';
-
-  const primaryActions = doc.createElement('div');
-  primaryActions.className = 'tn-unified-tool-control__actions-primary';
-
-  const secondaryActions = doc.createElement('div');
-  secondaryActions.className = 'tn-unified-tool-control__actions-secondary';
 
   const status = doc.createElement('p');
   status.className = 'tn-unified-tool-control__status';
@@ -786,15 +731,17 @@ export function createUnifiedToolControl({
   suggestionReason.className = 'tn-unified-tool-control__suggestion-reason';
   suggestionReason.hidden = true;
 
-  primaryActions.replaceChildren(runButton, executionHint);
-  secondaryActions.replaceChildren(suggestionBadge, suggestionReason);
-  actions.replaceChildren(primaryActions, secondaryActions);
+  const { primaryActions, secondaryActions } = presentationEngine.renderActionHierarchy({
+    actionsHost: actions,
+    runButton,
+    executionHint,
+    secondaryNodes: [suggestionBadge, suggestionReason]
+  });
+
   contractStatus.replaceChildren(status, intent, guidance);
 
   const output = contractOutput;
-  output.className = 'tn-unified-tool-control__output';
-  const outputContent = createOutputContent(doc);
-  output.innerHTML = outputContent.innerHTML;
+  presentationEngine.renderOutputEvidence(output);
 
   const preview = output.querySelector('.tn-unified-tool-control__preview');
   const details = output.querySelector('.tn-unified-tool-control__details');
@@ -811,8 +758,18 @@ export function createUnifiedToolControl({
   errors.className = 'tn-unified-tool-control__errors';
 
   if (contractContext) {
-    contractContext.innerHTML = header.innerHTML;
+    presentationEngine.renderIdentityBlock({
+      context: contractContext,
+      icon: resolveIcon(icon ?? manifest?.icon),
+      title: title ?? normalizeTitle(slug, manifest),
+      intent: subtitle ?? resolveSubtitle(manifest),
+      meta: `Tool: ${slug ?? manifest?.slug ?? 'runtime'} · Governed execution`
+    });
   }
+
+  const pageShell = shell.closest?.('.tool-shell-page') ?? doc;
+  presentationEngine.applyArticleTypography(pageShell);
+
   inputArea.replaceChildren();
   output.append(errors);
 
@@ -924,6 +881,12 @@ export function createUnifiedToolControl({
         : nextActionText;
       metadata.textContent = hierarchy.metadata ? safeStringify(hierarchy.metadata) : 'No metadata returned.';
       diagnostics.textContent = hierarchy.diagnostics ? safeStringify(hierarchy.diagnostics) : 'No diagnostics reported.';
+      presentationEngine.applyOutputVisibility({
+        outputHost: output,
+        supporting: hierarchy.supporting,
+        metadata: hierarchy.metadata,
+        diagnostics: hierarchy.diagnostics
+      });
       details.hidden = serialized.length <= INLINE_PREVIEW_LIMIT;
       details.open = false;
       return {
