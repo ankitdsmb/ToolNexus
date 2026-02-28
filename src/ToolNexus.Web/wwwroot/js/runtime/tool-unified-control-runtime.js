@@ -209,6 +209,22 @@ function classifyExecutionOutcome(hierarchy) {
   return OUTCOME_CLASSES.usableSuccess;
 }
 
+function resolveConfidenceLevel(outcomeClass) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return 'cautious';
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return 'limited';
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.failed) {
+    return 'none';
+  }
+
+  return 'strong';
+}
+
 function resolveInterpretationSummary(hierarchy) {
   if (hierarchy.supporting) {
     return `Interpretation summary: ${toShortText(hierarchy.supporting)}`;
@@ -217,13 +233,17 @@ function resolveInterpretationSummary(hierarchy) {
   return 'Interpretation summary: Runtime returned raw evidence without explanatory narrative.';
 }
 
-function resolveConfidencePhrase({ outcomeClass, evidenceCompleteness, warningCount, diagnosticWeight }) {
-  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+function resolveConfidencePhrase({ confidenceLevel, evidenceCompleteness, warningCount, diagnosticWeight }) {
+  if (confidenceLevel === 'cautious') {
     return `Confidence: Cautious — ${warningCount} warning signal(s) with diagnostic weight ${diagnosticWeight}.`;
   }
 
-  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+  if (confidenceLevel === 'limited') {
     return `Confidence: Limited — evidence completeness ${evidenceCompleteness}/3, validate against trusted baseline.`;
+  }
+
+  if (confidenceLevel === 'none') {
+    return 'Confidence: None — execution did not complete; no reliable outcome available.';
   }
 
   return `Confidence: Strong — evidence completeness ${evidenceCompleteness}/3 with manageable diagnostic load.`;
@@ -287,25 +307,29 @@ function resolveNextAction({ outcomeClass, repeatedWarning }) {
 }
 
 export function buildAdaptiveGuidance({ outcomeClass, repeatedWarning }) {
+  const reasoning = buildRuntimeReasoning({
+    outcomeClass,
+    repeatedWarning,
+    explanationReasons: []
+  });
+
   if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
     return {
       intent: 'AI intent: Highlight partial completion and cautionary evidence for operator review.',
-      guidance: repeatedWarning
-        ? 'Guidance: Next step: address recurring warning pattern. Rerun: yes, after adjustment. Validation: verify impacted fields first.'
-        : 'Guidance: Next step: inspect warning diagnostics. Rerun: recommended after refining inputs. Validation: verify key outputs.'
+      guidance: `Guidance: ${reasoning.guidance.join(' ')}`
     };
   }
 
   if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
     return {
       intent: 'AI intent: Mark interpretation uncertainty due to low evidence completeness.',
-      guidance: 'Guidance: Next step: cross-check output with trusted reference. Rerun: recommended with fuller metadata. Validation: confirm critical values.'
+      guidance: `Guidance: ${reasoning.guidance.join(' ')}`
     };
   }
 
   return {
     intent: 'AI intent: Confirm outcome is usable for workflow continuation.',
-    guidance: 'Guidance: Next step: continue through follow-up actions. Rerun: optional for comparison. Validation: spot-check downstream assumptions.'
+    guidance: `Guidance: ${reasoning.guidance.join(' ')}`
   };
 }
 
@@ -329,6 +353,125 @@ export function buildAdaptiveGuidanceFromReasons({ outcomeClass, explanationReas
   }
 
   return `${reasonsLine}proceed with follow-up actions and optional comparative rerun.`;
+}
+
+function getDefaultGuidanceByOutcome({ outcomeClass, repeatedWarning }) {
+  if (outcomeClass === OUTCOME_CLASSES.warningPartial) {
+    return repeatedWarning
+      ? [
+        'Next step: address recurring warning pattern.',
+        'Rerun: yes, after adjustment.',
+        'Validation: verify impacted fields first.'
+      ]
+      : [
+        'Next step: inspect warning diagnostics.',
+        'Rerun: recommended after refining inputs.',
+        'Validation: verify key outputs.'
+      ];
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.uncertainResult) {
+    return [
+      'Next step: cross-check output with trusted reference.',
+      'Rerun: recommended with fuller metadata.',
+      'Validation: confirm critical values.'
+    ];
+  }
+
+  if (outcomeClass === OUTCOME_CLASSES.failed) {
+    return [
+      'Next step: review failure diagnostics and assumptions.',
+      'Rerun: recommended after correction.',
+      'Validation: run pre-retry request sanity check.'
+    ];
+  }
+
+  return [
+    'Next step: continue through follow-up actions.',
+    'Rerun: optional for comparison.',
+    'Validation: spot-check downstream assumptions.'
+  ];
+}
+
+function enforceRuntimeReasoningConsistency(reasoning) {
+  const normalized = {
+    outcomeClass: reasoning?.outcomeClass ?? OUTCOME_CLASSES.uncertainResult,
+    confidenceLevel: reasoning?.confidenceLevel ?? 'limited',
+    reasons: Array.isArray(reasoning?.reasons) ? reasoning.reasons.filter(Boolean) : [],
+    guidance: Array.isArray(reasoning?.guidance) ? reasoning.guidance.filter(Boolean) : []
+  };
+
+  const expectedConfidence = resolveConfidenceLevel(normalized.outcomeClass);
+  if (normalized.confidenceLevel !== expectedConfidence) {
+    normalized.confidenceLevel = expectedConfidence;
+  }
+
+  if (normalized.reasons.length === 0) {
+    normalized.reasons = ['observable runtime evidence is limited'];
+  }
+
+  if (normalized.guidance.length === 0) {
+    normalized.guidance = getDefaultGuidanceByOutcome({
+      outcomeClass: normalized.outcomeClass,
+      repeatedWarning: false
+    });
+  }
+
+  const referencesReason = normalized.guidance.some((item) => /because\s/i.test(item));
+  if (!referencesReason) {
+    normalized.guidance.unshift(`Because ${normalized.reasons.join(' and ')}, proceed with the following steps.`);
+  }
+
+  return normalized;
+}
+
+export function buildRuntimeReasoning({
+  hierarchy,
+  repeatedWarning = false,
+  forcedOutcomeClass,
+  additionalReasons = [],
+  outcomeClass,
+  explanationReasons
+} = {}) {
+  const hasHierarchy = Boolean(hierarchy);
+  const hasSupporting = Boolean(hierarchy?.supporting);
+  const hasMetadata = Boolean(hierarchy?.metadata);
+  const hasDiagnostics = Boolean(hierarchy?.diagnostics);
+  const evidenceCompleteness = [hasSupporting, hasMetadata, hasDiagnostics].filter(Boolean).length;
+  const resolvedOutcomeClass = forcedOutcomeClass
+    ?? outcomeClass
+    ?? (hasHierarchy ? classifyExecutionOutcome(hierarchy) : OUTCOME_CLASSES.uncertainResult);
+
+  const reasons = [
+    ...(Array.isArray(explanationReasons)
+      ? explanationReasons
+      : buildOutcomeExplanation({
+        outcomeClass: resolvedOutcomeClass,
+        hasWarnings: Boolean(hierarchy?.hasWarnings),
+        hasDiagnostics,
+        hasSupporting,
+        metadataCompleteness: Number(hierarchy?.metadataCompleteness ?? 0),
+        evidenceCompleteness
+      })),
+    ...additionalReasons
+  ];
+
+  const defaultGuidance = getDefaultGuidanceByOutcome({
+    outcomeClass: resolvedOutcomeClass,
+    repeatedWarning
+  });
+  const reasonBoundGuidance = buildAdaptiveGuidanceFromReasons({
+    outcomeClass: resolvedOutcomeClass,
+    explanationReasons: reasons,
+    repeatedWarning
+  });
+
+  return enforceRuntimeReasoningConsistency({
+    outcomeClass: resolvedOutcomeClass,
+    confidenceLevel: resolveConfidenceLevel(resolvedOutcomeClass),
+    reasons,
+    guidance: [reasonBoundGuidance, ...defaultGuidance]
+  });
 }
 
 export function createUnifiedToolControl({
@@ -498,36 +641,30 @@ export function createUnifiedToolControl({
       suggestionReason.hidden = !reason;
       suggestionReason.textContent = reason ?? '';
     },
-    renderResult(payload, { repeatedWarning = false } = {}) {
+    renderResult(payload, { repeatedWarning = false, forcedOutcomeClass, additionalReasons = [] } = {}) {
       const hierarchy = splitOutputPayload(payload);
       const serialized = safeStringify(payload);
-      const hasSupporting = Boolean(hierarchy.supporting);
-      const hasMetadata = Boolean(hierarchy.metadata);
-      const hasDiagnostics = Boolean(hierarchy.diagnostics);
-      const evidenceCompleteness = [hasSupporting, hasMetadata, hasDiagnostics].filter(Boolean).length;
-      const outcomeClass = classifyExecutionOutcome(hierarchy);
+      const evidenceCompleteness = [Boolean(hierarchy.supporting), Boolean(hierarchy.metadata), Boolean(hierarchy.diagnostics)].filter(Boolean).length;
+      const runtimeReasoning = buildRuntimeReasoning({
+        hierarchy,
+        repeatedWarning,
+        forcedOutcomeClass,
+        additionalReasons
+      });
       const confidencePhrase = resolveConfidencePhrase({
-        outcomeClass,
+        confidenceLevel: runtimeReasoning.confidenceLevel,
         evidenceCompleteness,
         warningCount: hierarchy.warningCount,
         diagnosticWeight: hierarchy.diagnosticWeight
-      });
-      const explanationReasons = buildOutcomeExplanation({
-        outcomeClass,
-        hasWarnings: hierarchy.hasWarnings,
-        hasDiagnostics,
-        hasSupporting,
-        metadataCompleteness: hierarchy.metadataCompleteness,
-        evidenceCompleteness
       });
 
       preview.textContent = toShortText(hierarchy.primary);
       result.textContent = serialized;
       supporting.textContent = resolveInterpretationSummary(hierarchy);
-      classificationWhy.textContent = resolveClassificationWhyLine(explanationReasons);
+      classificationWhy.textContent = resolveClassificationWhyLine(runtimeReasoning.reasons);
       confidence.textContent = confidencePhrase;
       nextAction.textContent = resolveNextAction({
-        outcomeClass,
+        outcomeClass: runtimeReasoning.outcomeClass,
         repeatedWarning
       });
       metadata.textContent = hierarchy.metadata ? safeStringify(hierarchy.metadata) : 'No metadata returned.';
@@ -536,9 +673,10 @@ export function createUnifiedToolControl({
       details.open = false;
       return {
         ...hierarchy,
-        outcomeClass,
+        outcomeClass: runtimeReasoning.outcomeClass,
         evidenceCompleteness,
-        explanationReasons
+        explanationReasons: runtimeReasoning.reasons,
+        runtimeReasoning
       };
     }
   };

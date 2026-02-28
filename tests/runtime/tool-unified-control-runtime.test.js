@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, createUnifiedToolControl, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildRuntimeReasoning, createUnifiedToolControl, useUnifiedToolControl } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
 
 function createContractHost() {
   const host = document.createElement('div');
@@ -97,6 +97,19 @@ describe('tool unified control runtime', () => {
       outcomeClass: 'uncertain_result',
       explanationReasons: ['metadata is limited', 'diagnostics are dominant']
     })).toContain('Because metadata is limited and diagnostics are dominant');
+  });
+
+
+  test('buildRuntimeReasoning enforces consistency across outcome, confidence, reasons, and guidance', () => {
+    const reasoning = buildRuntimeReasoning({
+      outcomeClass: 'warning_partial',
+      explanationReasons: ['warnings detected in runtime evidence']
+    });
+
+    expect(reasoning.outcomeClass).toBe('warning_partial');
+    expect(reasoning.confidenceLevel).toBe('cautious');
+    expect(reasoning.reasons).toContain('warnings detected in runtime evidence');
+    expect(reasoning.guidance[0]).toContain('Because warnings detected in runtime evidence');
   });
 
   test('adapter helper can consume runtime context object', () => {
