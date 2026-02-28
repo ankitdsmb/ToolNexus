@@ -1,7 +1,9 @@
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
@@ -12,11 +14,11 @@ namespace ToolNexus.Infrastructure.Tests.Startup;
 public sealed class DatabaseInitializationHostedServiceTests
 {
     [Fact]
-    public async Task ExecuteAsync_InvalidMigrationProvider_FailsDeterministically()
+    public async Task ExecuteAsync_InvalidMigrationProvider_MarksStateAsFailedWithoutThrowing()
     {
         var services = new ServiceCollection();
-        services.AddDbContext<ToolNexusContentDbContext>(options => options.UseSqlite($"Data Source=:memory:"));
-        services.AddDbContext<ToolNexusIdentityDbContext>(options => options.UseSqlite($"Data Source=:memory:"));
+        services.AddDbContext<ToolNexusContentDbContext>(options => options.UseSqlite("Data Source=:memory:"));
+        services.AddDbContext<ToolNexusIdentityDbContext>(options => options.UseSqlite("Data Source=:memory:"));
         using var provider = services.BuildServiceProvider();
 
         var state = new DatabaseInitializationState();
@@ -24,12 +26,13 @@ public sealed class DatabaseInitializationHostedServiceTests
             provider,
             Microsoft.Extensions.Options.Options.Create(new DatabaseInitializationOptions { RunMigrationOnStartup = true }),
             state,
+            new TestHostEnvironment(),
+            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build(),
             NullLogger<DatabaseInitializationHostedService>.Instance);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ExecuteAsync(CancellationToken.None));
+        await service.ExecuteAsync(CancellationToken.None);
 
         Assert.True(state.HasFailed);
-        Assert.Contains("Relational-specific", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Relational-specific", state.Error ?? string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -65,5 +68,13 @@ public sealed class DatabaseInitializationHostedServiceTests
         var task = (Task?)method!.Invoke(null, [dbContext, CancellationToken.None]);
         Assert.NotNull(task);
         await task!;
+    }
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Production;
+        public string ApplicationName { get; set; } = "ToolNexus.Tests";
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Authentication;
 using ToolNexus.Application.Models;
@@ -13,6 +14,7 @@ public sealed class ToolsController(
     IToolService toolService,
     IToolCatalogService catalogService,
     IToolManifestGovernance manifestGovernance,
+    IDatabaseInitializationState databaseInitializationState,
     ILogger<ToolsController> logger) : ControllerBase
 {
     [HttpGet("ping")]
@@ -65,6 +67,18 @@ public sealed class ToolsController(
         IDictionary<string, string>? options,
         CancellationToken cancellationToken)
     {
+        if (!databaseInitializationState.IsReady)
+        {
+            logger.LogWarning(
+                "Execution is unavailable because database initialization is not ready. StatusFailed={HasFailed}; Error={DatabaseError}",
+                databaseInitializationState.HasFailed,
+                databaseInitializationState.Error);
+
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new ToolExecutionResponse(false, string.Empty, "execution_unavailable_database_offline", false));
+        }
+
         var result = await toolService.ExecuteAsync(
             new ToolExecutionRequest(slug, action, input, options),
             cancellationToken);
