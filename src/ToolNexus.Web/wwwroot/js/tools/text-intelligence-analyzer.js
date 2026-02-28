@@ -1,9 +1,9 @@
-import { normalizeToolRoot, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
-const TOOL_SLUG = 'text-intelligence-analyzer';
+import { getToolPlatformKernel, resolveLifecycleInitRoot } from './tool-platform-kernel.js';
+import { assertRunToolExecutionOnly } from './tool-lifecycle-guard.js';
+
+const TOOL_ID = 'text-intelligence-analyzer';
 const ACTION = 'analyze';
 const DEFAULT_EXECUTION_PATH_PREFIX = '/api/v1/tools';
-
-export const toolRuntimeType = 'mount';
 
 function normalizePathPrefix(pathPrefix) {
   const normalized = (pathPrefix ?? '').toString().trim();
@@ -14,79 +14,43 @@ function normalizePathPrefix(pathPrefix) {
   return `/${normalized.replace(/^\/+/, '').replace(/\/+$/, '')}`;
 }
 
-function resolveRoot(context) {
-  if (context?.handle?.id === TOOL_SLUG && context.handle?.root instanceof Element) {
-    return context.handle.root;
-  }
-
-  return normalizeToolRoot(context);
-}
-
-function requireRuntimeRoot(context) {
-  const root = resolveRoot(context);
-  if (!root) {
-    throw new Error(`[${TOOL_SLUG}] invalid lifecycle root`);
-  }
-
-  return root;
-}
-
-function createRuntimeNodes(doc = document) {
-  const container = doc.createElement('section');
-  container.className = 'tool-panel tool-panel--runtime';
-  container.dataset.runtimeContainer = TOOL_SLUG;
-
-  const title = doc.createElement('h2');
-  title.textContent = 'Text Intelligence Analyzer';
-
-  const inputLabel = doc.createElement('label');
-  inputLabel.htmlFor = `${TOOL_SLUG}-input`;
-  inputLabel.textContent = 'Input text';
-
-  const textarea = doc.createElement('textarea');
-  textarea.id = `${TOOL_SLUG}-input`;
-  textarea.rows = 10;
-  textarea.placeholder = 'Paste text to analyze...';
-
-  const analyzeButton = doc.createElement('button');
-  analyzeButton.type = 'button';
-  analyzeButton.className = 'tool-btn tool-btn--primary';
-  analyzeButton.textContent = 'Analyze';
-
-  const status = doc.createElement('p');
-  status.className = 'result-indicator result-indicator--idle';
-  status.setAttribute('role', 'status');
-  status.textContent = 'Ready';
-
-  const result = doc.createElement('pre');
-  result.className = 'tool-runtime-output';
-  result.setAttribute('aria-live', 'polite');
-  result.textContent = 'No output yet.';
-
-  container.append(title, inputLabel, textarea, analyzeButton, status, result);
-
-  return { container, textarea, analyzeButton, status, result };
-}
-
-async function executeAnalysis(text) {
+function buildEndpoint() {
   const apiBase = (window.ToolNexusConfig?.apiBaseUrl ?? '').trim().replace(/\/$/, '');
   const pathPrefix = normalizePathPrefix(window.ToolNexusConfig?.toolExecutionPathPrefix);
-  const endpointPath = `${pathPrefix}/${encodeURIComponent(TOOL_SLUG)}/${encodeURIComponent(ACTION)}`;
-  const endpoint = apiBase ? `${apiBase}${endpointPath}` : endpointPath;
+  const endpointPath = `${pathPrefix}/${encodeURIComponent(TOOL_ID)}/${encodeURIComponent(ACTION)}`;
+  return apiBase ? `${apiBase}${endpointPath}` : endpointPath;
+}
 
-  const response = await fetch(endpoint, {
+function extractText(input) {
+  if (typeof input === 'string') {
+    return input;
+  }
+
+  if (input && typeof input === 'object') {
+    return String(input.text ?? input.input ?? '');
+  }
+
+  return '';
+}
+
+export async function runTool(action, input) {
+  assertRunToolExecutionOnly(action, ACTION, TOOL_ID);
+
+  const text = extractText(input).trim();
+  if (!text) {
+    throw new Error('Input text is required.');
+  }
+
+  const response = await fetch(buildEndpoint(), {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ input: JSON.stringify({ text }) })
   });
 
-  let payload = null;
-  try {
-    payload = await response.json();
-  } catch {
+  const payload = await response.json().catch(() => {
     throw new Error('Invalid response from execution API.');
-  }
+  });
 
   if (!response.ok) {
     const detail = payload?.error ?? payload?.detail ?? 'Execution failed.';
@@ -96,87 +60,55 @@ async function executeAnalysis(text) {
   return payload;
 }
 
-function renderPayload(resultNode, payload) {
-  try {
-    resultNode.textContent = JSON.stringify(payload, null, 2);
-  } catch {
-    resultNode.textContent = 'Invalid response payload.';
-  }
-}
+function createApp(root) {
+  const input = root.querySelector('#inputEditor');
+  const output = root.querySelector('#outputViewer');
+  const status = root.querySelector('#analysisStatus');
+  const button = root.querySelector('#analyzeButton');
+  const errorBox = root.querySelector('#errorBox');
 
-export function create(context) {
-  const root = requireRuntimeRoot(context);
-  if (!root) {
-    return null;
+  if (!input || !output || !status || !button) {
+    throw new Error('[text-intelligence-analyzer] missing required DOM nodes');
   }
 
-  const existing = root.querySelector(`[data-runtime-container="${TOOL_SLUG}"]`);
-  if (existing) {
-    return { root, mounted: true, nodes: null, removeListeners: () => {} };
-  }
-
-  const nodes = createRuntimeNodes(root.ownerDocument || document);
-  root.appendChild(nodes.container);
-
-  return {
-    root,
-    nodes,
-    mounted: false,
-    removeListeners: () => {}
-  };
-}
-
-export function mount(context) {
-  if (!context?.root || !context?.nodes || context.mounted) {
-    return context ?? null;
-  }
-
-  const { textarea, analyzeButton, status, result } = context.nodes;
-
-  const onAnalyze = async () => {
-    const text = textarea.value?.trim() ?? '';
+  const handleAnalyze = async () => {
+    const text = input.value?.trim() ?? '';
     if (!text) {
-      status.textContent = 'Please provide text before analyzing.';
-      result.textContent = 'Execution failed: input is empty.';
+      status.textContent = 'Provide text before execution.';
+      output.textContent = 'Execution failed: input is empty.';
       return;
     }
 
-    analyzeButton.disabled = true;
     status.textContent = 'Analyzing…';
+    button.disabled = true;
+    if (errorBox) {
+      errorBox.hidden = true;
+      errorBox.textContent = '';
+    }
 
     try {
-      const payload = await executeAnalysis(text);
-      const runtimeStatus = payload?.output && typeof payload.output === 'string'
-        ? (() => {
-            try {
-              return JSON.parse(payload.output)?.status;
-            } catch {
-              return null;
-            }
-          })()
-        : null;
-
-      if (runtimeStatus === 'runtime-not-enabled') {
-        status.textContent = 'Runtime disabled: showing fallback analysis.';
-      } else {
-        status.textContent = 'Analysis completed.';
-      }
-
-      renderPayload(result, payload);
+      const payload = await runTool(ACTION, { text });
+      output.textContent = JSON.stringify(payload, null, 2);
+      status.textContent = 'Analysis completed.';
     } catch (error) {
+      const message = error?.message || 'Execution failed.';
+      output.textContent = message;
       status.textContent = 'Execution failed.';
-      result.textContent = error?.message || 'Execution failed.';
+      if (errorBox) {
+        errorBox.hidden = false;
+        errorBox.textContent = message;
+      }
     } finally {
-      analyzeButton.disabled = false;
+      button.disabled = false;
     }
   };
 
-  analyzeButton.addEventListener('click', onAnalyze);
+  button.addEventListener('click', handleAnalyze);
 
   return {
-    ...context,
-    mounted: true,
-    removeListeners: () => analyzeButton.removeEventListener('click', onAnalyze)
+    destroy() {
+      button.removeEventListener('click', handleAnalyze);
+    }
   };
 }
 
@@ -186,25 +118,17 @@ export function init(...args) {
     throw new Error('[Lifecycle] invalid root');
   }
 
-  const created = create(root);
-  if (!created) {
-    return null;
-  }
-
-  return mount(created);
+  return {
+    root,
+    handle: getToolPlatformKernel().mountTool({
+      id: TOOL_ID,
+      root,
+      init: () => createApp(root),
+      destroy: (app) => app?.destroy?.()
+    })
+  };
 }
 
-export function destroy(context = null, rootOrContext) {
-  const root = requireRuntimeRoot(context);
-  const effectiveRoot = context?.root ?? root;
-  context?.removeListeners?.();
-
-  if (!effectiveRoot) {
-    return;
-  }
-
-  const container = effectiveRoot.querySelector(`[data-runtime-container="${TOOL_SLUG}"]`);
-  container?.remove();
+export function destroy(context) {
+  context?.handle?.destroy?.();
 }
-
-
