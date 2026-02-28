@@ -25,7 +25,7 @@ describe('runtime execution action ux', () => {
 
     expect(control.runButton).not.toBeNull();
     expect(control.runButton.classList.contains('tool-btn--primary')).toBe(true);
-    expect(control.runButton.textContent).toBe('Run');
+    expect(control.runButton.textContent).toBe('Run Tool');
     expect(control.actions.querySelector('.tn-unified-tool-control__suggestion-badge')).not.toBeNull();
     expect(control.actions.querySelector('.tn-unified-tool-control__execution-hint')).not.toBeNull();
   });
@@ -39,7 +39,7 @@ describe('runtime execution action ux', () => {
     });
 
     control.setStatus('idle');
-    expect(control.runButton.textContent).toBe('Run');
+    expect(control.runButton.textContent).toBe('Run Tool');
     expect(control.runButton.dataset.runtimeState).toBe('idle');
 
     control.setStatus('validating');
@@ -55,15 +55,15 @@ describe('runtime execution action ux', () => {
     expect(control.runButton.dataset.runtimeState).toBe('streaming');
 
     control.setStatus('success');
-    expect(control.runButton.textContent).toBe('Run Again');
+    expect(control.runButton.textContent).toBe('Run Tool Again');
     expect(control.runButton.dataset.runtimeState).toBe('success');
 
     control.setStatus('warning');
-    expect(control.runButton.textContent).toBe('Run Again (Check warnings)');
+    expect(control.runButton.textContent).toBe('Run Tool Again');
     expect(control.runButton.dataset.runtimeState).toBe('warning');
 
     control.setStatus('failed');
-    expect(control.runButton.textContent).toBe('Retry');
+    expect(control.runButton.textContent).toBe('Retry Run');
     expect(control.runButton.dataset.runtimeState).toBe('failed');
   });
 });

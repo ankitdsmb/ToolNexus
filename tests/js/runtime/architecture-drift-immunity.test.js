@@ -54,7 +54,7 @@ describe('architecture drift immunity guardrails', () => {
     expect(source).toContain("uncertainResult: 'uncertain_result'");
     expect(source).toContain("failed: 'failed'");
     expect(source).toContain("const EXECUTION_STATES = Object.freeze({");
-    expect(source).toContain("label: 'Running · Authority and runtime active'");
-    expect(source).toContain("label: 'Success · Execution complete'");
+    expect(source).toContain("label: 'Running'");
+    expect(source).toContain("label: 'Completed'");
   });
 });

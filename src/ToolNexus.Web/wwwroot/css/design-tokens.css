@@ -64,6 +64,11 @@ TOKENS
   --runtime-identity-shadow: var(--shadow-md);
   --runtime-input-shadow: var(--shadow-sm);
   --runtime-output-shadow: var(--shadow-sm);
+  --runtime-workspace-gap: clamp(18px, 2vw, 28px);
+  --runtime-workspace-padding: clamp(18px, 2.2vw, 30px);
+  --runtime-workspace-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
+  --runtime-badge-surface: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg-primary));
+  --runtime-doc-surface: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
 
   --radius-sm: 8px;
   --radius-md: 10px;
