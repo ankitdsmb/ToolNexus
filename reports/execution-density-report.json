@@ -1,0 +1,78 @@
+{
+  "sample": true,
+  "passed": false,
+  "score": 55,
+  "severity": "high",
+  "telemetryCategory": "density_drift",
+  "violations": [
+    {
+      "ruleId": "D2",
+      "severity": "high",
+      "weight": 14,
+      "message": "Nested surfaces exceed allowed depth (max 2). Nested surface depth 4 exceeds 2.",
+      "measurement": {
+        "nestedSurfaceDepth": 4
+      }
+    },
+    {
+      "ruleId": "D6",
+      "severity": "medium",
+      "weight": 8,
+      "message": "Shell runtime content padding exceeds 20px. Shell padding 24px exceeds 20px.",
+      "measurement": {
+        "shellPaddingPx": 24
+      }
+    },
+    {
+      "ruleId": "D7",
+      "severity": "medium",
+      "weight": 7,
+      "message": "Status zone height exceeds 48px. Status zone height 60px exceeds 48px.",
+      "measurement": {
+        "statusZoneHeightPx": 60
+      }
+    },
+    {
+      "ruleId": "D8",
+      "severity": "medium",
+      "weight": 6,
+      "message": "Documentation must stay visually secondary. Docs opacity 1 must be lower than runtime emphasis opacity 1.",
+      "measurement": {
+        "docsOpacity": 1,
+        "runtimeEmphasisOpacity": 1
+      }
+    },
+    {
+      "ruleId": "D9",
+      "severity": "high",
+      "weight": 10,
+      "message": "Header must remain <=15% of viewport height. Header uses 26.04% of viewport; max 15.00%.",
+      "measurement": {
+        "headerHeightPx": 200,
+        "viewportHeight": 768,
+        "headerViewportRatio": 0.2604166666666667
+      }
+    }
+  ],
+  "measurements": {
+    "sectionGapsPx": [
+      10,
+      10
+    ],
+    "toolbarEditorDistancePx": 10,
+    "editorHeightsPx": [
+      300
+    ],
+    "dualEditorHeightDeltaPx": null,
+    "shellPaddingPx": 24,
+    "nestedSurfaceDepth": 4,
+    "statusZoneHeightPx": 60,
+    "docsOpacity": 1,
+    "runtimeEmphasisOpacity": 1,
+    "headerHeightPx": 200,
+    "viewportHeight": 768,
+    "headerViewportRatio": 0.2604166666666667,
+    "primaryActionCount": 1
+  },
+  "generatedAt": "2026-02-28T23:26:04.964Z"
+}
