@@ -13,11 +13,13 @@
    Client-side processing
   </span>
  </header>
- <section class="tool-local-actions">
-  <div class="sql-toolbar-row">
+ <section class="tool-local-actions sql-control-ribbon" role="toolbar" aria-label="SQL formatter controls">
+  <div class="sql-toolbar-row tool-action-group-primary" role="group" aria-label="Primary action">
    <button class="tool-btn tool-btn--primary" id="formatBtn" type="button" data-tool-primary-action>
     Format
    </button>
+  </div>
+  <div class="sql-toolbar-row tool-action-group-transform" role="group" aria-label="Transform actions">
    <button class="tool-btn" id="clearBtn" type="button">
     Clear
    </button>
@@ -27,6 +29,8 @@
    <button class="tool-btn" id="downloadBtn" type="button">
     Download .sql
    </button>
+  </div>
+  <div class="sql-toolbar-row tool-action-group-utility" role="group" aria-label="Formatting options">
    <label class="tool-toggle">
     <input id="autoFormatToggle" type="checkbox"/>
     Auto format
@@ -40,7 +44,7 @@
     Preserve blank lines
    </label>
   </div>
-  <div class="sql-toolbar-row">
+  <div class="sql-toolbar-row tool-action-group-utility" role="group" aria-label="SQL style controls">
    <label class="tool-toggle" for="dialectSelect">
     Dialect
     <select aria-label="SQL dialect" class="tool-select" id="dialectSelect">
@@ -195,4 +199,3 @@
   </section>
  </section>
 </div>
-

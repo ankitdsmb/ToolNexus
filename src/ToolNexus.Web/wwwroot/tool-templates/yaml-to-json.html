@@ -13,20 +13,25 @@
    Client-side processing
   </span>
  </header>
- <section class="tool-local-actions">
-  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button" data-tool-primary-action>
-   Convert
-  </button>
-  <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
-   Clear input
-  </button>
-  <button class="tool-btn tool-btn--outline" disabled="" id="copyBtn" type="button">
-   Copy JSON
-  </button>
-  <button class="tool-btn tool-btn--ghost" disabled="" id="downloadBtn" type="button">
-   Download .json
-  </button>
-  <label class="tool-option">
+ <section class="tool-local-actions tool-yaml-json__controls" role="toolbar" aria-label="YAML to JSON controls">
+  <div class="tool-action-group-primary" role="group" aria-label="Primary action">
+   <button class="tool-btn tool-btn--primary" id="convertBtn" type="button" data-tool-primary-action>
+    Convert
+   </button>
+  </div>
+  <div class="tool-action-group-transform" role="group" aria-label="Transform actions">
+   <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+    Clear input
+   </button>
+   <button class="tool-btn tool-btn--outline" disabled="" id="copyBtn" type="button">
+    Copy JSON
+   </button>
+   <button class="tool-btn tool-btn--ghost" disabled="" id="downloadBtn" type="button">
+    Download .json
+   </button>
+  </div>
+  <div class="tool-action-group-utility" role="group" aria-label="Conversion options">
+   <label class="tool-option">
    <input id="autoConvertToggle" type="checkbox"/>
    Auto convert
   </label>
@@ -50,17 +55,18 @@
    <input id="parseDatesToggle" type="checkbox"/>
    Parse date-like strings
   </label>
-  <label class="tool-option tool-option--select" for="indentSelect">
+   <label class="tool-option tool-option--select" for="indentSelect">
    Indentation
    <select id="indentSelect">
     <option selected="" value="2">
      2 spaces
     </option>
     <option value="4">
-     4 spaces
+    4 spaces
     </option>
    </select>
   </label>
+  </div>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
@@ -99,4 +105,3 @@
   </section>
  </section>
 </div>
-

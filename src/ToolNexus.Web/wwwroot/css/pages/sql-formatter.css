@@ -36,26 +36,41 @@
 .sql-toolbar,
 .sql-panel,
 .sql-metrics {
-  padding: 24px;
+  padding: 14px;
 }
 
 .sql-toolbar {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 0;
 }
 
 .sql-toolbar-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  padding-right: 10px;
+  margin-right: 2px;
+  border-right: 1px solid color-mix(in srgb, var(--color-border-subtle) 75%, transparent);
+}
+
+.sql-toolbar-row:last-child {
+  border-right: 0;
+  padding-right: 0;
 }
 
 .sql-workspace {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 0;
   padding: 16px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .sql-panel {
@@ -74,6 +89,16 @@
   font: 500 13px/1.6 var(--font-family-mono);
   resize: vertical;
   overflow: auto;
+}
+
+.sql-formatter-page .tool-toggle {
+  font-size: 12px;
+  gap: 6px;
+}
+
+.sql-formatter-page .tool-select {
+  min-height: 28px;
+  padding: 4px 6px;
 }
 
 .sql-metrics {
