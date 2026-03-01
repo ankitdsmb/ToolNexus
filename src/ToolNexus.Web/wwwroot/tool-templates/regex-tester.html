@@ -1,21 +1,32 @@
 <div class="tool-runtime-widget">
  <header class="tool-local-header">
+  <div>
+   <h2><span data-bind="tool.title">Regex Tester</span></h2>
+   <p class="tool-local-description">Evaluate JavaScript regular expressions with immediate match feedback.</p>
+  </div>
  </header>
- <section class="tool-local-actions">
- 
-  <button type="button" data-tool-primary-action hidden aria-hidden="true" tabindex="-1">Run</button>
+ <section class="tool-local-actions" role="toolbar" aria-label="Regex actions">
+  <button type="button" class="tool-btn tool-btn--primary tool-action-primary" data-regex-run data-tool-primary-action>Test regex</button>
+  <div class="tool-action-group-transform">
+   <label class="tool-toggle">Flags <input class="tool-input" data-regex-flags placeholder="gim" type="text"/></label>
+  </div>
+  <div class="tool-action-group-utility">
+   <span class="tool-runtime-strip-compact" data-regex-status>Ready</span>
+  </div>
  </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
-   <textarea class="tool-editor" id="inputEditor"></textarea>
+ <section class="tool-local-body tool-workspace-unified">
+  <section class="tool-local-surface" data-workspace-panel="primary">
+   <label for="regexPattern">Pattern</label>
+   <input id="regexPattern" class="tool-input" data-regex-pattern type="text" placeholder="^hello"/>
+   <label for="regexInput">Candidate text</label>
+   <textarea id="regexInput" class="tool-editor" data-regex-input rows="14" placeholder="Enter text to test against the pattern"></textarea>
   </section>
-  <section class="tool-local-surface">
-   <textarea class="tool-editor" id="outputField"></textarea>
+  <section class="tool-local-surface" data-workspace-panel="secondary">
+   <label for="regexOutput">Result</label>
+   <textarea id="regexOutput" class="tool-editor" data-regex-output rows="14" readonly></textarea>
   </section>
  </section>
- <section class="tool-local-metrics">
-  <section hidden="" id="errorBox">
-  </section>
+ <section class="tool-local-metrics tool-metrics-compact-grid">
+  <section hidden="" id="errorBox"></section>
  </section>
 </div>
-

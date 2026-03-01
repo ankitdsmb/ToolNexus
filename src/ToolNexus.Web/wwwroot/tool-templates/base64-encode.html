@@ -1,136 +1,64 @@
 <div class="tool-runtime-widget">
  <header class="tool-local-header">
   <div>
-   <h2>
-    <span data-bind="tool.title">
-    </span>
-   </h2>
-   <p class="tool-local-description">
-    Encode text or files into Base64 with full UTF-8 and binary support.
-   </p>
+   <h2><span data-bind="tool.title"></span></h2>
+   <p class="tool-local-description">Encode text or files into Base64 with full UTF-8 and binary support.</p>
   </div>
-  <span aria-label="Execution scope" class="base64-badge">
-   Client-side only
-  </span>
+  <span aria-label="Execution scope" class="base64-badge">Client-side only</span>
  </header>
- <section class="tool-local-actions">
+ <section class="tool-local-actions" role="toolbar" aria-label="Base64 actions">
+  <button class="tool-btn tool-btn--primary tool-action-primary" id="encodeBtn" type="button" data-tool-primary-action>Encode</button>
+  <div class="tool-action-group-transform">
+   <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">Clear input</button>
+  </div>
+  <div class="tool-action-group-utility">
+   <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">Copy output</button>
+   <button class="tool-btn tool-btn--ghost" id="downloadBtn" type="button">Download .txt</button>
+  </div>
  </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
+ <section class="tool-local-body base64-workspace tool-workspace-unified">
+  <section class="tool-local-surface" data-workspace-panel="primary">
    <div class="base64-panel__header">
-    <h2 id="inputHeading">
-     Input
-    </h2>
-    <p class="base64-meta" id="inputMeta">
-     Text mode · 0 B
-    </p>
+    <h2 id="inputHeading">Input</h2>
+    <p class="base64-meta" id="inputMeta">Text mode · 0 B</p>
    </div>
    <div aria-label="Input mode" class="base64-mode-toggle" role="radiogroup">
-    <button aria-checked="true" class="tool-btn tool-btn--outline is-active" id="textModeBtn" role="radio" type="button">
-     Text
-    </button>
-    <button aria-checked="false" class="tool-btn tool-btn--outline" id="fileModeBtn" role="radio" type="button">
-     File
-    </button>
+    <button aria-checked="true" class="tool-btn tool-btn--outline is-active" id="textModeBtn" role="radio" type="button">Text</button>
+    <button aria-checked="false" class="tool-btn tool-btn--outline" id="fileModeBtn" role="radio" type="button">File</button>
    </div>
    <div aria-label="Drop a file or click to select" class="base64-dropzone" hidden="" id="dropZone" role="button" tabindex="0">
-    <p>
-     <strong>
-      Drop file here
-     </strong>
-     or click to upload
-    </p>
-    <p class="base64-dropzone__hint">
-     Supports binary files. File stays in your browser.
-    </p>
+    <p><strong>Drop file here</strong> or click to upload</p>
+    <p class="base64-dropzone__hint">Supports binary files. File stays in your browser.</p>
     <input hidden="" id="fileInput" type="file"/>
    </div>
-   <label class="base64-label" for="inputEditor">
-    Text input
-   </label>
+   <label class="base64-label" for="inputEditor">Text input</label>
    <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste or type content to encode" rows="14"></textarea>
    <div class="base64-options">
-    <label>
-     <input id="urlSafeToggle" type="checkbox"/>
-     URL-safe mode (- and _)
-    </label>
-    <label>
-     <input id="removePaddingToggle" type="checkbox"/>
-     Remove padding (=)
-    </label>
-    <label>
-     <input checked="" id="autoEncodeToggle" type="checkbox"/>
-     Auto encode on input
-    </label>
+    <label><input id="urlSafeToggle" type="checkbox"/> URL-safe mode (- and _)</label>
+    <label><input id="removePaddingToggle" type="checkbox"/> Remove padding (=)</label>
+    <label><input checked="" id="autoEncodeToggle" type="checkbox"/> Auto encode on input</label>
    </div>
-   <p class="base64-warning" hidden="" id="warningBanner">
-   </p>
-   <div class="base64-actions">
-    <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button" data-tool-primary-action>
-     Encode
-    </button>
-    <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
-     Clear input
-    </button>
-   </div>
-   <p class="base64-shortcuts">
-    <kbd>
-     Ctrl
-    </kbd>
-    +
-    <kbd>
-     Enter
-    </kbd>
-    Encode ·
-    <kbd>
-     Ctrl
-    </kbd>
-    +
-    <kbd>
-     L
-    </kbd>
-    Clear
-   </p>
+   <p class="base64-warning" hidden="" id="warningBanner"></p>
   </section>
-  <section class="tool-local-surface">
-   <div class="base64-panel__header">
-    <h2 id="outputHeading">
-     Encoded output
-    </h2>
-    <p class="base64-meta" id="statusText">
-     Ready
-    </p>
+  <section class="tool-local-surface" data-workspace-panel="secondary">
+   <div class="base64-panel__header tool-runtime-strip-compact">
+    <h2 id="outputHeading">Encoded output</h2>
+    <p class="base64-meta" id="statusText">Ready</p>
    </div>
-   <div class="base64-loading" hidden="" id="loadingState">
-    Encoding…
-   </div>
+   <div class="base64-loading" hidden="" id="loadingState">Encoding…</div>
    <section class="base64-error" hidden="" id="errorBox" role="alert">
-    <h3 id="errorTitle">
-    </h3>
-    <p id="errorMessage">
-    </p>
-    <p class="base64-error__action" id="errorAction">
-    </p>
+    <h3 id="errorTitle"></h3>
+    <p id="errorMessage"></p>
+    <p class="base64-error__action" id="errorAction"></p>
    </section>
-   <label class="base64-label" for="outputEditor">
-    Base64 result
-   </label>
+   <label class="base64-label" for="outputEditor">Base64 result</label>
    <textarea class="tool-textarea tool-textarea--mono" id="outputEditor" placeholder="Encoded output appears here" readonly="" rows="14"></textarea>
-   <div class="base64-actions">
-    <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
-     Copy output
-    </button>
-    <button class="tool-btn tool-btn--ghost" id="downloadBtn" type="button">
-     Download .txt
-    </button>
-   </div>
   </section>
  </section>
- <section class="tool-local-metrics">
+ <section class="tool-local-metrics tool-metrics-compact-grid">
   <p><span>Mode</span><strong id="runtimeMode">Text</strong></p>
   <p><span>Input</span><strong id="inputMetric">0 B</strong></p>
   <p><span>Output</span><strong id="outputMetric">0 B</strong></p>
   <p><span>Status</span><strong id="encodeMetricStatus">Ready</strong></p>
  </section>
 </div>
-

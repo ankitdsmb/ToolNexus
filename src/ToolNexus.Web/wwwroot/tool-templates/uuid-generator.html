@@ -1,145 +1,49 @@
-<div class="tool-runtime-widget">
+<div class="tool-runtime-widget uuid-tool">
  <link href="/css/tools/uuid-generator.css" rel="stylesheet"/>
  <header class="tool-local-header">
-  <h2>
-   <span data-bind="tool.title">
-   </span>
-  </h2>
-  <p>
-   Generate RFC-compliant UUIDs using secure client-side randomness. No server calls. No telemetry.
-  </p>
-  <span aria-label="Security badge" class="uuid-tool__badge">
-   Secure client-side generation
-  </span>
+  <h2><span data-bind="tool.title"></span></h2>
+  <p>Generate RFC-compliant UUIDs using secure client-side randomness. No server calls. No telemetry.</p>
+  <span aria-label="Security badge" class="uuid-tool__badge">Secure client-side generation</span>
  </header>
- <section class="tool-local-actions">
+ <section class="tool-local-actions" role="toolbar" aria-label="UUID actions">
+  <button class="tool-btn tool-btn--primary tool-action-primary" id="uuidGenerateBtn" type="button" data-tool-primary-action>Generate</button>
+  <div class="tool-action-group-transform">
+   <button class="tool-btn tool-btn--outline" id="uuidClearBtn" type="button">Clear</button>
+  </div>
+  <div class="tool-action-group-utility">
+   <button class="tool-btn tool-btn--outline" disabled="" id="uuidCopyBtn" type="button">Copy first</button>
+   <button class="tool-btn tool-btn--outline" disabled="" id="uuidCopyAllBtn" type="button">Copy all</button>
+   <button class="tool-btn tool-btn--ghost" disabled="" id="uuidDownloadBtn" type="button">Download TXT</button>
+  </div>
  </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
+ <section class="tool-local-body tool-workspace-unified">
+  <section class="tool-local-surface" data-workspace-panel="primary">
    <div class="uuid-tool__controls">
-    <div class="uuid-tool__field">
-     <label for="uuidVersion">
-      UUID version
-     </label>
-     <select id="uuidVersion">
-      <option selected="" value="v4">
-       v4 (random, default)
-      </option>
-      <option value="v1">
-       v1 (time-based)
-      </option>
-      <option value="v7">
-       v7 (time-ordered)
-      </option>
-      <option value="nil">
-       Nil UUID
-      </option>
-     </select>
-    </div>
-    <div class="uuid-tool__field">
-     <label for="uuidQuantity">
-      Quantity (1–1000)
-     </label>
-     <input id="uuidQuantity" max="1000" min="1" type="number" value="1"/>
-    </div>
-    <div class="uuid-tool__field">
-     <label for="uuidCase">
-      Letter casing
-     </label>
-     <select id="uuidCase">
-      <option selected="" value="lower">
-       Lowercase
-      </option>
-      <option value="upper">
-       Uppercase
-      </option>
-     </select>
-    </div>
-    <div class="uuid-tool__field">
-     <label for="uuidWrapper">
-      Wrapper format
-     </label>
-     <select id="uuidWrapper">
-      <option selected="" value="none">
-       None
-      </option>
-      <option value="braces">
-       Braces {uuid}
-      </option>
-      <option value="urn">
-       URN urn:uuid:
-      </option>
-     </select>
-    </div>
-    <div class="uuid-tool__field">
-     <label for="uuidTemplate">
-      Custom template ({uuid})
-     </label>
-     <input id="uuidTemplate" placeholder="id:{uuid}" type="text"/>
-    </div>
+    <div class="uuid-tool__field"><label for="uuidVersion">UUID version</label><select id="uuidVersion"><option selected="" value="v4">v4 (random, default)</option><option value="v1">v1 (time-based)</option><option value="v7">v7 (time-ordered)</option><option value="nil">Nil UUID</option></select></div>
+    <div class="uuid-tool__field"><label for="uuidQuantity">Quantity (1–1000)</label><input id="uuidQuantity" max="1000" min="1" type="number" value="1"/></div>
+    <div class="uuid-tool__field"><label for="uuidCase">Letter casing</label><select id="uuidCase"><option selected="" value="lower">Lowercase</option><option value="upper">Uppercase</option></select></div>
+    <div class="uuid-tool__field"><label for="uuidWrapper">Wrapper format</label><select id="uuidWrapper"><option selected="" value="none">None</option><option value="braces">Braces {uuid}</option><option value="urn">URN urn:uuid:</option></select></div>
+    <div class="uuid-tool__field"><label for="uuidTemplate">Custom template ({uuid})</label><input id="uuidTemplate" placeholder="id:{uuid}" type="text"/></div>
    </div>
    <div class="uuid-tool__toggles">
-    <label class="uuid-tool__toggle" for="uuidNoHyphen">
-     <input id="uuidNoHyphen" type="checkbox"/>
-     Remove hyphens
-    </label>
-    <label class="uuid-tool__toggle" for="uuidUnique">
-     <input id="uuidUnique" type="checkbox"/>
-     Enforce uniqueness check
-    </label>
-    <label class="uuid-tool__toggle" for="uuidAutoGenerate">
-     <input id="uuidAutoGenerate" type="checkbox"/>
-     Auto-generate on option changes
-    </label>
+    <label class="uuid-tool__toggle" for="uuidNoHyphen"><input id="uuidNoHyphen" type="checkbox"/> Remove hyphens</label>
+    <label class="uuid-tool__toggle" for="uuidUnique"><input id="uuidUnique" type="checkbox"/> Enforce uniqueness check</label>
+    <label class="uuid-tool__toggle" for="uuidAutoGenerate"><input id="uuidAutoGenerate" type="checkbox"/> Auto-generate on option changes</label>
    </div>
-   <div aria-label="UUID actions" class="uuid-tool__actions" role="toolbar">
-    <button class="tool-btn tool-btn--primary" id="uuidGenerateBtn" type="button" data-tool-primary-action>
-     Generate
-    </button>
-    <button class="tool-btn tool-btn--outline" id="uuidClearBtn" type="button">
-     Clear
-    </button>
-    <button class="tool-btn tool-btn--outline" disabled="" id="uuidCopyBtn" type="button">
-     Copy first
-    </button>
-    <button class="tool-btn tool-btn--outline" disabled="" id="uuidCopyAllBtn" type="button">
-     Copy all
-    </button>
-    <button class="tool-btn tool-btn--ghost" disabled="" id="uuidDownloadBtn" type="button">
-     Download TXT
-    </button>
-   </div>
-   <p class="shortcut-hint">
-    Shortcuts: Ctrl + Enter to generate, Ctrl + L to clear.
-   </p>
+   <p class="shortcut-hint">Shortcuts: Ctrl + Enter to generate, Ctrl + L to clear.</p>
   </section>
-  <section class="tool-local-surface">
-   <div class="tool-error" hidden="" id="uuidErrorPanel">
-    <strong id="uuidErrorTitle">
-    </strong>
-    <p id="uuidErrorText">
-    </p>
+  <section class="tool-local-surface" data-workspace-panel="secondary">
+   <div class="tool-error" hidden="" id="uuidErrorPanel"><strong id="uuidErrorTitle"></strong><p id="uuidErrorText"></p></div>
+   <div class="uuid-tool__meta tool-runtime-strip-compact">
+    <span class="uuid-tool__status" id="uuidStatus">No UUIDs generated yet</span>
+    <span class="uuid-tool__indicator" data-state="idle" id="uuidIndicator">Ready</span>
    </div>
-   <div class="uuid-tool__meta">
-    <span class="uuid-tool__status" id="uuidStatus">
-     No UUIDs generated yet
-    </span>
-    <span class="uuid-tool__indicator" data-state="idle" id="uuidIndicator">
-     Ready
-    </span>
-   </div>
-   <p class="shortcut-hint" id="uuidMetrics">
-    Count: 0 • Generated: —
-   </p>
-   <label class="editor-label" for="uuidOutput">
-    Generated UUIDs (one per line)
-   </label>
+   <p class="shortcut-hint" id="uuidMetrics">Count: 0 • Generated: —</p>
+   <label class="editor-label" for="uuidOutput">Generated UUIDs (one per line)</label>
    <textarea id="uuidOutput" readonly="" spellcheck="false"></textarea>
   </section>
  </section>
- <section class="tool-local-metrics">
-  <section hidden="" id="errorBox">
-  </section>
+ <section class="tool-local-metrics tool-metrics-compact-grid">
+  <section hidden="" id="errorBox"></section>
  </section>
 </div>
-

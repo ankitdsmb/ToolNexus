@@ -4,33 +4,35 @@
     <p>Convert DOCX and PDF files securely.</p>
   </header>
 
-  <section class="tool-local-actions">
-    <input type="file" id="fileInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-
-    <select id="conversionMode">
-      <option value="docx-to-pdf">DOCX → PDF</option>
-      <option value="pdf-to-docx">PDF → DOCX</option>
-    </select>
-
-    <button id="convertBtn" class="tool-btn tool-btn--primary" type="button" data-tool-primary-action>
+  <section class="tool-local-actions" role="toolbar" aria-label="Document conversion actions">
+    <button id="convertBtn" class="tool-btn tool-btn--primary tool-action-primary" type="button" data-tool-primary-action>
       Convert
     </button>
-  </section>
-
-  <section class="tool-local-body">
-    <section class="tool-local-surface">
-      <div id="conversionStatus">Waiting for file…</div>
-    </section>
-
-    <section class="tool-local-surface">
+    <div class="tool-action-group-transform">
+      <select id="conversionMode">
+        <option value="docx-to-pdf">DOCX → PDF</option>
+        <option value="pdf-to-docx">PDF → DOCX</option>
+      </select>
+    </div>
+    <div class="tool-action-group-utility">
       <a id="downloadLink" hidden>Download Result</a>
-    </section>
-
-    <section id="errorBox" class="tool-error" hidden></section>
+    </div>
   </section>
 
-  <section class="tool-local-metrics">
-    <span id="executionTime"></span>
-    <span id="fileSize"></span>
+  <section class="tool-local-body tool-workspace-unified">
+    <section class="tool-local-surface" data-workspace-panel="primary">
+      <label for="fileInput">Source file</label>
+      <input type="file" id="fileInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+    </section>
+
+    <section class="tool-local-surface" data-workspace-panel="secondary">
+      <div id="conversionStatus" class="tool-runtime-strip-compact">Waiting for file…</div>
+      <section id="errorBox" class="tool-error" hidden></section>
+    </section>
+  </section>
+
+  <section class="tool-local-metrics tool-metrics-compact-grid">
+    <p><span>Execution</span><strong id="executionTime">—</strong></p>
+    <p><span>File size</span><strong id="fileSize">—</strong></p>
   </section>
 </div>
