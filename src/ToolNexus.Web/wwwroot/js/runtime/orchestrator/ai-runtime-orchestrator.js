@@ -3,6 +3,7 @@ import { predictRuntimeBehavior } from './behavior-prediction-engine.js';
 import { evaluateRuntimeGovernance } from './runtime-governance-engine.js';
 import { applyAdaptiveRuntimeClasses, selectExecutionStrategy } from './execution-strategy-engine.js';
 import { applyExecutionDensityAutobalancer } from './execution-density-autobalancer.js';
+import { createExecutionVisualBrain } from './execution-visual-brain.js';
 
 function resolveOrchestratorMode({ behaviorProfile = {}, governanceProfile = {}, genomeProfile = {} } = {}) {
   if (governanceProfile.riskLevel === 'high' || genomeProfile.workflowType === 'pipeline') {
@@ -49,6 +50,10 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     toolSlug: options.toolSlug ?? null,
     emitTelemetry: options.emitTelemetry
   });
+  const visualBrain = createExecutionVisualBrain(root, {
+    toolSlug: options.toolSlug ?? null,
+    emitTelemetry: options.emitTelemetry
+  });
 
   const runtimeProfile = {
     genomeProfile,
@@ -58,7 +63,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     complexity,
     strategy,
     appliedRuntimeClasses,
-    densityAutobalancer
+    densityAutobalancer,
+    visualBrain
   };
 
   if (root && typeof root.setAttribute === 'function') {
@@ -78,7 +84,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
       governance: governanceProfile,
       strategy,
       appliedRuntimeClasses,
-      densityAutobalancer
+      densityAutobalancer,
+      visualBrainState: visualBrain.state
     }
   };
 
@@ -92,12 +99,15 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
         complexity,
         strategy,
         appliedRuntimeClasses,
-        densityAutobalancer
+        densityAutobalancer,
+        visualBrainState: visualBrain.state
       });
     } catch {
       // best-effort telemetry
     }
   }
+
+  console.info('EXECUTION VISUAL BRAIN ACTIVE\n');
 
   return {
     mode,
@@ -109,6 +119,7 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     strategy,
     appliedRuntimeClasses,
     runtimeProfile,
+    visualBrain,
     passive: true
   };
 }
