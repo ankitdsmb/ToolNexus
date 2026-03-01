@@ -23,8 +23,12 @@
     <section class="tool-local-actions json-toolbar" role="toolbar" aria-label="JSON formatter actions">
         <div class="json-toolbar-row">
             <button id="formatBtn" class="tool-btn tool-btn--primary" type="button">Format</button>
+        </div>
+        <div class="json-toolbar-row json-toolbar-row--transform" aria-label="Transform actions">
             <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
             <button id="validateBtn" class="tool-btn" type="button">Validate only</button>
+        </div>
+        <div class="json-toolbar-row json-toolbar-row--utility" aria-label="Utility actions">
             <button id="clearBtn" class="tool-btn" type="button">Clear</button>
             <button id="copyBtn" class="tool-btn" type="button">Copy output</button>
             <button id="downloadBtn" class="tool-btn" type="button">Download JSON</button>
@@ -48,8 +52,8 @@
         <p id="errorLocation" class="tool-error-location" hidden></p>
     </section>
 
-    <section class="tool-editors json-workspace">
-        <section class="tool-editor-panel json-panel">
+    <section class="tool-editors json-workspace" aria-label="JSON execution workspace">
+        <section class="tool-editor-panel json-panel json-panel--input">
             <div class="panel-header">
                 <h2>Input JSON</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
@@ -57,7 +61,7 @@
             <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
         </section>
 
-        <section class="tool-editor-panel json-panel">
+        <section class="tool-editor-panel json-panel json-panel--output">
             <div class="panel-header">
                 <h2>Output JSON</h2>
                 <p id="resultStatus">Ready for formatting.</p>
