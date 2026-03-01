@@ -114,3 +114,36 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.base64-tool .tool-local-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #d7dce3);
+  border-radius: var(--radius-md, 12px);
+  background: var(--surface-muted, #f7f9fc);
+}
+
+.base64-tool .tool-local-actions .tool-action-group-transform,
+.base64-tool .tool-local-actions .tool-action-group-utility {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.base64-tool .tool-local-actions .base64-mode-toggle,
+.base64-tool .tool-local-actions .base64-options {
+  margin-bottom: 0;
+}
+
+.base64-tool .tool-local-actions .base64-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}

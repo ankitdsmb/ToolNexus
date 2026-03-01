@@ -89,3 +89,27 @@
 .uuid-tool__indicator[data-state='busy'] {
   color: var(--accent);
 }
+
+
+.uuid-tool .tool-local-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.uuid-tool .tool-local-actions .tool-action-group-transform,
+.uuid-tool .tool-local-actions .tool-action-group-utility {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.uuid-tool .tool-local-actions .uuid-tool__toggle {
+  font-size: var(--text-xs);
+}

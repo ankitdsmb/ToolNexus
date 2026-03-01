@@ -1,4 +1,4 @@
-<div class="tool-runtime-widget execution-style-converter">
+<div class="tool-runtime-widget execution-style-converter url-encode-tool">
  <header class="tool-local-header">
   <div>
    <h2>
@@ -13,20 +13,28 @@
    Client-side processing
   </span>
  </header>
- <section class="tool-local-actions">
- </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
-   <div class="url-encode-panel__header">
-    <h2 id="inputHeading">
-     Raw input
-    </h2>
-    <p class="url-encode-meta" id="inputStats">
-     0 chars · 0 bytes
-    </p>
-   </div>
+ <section class="tool-local-actions" role="toolbar" aria-label="URL encode controls">
+  <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button" data-tool-primary-action>
+   Encode
+  </button>
+  <div class="tool-action-group-transform" role="group" aria-label="Transform actions">
+   <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+    Clear input
+   </button>
+  </div>
+  <div class="tool-action-group-utility url-encode-options" aria-label="Encode options" role="group">
+   <label>
+    <input id="plusSpaceToggle" type="checkbox"/>
+    Spaces as +
+   </label>
+   <label>
+    <input checked="" id="autoEncodeToggle" type="checkbox"/>
+    Auto encode
+   </label>
+  </div>
+  <div class="tool-action-group-utility" role="group" aria-label="Encoding mode selector">
    <label class="url-encode-label" for="modeSelect">
-    Encoding mode
+    Mode
    </label>
    <select class="url-encode-select" id="modeSelect">
     <option selected="" value="component">
@@ -39,28 +47,22 @@
      Encode query parameter values only
     </option>
    </select>
-   <div class="url-encode-options">
-    <label>
-     <input id="plusSpaceToggle" type="checkbox"/>
-     Encode spaces as + (form mode)
-    </label>
-    <label>
-     <input checked="" id="autoEncodeToggle" type="checkbox"/>
-     Auto encode on input
-    </label>
+  </div>
+ </section>
+ <section class="tool-local-body">
+  <section class="tool-local-surface">
+   <div class="url-encode-panel__header">
+    <h2 id="inputHeading">
+     Raw input
+    </h2>
+    <p class="url-encode-meta" id="inputStats">
+     0 chars · 0 bytes
+    </p>
    </div>
    <label class="url-encode-label" for="inputEditor">
     Input text
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste text, URL, or query string" rows="14"></textarea>
-   <div class="url-encode-actions">
-    <button class="tool-btn tool-btn--primary" id="encodeBtn" type="button" data-tool-primary-action>
-     Encode
-    </button>
-    <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
-     Clear input
-    </button>
-   </div>
    <p class="url-encode-shortcuts">
     <kbd>
      Ctrl
@@ -121,4 +123,3 @@
   <p><span>Status</span><strong id="statusMetric">Ready</strong></p>
  </section>
 </div>
-

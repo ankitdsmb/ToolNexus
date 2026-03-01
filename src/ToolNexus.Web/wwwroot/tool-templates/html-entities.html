@@ -1,4 +1,4 @@
-<div class="tool-runtime-widget execution-style-utility">
+<div class="tool-runtime-widget execution-style-utility html-entities-tool">
  <header class="tool-local-header">
   <div>
    <h2>
@@ -11,7 +11,56 @@
    Client-side processing
   </span>
  </header>
- <section class="tool-local-actions">
+ <section class="tool-local-actions" role="toolbar" aria-label="HTML entities controls">
+  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button" data-tool-primary-action>
+   Encode
+  </button>
+  <div aria-label="Conversion mode" class="tool-action-group-transform html-entities-mode" role="group">
+   <button aria-pressed="true" class="tool-btn tool-btn--outline is-active" data-mode="encode" id="modeEncodeBtn" type="button">
+    Encode mode
+   </button>
+   <button aria-pressed="false" class="tool-btn tool-btn--outline" data-mode="decode" id="modeDecodeBtn" type="button">
+    Decode mode
+   </button>
+  </div>
+  <div aria-label="Encoding options" class="tool-action-group-utility html-entities-options" role="group">
+   <label>
+    <input id="autoConvertToggle" type="checkbox"/>
+    Auto
+   </label>
+   <label>
+    <input id="encodeAllToggle" type="checkbox"/>
+    Encode all
+   </label>
+   <label>
+    <input checked="" id="unsafeOnlyToggle" type="checkbox"/>
+    Unsafe only
+   </label>
+   <label>
+    <input checked="" id="preferNamedToggle" type="checkbox"/>
+    Named entities
+   </label>
+   <label>
+    <input id="numericToggle" type="checkbox"/>
+    Numeric
+   </label>
+   <label>
+    <input id="hexToggle" type="checkbox"/>
+    Hex
+   </label>
+   <label>
+    <input checked="" id="preserveFormattingToggle" type="checkbox"/>
+    Preserve formatting
+   </label>
+  </div>
+  <div class="tool-action-group-utility" role="group" aria-label="Utility actions">
+   <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+    Clear input
+   </button>
+   <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
+    Copy output
+   </button>
+  </div>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
@@ -23,56 +72,10 @@
      0 chars
     </p>
    </div>
-   <div aria-label="Conversion mode" class="html-entities-mode" role="group">
-    <button aria-pressed="true" class="tool-btn tool-btn--outline is-active" data-mode="encode" id="modeEncodeBtn" type="button">
-     Encode mode
-    </button>
-    <button aria-pressed="false" class="tool-btn tool-btn--outline" data-mode="decode" id="modeDecodeBtn" type="button">
-     Decode mode
-    </button>
-   </div>
    <label class="html-entities-label" for="inputEditor">
     Source text
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste text or HTML entities here" rows="16"></textarea>
-   <div aria-label="Encoding options" class="html-entities-options">
-    <label>
-     <input id="autoConvertToggle" type="checkbox"/>
-     Auto convert
-    </label>
-    <label>
-     <input id="encodeAllToggle" type="checkbox"/>
-     Encode all characters
-    </label>
-    <label>
-     <input checked="" id="unsafeOnlyToggle" type="checkbox"/>
-     Encode unsafe characters only
-    </label>
-    <label>
-     <input checked="" id="preferNamedToggle" type="checkbox"/>
-     Prefer named entities
-    </label>
-    <label>
-     <input id="numericToggle" type="checkbox"/>
-     Use numeric entities
-    </label>
-    <label>
-     <input id="hexToggle" type="checkbox"/>
-     Use hex entities
-    </label>
-    <label>
-     <input checked="" id="preserveFormattingToggle" type="checkbox"/>
-     Preserve spaces/newlines
-    </label>
-   </div>
-   <div class="html-entities-actions">
-    <button class="tool-btn tool-btn--primary" id="convertBtn" type="button" data-tool-primary-action>
-     Encode
-    </button>
-    <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
-     Clear input
-    </button>
-   </div>
    <p class="html-entities-shortcuts">
     <kbd>
      Ctrl
@@ -116,11 +119,6 @@
     Converted text (safe plain text)
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="outputEditor" placeholder="Output appears here" readonly="" rows="16"></textarea>
-   <div class="html-entities-actions">
-    <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
-     Copy output
-    </button>
-   </div>
    <p class="html-entities-meta" id="outputStats">
     0 chars
    </p>
