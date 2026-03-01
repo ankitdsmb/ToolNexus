@@ -16,7 +16,7 @@
 
   /* runtime panel tokens */
   --tn-runtime-panel-gap: var(--tn-exec-space-2);
-  --tn-runtime-panel-padding: var(--tn-exec-space-3);
+  --tn-runtime-panel-padding: 14px;
   --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
   --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
   --tn-runtime-panel-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
@@ -32,13 +32,13 @@
   /* editor region spacing */
   --tn-exec-editor-gap: var(--tn-exec-space-2);
   --tn-exec-editor-padding: var(--tn-exec-space-2);
-  --tn-exec-editor-min-height: clamp(260px, 42vh, 540px);
+  --tn-exec-editor-min-height: clamp(380px, 46vh, 460px);
   --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
   --tn-exec-metrics-gap: var(--tn-exec-space-2);
   --tn-exec-metrics-font-size: var(--text-xs);
-  --tn-exec-metrics-pill-padding: var(--tn-exec-space-1) var(--tn-exec-space-2);
+  --tn-exec-metrics-pill-padding: 4px var(--tn-exec-space-2);
 
   /* unified border + radius system */
   --tn-exec-border: 1px solid color-mix(in srgb, var(--border-default) 86%, transparent);
@@ -52,7 +52,7 @@
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: var(--tn-exec-space-1) var(--tn-exec-space-2);
+  padding: 0 var(--tn-exec-space-1) var(--tn-exec-space-1);
   display: grid;
   gap: var(--tn-exec-editor-gap);
   align-content: start;
@@ -73,6 +73,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--tn-exec-toolbar-gap);
+  padding: 2px 0;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn)) {
@@ -181,11 +182,12 @@
   flex-wrap: wrap;
   gap: var(--tn-exec-metrics-gap);
   font-size: var(--tn-exec-metrics-font-size);
-  line-height: 1.25;
+  line-height: 1.15;
   padding: var(--tn-exec-metrics-pill-padding);
   border: var(--tn-exec-border);
   border-radius: var(--tn-exec-radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) 84%, var(--bg-primary));
+  min-height: 30px;
 }
 
 /* Universal execution button variants */

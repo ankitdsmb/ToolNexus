@@ -63,8 +63,12 @@
                 <span>Ready · Initializing execution intelligence…</span>
             </div>
             <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel tn-toolbar-skeleton" data-command-dock="true" aria-label="Follow-up actions">
-                <button type="button" disabled><span class="tn-skeleton-chip"></span>Run command</button>
-                <button type="button" disabled class="tool-btn tool-btn--ghost"><span class="tn-skeleton-chip"></span>Command dock loading</button>
+                <div class="tool-execution-panel__primary-actions" aria-label="Primary execution actions">
+                    <button type="button" disabled class="tool-btn tool-btn--primary"><span class="tn-skeleton-chip"></span>Run command</button>
+                </div>
+                <div class="tool-execution-panel__secondary-actions" aria-label="Secondary execution actions">
+                    <button type="button" disabled class="tool-btn tool-btn--ghost"><span class="tn-skeleton-chip"></span>Command dock loading</button>
+                </div>
             </footer>
             @* ToolShell framing only: no shell-defined editor/result grid ownership.
                Template/lifecycle runtime mounts directly into this full-width host. *@
