@@ -45,10 +45,10 @@ ENTERPRISE UI SYSTEM
   --exec-workspace-divider: 1px solid color-mix(in srgb, var(--color-border) 64%, transparent);
   --exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 38%, var(--bg-primary));
   --exec-runtime-strip-min-height: 32px;
-  --exec-runtime-strip-padding: 3px 10px;
+  --exec-runtime-strip-padding: 2px 9px;
   --exec-runtime-strip-gap: 6px;
   --exec-metrics-grid-columns: repeat(auto-fit, minmax(132px, 1fr));
-  --exec-metrics-item-padding: 0.4rem 0.55rem;
+  --exec-metrics-item-padding: 0.3rem 0.5rem;
   --exec-metrics-item-gap: var(--exec-cadence-12);
 
   /* EXECUTION AUTHORITY HUMANIZATION TOKENS */
@@ -96,8 +96,8 @@ ENTERPRISE UI SYSTEM
 :where(.tool-shell-page) {
   --tool-shell-max-width: var(--tool-page-max-width-authority, var(--page-max-width));
   --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
-  --tool-shell-flow-gap: clamp(4px, 0.8vw, 9px);
-  --tool-shell-footer-gap: clamp(10px, 1.5vw, 16px);
+  --tool-shell-flow-gap: clamp(3px, 0.72vw, 7px);
+  --tool-shell-footer-gap: clamp(9px, 1.3vw, 15px);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
