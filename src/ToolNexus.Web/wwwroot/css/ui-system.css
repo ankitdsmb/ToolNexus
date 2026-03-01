@@ -49,7 +49,7 @@ ENTERPRISE UI SYSTEM
   --exec-runtime-strip-gap: 6px;
   --exec-metrics-grid-columns: repeat(auto-fit, minmax(132px, 1fr));
   --exec-metrics-item-padding: 0.4rem 0.55rem;
-  --exec-metrics-item-gap: var(--space-2);
+  --exec-metrics-item-gap: var(--exec-cadence-12);
 
   /* EXECUTION AUTHORITY HUMANIZATION TOKENS */
   --workspace-dominance: 1;
@@ -300,8 +300,8 @@ ENTERPRISE UI SYSTEM
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  column-gap: 14px;
-  row-gap: var(--space-1);
+  column-gap: var(--exec-cadence-14);
+  row-gap: var(--exec-cadence-11);
   padding-top: 12px;
   margin-top: 2px;
   border-top: 1px solid var(--exec-authority-action-border);
@@ -436,7 +436,7 @@ ENTERPRISE UI SYSTEM
   padding: 14px 16px 15px;
   background: var(--exec-authority-workspace-bg);
   display: grid;
-  gap: 12px;
+  gap: var(--exec-cadence-12);
   min-height: 260px;
   box-shadow: var(--exec-authority-workspace-shadow);
 }
@@ -798,14 +798,14 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where(.tn-unified-tool-control__actions) {
   align-items: center;
   justify-content: space-between;
-  gap: var(--exec-gap-normal);
+  gap: var(--exec-cadence-14) var(--exec-cadence-11);
 }
 
 :where(.tn-unified-tool-control__actions-primary,
   .tn-unified-tool-control__actions-secondary) {
   display: flex;
   align-items: center;
-  gap: var(--exec-gap-normal);
+  gap: var(--exec-cadence-12);
   flex-wrap: wrap;
 }
 
@@ -825,7 +825,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   border-radius: var(--radius-pill);
   padding: 4px 10px;
-  transition: border-color 150ms ease-out, color 150ms ease-out, background-color 150ms ease-out;
+  transition: border-color 160ms ease-out, color 140ms ease-out, background-color 180ms ease-out;
 }
 
 :where(.tn-unified-tool-control__actions-advanced[open] > summary) {
@@ -835,10 +835,10 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__actions-advanced-body) {
-  margin-top: 6px;
+  margin-top: var(--exec-cadence-11);
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--exec-cadence-12);
 }
 
 :where(.tn-unified-tool-control__run) {
@@ -886,7 +886,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tool-article-prose section, .tool-article-prose article) {
   display: grid;
-  gap: var(--exec-cadence-12);
+  gap: var(--exec-cadence-14);
 }
 
 :where(.tool-article-prose h2) {
@@ -1121,8 +1121,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where(.tool-shell-page__runtime) {
   box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
   border-radius: 10px;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
+  gap: var(--exec-cadence-11);
+  padding: var(--exec-cadence-12) var(--exec-cadence-14);
   background-image: linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 22%, transparent), transparent 28%);
 }
 
@@ -1135,7 +1135,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-unified-tool-control__run, .tool-btn, .tn-unified-tool-control__status, .tn-unified-tool-control__output, .runtime-doc-disclosure, .tool-auto-runtime__field input, .tool-auto-runtime__field textarea) {
-  transition: background-color 120ms linear, border-color 120ms linear, box-shadow 140ms linear, color 120ms linear, opacity 120ms linear;
+  transition: background-color 140ms linear, border-color 160ms linear, box-shadow 180ms linear, color 140ms linear, opacity 160ms linear;
 }
 
 :where(.tn-unified-tool-control__run) {
@@ -1214,7 +1214,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs .runtime-doc-disclosure__body) {
-  padding-top: 3px;
+  padding-top: var(--exec-cadence-11);
 }
 
 :where(.tool-shell-page__docs .tool-md-section) {
@@ -1222,7 +1222,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs .tool-md-section[data-doc-priority="primary"]) {
-  padding-bottom: 6px;
+  padding-bottom: var(--exec-cadence-12);
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 44%, transparent);
 }
 
@@ -1232,12 +1232,12 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where([data-tool-content-host="true"]) {
   border-top: 1px solid var(--exec-authority-shell-border);
-  padding-top: 6px;
+  padding-top: var(--exec-cadence-14);
 }
 
 :where([data-tool-content-host="true"] > [data-tool-runtime="true"] .tn-tool-body,
   [data-tool-content-host="true"] > [data-tool-runtime="true"] .tool-layout) {
-  gap: var(--exec-gap-normal);
+  gap: var(--exec-cadence-16);
 }
 
 :where(.tn-editor-skeleton) {
