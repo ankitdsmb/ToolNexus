@@ -1,14 +1,15 @@
-<div class="tool-runtime-widget execution-style-utility">
- <header class="tool-local-header">
-  <h2>
-  </h2>
-  <p>
-  </p>
+<div class="tool-runtime-widget execution-style-utility upgread_tool-widget">
+ <header class="tool-local-header upgread_tool-header">
+  <h2 data-bind="tool.title"></h2>
+  <p>Merge multiple text-based files safely in your browser with type-aware strategies.</p>
  </header>
- <section class="tool-local-actions">
+ <section class="tool-local-actions upgread_tool-toolbar" role="toolbar" aria-label="File merge actions">
+  <button class="tool-btn tool-btn--primary" id="mergeBtn" type="button" data-tool-primary-action>
+   Merge
+  </button>
  </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
+ <section class="tool-local-body tool-workspace-unified upgread_tool-workspace">
+  <section class="tool-local-surface" data-workspace-panel="primary">
    <h2>
     Upload
    </h2>
@@ -19,14 +20,11 @@
    <ul aria-label="Uploaded files" class="file-list" id="fileList">
    </ul>
   </section>
-  <section class="tool-local-surface">
+  <section class="tool-local-surface" data-workspace-panel="secondary">
    <div class="preview-header">
     <h2>
      Preview
     </h2>
-    <button class="tool-btn tool-btn--primary" id="mergeBtn" type="button" data-tool-primary-action>
-     Merge
-    </button>
    </div>
    <pre class="preview-output" id="previewOutput"></pre>
    <p class="merge-stats" id="mergeStats">
@@ -39,4 +37,3 @@
   </section>
  </section>
 </div>
-
