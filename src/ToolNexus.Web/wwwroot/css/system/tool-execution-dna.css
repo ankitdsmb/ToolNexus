@@ -15,38 +15,38 @@
   --tn-exec-space-5: 20px;
 
   /* runtime panel tokens */
-  --tn-runtime-panel-gap: 1px;
-  --tn-runtime-panel-padding: 3px;
+  --tn-runtime-panel-gap: 0;
+  --tn-runtime-panel-padding: 2px;
   --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 74%, transparent);
   --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 97%, var(--bg-primary));
   --tn-runtime-panel-shadow: none;
-  --tn-exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 95%, var(--bg-primary));
+  --tn-exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 97%, var(--bg-primary));
   --tn-exec-workspace-border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border-default));
   --tn-exec-workspace-divider: color-mix(in srgb, var(--border-default) 58%, transparent);
   --tn-exec-structural-separator: color-mix(in srgb, var(--border-default) 40%, transparent);
-  --tn-exec-lower-panel-min-height: 114px;
-  --tn-exec-empty-min-height: 68px;
-  --tn-exec-empty-max-height: 96px;
+  --tn-exec-lower-panel-min-height: 72px;
+  --tn-exec-empty-min-height: 34px;
+  --tn-exec-empty-max-height: 56px;
 
   /* header sizing */
-  --tn-exec-header-min-height: 32px;
+  --tn-exec-header-min-height: 28px;
   --tn-exec-header-title-size: var(--text-sm);
 
   /* toolbar density */
-  --tn-exec-toolbar-min-height: 30px;
-  --tn-exec-toolbar-max-height: 36px;
-  --tn-exec-toolbar-gap: 4px;
+  --tn-exec-toolbar-min-height: 26px;
+  --tn-exec-toolbar-max-height: 30px;
+  --tn-exec-toolbar-gap: 3px;
 
   /* editor region spacing */
   --tn-exec-editor-gap: 1px;
   --tn-exec-editor-padding: var(--tn-exec-space-2);
-  --tn-exec-editor-min-height: clamp(334px, 63vh, 708px);
+  --tn-exec-editor-min-height: clamp(400px, 71vh, 760px);
   --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
   --tn-exec-metrics-gap: 13px;
   --tn-exec-metrics-font-size: var(--text-xs);
-  --tn-exec-metrics-pill-padding: 4px 12px;
+  --tn-exec-metrics-pill-padding: 3px 11px;
 
   /* unified border + radius system */
   --tn-exec-border: 1px solid color-mix(in srgb, var(--border-default) 86%, transparent);
@@ -66,12 +66,12 @@
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: 3px 5px;
+  padding: 2px 4px;
   display: grid;
   gap: 1px;
   align-content: start;
   border: var(--tn-exec-workspace-border);
-  border-radius: var(--tn-exec-radius-md);
+  border-radius: calc(var(--tn-exec-radius-sm) + 1px);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--accent) calc(6% + (var(--tn-workspace-dominance) * 2%)), transparent) 0%, transparent 58%),
     var(--tn-exec-workspace-surface);
@@ -84,9 +84,9 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px 11px;
-  padding: 0 2px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
+  gap: 6px 11px;
+  padding: 0 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 36%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-header :is(h2, h3, .tool-title, .tool-local-title)) {
@@ -104,12 +104,12 @@
   overflow-x: auto;
   overflow-y: hidden;
   gap: var(--tn-exec-toolbar-gap);
-  padding: 0 2px;
+  padding: 0 1px;
   margin-top: 0;
   margin-bottom: 0;
   border-top: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 34%, transparent);
-  background: color-mix(in srgb, var(--tn-exec-workspace-surface) 99%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 42%, transparent);
+  background: color-mix(in srgb, var(--tn-exec-workspace-surface) 100%, transparent);
   scrollbar-width: thin;
 }
 
@@ -127,16 +127,16 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :not(:first-child))::before {
   content: '';
   width: 1px;
-  height: 13px;
-  margin-right: 2px;
+  height: 15px;
+  margin-right: 3px;
   background: color-mix(in srgb, var(--border-default) 46%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions :is(button, .tool-btn, [role="button"], a.tool-btn)) {
-  min-height: 27px;
+  min-height: 25px;
   white-space: nowrap;
-  border-color: color-mix(in srgb, var(--border-default) 46%, transparent);
-  background: color-mix(in srgb, var(--tn-exec-workspace-surface) 94%, var(--bg-primary));
+  border-color: color-mix(in srgb, var(--border-default) 52%, transparent);
+  background: color-mix(in srgb, var(--tn-exec-workspace-surface) 96%, var(--bg-primary));
   box-shadow: none;
 }
 
@@ -149,8 +149,8 @@
   padding-top: 0;
   margin-top: 0;
   background: color-mix(in srgb, var(--tn-exec-workspace-divider) 74%, transparent);
-  border-top: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 52%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 44%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 56%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 48%, transparent);
   border-radius: calc(var(--tn-exec-radius-sm) - 1px);
   overflow: hidden;
 }
@@ -170,7 +170,7 @@
 
 :where([data-tool-content-host="true"] .tool-runtime-widget > .tool-local-body > *) {
   min-width: 0;
-  min-height: calc(var(--tn-exec-editor-min-height) - 4px);
+  min-height: calc(var(--tn-exec-editor-min-height) - 2px);
   height: 100%;
   align-self: stretch;
   overflow: hidden;
@@ -180,20 +180,20 @@
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-editor-panel) {
-  min-height: calc(var(--tn-exec-editor-min-height) - 4px);
+  min-height: calc(var(--tn-exec-editor-min-height) - 2px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1px;
   align-content: stretch;
-  padding: 2px 3px 2px;
+  padding: 1px 3px 1px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :first-child) {
-  min-height: 27px;
+  min-height: 25px;
   display: flex;
   align-items: baseline;
   font-weight: 620;
-  color: color-mix(in srgb, var(--text-primary) 92%, var(--text-secondary));
+  color: color-mix(in srgb, var(--text-primary) 98%, var(--text-secondary));
   margin-bottom: 0;
 }
 
@@ -212,20 +212,26 @@
   max-height: var(--tn-exec-empty-max-height);
 }
 
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface):has(> :last-child:is(:empty, [data-empty="true"], .is-empty, [aria-busy="false"]:empty))) {
+  grid-template-rows: auto auto;
+  align-content: start;
+}
+
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-editor-panel:has(> :last-child:is(:empty, [data-empty="true"], .is-empty, [aria-busy="false"]:empty))) {
   min-height: var(--tn-exec-lower-panel-min-height);
+  max-height: calc(var(--tn-exec-empty-max-height) + 28px);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
-  background: color-mix(in srgb, var(--tn-exec-workspace-surface) calc(95% + (var(--tn-workspace-dominance) * 2%)), var(--bg-primary));
-  border: 1px solid color-mix(in srgb, var(--border-default) calc(52% + (var(--tn-workspace-dominance) * 2%)), transparent);
+  background: color-mix(in srgb, var(--tn-exec-workspace-surface) calc(96% + (var(--tn-workspace-dominance) * 2%)), var(--bg-primary));
+  border: 1px solid color-mix(in srgb, var(--border-default) calc(58% + (var(--tn-workspace-dominance) * 3%)), transparent);
   border-radius: calc(var(--tn-exec-radius-sm) - 1px);
   box-shadow: none;
   transition: border-color var(--tn-exec-motion-fast) var(--ease-standard), box-shadow var(--tn-exec-motion-fast) var(--ease-standard);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface):not(:first-child)) {
-  border-top: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 48%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 42%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface):focus-within > :last-child) {
@@ -263,18 +269,18 @@
   line-height: 1.1;
   padding: 0 2px;
   border: 0;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) 19%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 28%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 15%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--tn-exec-structural-separator) 22%, transparent);
   border-radius: 0;
   background: color-mix(in srgb, var(--bg-secondary) calc(38% - (var(--tn-shell-passive-mode) * 6%)), var(--bg-primary));
-  min-height: 16px;
-  max-height: 20px;
-  opacity: 0.58;
+  min-height: 15px;
+  max-height: 18px;
+  opacity: 0.52;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions :is(label.tool-toggle, .tool-toggle)) {
-  min-height: 27px;
-  padding: 0 6px;
+  min-height: 25px;
+  padding: 0 5px;
   border: 1px solid color-mix(in srgb, var(--border-default) 42%, transparent);
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--tn-exec-workspace-surface) 94%, var(--bg-primary));
@@ -304,8 +310,8 @@
   width: var(--tool-shell-rail-width);
   max-width: min(100%, 88ch);
   margin-top: 0;
-  padding-top: 11px;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) 24%, transparent);
+  padding-top: 13px;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 32%, transparent);
 }
 
 :where(.tool-shell-page__docs .tool-md-section h2, .tool-shell-page__docs .tool-md-section h3) {
@@ -315,8 +321,8 @@
 
 :where(.tool-shell-page__docs .tool-md-content p) {
   max-width: 76ch;
-  margin-block: 0.28em 0.6em;
-  color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
+  margin-block: 0.24em 0.55em;
+  color: color-mix(in srgb, var(--text-primary) 90%, var(--text-secondary));
 }
 
 :where(.tool-shell-page__docs .tool-md-section) {

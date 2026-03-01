@@ -44,11 +44,11 @@ ENTERPRISE UI SYSTEM
   --exec-workspace-columns: 1fr 1fr;
   --exec-workspace-divider: 1px solid color-mix(in srgb, var(--color-border) 64%, transparent);
   --exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 38%, var(--bg-primary));
-  --exec-runtime-strip-min-height: 32px;
-  --exec-runtime-strip-padding: 2px 9px;
+  --exec-runtime-strip-min-height: 28px;
+  --exec-runtime-strip-padding: 1px 8px;
   --exec-runtime-strip-gap: 6px;
-  --exec-lower-zone-min-height: 118px;
-  --exec-lower-zone-empty-min-height: 74px;
+  --exec-lower-zone-min-height: 78px;
+  --exec-lower-zone-empty-min-height: 42px;
   --exec-metrics-grid-columns: repeat(auto-fit, minmax(132px, 1fr));
   --exec-metrics-item-padding: 0.3rem 0.5rem;
   --exec-metrics-item-gap: var(--exec-cadence-12);
@@ -98,8 +98,8 @@ ENTERPRISE UI SYSTEM
 :where(.tool-shell-page) {
   --tool-shell-max-width: var(--tool-page-max-width-authority, var(--page-max-width));
   --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
-  --tool-shell-flow-gap: clamp(3px, 0.72vw, 7px);
-  --tool-shell-footer-gap: clamp(9px, 1.3vw, 15px);
+  --tool-shell-flow-gap: clamp(2px, 0.55vw, 5px);
+  --tool-shell-footer-gap: clamp(8px, 1.05vw, 13px);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -123,7 +123,7 @@ ENTERPRISE UI SYSTEM
   grid-template-columns: minmax(0, 1fr);
   column-gap: 0;
   row-gap: var(--tool-shell-flow-gap);
-  padding-block: 4px;
+  padding-block: 2px;
   padding-inline: 0;
 }
 
@@ -140,6 +140,11 @@ ENTERPRISE UI SYSTEM
 
 :where(.tool-shell-page .workspace-shell__runtime-zone:empty,
   .tool-shell-page .workspace-shell__context-rail:empty) {
+  min-height: var(--exec-lower-zone-empty-min-height);
+}
+
+:where(.tool-shell-page .workspace-shell__runtime-zone:has(> :is([data-empty="true"], .is-empty, :empty)),
+  .tool-shell-page .workspace-shell__context-rail:has(> :is([data-empty="true"], .is-empty, :empty))) {
   min-height: var(--exec-lower-zone-empty-min-height);
 }
 
@@ -406,7 +411,7 @@ ENTERPRISE UI SYSTEM
   background: var(--runtime-status-surface);
   padding: var(--runtime-status-padding) var(--space-2);
   width: fit-content;
-  min-height: 30px;
+  min-height: 26px;
 }
 
 
@@ -666,11 +671,11 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
     "status"
     "followup"
     "content";
-  gap: var(--tn-runtime-panel-gap, 4px);
-  padding: var(--tn-runtime-panel-padding, var(--exec-cadence-14));
+  gap: var(--tn-runtime-panel-gap, 0);
+  padding: var(--tn-runtime-panel-padding, var(--exec-cadence-11));
   border: var(--tn-runtime-panel-border, 1px solid color-mix(in srgb, var(--color-border) 78%, transparent));
-  border-radius: var(--tn-exec-radius-lg, var(--radius-lg));
-  background: var(--tn-runtime-panel-surface, var(--runtime-workspace-surface));
+  border-radius: calc(var(--tn-exec-radius-sm, 8px) + 1px);
+  background: var(--tn-runtime-panel-surface, var(--exec-authority-workspace-bg));
   box-shadow: var(--tn-runtime-panel-shadow, 0 8px 18px rgba(15, 23, 42, 0.1));
 }
 
@@ -688,6 +693,13 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 :where(.tool-shell-page__runtime > [data-tool-content-host="true"] > [data-tool-runtime="true"]) { width: 100%; }
 
+:where(.tool-shell-page__runtime > [data-tool-content-host="true"],
+  .tool-shell-page__runtime > [data-tool-content-host="true"] > [data-tool-runtime="true"]) {
+  border-radius: 0;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--tn-runtime-panel-surface, var(--exec-authority-workspace-bg)) 100%, transparent);
+}
+
 :where(.tool-shell-page__runtime > [data-tool-context="true"],
   .tool-shell-page__runtime > [data-tool-status="true"],
   .tool-shell-page__runtime > [data-tool-followup="true"]) {
@@ -697,15 +709,15 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__runtime > [data-tool-context="true"]) {
-  min-height: 22px;
-  max-height: 28px;
-  padding: 1px 8px;
+  min-height: 19px;
+  max-height: 24px;
+  padding: 1px 7px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
-  min-height: 30px;
-  max-height: 36px;
-  padding: 2px 8px 3px;
+  min-height: 26px;
+  max-height: 31px;
+  padding: 1px 7px 2px;
   margin-top: 0;
   border-top: 1px solid color-mix(in srgb, var(--color-border) 46%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 42%, transparent);
@@ -715,29 +727,32 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__runtime > [data-tool-status="true"]) {
-  min-height: 18px;
-  max-height: 24px;
-  padding: 0 8px;
+  min-height: 15px;
+  max-height: 18px;
+  padding: 0 7px;
   border-style: none;
   background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
 }
 
 :where(.tool-shell-page__docs) {
   margin-top: 0;
+  padding-top: 11px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 28%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--runtime-doc-surface) 32%, transparent), transparent 56%);
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 5px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-execution-panel__primary-actions,
   .tool-shell-page__runtime > [data-tool-followup="true"] .tool-execution-panel__secondary-actions) {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-execution-panel__secondary-actions) {
@@ -750,13 +765,13 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] button) {
-  min-height: 30px;
-  padding: 2px 9px;
+  min-height: 26px;
+  padding: 1px 8px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-btn--primary) {
   font-weight: 700;
-  min-width: 136px;
+  min-width: 128px;
 }
 
 :where(.tool-identity-header__content h1) {
@@ -792,7 +807,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where(.tn-unified-tool-control__capsule) {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   padding: 6px 10px;
   border-radius: var(--radius-pill);
   border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--color-border));
@@ -910,7 +925,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   padding: var(--exec-cadence-11) var(--exec-cadence-14);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--runtime-doc-surface) 72%, transparent);
-  opacity: var(--exec-authority-doc-opacity);
+  opacity: calc(var(--exec-authority-doc-opacity) + 0.04);
 }
 
 :where(.tool-article-prose section, .tool-article-prose article) {
@@ -934,7 +949,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where(.tool-article-prose p, .tool-article-prose li) {
   max-width: var(--runtime-doc-max-width);
   line-height: var(--line-relaxed);
-  color: var(--text-secondary);
+  color: color-mix(in srgb, var(--text-primary) 84%, var(--text-secondary));
 }
 
 
@@ -1220,7 +1235,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tool-article-prose) {
   font-size: var(--type-caption);
-  opacity: var(--exec-authority-doc-opacity);
+  opacity: calc(var(--exec-authority-doc-opacity) + 0.04);
 }
 
 :where(.runtime-doc-disclosure summary) {
