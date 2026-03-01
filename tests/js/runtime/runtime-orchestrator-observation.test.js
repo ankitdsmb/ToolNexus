@@ -35,7 +35,7 @@ describe('runtime orchestrator observation mode', () => {
     });
 
     expect(result.genomeProfile.genome).toBeTruthy();
-    expect(result.mode).toMatch(/^passive_/);
+    expect(result.mode).toMatch(/^(simple|workspace|advanced)$/);
     expect(result.complexity).toMatch(/^(low|medium|high)$/);
 
     expect(runtimeRoot.getAttribute('data-tool-genome')).toBe(result.genomeProfile.genome);
@@ -45,7 +45,7 @@ describe('runtime orchestrator observation mode', () => {
     expect(runtimeRoot.childElementCount).toBe(beforeChildren);
     expect(runtimeRoot.innerHTML).toBe(beforeMarkup);
 
-    expect(events).toEqual([
+    expect(events).toEqual(expect.arrayContaining([
       expect.objectContaining({
         eventName: 'runtime_orchestrator_observation_created',
         payload: expect.objectContaining({
@@ -53,7 +53,15 @@ describe('runtime orchestrator observation mode', () => {
           mode: result.mode,
           complexity: result.complexity
         })
+      }),
+      expect.objectContaining({
+        eventName: 'runtime_strategy_selected',
+        payload: expect.objectContaining({
+          toolSlug: slug,
+          mode: result.mode,
+          genome: result.genomeProfile.genome
+        })
       })
-    ]);
+    ]));
   });
 });

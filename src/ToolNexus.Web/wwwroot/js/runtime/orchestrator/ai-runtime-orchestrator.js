@@ -1,17 +1,18 @@
 import { analyzeToolGenome } from './tool-genome-analyzer.js';
 import { predictRuntimeBehavior } from './behavior-prediction-engine.js';
 import { evaluateRuntimeGovernance } from './runtime-governance-engine.js';
+import { applyAdaptiveRuntimeClasses, selectExecutionStrategy } from './execution-strategy-engine.js';
 
-function resolveOrchestratorMode({ behaviorProfile = {}, governanceProfile = {} } = {}) {
-  if (governanceProfile.riskLevel === 'high') {
-    return 'passive_stabilize';
+function resolveOrchestratorMode({ behaviorProfile = {}, governanceProfile = {}, genomeProfile = {} } = {}) {
+  if (governanceProfile.riskLevel === 'high' || genomeProfile.workflowType === 'pipeline') {
+    return 'advanced';
   }
 
-  if (behaviorProfile.executionStyle === 'iterative') {
-    return 'passive_guided';
+  if (behaviorProfile.executionStyle === 'iterative' || genomeProfile.workflowType === 'transform') {
+    return 'workspace';
   }
 
-  return 'passive_observe';
+  return 'simple';
 }
 
 function resolveOrchestratorComplexity({ behaviorProfile = {}, governanceProfile = {}, genomeProfile = {} } = {}) {
@@ -38,15 +39,20 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
   const genomeProfile = genomeAnalyzer(root, options.genome ?? {});
   const behaviorProfile = behaviorPredictor(genomeProfile, options.behavior ?? {});
   const governanceProfile = governanceEvaluator({ genomeProfile, behaviorProfile }, options.governance ?? {});
-  const mode = resolveOrchestratorMode({ behaviorProfile, governanceProfile });
+  const mode = resolveOrchestratorMode({ behaviorProfile, governanceProfile, genomeProfile });
   const complexity = resolveOrchestratorComplexity({ behaviorProfile, governanceProfile, genomeProfile });
+
+  const strategy = selectExecutionStrategy({ ...genomeProfile, mode, complexity });
+  const appliedRuntimeClasses = applyAdaptiveRuntimeClasses(root, mode);
 
   const runtimeProfile = {
     genomeProfile,
     behaviorProfile,
     governanceProfile,
     mode,
-    complexity
+    complexity,
+    strategy,
+    appliedRuntimeClasses
   };
 
   if (root && typeof root.setAttribute === 'function') {
@@ -63,13 +69,23 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     metadata: {
       genome: genomeProfile,
       behavior: behaviorProfile,
-      governance: governanceProfile
+      governance: governanceProfile,
+      strategy,
+      appliedRuntimeClasses
     }
   };
 
   if (typeof options.emitTelemetry === 'function') {
     try {
       options.emitTelemetry('runtime_orchestrator_observation_created', telemetry);
+      options.emitTelemetry('runtime_strategy_selected', {
+        toolSlug: options.toolSlug ?? null,
+        genome: genomeProfile.genome,
+        mode,
+        complexity,
+        strategy,
+        appliedRuntimeClasses
+      });
     } catch {
       // best-effort telemetry
     }
@@ -82,6 +98,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     governanceProfile,
     telemetry,
     complexity,
+    strategy,
+    appliedRuntimeClasses,
     runtimeProfile,
     passive: true
   };
