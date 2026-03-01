@@ -89,6 +89,7 @@ public sealed class EfRuntimeIncidentRepositoryTests
             "execute",
             "runtime_error",
             "boom",
+            "error",
             "stack",
             "json",
             DateTime.UtcNow,

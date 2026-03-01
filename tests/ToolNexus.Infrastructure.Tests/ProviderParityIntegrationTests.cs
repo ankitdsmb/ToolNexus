@@ -1,5 +1,6 @@
 using Xunit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Content.Entities;
 
@@ -54,7 +55,7 @@ public sealed class ProviderParityIntegrationTests
         await SeedToolAsync(database, "json-formatter");
 
         await using var context = database.CreateContext();
-        var repository = new EfToolContentRepository(context);
+        var repository = new EfToolContentRepository(context, NullLogger<EfToolContentRepository>.Instance);
 
         var tool = await repository.GetBySlugAsync("  JSON-FORMATTER  ");
 
@@ -71,7 +72,7 @@ public sealed class ProviderParityIntegrationTests
         await SeedToolAsync(database, "ordering-check");
 
         await using var context = database.CreateContext();
-        var repository = new EfToolContentRepository(context);
+        var repository = new EfToolContentRepository(context, NullLogger<EfToolContentRepository>.Instance);
 
         var tool = await repository.GetBySlugAsync("ordering-check");
 
@@ -92,7 +93,7 @@ public sealed class ProviderParityIntegrationTests
         await SeedToolAsync(database, "relations-check");
 
         await using var context = database.CreateContext();
-        var repository = new EfToolContentRepository(context);
+        var repository = new EfToolContentRepository(context, NullLogger<EfToolContentRepository>.Instance);
 
         var tool = await repository.GetBySlugAsync("relations-check");
 

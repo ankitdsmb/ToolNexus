@@ -129,7 +129,8 @@ public sealed class MigrationSafetyExtensionsTests
 
         var operation = Assert.Single(migrationBuilder.Operations.OfType<SqlOperation>());
         Assert.Contains("ADD COLUMN %I boolean", operation.Sql, StringComparison.Ordinal);
-        Assert.Contains("IN ('true','1','yes','y')", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("lower(%I::text) IN (", operation.Sql, StringComparison.Ordinal);
+        Assert.Contains("success", operation.Sql, StringComparison.Ordinal);
         Assert.Contains("DROP COLUMN %I", operation.Sql, StringComparison.Ordinal);
         Assert.Contains("RENAME COLUMN %I TO %I", operation.Sql, StringComparison.Ordinal);
     }
