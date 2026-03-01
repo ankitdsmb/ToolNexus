@@ -49,9 +49,10 @@ describe('ai runtime orchestrator', () => {
     expect(result.mode).toMatch(/^passive_/);
     expect(root.getAttribute('data-tool-genome')).toContain('single-step');
     expect(root.getAttribute('data-orchestrator-mode')).toBe(result.mode);
+    expect(root.getAttribute('data-orchestrator-complexity')).toBe(result.complexity);
     expect(events).toEqual([
       expect.objectContaining({
-        eventName: 'runtime_orchestrator_profile_created',
+        eventName: 'runtime_orchestrator_observation_created',
         payload: expect.objectContaining({
           toolSlug: 'json-formatter',
           mode: result.mode
