@@ -1,4 +1,4 @@
-<div class="tool-runtime-widget execution-style-converter">
+<div class="tool-runtime-widget execution-style-converter url-decode-tool">
  <header class="tool-local-header">
   <div>
    <h2>
@@ -11,7 +11,34 @@
    Client-side processing
   </span>
  </header>
- <section class="tool-local-actions">
+ <section class="tool-local-actions" role="toolbar" aria-label="URL decode controls">
+  <button class="tool-btn tool-btn--primary" id="decodeBtn" type="button" data-tool-primary-action>
+   Decode
+  </button>
+  <div class="tool-action-group-transform" role="group" aria-label="Transform actions">
+   <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+    Clear input
+   </button>
+  </div>
+  <div aria-label="Decode options" class="tool-action-group-utility url-decode-tool__options" role="group">
+   <label>
+    <input id="autoDecodeToggle" type="checkbox"/>
+    Auto decode
+   </label>
+   <label>
+    <input checked="" id="plusAsSpaceToggle" type="checkbox"/>
+    Plus as space
+   </label>
+   <label>
+    <input checked="" id="strictModeToggle" type="checkbox"/>
+    Strict mode
+   </label>
+  </div>
+  <div class="tool-action-group-utility" role="group" aria-label="Utility actions">
+   <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
+    Copy output
+   </button>
+  </div>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
@@ -27,28 +54,6 @@
     Input (multiline supported)
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="urlDecodeInput" placeholder="Paste encoded URL, query string, or path segments here" rows="18"></textarea>
-   <div aria-label="Decode options" class="url-decode-tool__options" role="group">
-    <label>
-     <input id="autoDecodeToggle" type="checkbox"/>
-     Auto decode
-    </label>
-    <label>
-     <input checked="" id="plusAsSpaceToggle" type="checkbox"/>
-     Decode plus (+) as space
-    </label>
-    <label>
-     <input checked="" id="strictModeToggle" type="checkbox"/>
-     Strict mode
-    </label>
-   </div>
-   <div class="url-decode-tool__actions">
-    <button class="tool-btn tool-btn--primary" id="decodeBtn" type="button" data-tool-primary-action>
-     Decode
-    </button>
-    <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
-     Clear input
-    </button>
-   </div>
    <p class="url-decode-tool__shortcut">
     <kbd>
      Ctrl
@@ -94,11 +99,6 @@
     Decoded text (rendered as plain text)
    </label>
    <textarea class="tool-textarea tool-textarea--mono" id="urlDecodeOutput" placeholder="Decoded output appears here" readonly="" rows="18"></textarea>
-   <div class="url-decode-tool__actions">
-    <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
-     Copy output
-    </button>
-   </div>
    <p class="url-decode-tool__meta" id="urlDecodeOutputCount">
     0 chars
    </p>
@@ -109,4 +109,3 @@
   </section>
  </section>
 </div>
-

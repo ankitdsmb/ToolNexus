@@ -17,3 +17,10 @@
   .html-entities-workspace { grid-template-columns: 1fr; }
   .html-entities-options { grid-template-columns: 1fr; }
 }
+
+
+.html-entities-tool .tool-local-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .75rem; padding:.75rem 1rem; border:1px solid var(--border-color, #d7dce3); border-radius: var(--radius-md, 12px); background: var(--surface-muted, #f7f9fc); }
+.html-entities-tool .tool-local-actions .tool-action-group-transform,
+.html-entities-tool .tool-local-actions .tool-action-group-utility { display:inline-flex; align-items:center; flex-wrap:wrap; gap:.5rem; }
+.html-entities-tool .tool-local-actions .html-entities-options { display:inline-flex; gap:.45rem .65rem; }
+.html-entities-tool .tool-local-actions .html-entities-options label { display:inline-flex; align-items:center; gap:.35rem; font-size:.8rem; white-space:nowrap; }

@@ -10,10 +10,15 @@
   <div class="tool-action-group-transform">
    <button class="tool-btn tool-btn--outline" id="uuidClearBtn" type="button">Clear</button>
   </div>
-  <div class="tool-action-group-utility">
+  <div class="tool-action-group-utility" role="group" aria-label="Utility actions">
    <button class="tool-btn tool-btn--outline" disabled="" id="uuidCopyBtn" type="button">Copy first</button>
    <button class="tool-btn tool-btn--outline" disabled="" id="uuidCopyAllBtn" type="button">Copy all</button>
    <button class="tool-btn tool-btn--ghost" disabled="" id="uuidDownloadBtn" type="button">Download TXT</button>
+  </div>
+  <div class="tool-action-group-utility uuid-tool__toggles" role="group" aria-label="Generation options">
+   <label class="uuid-tool__toggle" for="uuidNoHyphen"><input id="uuidNoHyphen" type="checkbox"/> Remove hyphens</label>
+   <label class="uuid-tool__toggle" for="uuidUnique"><input id="uuidUnique" type="checkbox"/> Enforce uniqueness</label>
+   <label class="uuid-tool__toggle" for="uuidAutoGenerate"><input id="uuidAutoGenerate" type="checkbox"/> Auto-generate</label>
   </div>
  </section>
  <section class="tool-local-body tool-workspace-unified">
@@ -24,11 +29,6 @@
     <div class="uuid-tool__field"><label for="uuidCase">Letter casing</label><select id="uuidCase"><option selected="" value="lower">Lowercase</option><option value="upper">Uppercase</option></select></div>
     <div class="uuid-tool__field"><label for="uuidWrapper">Wrapper format</label><select id="uuidWrapper"><option selected="" value="none">None</option><option value="braces">Braces {uuid}</option><option value="urn">URN urn:uuid:</option></select></div>
     <div class="uuid-tool__field"><label for="uuidTemplate">Custom template ({uuid})</label><input id="uuidTemplate" placeholder="id:{uuid}" type="text"/></div>
-   </div>
-   <div class="uuid-tool__toggles">
-    <label class="uuid-tool__toggle" for="uuidNoHyphen"><input id="uuidNoHyphen" type="checkbox"/> Remove hyphens</label>
-    <label class="uuid-tool__toggle" for="uuidUnique"><input id="uuidUnique" type="checkbox"/> Enforce uniqueness check</label>
-    <label class="uuid-tool__toggle" for="uuidAutoGenerate"><input id="uuidAutoGenerate" type="checkbox"/> Auto-generate on option changes</label>
    </div>
    <p class="shortcut-hint">Shortcuts: Ctrl + Enter to generate, Ctrl + L to clear.</p>
   </section>

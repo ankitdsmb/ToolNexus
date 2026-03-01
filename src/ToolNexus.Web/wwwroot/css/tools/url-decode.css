@@ -19,3 +19,10 @@
   .url-decode-tool__workspace { grid-template-columns: 1fr; }
   .url-decode-tool__options { grid-template-columns: 1fr; }
 }
+
+
+.url-decode-tool .tool-local-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .75rem 1rem; border: 1px solid var(--border-color, #d7dce3); border-radius: var(--radius-md, 12px); background: var(--surface-muted, #f7f9fc); }
+.url-decode-tool .tool-local-actions .tool-action-group-transform,
+.url-decode-tool .tool-local-actions .tool-action-group-utility { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.url-decode-tool .tool-local-actions .url-decode-tool__options { display: inline-flex; gap: .5rem .75rem; }
+.url-decode-tool .tool-local-actions .url-decode-tool__options label { display: inline-flex; align-items: center; gap: .35rem; font-size: .82rem; white-space: nowrap; }

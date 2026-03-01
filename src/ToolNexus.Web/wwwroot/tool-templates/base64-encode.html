@@ -1,4 +1,4 @@
-<div class="tool-runtime-widget execution-style-converter">
+<div class="tool-runtime-widget execution-style-converter base64-tool">
  <header class="tool-local-header">
   <div>
    <h2><span data-bind="tool.title"></span></h2>
@@ -8,10 +8,15 @@
  </header>
  <section class="tool-local-actions" role="toolbar" aria-label="Base64 actions">
   <button class="tool-btn tool-btn--primary tool-action-primary" id="encodeBtn" type="button" data-tool-primary-action>Encode</button>
-  <div class="tool-action-group-transform">
+  <div class="tool-action-group-transform" role="group" aria-label="Transform actions">
    <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">Clear input</button>
   </div>
-  <div class="tool-action-group-utility">
+  <div class="tool-action-group-utility" role="group" aria-label="Encoding options">
+   <label><input id="urlSafeToggle" type="checkbox"/> URL-safe</label>
+   <label><input id="removePaddingToggle" type="checkbox"/> Remove padding</label>
+   <label><input checked="" id="autoEncodeToggle" type="checkbox"/> Auto encode</label>
+  </div>
+  <div class="tool-action-group-utility" role="group" aria-label="Utility actions">
    <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">Copy output</button>
    <button class="tool-btn tool-btn--ghost" id="downloadBtn" type="button">Download .txt</button>
   </div>
@@ -22,10 +27,6 @@
     <h2 id="inputHeading">Input</h2>
     <p class="base64-meta" id="inputMeta">Text mode · 0 B</p>
    </div>
-   <div aria-label="Input mode" class="base64-mode-toggle" role="radiogroup">
-    <button aria-checked="true" class="tool-btn tool-btn--outline is-active" id="textModeBtn" role="radio" type="button">Text</button>
-    <button aria-checked="false" class="tool-btn tool-btn--outline" id="fileModeBtn" role="radio" type="button">File</button>
-   </div>
    <div aria-label="Drop a file or click to select" class="base64-dropzone" hidden="" id="dropZone" role="button" tabindex="0">
     <p><strong>Drop file here</strong> or click to upload</p>
     <p class="base64-dropzone__hint">Supports binary files. File stays in your browser.</p>
@@ -33,11 +34,6 @@
    </div>
    <label class="base64-label" for="inputEditor">Text input</label>
    <textarea class="tool-textarea tool-textarea--mono" id="inputEditor" placeholder="Paste or type content to encode" rows="14"></textarea>
-   <div class="base64-options">
-    <label><input id="urlSafeToggle" type="checkbox"/> URL-safe mode (- and _)</label>
-    <label><input id="removePaddingToggle" type="checkbox"/> Remove padding (=)</label>
-    <label><input checked="" id="autoEncodeToggle" type="checkbox"/> Auto encode on input</label>
-   </div>
    <p class="base64-warning" hidden="" id="warningBanner"></p>
   </section>
   <section class="tool-local-surface" data-workspace-panel="secondary">

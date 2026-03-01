@@ -123,3 +123,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.url-encode-tool .tool-local-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #d7dce3);
+  border-radius: var(--radius-md, 12px);
+  background: var(--surface-muted, #f7f9fc);
+}
+
+.url-encode-tool .tool-local-actions .tool-action-group-utility {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.url-encode-tool .tool-local-actions .url-encode-options {
+  display: inline-flex;
+}
+
+.url-encode-tool .tool-local-actions .url-encode-options label {
+  font-size: 0.8rem;
+}
+
+.url-encode-tool .tool-local-actions .url-encode-select {
+  min-width: 220px;
+}
