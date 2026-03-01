@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 
 namespace ToolNexus.Infrastructure.Data.Migrations;
 
@@ -14,7 +15,7 @@ internal static class PostgresMigrationSafety
         => $"""
            DO $$
            BEGIN
-               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NULL THEN
+               IF to_regclass('{AsRegClassLiteral(tableName)}') IS NULL THEN
                    RETURN;
                END IF;
 
@@ -47,7 +48,7 @@ internal static class PostgresMigrationSafety
         => $"""
            DO $$
            BEGIN
-               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL THEN
+               IF to_regclass('{AsRegClassLiteral(tableName)}') IS NOT NULL THEN
                    ALTER TABLE {QuoteIdentifier(tableName)} DROP CONSTRAINT IF EXISTS {QuoteIdentifier(constraintName)};
                END IF;
            END $$;
@@ -60,7 +61,7 @@ internal static class PostgresMigrationSafety
         => $"""
            DO $$
            BEGIN
-               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL
+               IF to_regclass('{AsRegClassLiteral(tableName)}') IS NOT NULL
                   AND NOT EXISTS (
                        SELECT 1
                        FROM information_schema.columns
@@ -97,7 +98,7 @@ internal static class PostgresMigrationSafety
         => $"""
            DO $$
            BEGIN
-               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NULL THEN
+               IF to_regclass('{AsRegClassLiteral(tableName)}') IS NULL THEN
                    {createSql}
                END IF;
            END $$;
@@ -108,7 +109,7 @@ internal static class PostgresMigrationSafety
         => $"""
            DO $$
            BEGIN
-               IF to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL
+               IF to_regclass('{AsRegClassLiteral(tableName)}') IS NOT NULL
                   AND NOT EXISTS (
                       SELECT 1
                       FROM pg_constraint constraint_entry
@@ -169,7 +170,7 @@ internal static class PostgresMigrationSafety
                temp_column_name text := '{EscapeSqlLiteral(columnName)}__safe_target';
                conversion_sql text;
            BEGIN
-               SELECT to_regclass('{EscapeSqlLiteral(tableName)}') IS NOT NULL INTO table_exists;
+               SELECT to_regclass('{AsRegClassLiteral(tableName)}') IS NOT NULL INTO table_exists;
                IF NOT table_exists THEN
                    RETURN;
                END IF;
@@ -245,4 +246,11 @@ internal static class PostgresMigrationSafety
 
     private static string EscapeSqlLiteral(string value)
         => value.Replace("'", "''", StringComparison.Ordinal);
+
+    private static string AsRegClassLiteral(string identifier)
+    {
+        var parts = identifier.Split('.', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var quotedIdentifier = string.Join('.', parts.Select(static part => $"\"{part.Replace("\"", "\"\"", StringComparison.Ordinal)}\""));
+        return EscapeSqlLiteral(quotedIdentifier);
+    }
 }
