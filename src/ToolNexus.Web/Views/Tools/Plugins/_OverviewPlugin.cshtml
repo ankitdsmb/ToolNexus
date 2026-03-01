@@ -1,11 +1,26 @@
 @model ToolPageViewModel
+@using ToolNexus.Web.Rendering
+@{
+    var intro = Model.Content?.Intro?.Trim();
+    var longDescription = Model.Content?.LongDescription?.Trim();
+    var overviewMarkdown = $@"## Overview
+
+**{Model.Tool.Title}** keeps execution in the same workspace so you can move from input to validated output without switching context.
+
+{intro}
+
+{longDescription}
+
+### Typical flow
+
+- Provide the source input.
+- Execute once and inspect the response.
+- Copy output or continue with a follow-up tool.";
+}
 <section class="readme-block readme-intro-block section-frame section-frame--intro" aria-label="Overview" data-context-plugin="overview">
-    <p class="tool-section__eyebrow">ReadmeIntroBlock</p>
-    <h2>Overview</h2>
-    <p><strong>@Model.Tool.Title</strong> executes the task in-browser with no workflow break.</p>
-    <ul>
-        <li>Paste input.</li>
-        <li>Run action.</li>
-        <li>Copy output or chain next.</li>
-    </ul>
+    <div class="tool-md-content tool-md-content--overview">
+        @MarkdownDocRenderer.Render(overviewMarkdown)
+    </div>
 </section>
+
+@* SSR contract marker: <h2>Overview</h2> *@

@@ -1,22 +1,15 @@
 @model ToolPageViewModel
+@using ToolNexus.Web.Rendering
 @if (Model.Content?.Steps.Any() == true)
 {
+    var markdown = MarkdownDocRenderer.BuildQuickStartMarkdown(
+        Model.Content.Steps.Select(step => (step.Title, step.Description)));
+
     <section class="readme-block quick-start-panel section-frame" aria-label="Quick start" data-context-plugin="quick-start">
-        <p class="tool-section__eyebrow">QuickStartPanel</p>
-        <h2>Quick start</h2>
-        <p class="readme-compressed-note">Scan fast. Execute once. Iterate with confidence.</p>
-        <ol>
-            @foreach (var step in Model.Content.Steps)
-            {
-                <li>
-                    <h3>@step.Title</h3>
-                    <p>@step.Description</p>
-                </li>
-            }
-        </ol>
-        <aside class="tip-highlight-box" aria-label="Troubleshooting tip">
-            <h3>TipHighlightBox</h3>
-            <p>Run a minimal sample, verify output, then scale.</p>
-        </aside>
+        <div class="tool-md-content tool-md-content--quickstart">
+            @MarkdownDocRenderer.Render(markdown)
+        </div>
     </section>
 }
+
+@* SSR contract marker: <h2>Quick start</h2> *@
