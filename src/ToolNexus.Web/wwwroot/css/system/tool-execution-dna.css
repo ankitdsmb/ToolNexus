@@ -19,7 +19,7 @@
   --tn-runtime-panel-padding: 14px;
   --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
   --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
-  --tn-runtime-panel-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --tn-runtime-panel-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 
   /* header sizing */
   --tn-exec-header-min-height: 34px;
@@ -30,7 +30,7 @@
   --tn-exec-toolbar-gap: var(--tn-exec-space-2);
 
   /* editor region spacing */
-  --tn-exec-editor-gap: var(--tn-exec-space-2);
+  --tn-exec-editor-gap: 14px;
   --tn-exec-editor-padding: var(--tn-exec-space-2);
   --tn-exec-editor-min-height: clamp(380px, 46vh, 460px);
   --tn-exec-motion-fast: 150ms;
@@ -52,9 +52,9 @@
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: 0 var(--tn-exec-space-1) var(--tn-exec-space-1);
+  padding: 0 var(--tn-exec-space-0) var(--tn-exec-space-1);
   display: grid;
-  gap: var(--tn-exec-editor-gap);
+  gap: 11px;
   align-content: start;
 }
 
@@ -73,7 +73,10 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--tn-exec-toolbar-gap);
-  padding: 2px 0;
+  padding: 3px 0 2px;
+  margin-top: 1px;
+  margin-bottom: 2px;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn)) {
@@ -100,6 +103,7 @@
   gap: var(--tn-exec-editor-gap);
   align-items: stretch;
   min-height: var(--tn-exec-editor-min-height);
+  padding-top: 2px;
 }
 
 /* Auto-layout ownership contract: panel-count aware, forced at runtime anchor level. */
@@ -146,7 +150,7 @@
   background: color-mix(in srgb, var(--bg-elevated) 72%, #000 28%);
   border: var(--tn-exec-border);
   border-radius: var(--tn-exec-radius-sm);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.16);
   transition: border-color var(--tn-exec-motion-fast) var(--ease-standard), box-shadow var(--tn-exec-motion-fast) var(--ease-standard);
 }
 
@@ -186,8 +190,42 @@
   padding: var(--tn-exec-metrics-pill-padding);
   border: var(--tn-exec-border);
   border-radius: var(--tn-exec-radius-sm);
-  background: color-mix(in srgb, var(--bg-secondary) 84%, var(--bg-primary));
+  background: color-mix(in srgb, var(--bg-secondary) 74%, var(--bg-primary));
   min-height: 30px;
+  opacity: 0.86;
+}
+
+/* Tool personality modifiers (micro-delta only, no layout ownership changes). */
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-editor) {
+  --tn-exec-editor-gap: 16px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-editor .tool-local-header) {
+  letter-spacing: 0.01em;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-converter) {
+  --tn-exec-editor-gap: 12px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-converter .tool-local-actions) {
+  padding-top: 2px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-analyzer) {
+  --tn-exec-editor-gap: 14px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-analyzer .tool-local-header) {
+  font-weight: 600;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-utility) {
+  --tn-exec-editor-gap: 11px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget.execution-style-utility .tool-local-actions) {
+  opacity: 0.95;
 }
 
 /* Universal execution button variants */

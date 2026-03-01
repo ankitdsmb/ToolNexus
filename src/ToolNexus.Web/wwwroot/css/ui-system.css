@@ -38,13 +38,13 @@ ENTERPRISE UI SYSTEM
   --exec-action-primary-min-width: 156px;
   --exec-action-primary-height: calc(var(--control-md) + 4px);
   --exec-action-primary-weight: 700;
-  --exec-action-group-gap: var(--space-1);
+  --exec-action-group-gap: 11px;
   --exec-action-group-indent: calc(var(--space-1) + 2px);
   --exec-workspace-columns: 1fr 1fr;
   --exec-workspace-divider: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
   --exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary));
   --exec-runtime-strip-min-height: 32px;
-  --exec-runtime-strip-padding: 4px 10px;
+  --exec-runtime-strip-padding: 3px 10px;
   --exec-runtime-strip-gap: 6px;
   --exec-metrics-grid-columns: repeat(auto-fit, minmax(132px, 1fr));
   --exec-metrics-item-padding: 0.4rem 0.55rem;
@@ -56,7 +56,7 @@ ENTERPRISE UI SYSTEM
 }
 
 :where(.tool-page, .static-page, .home-page, .tools-index) {
-  gap: var(--space-lg);
+  gap: 28px;
 }
 
 :where(.tool-page h1, .tool-page__heading h1) {
@@ -73,15 +73,15 @@ ENTERPRISE UI SYSTEM
 :where(.tool-layout, .tn-tool-body) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-sm);
+  gap: 14px;
 }
 
 :where(.tool-layout__panel, .tool-panel, .tn-tool-panel) {
   border-radius: var(--radius-panel);
   border: 1px solid var(--color-border);
-  background: var(--panel-bg);
-  box-shadow: var(--elevation-1);
-  padding: var(--space-sm);
+  background: color-mix(in srgb, var(--panel-bg) 94%, #000 6%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  padding: 14px;
   min-height: 100%;
 }
 
@@ -106,7 +106,7 @@ ENTERPRISE UI SYSTEM
 
 :where(.tn-tool-shell) {
   display: grid;
-  gap: var(--space-sm);
+  gap: 12px;
 }
 
 :where(.tn-tool-header) {
@@ -149,10 +149,10 @@ ENTERPRISE UI SYSTEM
 :where(.tn-unified-tool-control) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-panel);
-  background: var(--panel-bg);
-  box-shadow: var(--elevation-1);
-  padding: var(--runtime-density-padding);
-  gap: var(--runtime-density-gap);
+  background: color-mix(in srgb, var(--panel-bg) 93%, #000 7%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+  padding: 12px;
+  gap: 14px;
 }
 
 :where(.tn-unified-tool-control__header) {
@@ -164,26 +164,28 @@ ENTERPRISE UI SYSTEM
 
 
 :where([data-tool-context="true"]) {
-  padding: var(--runtime-density-padding);
+  padding: 11px;
   border-radius: var(--radius-md);
-  background: var(--runtime-input-surface);
-  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  background: color-mix(in srgb, var(--runtime-input-surface) 86%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent);
 }
 
 :where(.tn-unified-tool-control__input, .tn-unified-tool-control__input-card) {
   display: grid;
-  gap: var(--runtime-density-gap);
-  padding: var(--runtime-density-padding);
+  gap: 12px;
+  padding: 14px;
   border-radius: var(--radius-md);
-  background: var(--runtime-input-surface);
+  background: color-mix(in srgb, var(--runtime-input-surface) 94%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 :where([data-tool-status="true"]) {
-  padding: 0;
-  background: transparent;
+  padding: 1px 0;
+  background: color-mix(in srgb, var(--panel-bg) 74%, transparent);
   border: 0;
   box-shadow: none;
+  opacity: 0.9;
 }
 
 :where(.tn-unified-tool-control__icon) {
@@ -223,9 +225,9 @@ ENTERPRISE UI SYSTEM
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  column-gap: var(--runtime-density-gap);
+  column-gap: 14px;
   row-gap: var(--space-1);
-  padding-top: var(--space-2);
+  padding-top: 11px;
   border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   min-height: 56px;
 }
@@ -250,11 +252,11 @@ ENTERPRISE UI SYSTEM
 
 :where(.tn-unified-tool-control__run) {
   min-height: calc(var(--control-md) + 8px);
-  padding-inline: var(--space-sm);
+  padding-inline: 18px;
   font-size: var(--type-body);
   font-weight: 700;
   border-width: 2px;
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 20%, transparent);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 17%, transparent);
   transition: box-shadow 140ms ease, background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
@@ -354,11 +356,12 @@ ENTERPRISE UI SYSTEM
 :where(.tn-unified-tool-control__output) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--runtime-density-padding);
-  background: var(--runtime-output-surface);
+  padding: 16px;
+  background: color-mix(in srgb, var(--runtime-output-surface) 96%, #000 4%);
   display: grid;
-  gap: var(--runtime-density-gap);
+  gap: 14px;
   min-height: 260px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.14);
 }
 
 :where(.tn-unified-tool-control__output-block) {
