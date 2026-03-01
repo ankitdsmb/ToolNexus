@@ -14,20 +14,25 @@
    Client-side processing only
   </span>
  </header>
- <section class="tool-local-actions">
-  <button class="tool-btn tool-btn--primary" id="convertBtn" type="button" data-tool-primary-action>
-   Convert
-  </button>
-  <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
-   Clear
-  </button>
-  <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
-   Copy JSON
-  </button>
-  <button class="tool-btn tool-btn--ghost" id="downloadBtn" type="button">
-   Download JSON
-  </button>
-  <label>
+ <section class="tool-local-actions csv-json-controls" role="toolbar" aria-label="CSV to JSON controls">
+  <div class="tool-action-group-primary" role="group" aria-label="Primary action">
+   <button class="tool-btn tool-btn--primary" id="convertBtn" type="button" data-tool-primary-action>
+    Convert
+   </button>
+  </div>
+  <div class="tool-action-group-transform" role="group" aria-label="Transform actions">
+   <button class="tool-btn tool-btn--outline" id="clearBtn" type="button">
+    Clear
+   </button>
+   <button class="tool-btn tool-btn--outline" id="copyBtn" type="button">
+    Copy JSON
+   </button>
+   <button class="tool-btn tool-btn--ghost" id="downloadBtn" type="button">
+    Download JSON
+   </button>
+  </div>
+  <div class="tool-action-group-utility" role="group" aria-label="Parsing options">
+   <label>
    Delimiter
    <select id="delimiterSelect">
     <option value=",">
@@ -41,23 +46,23 @@
     </option>
    </select>
   </label>
-  <label>
+   <label>
    <input checked="" id="useHeaderToggle" type="checkbox"/>
    First row is header
   </label>
-  <label class="csv-json-controls__custom" hidden="" id="customHeadersField">
+   <label class="csv-json-controls__custom" hidden="" id="customHeadersField">
    Custom headers
    <input id="customHeadersInput" placeholder="name,age,email" type="text"/>
   </label>
-  <label>
+   <label>
    <input id="autoConvertToggle" type="checkbox"/>
    Auto-convert
   </label>
-  <label>
+   <label>
    <input checked="" id="prettyToggle" type="checkbox"/>
    Pretty JSON
   </label>
-  <label>
+   <label>
    Indent
    <select id="indentSelect">
     <option selected="" value="2">
@@ -71,22 +76,23 @@
     </option>
    </select>
   </label>
-  <label>
+   <label>
    <input checked="" id="typeDetectToggle" type="checkbox"/>
    Auto type detection
   </label>
-  <label>
+   <label>
    <input checked="" id="emptyAsNullToggle" type="checkbox"/>
    Empty as null
   </label>
-  <label>
+   <label>
    <input id="sanitizeToggle" type="checkbox"/>
    Sanitize formula cells
   </label>
-  <label>
+   <label>
    Preview rows
    <input id="previewRowsInput" min="1" type="number" value="50"/>
   </label>
+  </div>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
@@ -123,4 +129,3 @@
   </div>
  </section>
 </div>
-

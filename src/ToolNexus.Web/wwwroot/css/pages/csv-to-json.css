@@ -1,1 +1,57 @@
-/* Runtime shell ownership moved to ui-system.css. */
+.csv-json-page .csv-json-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: color-mix(in srgb, var(--bg-tertiary) 65%, var(--bg-primary));
+  padding: var(--space-2);
+}
+
+.csv-json-page .csv-json-controls .tool-action-group-primary,
+.csv-json-page .csv-json-controls .tool-action-group-transform,
+.csv-json-page .csv-json-controls .tool-action-group-utility {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  padding-right: var(--space-2);
+  margin-right: var(--space-1);
+  border-right: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+}
+
+.csv-json-page .csv-json-controls .tool-action-group-utility {
+  border-right: 0;
+  margin-right: 0;
+  padding-right: 0;
+}
+
+.csv-json-page .csv-json-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  padding: 0 10px;
+  font-size: var(--text-sm);
+}
+
+.csv-json-page .csv-json-controls select,
+.csv-json-page .csv-json-controls input[type="number"],
+.csv-json-page .csv-json-controls input[type="text"] {
+  min-height: 26px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 2px 6px;
+}
+
+.csv-json-page .tool-local-body {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
