@@ -1,0 +1,21 @@
+.document-converter-runtime {
+  display: grid;
+  gap: 12px;
+}
+
+.document-converter-runtime .tool-local-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.document-converter-runtime #fileInput,
+.document-converter-runtime #conversionMode {
+  max-width: 320px;
+}
+
+.document-converter-runtime #downloadLink {
+  color: var(--color-accent-500, #55a6ff);
+  text-decoration: underline;
+}

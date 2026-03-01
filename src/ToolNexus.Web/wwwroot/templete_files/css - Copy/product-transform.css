@@ -1,0 +1,126 @@
+:root {
+  --premium-glow: 0 18px 50px rgba(76, 130, 255, 0.16);
+  --premium-card-shadow: 0 14px 30px rgba(2, 6, 23, 0.18);
+}
+
+.page-shell {
+  gap: clamp(1.5rem, 2.3vw, 2.2rem);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 8%, rgba(59, 130, 246, 0.28), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(45, 212, 191, 0.18), transparent 50%),
+    linear-gradient(160deg, #091427 0%, #101f3b 55%, #111827 100%);
+  border-color: color-mix(in srgb, #93c5fd 42%, var(--border-subtle));
+  box-shadow: var(--premium-glow);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -45% -10%;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.hero__subtitle,
+.hero__typewriter,
+.hero-badge {
+  color: #dbeafe;
+}
+
+.home-page > section:nth-of-type(even) {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-secondary) 90%, #0b1225), color-mix(in srgb, var(--bg-tertiary) 82%, #0f172a));
+}
+
+.home-page > section:nth-of-type(odd) {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-secondary) 92%, #0f172a), color-mix(in srgb, var(--bg-primary) 94%, #111827));
+}
+
+.card,
+.tool-card,
+.workflow-card,
+.trust-stat,
+.privacy-card,
+.testimonial-card,
+.static-page__section,
+.tool-shell-page__hero,
+.tool-shell-page__docs {
+  border-color: color-mix(in srgb, var(--border-default) 78%, #60a5fa);
+}
+
+.card:hover,
+.tool-card:hover,
+.workflow-card:hover,
+.testimonial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--premium-card-shadow);
+}
+
+.tool-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.tool-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(140deg, rgba(59, 130, 246, 0.2), transparent 45%, rgba(45, 212, 191, 0.15));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+
+.tool-card:hover::before,
+.tool-card:focus-visible::before {
+  opacity: 1;
+}
+
+.tools-index__toolbar {
+  border: 1px solid color-mix(in srgb, var(--border-default) 74%, #60a5fa);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 90%, #0f172a), color-mix(in srgb, var(--bg-primary) 96%, #030712));
+}
+
+.tool-shell-page__layout {
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.75fr);
+}
+
+.tool-shell-page__runtime {
+  background: linear-gradient(165deg, color-mix(in srgb, #0b1224 84%, var(--panel-bg)), var(--panel-bg));
+  border-color: color-mix(in srgb, var(--border-default) 70%, #38bdf8);
+  box-shadow: 0 20px 38px rgba(15, 23, 42, 0.22);
+}
+
+.static-page__header {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-secondary) 88%, #0b1222), color-mix(in srgb, var(--bg-primary) 93%, #111827));
+  border: 1px solid color-mix(in srgb, var(--border-default) 74%, #60a5fa);
+  border-radius: var(--radius-xl);
+  padding: clamp(1.15rem, 2.2vw, 2rem);
+}
+
+.static-page__section {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--bg-secondary) 94%, #0f172a), color-mix(in srgb, var(--bg-primary) 95%, #020617));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition: transform 420ms var(--ease-standard), opacity 420ms var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard);
+  }
+
+  .hero-btn,
+  .tool-btn,
+  .chip,
+  .trust-link,
+  .tool-card,
+  .card {
+    transition: transform var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), border-color var(--motion-base) var(--ease-standard), background-color var(--motion-base) var(--ease-standard);
+  }
+}

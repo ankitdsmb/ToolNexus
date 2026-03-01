@@ -1,0 +1,1424 @@
+/*
+ * ToolNexus — UPGREAD DESIGN LAYER
+ * Prefix: upgread_
+ * Strategy: Parallel design layer. Safe rollback via body class removal.
+ * Activation: <body class="upgread_workspace">
+ */
+
+/* =========================================================
+   DESIGN TOKENS — IDE WORKSPACE PALETTE
+   ========================================================= */
+.upgread_workspace {
+  --upgread-bg-canvas:       #0d1117;
+  --upgread-bg-surface:      #161b22;
+  --upgread-bg-elevated:     #1c2128;
+  --upgread-bg-overlay:      #21262d;
+  --upgread-bg-input:        #0d1117;
+
+  --upgread-border-hairline: #30363d;
+  --upgread-border-default:  #3d444d;
+  --upgread-border-active:   #58a6ff;
+  --upgread-border-accent:   #1f6feb;
+
+  --upgread-accent-blue:     #58a6ff;
+  --upgread-accent-teal:     #39d353;
+  --upgread-accent-orange:   #e3b341;
+  --upgread-accent-red:      #f85149;
+  --upgread-accent-purple:   #bc8cff;
+
+  --upgread-text-primary:    #e6edf3;
+  --upgread-text-secondary:  #8b949e;
+  --upgread-text-muted:      #656d76;
+  --upgread-text-accent:     #58a6ff;
+  --upgread-text-inverse:    #0d1117;
+
+  --upgread-font-ui:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+  --upgread-font-sans:       -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+  --upgread-radius-none:     0;
+  --upgread-radius-sm:       3px;
+  --upgread-radius-md:       6px;
+  --upgread-radius-lg:       8px;
+
+  --upgread-space-1:  4px;
+  --upgread-space-2:  8px;
+  --upgread-space-3:  11px;
+  --upgread-space-4:  13px;
+  --upgread-space-5:  15px;
+  --upgread-space-6:  20px;
+  --upgread-space-7:  28px;
+  --upgread-space-8:  36px;
+
+  --upgread-topbar-h: 40px;
+
+  --upgread-shadow-sm:  0 1px 2px rgba(0,0,0,0.4);
+  --upgread-shadow-md:  0 3px 8px rgba(0,0,0,0.36);
+  --upgread-shadow-lg:  0 8px 24px rgba(0,0,0,0.48);
+
+  --upgread-transition: 120ms ease;
+}
+
+/* =========================================================
+   GLOBAL CANVAS RESET
+   ========================================================= */
+.upgread_workspace,
+.upgread_workspace body {
+  background: var(--upgread-bg-canvas) !important;
+  color: var(--upgread-text-primary) !important;
+  font-family: var(--upgread-font-sans) !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override legacy surface colors */
+.upgread_workspace .app-shell {
+  background: var(--upgread-bg-canvas) !important;
+  min-height: 100vh;
+}
+
+.upgread_workspace .container {
+  padding-block: var(--upgread-space-6) var(--upgread-space-7) !important;
+}
+
+/* =========================================================
+   TOPBAR — IDE TITLE BAR STYLE
+   ========================================================= */
+.upgread_topbar {
+  height: var(--upgread-topbar-h) !important;
+  min-height: var(--upgread-topbar-h) !important;
+  background: var(--upgread-bg-surface) !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.upgread_topbar .topbar__inner {
+  min-height: var(--upgread-topbar-h) !important;
+  padding-inline: var(--upgread-space-5) !important;
+  gap: var(--upgread-space-4) !important;
+}
+
+.upgread_topbar .brand__dot {
+  width: 8px !important;
+  height: 8px !important;
+  background: var(--upgread-accent-teal) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--upgread-accent-teal) 22%, transparent) !important;
+}
+
+.upgread_topbar .brand__name {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_topbar .brand__tagline {
+  font-size: 10px !important;
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-text-muted) !important;
+  letter-spacing: 0.02em !important;
+}
+
+.upgread_topbar .topbar__search-shell {
+  background: var(--upgread-bg-input) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  min-height: 26px !important;
+  height: 26px !important;
+  padding-inline: var(--upgread-space-3) !important;
+  transition: border-color var(--upgread-transition) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.upgread_topbar .topbar__search-shell:hover,
+.upgread_topbar .topbar__search-shell:focus {
+  border-color: var(--upgread-border-active) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.upgread_topbar .topbar__search-placeholder {
+  font-size: 11px !important;
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_topbar .topbar__search-shortcut {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-muted) !important;
+  padding: 1px 5px !important;
+}
+
+.upgread_topbar .topbar__explore {
+  font-size: 11px !important;
+  font-family: var(--upgread-font-sans) !important;
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-secondary) !important;
+  min-height: 26px !important;
+  height: 26px !important;
+  padding-inline: var(--upgread-space-3) !important;
+  text-decoration: none !important;
+  transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_topbar .topbar__explore:hover {
+  border-color: var(--upgread-border-active) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_topbar .theme-toggle {
+  width: 26px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-muted) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_topbar .theme-toggle:hover {
+  border-color: var(--upgread-border-default) !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+.upgread_topbar .theme-toggle svg {
+  width: 13px !important;
+  height: 13px !important;
+}
+
+/* =========================================================
+   HERO → WORKSPACE COMMAND MODULE
+   ========================================================= */
+.upgread_workspace .hero {
+  padding: var(--upgread-space-7) var(--upgread-space-7) !important;
+  border-radius: var(--upgread-radius-lg) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  background: var(--upgread-bg-surface) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Subtle IDE top-edge rule */
+.upgread_workspace .hero::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 0 auto 0 !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent 0%, var(--upgread-accent-blue) 40%, var(--upgread-accent-teal) 70%, transparent 100%) !important;
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+  background-size: unset !important;
+  background-position: unset !important;
+}
+
+.upgread_workspace .hero::after {
+  display: none !important;
+}
+
+.upgread_workspace .hero__title {
+  font-size: clamp(1.4rem, 2.6vw, 2rem) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.025em !important;
+  font-family: var(--upgread-font-sans) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .hero__title strong {
+  font-weight: 700 !important;
+  color: var(--upgread-accent-blue) !important;
+}
+
+.upgread_workspace .hero__subtitle {
+  font-size: 13px !important;
+  color: var(--upgread-text-secondary) !important;
+  line-height: 1.55 !important;
+  max-width: 52ch !important;
+}
+
+.upgread_workspace .hero__typewriter {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .hero__typewriter-value {
+  color: var(--upgread-accent-teal) !important;
+}
+
+.upgread_workspace .hero__cursor {
+  background: var(--upgread-accent-blue) !important;
+}
+
+.upgread_workspace .hero-badge,
+.upgread_workspace .chip,
+.upgread_workspace kbd {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-secondary) !important;
+  padding: 2px 6px !important;
+}
+
+.upgread_workspace .hero-btn--primary {
+  background: var(--upgread-accent-blue) !important;
+  border: 1px solid var(--upgread-accent-blue) !important;
+  color: var(--upgread-text-inverse) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  min-height: 28px !important;
+  padding-inline: var(--upgread-space-5) !important;
+  box-shadow: none !important;
+  transition: background var(--upgread-transition), border-color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .hero-btn--primary:hover {
+  background: color-mix(in srgb, var(--upgread-accent-blue) 82%, white) !important;
+  border-color: color-mix(in srgb, var(--upgread-accent-blue) 82%, white) !important;
+  transform: none !important;
+}
+
+.upgread_workspace .hero-btn--secondary {
+  background: transparent !important;
+  border: 1px solid var(--upgread-border-default) !important;
+  color: var(--upgread-text-secondary) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 12px !important;
+  min-height: 28px !important;
+  padding-inline: var(--upgread-space-5) !important;
+  transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .hero-btn--secondary:hover {
+  border-color: var(--upgread-border-active) !important;
+  color: var(--upgread-text-primary) !important;
+  transform: none !important;
+}
+
+.upgread_workspace .hero-btn:active {
+  transform: scale(0.98) !important;
+}
+
+/* Hero code preview */
+.upgread_workspace .hero-preview {
+  background: var(--upgread-bg-canvas) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  box-shadow: var(--upgread-shadow-md) !important;
+}
+
+.upgread_workspace .hero-preview__head {
+  background: var(--upgread-bg-elevated) !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+  padding: var(--upgread-space-2) var(--upgread-space-4) !important;
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .hero-preview__code {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+  line-height: 1.7 !important;
+  padding: var(--upgread-space-4) !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+/* =========================================================
+   SECTION HEADERS — COMPACT IDE RAIL
+   ========================================================= */
+.upgread_workspace .tool-section__header,
+.upgread_workspace .workflow-section__header,
+.upgread_workspace .trust-section__header,
+.upgread_workspace .social-section__header {
+  padding-bottom: var(--upgread-space-3) !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+  gap: var(--upgread-space-2) !important;
+}
+
+.upgread_workspace .section-title {
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .section-subtitle {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+  margin-top: 2px !important;
+}
+
+.upgread_workspace .tool-section__eyebrow,
+.upgread_workspace .trust-section__eyebrow,
+.upgread_workspace .hero__eyebrow,
+.upgread_workspace .json-formatter-eyebrow {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  color: var(--upgread-accent-blue) !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 600 !important;
+}
+
+/* =========================================================
+   TOOL DISCOVERY BAR
+   ========================================================= */
+.upgread_workspace .tool-discovery {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  padding: var(--upgread-space-3) var(--upgread-space-4) !important;
+  gap: var(--upgread-space-2) !important;
+}
+
+.upgread_workspace .discovery-search-shell {
+  background: var(--upgread-bg-input) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  min-height: 28px !important;
+  transition: border-color var(--upgread-transition) !important;
+  transform: none !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+}
+
+.upgread_workspace .discovery-search-shell:hover {
+  border-color: var(--upgread-border-active) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .tool-discovery__chip {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-secondary) !important;
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+  transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .tool-discovery__chip:hover {
+  border-color: var(--upgread-border-active) !important;
+  color: var(--upgread-text-primary) !important;
+  background: color-mix(in srgb, var(--upgread-accent-blue) 8%, var(--upgread-bg-elevated)) !important;
+}
+
+.upgread_workspace .tool-discovery__label {
+  font-size: 11px !important;
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-text-muted) !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* =========================================================
+   TOOL CARDS → EXECUTION MODULES
+   ========================================================= */
+.upgread_workspace .card,
+.upgread_workspace .tool-card,
+.upgread_workspace .workflow-card,
+.upgread_workspace .trust-stat,
+.upgread_workspace .privacy-card,
+.upgread_workspace .testimonial-card {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  box-shadow: none !important;
+  padding: var(--upgread-space-4) !important;
+  transition: border-color var(--upgread-transition), background var(--upgread-transition) !important;
+}
+
+.upgread_workspace .card::before,
+.upgread_workspace .workflow-card::before,
+.upgread_workspace .trust-stat::before,
+.upgread_workspace .testimonial-card::before,
+.upgread_workspace .privacy-card::before {
+  display: none !important;
+}
+
+.upgread_workspace .card:hover,
+.upgread_workspace .tool-card:hover,
+.upgread_workspace .workflow-card:hover {
+  border-color: var(--upgread-border-active) !important;
+  background: color-mix(in srgb, var(--upgread-accent-blue) 4%, var(--upgread-bg-surface)) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove the hover overlay shimmer */
+.upgread_workspace .tool-card::before {
+  display: none !important;
+}
+
+.upgread_workspace .card__title-row h3,
+.upgread_workspace .tool-card h3 {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .card__description,
+.upgread_workspace .tool-card__description,
+.upgread_workspace .tool-smart-context {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+
+.upgread_workspace .card__action {
+  border-top: 1px solid var(--upgread-border-hairline) !important;
+  padding-top: var(--upgread-space-2) !important;
+  margin-top: var(--upgread-space-2) !important;
+}
+
+.upgread_workspace .card__cta {
+  font-size: 11px !important;
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-text-accent) !important;
+  font-weight: 500 !important;
+}
+
+.upgread_workspace .card__badge,
+.upgread_workspace .tool-card__badge,
+.upgread_workspace .tool-card__tag {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-muted) !important;
+  padding: 1px 5px !important;
+}
+
+.upgread_workspace .card__icon {
+  box-shadow: none !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  background: var(--upgread-bg-elevated) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+}
+
+/* =========================================================
+   HOME PAGE SECTION LAYOUT — TIGHT IDE GRID
+   ========================================================= */
+.upgread_workspace .home-page {
+  gap: 28px !important;
+  background: var(--upgread-bg-canvas) !important;
+}
+
+.upgread_workspace .home-page > section {
+  gap: 16px !important;
+}
+
+.upgread_workspace .home-surface {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  padding: var(--upgread-space-5) !important;
+}
+
+.upgread_workspace .home-surface::before,
+.upgread_workspace .home-surface::after,
+.upgread_workspace .hero__noise,
+.upgread_workspace .hero__gradient {
+  display: none !important;
+}
+
+.upgread_workspace .home-page > section:nth-of-type(even),
+.upgread_workspace .home-page > section:nth-of-type(odd) {
+  background: none !important;
+}
+
+/* =========================================================
+   WORKFLOW CARDS
+   ========================================================= */
+.upgread_workspace .workflow-card h3 {
+  font-size: 12px !important;
+  color: var(--upgread-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+.upgread_workspace .workflow-card p {
+  font-size: 11px !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+.upgread_workspace .workflow-card__link {
+  font-size: 11px !important;
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-accent-blue) !important;
+  font-weight: 500 !important;
+}
+
+/* =========================================================
+   TRUST / STATS
+   ========================================================= */
+.upgread_workspace .trust-stat__value {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--upgread-text-primary) !important;
+  font-family: var(--upgread-font-ui) !important;
+}
+
+.upgread_workspace .trust-stat__label {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  color: var(--upgread-text-muted) !important;
+  letter-spacing: 0.06em !important;
+}
+
+.upgread_workspace .trust-stat__meta {
+  font-size: 11px !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+.upgread_workspace .trust-link {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-secondary) !important;
+  font-size: 11px !important;
+  min-height: 28px !important;
+  transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .trust-link:hover {
+  border-color: var(--upgread-border-active) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+/* =========================================================
+   TESTIMONIAL CARDS
+   ========================================================= */
+.upgread_workspace .testimonial-card__quote {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+  line-height: 1.6 !important;
+}
+
+.upgread_workspace .testimonial-card__meta {
+  font-size: 11px !important;
+  color: var(--upgread-text-muted) !important;
+  font-family: var(--upgread-font-ui) !important;
+}
+
+.upgread_workspace .testimonial-card__badge {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: color-mix(in srgb, var(--upgread-accent-teal) 10%, var(--upgread-bg-elevated)) !important;
+  border-color: color-mix(in srgb, var(--upgread-accent-teal) 30%, var(--upgread-border-hairline)) !important;
+  color: var(--upgread-accent-teal) !important;
+}
+
+/* =========================================================
+   FAQ PANEL
+   ========================================================= */
+.upgread_workspace .faq-panel {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  padding: var(--upgread-space-5) !important;
+}
+
+.upgread_workspace .faq-panel h3 {
+  font-size: 13px !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .faq-panel__list dt {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .faq-panel__list dd {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+/* =========================================================
+   ALL TOOLS PAGE — TOOLS INDEX
+   ========================================================= */
+.upgread_workspace .tools-index__toolbar {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  padding: var(--upgread-space-3) var(--upgread-space-4) !important;
+}
+
+.upgread_workspace .tool-group__header {
+  padding-bottom: var(--upgread-space-2) !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+  margin-bottom: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .tool-group__header h2 {
+  font-size: 11px !important;
+  font-family: var(--upgread-font-ui) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .tool-group__count {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-muted) !important;
+  padding: 1px 5px !important;
+}
+
+.upgread_workspace .view-toggle__btn {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  min-height: 26px !important;
+  padding-inline: var(--upgread-space-2) !important;
+  color: var(--upgread-text-secondary) !important;
+  font-size: 11px !important;
+  transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .view-toggle__btn[aria-pressed="true"],
+.upgread_workspace .view-toggle__btn.is-active {
+  background: color-mix(in srgb, var(--upgread-accent-blue) 12%, var(--upgread-bg-elevated)) !important;
+  border-color: var(--upgread-border-active) !important;
+  color: var(--upgread-accent-blue) !important;
+}
+
+.upgread_workspace .tools-index__toolbar input[type="search"],
+.upgread_workspace .tools-index__toolbar .search {
+  background: var(--upgread-bg-input) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-primary) !important;
+  font-size: 12px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding-inline: var(--upgread-space-3) !important;
+  transition: border-color var(--upgread-transition) !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .tools-index__toolbar input[type="search"]:focus,
+.upgread_workspace .tools-index__toolbar .search:focus {
+  border-color: var(--upgread-border-active) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* =========================================================
+   TOOL SHELL PAGE — EXECUTION WORKSPACE
+   ========================================================= */
+.upgread_workspace .tool-shell-page__hero {
+  padding: var(--upgread-space-5) var(--upgread-space-6) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  background: var(--upgread-bg-surface) !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .tool-page__heading h1 {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--upgread-text-primary) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.upgread_workspace .static-page__header h1 {
+  font-size: 15px !important;
+}
+
+.upgread_workspace .tool-page__heading p,
+.upgread_workspace .static-page__header p {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+.upgread_workspace .tool-shell-page__runtime {
+  border: 1px solid var(--upgread-border-hairline) !important;
+  background: var(--upgread-bg-surface) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  box-shadow: none !important;
+  padding: var(--upgread-space-4) !important;
+  gap: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .tool-shell-page__runtime:hover,
+.upgread_workspace .tool-shell-page__runtime:focus-within {
+  border-color: var(--upgread-border-active) !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .tool-shell-page__docs {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  box-shadow: none !important;
+  padding: var(--upgread-space-5) !important;
+}
+
+.upgread_workspace .section-frame {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  box-shadow: none !important;
+  padding: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .readme-disclosure {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: var(--upgread-space-2) var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .readme-disclosure[open],
+.upgread_workspace .readme-disclosure.is-transitioning {
+  border-color: var(--upgread-border-active) !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .readme-disclosure > summary {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  min-height: 32px !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .readme-disclosure > summary::after {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .readme-guidance__action {
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: var(--upgread-space-3) !important;
+  font-size: 12px !important;
+  transition: border-color var(--upgread-transition), transform var(--upgread-transition) !important;
+}
+
+.upgread_workspace .readme-guidance__action:hover {
+  border-color: var(--upgread-border-active) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .readme-guidance__action::after {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .readme-guidance__action:hover::after {
+  color: var(--upgread-accent-blue) !important;
+  transform: translateX(2px) !important;
+}
+
+.upgread_workspace .readme-card[data-actionable-card="true"] {
+  border-color: var(--upgread-border-hairline) !important;
+  transition: border-color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .readme-card[data-actionable-card="true"]:hover {
+  border-color: var(--upgread-border-active) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .readme-card[data-actionable-card="true"]::before {
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .readme-card[data-actionable-card="true"]:hover::before {
+  color: var(--upgread-accent-blue) !important;
+  transform: translateX(2px) !important;
+}
+
+.upgread_workspace .readme-compressed-note {
+  font-size: 11px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+/* =========================================================
+   TOOL BUTTONS — IDE BUTTON SYSTEM
+   ========================================================= */
+.upgread_workspace .tool-btn,
+.upgread_workspace .hero-btn,
+.upgread_workspace .contact-form__submit {
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  min-height: 28px !important;
+  padding-inline: var(--upgread-space-4) !important;
+  transition: border-color var(--upgread-transition), background var(--upgread-transition), color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .tool-btn--primary {
+  background: var(--upgread-accent-blue) !important;
+  border: 1px solid var(--upgread-accent-blue) !important;
+  color: var(--upgread-text-inverse) !important;
+  font-weight: 600 !important;
+}
+
+.upgread_workspace .tool-btn--primary:hover {
+  background: color-mix(in srgb, var(--upgread-accent-blue) 80%, white) !important;
+  border-color: color-mix(in srgb, var(--upgread-accent-blue) 80%, white) !important;
+}
+
+.upgread_workspace .tool-btn--secondary {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-default) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .tool-btn--secondary:hover {
+  border-color: var(--upgread-border-active) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .tool-btn--ghost {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+.upgread_workspace .tool-btn--ghost:hover {
+  border-color: var(--upgread-border-hairline) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+/* =========================================================
+   TOOL TOGGLE / TOOLBAR CONTROLS
+   ========================================================= */
+.upgread_workspace .tool-toggle {
+  font-size: 12px !important;
+  min-height: 28px !important;
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-secondary) !important;
+  padding-inline: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .tool-select {
+  background: var(--upgread-bg-input) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-primary) !important;
+  font-size: 11px !important;
+  min-height: 28px !important;
+}
+
+.upgread_workspace .tool-select:focus {
+  border-color: var(--upgread-border-active) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   PANEL HEADERS
+   ========================================================= */
+.upgread_workspace .panel-header {
+  padding-bottom: var(--upgread-space-2) !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+}
+
+.upgread_workspace .panel-header h2,
+.upgread_workspace .panel-header h3 {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--upgread-text-primary) !important;
+  letter-spacing: 0.01em !important;
+}
+
+.upgread_workspace .panel-header p {
+  font-size: 11px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+/* =========================================================
+   EDITOR SURFACES — TEXTAREA / CODEMIRROR
+   ========================================================= */
+.upgread_workspace .editor-surface,
+.upgread_workspace .tool-local-surface,
+.upgread_workspace textarea,
+.upgread_workspace [contenteditable] {
+  background: var(--upgread-bg-input) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-primary) !important;
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+.upgread_workspace .editor-label {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.06em !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+/* =========================================================
+   METRICS BAR — STATUS LINE
+   ========================================================= */
+.upgread_workspace .tool-local-metrics,
+.upgread_workspace .json-metrics {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: 4px var(--upgread-space-3) !important;
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+  gap: var(--upgread-space-4) !important;
+}
+
+.upgread_workspace .tool-local-metrics p,
+.upgread_workspace .json-metrics p {
+  background: transparent !important;
+  border: none !important;
+  color: var(--upgread-text-secondary) !important;
+  font-size: 11px !important;
+}
+
+.upgread_workspace .tool-local-metrics p strong,
+.upgread_workspace .tool-local-metrics p span {
+  color: var(--upgread-accent-blue) !important;
+  font-family: var(--upgread-font-ui) !important;
+}
+
+/* =========================================================
+   JSON FORMATTER PAGE
+   ========================================================= */
+.upgread_workspace .json-formatter-page {
+  gap: var(--upgread-space-3) !important;
+  padding: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .json-formatter-header {
+  gap: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .json-processing-badge {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: color-mix(in srgb, var(--upgread-accent-teal) 10%, var(--upgread-bg-elevated)) !important;
+  border: 1px solid color-mix(in srgb, var(--upgread-accent-teal) 30%, var(--upgread-border-hairline)) !important;
+  color: var(--upgread-accent-teal) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: 2px 7px !important;
+}
+
+.upgread_workspace .json-toolbar {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: var(--upgread-space-2) var(--upgread-space-3) !important;
+  gap: var(--upgread-space-1) !important;
+}
+
+.upgread_workspace .json-workspace {
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  background: var(--upgread-bg-canvas) !important;
+}
+
+.upgread_workspace .json-panel--output {
+  border-left: 1px solid var(--upgread-border-hairline) !important;
+}
+
+.upgread_workspace .tool-error {
+  border: 1px solid color-mix(in srgb, var(--upgread-accent-red) 40%, var(--upgread-border-hairline)) !important;
+  background: color-mix(in srgb, var(--upgread-accent-red) 7%, var(--upgread-bg-elevated)) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 12px !important;
+}
+
+.upgread_workspace .toast {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 11px !important;
+}
+
+.upgread_workspace .toast--success {
+  border-color: color-mix(in srgb, var(--upgread-accent-teal) 50%, var(--upgread-border-hairline)) !important;
+}
+
+.upgread_workspace .toast--error {
+  border-color: color-mix(in srgb, var(--upgread-accent-red) 50%, var(--upgread-border-hairline)) !important;
+}
+
+/* =========================================================
+   FILE MERGE TOOL
+   ========================================================= */
+.upgread_workspace .file-merge-tool .panel {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+}
+
+.upgread_workspace .file-merge-tool .dropzone {
+  border: 1px dashed var(--upgread-border-default) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 12px !important;
+  color: var(--upgread-text-muted) !important;
+  transition: border-color var(--upgread-transition), background var(--upgread-transition) !important;
+}
+
+.upgread_workspace .file-merge-tool .dropzone:hover,
+.upgread_workspace .file-merge-tool .dropzone.is-dragging {
+  border-color: var(--upgread-border-active) !important;
+  background: color-mix(in srgb, var(--upgread-accent-blue) 5%, var(--upgread-bg-elevated)) !important;
+}
+
+.upgread_workspace .file-merge-tool .file-item {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-size: 11px !important;
+  font-family: var(--upgread-font-ui) !important;
+  color: var(--upgread-text-secondary) !important;
+  padding: var(--upgread-space-2) var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .file-merge-tool .preview-output {
+  background: var(--upgread-bg-input) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+  color: var(--upgread-text-primary) !important;
+  line-height: 1.65 !important;
+}
+
+/* =========================================================
+   DOCUMENT CONVERTER
+   ========================================================= */
+.upgread_workspace .document-converter-runtime #downloadLink {
+  color: var(--upgread-accent-blue) !important;
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+}
+
+/* =========================================================
+   TOOL RUNTIME WIDGET (tool-auto-professional)
+   ========================================================= */
+.upgread_workspace .tool-runtime-widget {
+  padding: var(--upgread-space-3) !important;
+  gap: var(--upgread-space-2) !important;
+}
+
+.upgread_workspace .tool-runtime-widget .tool-local-header {
+  padding-bottom: var(--upgread-space-2) !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+  gap: var(--upgread-space-2) !important;
+}
+
+.upgread_workspace .tool-runtime-widget .tool-local-header h1,
+.upgread_workspace .tool-runtime-widget .tool-local-header h2,
+.upgread_workspace .tool-runtime-widget .tool-local-header h3 {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .tool-runtime-widget .tool-local-header p {
+  font-size: 11px !important;
+  color: var(--upgread-text-secondary) !important;
+  min-height: auto !important;
+}
+
+.upgread_workspace .tool-runtime-widget .tool-local-actions {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: var(--upgread-space-2) !important;
+  gap: var(--upgread-space-1) !important;
+}
+
+.upgread_workspace .tool-runtime-widget .tool-local-surface {
+  background: var(--upgread-bg-canvas) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  padding: var(--upgread-space-3) !important;
+  box-shadow: none !important;
+  min-height: 280px !important;
+}
+
+.upgread_workspace .tool-runtime-widget .tool-error {
+  padding: var(--upgread-space-2) var(--upgread-space-3) !important;
+  font-size: 11px !important;
+}
+
+/* =========================================================
+   STATIC PAGES
+   ========================================================= */
+.upgread_workspace .static-page__header {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  padding: var(--upgread-space-5) var(--upgread-space-6) !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .static-page__section {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+}
+
+.upgread_workspace .static-page__section p,
+.upgread_workspace .static-page__section li {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+  line-height: 1.7 !important;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+.upgread_workspace footer,
+.upgread_workspace .footer {
+  background: var(--upgread-bg-surface) !important;
+  border-top: 1px solid var(--upgread-border-hairline) !important;
+}
+
+.upgread_workspace .footer__meta {
+  font-size: 11px !important;
+  color: var(--upgread-text-muted) !important;
+}
+
+.upgread_workspace .footer__bottom-strip {
+  border-top: 1px solid var(--upgread-border-hairline) !important;
+  padding-block: var(--upgread-space-3) !important;
+}
+
+.upgread_workspace .footer__nav a,
+.upgread_workspace .footer__shortcuts a {
+  font-size: 11px !important;
+  color: var(--upgread-text-secondary) !important;
+  transition: color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .footer__nav a:hover,
+.upgread_workspace .footer__shortcuts a:hover {
+  color: var(--upgread-text-primary) !important;
+}
+
+/* =========================================================
+   COMMAND PALETTE
+   ========================================================= */
+.upgread_workspace .command-palette {
+  background: var(--upgread-bg-elevated) !important;
+  border: 1px solid var(--upgread-border-default) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  box-shadow: var(--upgread-shadow-lg) !important;
+}
+
+.upgread_workspace .command-palette__input {
+  background: transparent !important;
+  border-bottom: 1px solid var(--upgread-border-hairline) !important;
+  color: var(--upgread-text-primary) !important;
+  font-size: 13px !important;
+  font-family: var(--upgread-font-ui) !important;
+}
+
+.upgread_workspace .command-palette__item {
+  font-size: 12px !important;
+  color: var(--upgread-text-secondary) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  transition: background var(--upgread-transition) !important;
+}
+
+.upgread_workspace .command-palette__item:hover,
+.upgread_workspace .command-palette__item.is-selected {
+  background: color-mix(in srgb, var(--upgread-accent-blue) 10%, var(--upgread-bg-overlay)) !important;
+  color: var(--upgread-text-primary) !important;
+}
+
+.upgread_workspace .command-palette__badge {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 10px !important;
+  background: var(--upgread-bg-canvas) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  color: var(--upgread-text-muted) !important;
+  padding: 1px 5px !important;
+}
+
+/* =========================================================
+   WORKFLOW PATHWAY CARDS
+   ========================================================= */
+.upgread_workspace .workflow-pathway-card {
+  background: var(--upgread-bg-surface) !important;
+  border: 1px solid var(--upgread-border-hairline) !important;
+  border-radius: var(--upgread-radius-md) !important;
+  padding: var(--upgread-space-3) var(--upgread-space-4) !important;
+  transition: border-color var(--upgread-transition) !important;
+}
+
+.upgread_workspace .workflow-pathway-card:hover {
+  border-color: var(--upgread-border-active) !important;
+  transform: none !important;
+}
+
+/* =========================================================
+   ACCESSIBILITY — FOCUS STATES
+   ========================================================= */
+.upgread_workspace :focus-visible {
+  outline: 1px solid var(--upgread-border-active) !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--upgread-accent-blue) 20%, transparent) !important;
+}
+
+/* Remove aggressive focus from cards that override above */
+.upgread_workspace .hero-btn:focus-visible,
+.upgread_workspace .card:focus-visible,
+.upgread_workspace .tool-discovery__chip:focus-visible,
+.upgread_workspace .workflow-card__link:focus-visible,
+.upgread_workspace .trust-link:focus-visible {
+  outline: 1px solid var(--upgread-border-active) !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--upgread-accent-blue) 20%, transparent) !important;
+}
+
+/* =========================================================
+   SCROLLBAR — CHROMIUM IDE STYLE
+   ========================================================= */
+.upgread_workspace ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.upgread_workspace ::-webkit-scrollbar-track {
+  background: var(--upgread-bg-canvas);
+}
+
+.upgread_workspace ::-webkit-scrollbar-thumb {
+  background: var(--upgread-bg-overlay);
+  border-radius: 4px;
+}
+
+.upgread_workspace ::-webkit-scrollbar-thumb:hover {
+  background: var(--upgread-border-default);
+}
+
+/* =========================================================
+   SELECTION
+   ========================================================= */
+.upgread_workspace ::selection {
+  background: color-mix(in srgb, var(--upgread-accent-blue) 28%, transparent);
+  color: var(--upgread-text-primary);
+}
+
+/* =========================================================
+   MOMENTUM PANEL
+   ========================================================= */
+.upgread_workspace .tool-shell-page__momentum {
+  background: color-mix(in srgb, var(--upgread-accent-blue) 7%, var(--upgread-bg-elevated)) !important;
+  border: 1px solid color-mix(in srgb, var(--upgread-accent-blue) 30%, var(--upgread-border-hairline)) !important;
+  border-radius: var(--upgread-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.upgread_workspace .tool-shell-page__momentum-title {
+  font-family: var(--upgread-font-ui) !important;
+  font-size: 11px !important;
+  color: var(--upgread-accent-blue) !important;
+  letter-spacing: 0.04em !important;
+}
+
+.upgread_workspace .tool-shell-page__momentum-copy {
+  font-size: 11px !important;
+  color: var(--upgread-text-secondary) !important;
+}
+
+/* =========================================================
+   SYNTAX TOKENS (file-merge / preview)
+   ========================================================= */
+.upgread_workspace .tok-key  { color: #79c0ff !important; }
+.upgread_workspace .tok-str  { color: #a5d6ff !important; }
+.upgread_workspace .tok-num  { color: var(--upgread-accent-orange) !important; }
+.upgread_workspace .tok-lit  { color: var(--upgread-accent-purple) !important; }
+
+/* =========================================================
+   TOOL LAYOUT (SHELL PAGE)
+   ========================================================= */
+.upgread_workspace .tool-shell-page__layout {
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.7fr) !important;
+  gap: var(--upgread-space-4) !important;
+}
+
+/* =========================================================
+   RESPONSIVE OVERRIDES
+   ========================================================= */
+@media (max-width: 1100px) {
+  .upgread_workspace .tool-shell-page__layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .upgread_workspace .home-page {
+    gap: 20px !important;
+  }
+
+  .upgread_workspace .hero {
+    padding: var(--upgread-space-5) !important;
+  }
+}
+
+/* =========================================================
+   LIGHT THEME ADAPTATION
+   ========================================================= */
+:root[data-theme="light"] .upgread_workspace,
+[data-theme="light"] .upgread_workspace {
+  --upgread-bg-canvas:       #f6f8fa;
+  --upgread-bg-surface:      #ffffff;
+  --upgread-bg-elevated:     #f0f3f7;
+  --upgread-bg-overlay:      #e8ecf0;
+  --upgread-bg-input:        #ffffff;
+
+  --upgread-border-hairline: #d0d7de;
+  --upgread-border-default:  #b1bac4;
+  --upgread-border-active:   #0969da;
+  --upgread-border-accent:   #0969da;
+
+  --upgread-accent-blue:     #0969da;
+  --upgread-accent-teal:     #1a7f37;
+  --upgread-accent-orange:   #953800;
+  --upgread-accent-red:      #cf222e;
+  --upgread-accent-purple:   #8250df;
+
+  --upgread-text-primary:    #1f2328;
+  --upgread-text-secondary:  #656d76;
+  --upgread-text-muted:      #8c959f;
+  --upgread-text-accent:     #0969da;
+  --upgread-text-inverse:    #ffffff;
+}

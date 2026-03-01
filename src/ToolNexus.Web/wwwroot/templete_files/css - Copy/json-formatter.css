@@ -1,0 +1,185 @@
+.json-formatter-page {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.json-formatter-page .json-formatter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.json-formatter-page .json-formatter-description {
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+}
+
+.json-formatter-page .json-processing-badge {
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.json-formatter-page .json-toolbar {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+}
+
+.json-formatter-page .json-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.json-formatter-page .json-toolbar-row--transform,
+.json-formatter-page .json-toolbar-row--utility {
+  padding-left: calc(var(--space-1) + 2px);
+}
+
+.json-formatter-page .json-toolbar-row--utility {
+  padding-top: 2px;
+}
+
+.json-formatter-page .json-toolbar-row:first-child .tool-btn--primary {
+  min-width: 156px;
+}
+
+.json-formatter-page .tool-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.json-formatter-page .tool-select {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 0.25rem 0.35rem;
+  min-height: 30px;
+}
+
+.json-formatter-page .json-workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary));
+  overflow: clip;
+}
+
+.json-formatter-page .json-panel {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.json-formatter-page .json-panel--output {
+  border-left: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+}
+
+.json-formatter-page .panel-header h2,
+.json-formatter-page .panel-header p {
+  margin: 0;
+}
+
+.json-formatter-page .panel-header p {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.json-formatter-page .editor-surface {
+  min-height: 420px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+  overflow: hidden;
+}
+
+.json-formatter-page .json-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.json-formatter-page .json-metrics p {
+  margin: 0;
+  padding: 0.38rem 0.55rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.json-formatter-page .tool-error {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--danger-500);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--danger-500) 8%, transparent);
+}
+
+.json-formatter-page .tool-error-title,
+.json-formatter-page .tool-error-detail,
+.json-formatter-page .tool-error-location {
+  margin: 0;
+}
+
+.json-formatter-page .tool-error-location {
+  font-family: var(--font-family-mono);
+}
+
+.json-formatter-page .toast-region {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+}
+
+.json-formatter-page .toast {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+}
+
+.json-formatter-page .toast--success {
+  border-color: var(--success-500);
+}
+
+.json-formatter-page .toast--error {
+  border-color: var(--danger-500);
+}
+
+@media (max-width: 1100px) {
+  .json-formatter-page .json-workspace,
+  .json-formatter-page .json-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .json-formatter-page .json-panel--output {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+  }
+
+  .json-formatter-page .json-formatter-header {
+    flex-direction: column;
+  }
+}

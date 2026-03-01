@@ -19,4 +19,8 @@
     <ProjectReference Include="../ToolNexus.Application/ToolNexus.Application.csproj" />
     <ProjectReference Include="..\ToolNexus.Infrastructure\ToolNexus.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\templete_files\css\" />
+  </ItemGroup>
 </Project>

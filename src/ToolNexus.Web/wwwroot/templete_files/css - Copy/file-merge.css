@@ -1,0 +1,33 @@
+.file-merge-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: 1rem;
+}
+
+.file-merge-tool .panel {
+  background: var(--surface-1, #111827);
+  border: 1px solid var(--border-subtle, #334155);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.file-merge-tool .dropzone {
+  display: block;
+  padding: 1rem;
+  border: 1px dashed #64748b;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+.file-merge-tool .dropzone.is-dragging { border-color: #38bdf8; }
+.file-merge-tool .file-list { list-style: none; margin: .75rem 0 0; padding: 0; display: grid; gap: .4rem; }
+.file-merge-tool .file-item { padding: .5rem; border: 1px solid #334155; border-radius: 8px; cursor: move; }
+.file-merge-tool .preview-output { min-height: 420px; max-height: 60vh; overflow: auto; white-space: pre-wrap; }
+.file-merge-tool .preview-header { display: flex; justify-content: space-between; align-items: center; }
+.file-merge-tool .right-panel label { display: grid; gap: .35rem; margin-bottom: .65rem; font-size: .9rem; }
+.file-merge-tool .actions { display: flex; gap: .5rem; }
+.file-merge-tool .tok-key{color:#93c5fd}.file-merge-tool .tok-str{color:#86efac}.file-merge-tool .tok-num{color:#fcd34d}.file-merge-tool .tok-lit{color:#f9a8d4}
+
+@media (max-width: 1100px) {
+  .file-merge-layout { grid-template-columns: 1fr; }
+}
