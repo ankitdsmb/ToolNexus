@@ -385,7 +385,7 @@ public sealed class MigrationDriftSafetyTests
         }
         catch
         {
-            throw new SkipException("PostgreSQL integration test database is not configured for migration drift tests.");
+            throw SkipException.ForSkip("PostgreSQL integration test database is not configured for migration drift tests.");
         }
     }
 }

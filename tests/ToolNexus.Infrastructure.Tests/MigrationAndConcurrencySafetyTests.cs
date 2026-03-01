@@ -54,8 +54,8 @@ public sealed class MigrationAndConcurrencySafetyTests
             manifestRepository,
             NullLogger<ToolContentSeedHostedService>.Instance);
 
-        await hostedService.StartAsync(CancellationToken.None);
-        await hostedService.StartAsync(CancellationToken.None);
+        await hostedService.InitializeAsync(runMigration: true, runSeed: true, CancellationToken.None);
+        await hostedService.InitializeAsync(runMigration: true, runSeed: true, CancellationToken.None);
 
         await using var context = database.CreateContext();
         Assert.Equal(1, await context.ToolContents.CountAsync());
@@ -78,7 +78,7 @@ public sealed class MigrationAndConcurrencySafetyTests
             manifestRepository,
             NullLogger<ToolContentSeedHostedService>.Instance);
 
-        await hostedService.StartAsync(CancellationToken.None);
+        await hostedService.InitializeAsync(runMigration: true, runSeed: true, CancellationToken.None);
 
         await using var context = database.CreateContext();
         Assert.Equal(1, await context.ToolContents.CountAsync());
@@ -113,7 +113,7 @@ public sealed class MigrationAndConcurrencySafetyTests
             manifestRepository,
             NullLogger<ToolContentSeedHostedService>.Instance);
 
-        await hostedService.StartAsync(CancellationToken.None);
+        await hostedService.InitializeAsync(runMigration: true, runSeed: true, CancellationToken.None);
 
         await using var context = database.CreateContext();
         Assert.Equal(1, await context.ToolContents.CountAsync());
@@ -208,7 +208,7 @@ public sealed class MigrationAndConcurrencySafetyTests
             })
             .Build();
 
-        return new JsonFileToolManifestRepository(new FakeHostEnvironment(contentRoot), configuration);
+        return new JsonFileToolManifestRepository(new FakeHostEnvironment(contentRoot), configuration, NullLogger<JsonFileToolManifestRepository>.Instance);
     }
 
     private sealed class FakeHostEnvironment(string contentRootPath) : IHostEnvironment

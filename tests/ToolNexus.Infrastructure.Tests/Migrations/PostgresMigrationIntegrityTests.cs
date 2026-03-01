@@ -90,7 +90,7 @@ public sealed class PostgresMigrationIntegrityTests
         }
         catch
         {
-            throw new SkipException("PostgreSQL test database unavailable.");
+            throw SkipException.ForSkip("PostgreSQL test database unavailable.");
         }
     }
 }

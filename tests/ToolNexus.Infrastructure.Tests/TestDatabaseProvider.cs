@@ -75,6 +75,8 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
 
     public TestDatabaseProvider Provider { get; }
 
+    public string ConnectionString => providerConnectionString ?? string.Empty;
+
     public static async Task<TestDatabaseInstance> CreateAsync(TestDatabaseProvider provider)
         => await CreateInternalAsync(provider, applyMigrations: true);
 
@@ -127,7 +129,7 @@ public sealed class TestDatabaseInstance : IAsyncDisposable
         }
         catch (Exception ex) when (ex is NpgsqlException or InvalidOperationException)
         {
-            throw new SkipException();
+            throw SkipException.ForSkip("PostgreSQL test database not configured for this environment.");
         }
 
         var builder = new NpgsqlConnectionStringBuilder(adminConnection)

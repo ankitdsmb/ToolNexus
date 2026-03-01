@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using ToolNexus.Application.Models;
+using ToolNexus.Infrastructure.Content;
 using ToolNexus.Infrastructure.Observability;
 using Xunit;
 
@@ -36,7 +37,9 @@ public sealed class ToolExecutionEventServiceTests
         var state = new BackgroundWorkerHealthState();
         var queue = new BackgroundWorkQueue(state);
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var worker = new TelemetryBackgroundWorker(queue, state, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
+        var initializationState = new DatabaseInitializationState();
+        initializationState.MarkReady();
+        var worker = new TelemetryBackgroundWorker(queue, state, initializationState, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
         var sut = new ToolExecutionEventService(queue, new DelegateTelemetryProcessor((_, _) =>
         {
             tcs.TrySetResult(true);
@@ -60,7 +63,9 @@ public sealed class ToolExecutionEventServiceTests
         var state = new BackgroundWorkerHealthState();
         var queue = new BackgroundWorkQueue(state);
         var finished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var worker = new TelemetryBackgroundWorker(queue, state, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
+        var initializationState = new DatabaseInitializationState();
+        initializationState.MarkReady();
+        var worker = new TelemetryBackgroundWorker(queue, state, initializationState, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
         var sut = new ToolExecutionEventService(queue, new DelegateTelemetryProcessor(async (_, token) =>
         {
             await Task.Delay(250, token);
@@ -87,7 +92,9 @@ public sealed class ToolExecutionEventServiceTests
         var queue = new BackgroundWorkQueue(state);
         var processedSecond = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var invocation = 0;
-        var worker = new TelemetryBackgroundWorker(queue, state, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
+        var initializationState = new DatabaseInitializationState();
+        initializationState.MarkReady();
+        var worker = new TelemetryBackgroundWorker(queue, state, initializationState, new InMemoryWorkerLock(), NullLogger<TelemetryBackgroundWorker>.Instance);
 
         await worker.StartAsync(CancellationToken.None);
 
