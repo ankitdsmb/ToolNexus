@@ -96,7 +96,7 @@ ENTERPRISE UI SYSTEM
 :where(.tool-shell-page) {
   --tool-shell-max-width: var(--tool-page-max-width-authority, var(--page-max-width));
   --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
-  --tool-shell-flow-gap: clamp(8px, 1.25vw, 14px);
+  --tool-shell-flow-gap: clamp(6px, 1vw, 11px);
   --tool-shell-footer-gap: clamp(10px, 1.5vw, 16px);
 
   display: grid;
@@ -653,7 +653,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
     "status"
     "followup"
     "content";
-  gap: var(--tn-runtime-panel-gap, var(--exec-cadence-11));
+  gap: var(--tn-runtime-panel-gap, 4px);
   padding: var(--tn-runtime-panel-padding, var(--exec-cadence-14));
   border: var(--tn-runtime-panel-border, 1px solid color-mix(in srgb, var(--color-border) 78%, transparent));
   border-radius: var(--tn-exec-radius-lg, var(--radius-lg));
@@ -668,8 +668,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tool-shell-page__runtime > [data-tool-content-host="true"][data-execution-surface="unified"]) {
   margin-top: -1px;
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 44%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 36%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 48%, transparent);
   border-radius: 0 0 var(--tn-exec-radius-sm, 8px) var(--tn-exec-radius-sm, 8px);
   background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
 }
@@ -680,19 +680,19 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   .tool-shell-page__runtime > [data-tool-followup="true"]) {
   border-radius: 0;
   border: 0;
-  background: color-mix(in srgb, var(--bg-secondary) 66%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
 }
 
 :where(.tool-shell-page__runtime > [data-tool-context="true"]) {
-  min-height: 26px;
-  max-height: 32px;
-  padding: 2px 8px;
+  min-height: 22px;
+  max-height: 28px;
+  padding: 1px 8px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
-  min-height: 34px;
-  max-height: 40px;
-  padding: 3px 8px 4px;
+  min-height: 30px;
+  max-height: 36px;
+  padding: 2px 8px 3px;
   margin-top: 0;
   border-top: 1px solid color-mix(in srgb, var(--color-border) 46%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 42%, transparent);
@@ -702,11 +702,15 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__runtime > [data-tool-status="true"]) {
-  min-height: 22px;
-  max-height: 28px;
-  padding: 1px 8px;
+  min-height: 18px;
+  max-height: 24px;
+  padding: 0 8px;
   border-style: none;
-  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+}
+
+:where(.tool-shell-page__docs) {
+  margin-top: 0;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
