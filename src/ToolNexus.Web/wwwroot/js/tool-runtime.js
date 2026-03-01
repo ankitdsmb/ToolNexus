@@ -26,6 +26,7 @@ import { isModuleContractError, validateModuleContract } from './runtime/module-
 import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runtime/execution-ui-law-validator.js';
 import { validateExecutionDensity as defaultExecutionDensityValidator, writeExecutionDensityReport as defaultWriteExecutionDensityReport } from './runtime/execution-density-validator.js';
 import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
+import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from './runtime/orchestrator/ai-runtime-orchestrator.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -181,7 +182,8 @@ export function createToolRuntime({
   validateExecutionUiLaw = defaultExecutionUiLawValidator,
   validateExecutionDensity = defaultExecutionDensityValidator,
   writeExecutionDensityReport = defaultWriteExecutionDensityReport,
-  applyExecutionIntelligence = defaultApplyExecutionIntelligence
+  applyExecutionIntelligence = defaultApplyExecutionIntelligence,
+  applyAiRuntimeOrchestrator = defaultApplyAiRuntimeOrchestrator
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -1073,6 +1075,18 @@ export function createToolRuntime({
       slug,
       mode: executionIntelligence.mode,
       profile: executionIntelligence.profile
+    });
+
+    const runtimeOrchestrator = applyAiRuntimeOrchestrator(root, {
+      toolSlug: slug,
+      emitTelemetry: emit
+    });
+
+    logger.info('[RuntimeOrchestrator] profile created in passive mode.', {
+      slug,
+      mode: runtimeOrchestrator.mode,
+      genome: runtimeOrchestrator.genomeProfile,
+      governance: runtimeOrchestrator.governanceProfile
     });
 
     scheduleNonCriticalTask(() => {
