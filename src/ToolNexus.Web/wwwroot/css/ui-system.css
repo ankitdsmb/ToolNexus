@@ -29,8 +29,8 @@ ENTERPRISE UI SYSTEM
 
   --radius-control: var(--radius-md);
   --radius-panel: var(--radius-lg);
-  --tool-page-max-width-authority: 1200px;
-  --page-max-width: 1200px;
+  --tool-page-max-width-authority: 1180px;
+  --page-max-width: 1180px;
   --exec-gap-tight: var(--tn-exec-space-1, var(--space-1));
   --exec-gap-normal: var(--tn-exec-space-2, var(--space-2));
   --exec-gap-loose: var(--tn-exec-space-3, var(--space-3));
@@ -96,7 +96,7 @@ ENTERPRISE UI SYSTEM
 :where(.tool-shell-page) {
   --tool-shell-max-width: var(--tool-page-max-width-authority, var(--page-max-width));
   --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
-  --tool-shell-flow-gap: clamp(6px, 1vw, 11px);
+  --tool-shell-flow-gap: clamp(4px, 0.8vw, 9px);
   --tool-shell-footer-gap: clamp(10px, 1.5vw, 16px);
 
   display: grid;
@@ -111,6 +111,10 @@ ENTERPRISE UI SYSTEM
   width: var(--tool-shell-rail-width);
   max-width: 100%;
   margin-inline: auto;
+}
+
+:where(.tool-shell-page > .tool-shell-page__workspace) {
+  margin-block: 0;
 }
 
 :where(.tool-shell-page.workspace-shell) {
