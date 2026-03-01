@@ -1087,9 +1087,24 @@ export function createToolRuntime({
       genome: runtimeOrchestrator.genomeProfile?.genome,
       chosenStrategy: runtimeOrchestrator.strategy,
       appliedRuntimeClasses: runtimeOrchestrator.appliedRuntimeClasses,
+      densityProfile: runtimeOrchestrator.densityAutobalancer?.profile,
       mode: runtimeOrchestrator.mode,
       governance: runtimeOrchestrator.governanceProfile
     });
+
+    logger.info('[ExecutionDensityAutobalancer] density profile selected.', {
+      slug,
+      densityProfile: runtimeOrchestrator.densityAutobalancer?.profile ?? 'not-applied'
+    });
+    logger.info('[ExecutionDensityAutobalancer] toolbar compression state.', {
+      slug,
+      toolbarCompressed: Boolean(runtimeOrchestrator.densityAutobalancer?.toolbarCompressed)
+    });
+    logger.info('[ExecutionDensityAutobalancer] editor balancing state.', {
+      slug,
+      editorBalanceActive: Boolean(runtimeOrchestrator.densityAutobalancer?.editorBalanceActive)
+    });
+    logger.info('PHASE X.3 DENSITY AUTOBALANCER ACTIVE');
 
     scheduleNonCriticalTask(() => {
       Promise.resolve(writeExecutionDensityReport({

@@ -2,6 +2,7 @@ import { analyzeToolGenome } from './tool-genome-analyzer.js';
 import { predictRuntimeBehavior } from './behavior-prediction-engine.js';
 import { evaluateRuntimeGovernance } from './runtime-governance-engine.js';
 import { applyAdaptiveRuntimeClasses, selectExecutionStrategy } from './execution-strategy-engine.js';
+import { applyExecutionDensityAutobalancer } from './execution-density-autobalancer.js';
 
 function resolveOrchestratorMode({ behaviorProfile = {}, governanceProfile = {}, genomeProfile = {} } = {}) {
   if (governanceProfile.riskLevel === 'high' || genomeProfile.workflowType === 'pipeline') {
@@ -44,6 +45,10 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
 
   const strategy = selectExecutionStrategy({ ...genomeProfile, mode, complexity });
   const appliedRuntimeClasses = applyAdaptiveRuntimeClasses(root, mode);
+  const densityAutobalancer = applyExecutionDensityAutobalancer(root, {
+    toolSlug: options.toolSlug ?? null,
+    emitTelemetry: options.emitTelemetry
+  });
 
   const runtimeProfile = {
     genomeProfile,
@@ -52,7 +57,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     mode,
     complexity,
     strategy,
-    appliedRuntimeClasses
+    appliedRuntimeClasses,
+    densityAutobalancer
   };
 
   if (root && typeof root.setAttribute === 'function') {
@@ -71,7 +77,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
       behavior: behaviorProfile,
       governance: governanceProfile,
       strategy,
-      appliedRuntimeClasses
+      appliedRuntimeClasses,
+      densityAutobalancer
     }
   };
 
@@ -84,7 +91,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
         mode,
         complexity,
         strategy,
-        appliedRuntimeClasses
+        appliedRuntimeClasses,
+        densityAutobalancer
       });
     } catch {
       // best-effort telemetry
