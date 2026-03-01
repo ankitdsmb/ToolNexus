@@ -1,14 +1,15 @@
-<div class="tool-runtime-widget execution-style-converter">
-  <header class="tool-local-header">
+<div class="tool-runtime-widget execution-style-converter upgread_tool-widget">
+  <header class="tool-local-header upgread_tool-header">
     <h2 data-bind="tool.title"></h2>
-    <p>Convert DOCX and PDF files securely.</p>
+    <p>Convert DOCX to PDF and PDF to DOCX using secure server-side processing.</p>
   </header>
 
-  <section class="tool-local-actions" role="toolbar" aria-label="Document conversion actions">
+  <section class="tool-local-actions upgread_tool-toolbar" role="toolbar" aria-label="Document conversion actions">
     <button id="convertBtn" class="tool-btn tool-btn--primary tool-action-primary" type="button" data-tool-primary-action>
       Convert
     </button>
     <div class="tool-action-group-transform">
+      <label for="conversionMode" class="sr-only">Conversion mode</label>
       <select id="conversionMode">
         <option value="docx-to-pdf">DOCX → PDF</option>
         <option value="pdf-to-docx">PDF → DOCX</option>
@@ -19,19 +20,21 @@
     </div>
   </section>
 
-  <section class="tool-local-body tool-workspace-unified">
+  <section class="tool-local-body tool-workspace-unified upgread_tool-workspace">
     <section class="tool-local-surface" data-workspace-panel="primary">
+      <h2>Upload</h2>
       <label for="fileInput">Source file</label>
       <input type="file" id="fileInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
     </section>
 
     <section class="tool-local-surface" data-workspace-panel="secondary">
+      <h2>Result</h2>
       <div id="conversionStatus" class="tool-runtime-strip-compact">Waiting for file…</div>
       <section id="errorBox" class="tool-error" hidden></section>
     </section>
   </section>
 
-  <section class="tool-local-metrics tool-metrics-compact-grid">
+  <section class="tool-local-metrics tool-metrics-compact-grid" aria-live="polite">
     <p><span>Execution</span><strong id="executionTime">—</strong></p>
     <p><span>File size</span><strong id="fileSize">—</strong></p>
   </section>
