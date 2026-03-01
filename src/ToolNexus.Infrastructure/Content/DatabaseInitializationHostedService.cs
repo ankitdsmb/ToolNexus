@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using System.Reflection;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Data;
 using ToolNexus.Infrastructure.Options;
@@ -364,7 +367,16 @@ public sealed class DatabaseInitializationHostedService(
             return;
 
         const string ProductVersion = "8.0.0";
-        var allMigrations = dbContext.Database.GetMigrations().ToArray();
+        var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
+        var allMigrations = migrationsAssembly.Migrations
+            .Where(static pair =>
+            {
+                var contextAttribute = pair.Value.GetCustomAttribute<DbContextAttribute>();
+                return contextAttribute?.ContextType == typeof(ToolNexusContentDbContext);
+            })
+            .Select(static pair => pair.Key)
+            .OrderBy(static migrationId => migrationId, StringComparer.Ordinal)
+            .ToArray();
 
         foreach (var migrationId in allMigrations)
         {
