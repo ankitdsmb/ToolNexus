@@ -47,6 +47,8 @@ ENTERPRISE UI SYSTEM
   --exec-runtime-strip-min-height: 32px;
   --exec-runtime-strip-padding: 2px 9px;
   --exec-runtime-strip-gap: 6px;
+  --exec-lower-zone-min-height: 118px;
+  --exec-lower-zone-empty-min-height: 74px;
   --exec-metrics-grid-columns: repeat(auto-fit, minmax(132px, 1fr));
   --exec-metrics-item-padding: 0.3rem 0.5rem;
   --exec-metrics-item-gap: var(--exec-cadence-12);
@@ -132,6 +134,13 @@ ENTERPRISE UI SYSTEM
   top: auto;
   max-height: none;
   overflow: visible;
+  min-height: var(--exec-lower-zone-min-height);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 22%, transparent);
+}
+
+:where(.tool-shell-page .workspace-shell__runtime-zone:empty,
+  .tool-shell-page .workspace-shell__context-rail:empty) {
+  min-height: var(--exec-lower-zone-empty-min-height);
 }
 
 :where(.tool-page, .static-page, .home-page, .tools-index) {
