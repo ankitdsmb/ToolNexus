@@ -47,14 +47,20 @@
   --tn-exec-radius-sm: 8px;
   --tn-exec-radius-md: 10px;
   --tn-exec-radius-lg: 12px;
+
+  /* Level 3 execution authority aliases (consumes global design DNA tokens when available). */
+  --tn-workspace-dominance: var(--workspace-dominance, 1);
+  --tn-execution-surface-anchor: var(--execution-surface-anchor, 1);
+  --tn-control-recession: var(--control-recession, 1);
+  --tn-shell-passive-mode: var(--shell-passive-mode, 1);
 }
 
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: 0 var(--tn-exec-space-0) var(--tn-exec-space-1);
+  padding: 0 var(--tn-exec-space-0) calc(var(--tn-exec-space-1) + 1px);
   display: grid;
-  gap: 11px;
+  gap: 12px;
   align-content: start;
 }
 
@@ -64,7 +70,7 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--tn-exec-space-1) var(--tn-exec-space-2);
+  gap: 5px 8px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions) {
@@ -72,11 +78,12 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--tn-exec-toolbar-gap);
-  padding: 3px 0 2px;
+  gap: 11px;
+  padding: 4px 0 3px;
   margin-top: 1px;
-  margin-bottom: 2px;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+  margin-bottom: 1px;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) calc(56% - (var(--tn-control-recession) * 8%)), transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) calc(10% + (var(--tn-execution-surface-anchor) * 8%)), transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn)) {
@@ -100,10 +107,10 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-body) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 34vw, 420px), 1fr));
-  gap: var(--tn-exec-editor-gap);
+  gap: calc(var(--tn-exec-editor-gap) + 1px);
   align-items: stretch;
   min-height: var(--tn-exec-editor-min-height);
-  padding-top: 2px;
+  padding-top: 3px;
 }
 
 /* Auto-layout ownership contract: panel-count aware, forced at runtime anchor level. */
@@ -131,7 +138,7 @@
   min-height: calc(var(--tn-exec-editor-min-height) - 24px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: var(--tn-exec-space-1);
+  gap: 5px;
   align-content: stretch;
 }
 
@@ -147,10 +154,10 @@
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
-  background: color-mix(in srgb, var(--bg-elevated) 72%, #000 28%);
+  background: color-mix(in srgb, var(--bg-elevated) calc(68% + (var(--tn-workspace-dominance) * 6%)), #000 calc(32% - (var(--tn-workspace-dominance) * 6%)));
   border: var(--tn-exec-border);
   border-radius: var(--tn-exec-radius-sm);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, calc(0.08 + (var(--tn-workspace-dominance) * 0.02))), 0 1px 2px rgba(15, 23, 42, calc(0.12 + (var(--tn-workspace-dominance) * 0.03)));
   transition: border-color var(--tn-exec-motion-fast) var(--ease-standard), box-shadow var(--tn-exec-motion-fast) var(--ease-standard);
 }
 
@@ -184,15 +191,15 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--tn-exec-metrics-gap);
+  gap: 6px;
   font-size: var(--tn-exec-metrics-font-size);
   line-height: 1.15;
-  padding: var(--tn-exec-metrics-pill-padding);
-  border: var(--tn-exec-border);
+  padding: 3px 7px;
+  border: 1px solid color-mix(in srgb, var(--border-default) calc(70% - (var(--tn-shell-passive-mode) * 12%)), transparent);
   border-radius: var(--tn-exec-radius-sm);
-  background: color-mix(in srgb, var(--bg-secondary) 74%, var(--bg-primary));
+  background: color-mix(in srgb, var(--bg-secondary) calc(68% - (var(--tn-shell-passive-mode) * 6%)), var(--bg-primary));
   min-height: 30px;
-  opacity: 0.86;
+  opacity: calc(0.76 + ((1 - var(--tn-shell-passive-mode)) * 0.12));
 }
 
 /* Tool personality modifiers (micro-delta only, no layout ownership changes). */

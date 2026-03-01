@@ -72,7 +72,7 @@
             </footer>
             @* ToolShell framing only: no shell-defined editor/result grid ownership.
                Template/lifecycle runtime mounts directly into this full-width host. *@
-            <section data-tool-content-host="true" class="tool-runtime-content-host" aria-label="Tool content host">
+            <section data-tool-content-host="true" class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode" aria-label="Tool content host">
                 @* Canonical extension anchors are preserved; tool widget owns content within them. *@
                 <section data-tool-input="true" aria-label="Tool input extension slot" class="tn-editor-skeleton"></section>
                 <section data-tool-output="true" aria-label="Tool output extension slot" class="tn-editor-skeleton"></section>
@@ -80,7 +80,7 @@
         </section>
     </section>
 
-    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
+    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose control-recession shell-passive-mode" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation">
         @foreach (var plugin in contextPlugins)
         {
             var isPrimaryDocSection = plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase)

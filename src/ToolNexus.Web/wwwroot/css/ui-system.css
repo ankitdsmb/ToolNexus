@@ -49,6 +49,37 @@ ENTERPRISE UI SYSTEM
   --exec-metrics-grid-columns: repeat(auto-fit, minmax(132px, 1fr));
   --exec-metrics-item-padding: 0.4rem 0.55rem;
   --exec-metrics-item-gap: var(--space-2);
+
+  /* EXECUTION AUTHORITY HUMANIZATION TOKENS */
+  --workspace-dominance: 1;
+  --execution-surface-anchor: 1;
+  --control-recession: 1;
+  --shell-passive-mode: 1;
+
+  --exec-authority-workspace-bg: color-mix(in srgb, var(--runtime-output-surface) calc(93% + (var(--workspace-dominance) * 2%)), #000 calc(7% - (var(--workspace-dominance) * 1%)));
+  --exec-authority-workspace-border: color-mix(in srgb, var(--accent) calc(14% + (var(--workspace-dominance) * 8%)), var(--color-border));
+  --exec-authority-workspace-shadow: 0 2px 7px rgba(15, 23, 42, calc(0.08 + (var(--workspace-dominance) * 0.03)));
+  --exec-authority-action-border: color-mix(in srgb, var(--color-border) calc(72% - (var(--control-recession) * 6%)), transparent);
+  --exec-authority-action-bg: color-mix(in srgb, var(--bg-secondary) calc(90% - (var(--control-recession) * 8%)), transparent);
+  --exec-authority-status-opacity: calc(0.8 + ((1 - var(--shell-passive-mode)) * 0.08));
+  --exec-authority-shell-border: color-mix(in srgb, var(--color-border) calc(66% - (var(--shell-passive-mode) * 10%)), transparent);
+  --exec-authority-doc-opacity: calc(0.78 + ((1 - var(--control-recession)) * 0.1));
+}
+
+:where(.workspace-dominance) {
+  --workspace-dominance: 1;
+}
+
+:where(.execution-surface-anchor) {
+  --execution-surface-anchor: 1;
+}
+
+:where(.control-recession) {
+  --control-recession: 1;
+}
+
+:where(.shell-passive-mode) {
+  --shell-passive-mode: 1;
 }
 
 :where(.container, .footer__container, .topbar__inner) {
@@ -185,7 +216,7 @@ ENTERPRISE UI SYSTEM
   background: color-mix(in srgb, var(--panel-bg) 74%, transparent);
   border: 0;
   box-shadow: none;
-  opacity: 0.9;
+  opacity: var(--exec-authority-status-opacity);
 }
 
 :where(.tn-unified-tool-control__icon) {
@@ -227,8 +258,10 @@ ENTERPRISE UI SYSTEM
   flex-wrap: wrap;
   column-gap: 14px;
   row-gap: var(--space-1);
-  padding-top: 11px;
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  padding-top: 12px;
+  margin-top: 2px;
+  border-top: 1px solid var(--exec-authority-action-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--exec-authority-action-bg) 58%, transparent) 0%, transparent 68%);
   min-height: 56px;
 }
 
@@ -310,7 +343,7 @@ ENTERPRISE UI SYSTEM
 :where(.tn-unified-tool-control__status) {
   margin: 0;
   font-size: var(--type-caption);
-  color: var(--text-primary);
+  color: color-mix(in srgb, var(--text-primary) 82%, var(--text-muted));
   border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--color-border));
   border-radius: var(--radius-pill);
   background: var(--runtime-status-surface);
@@ -354,14 +387,14 @@ ENTERPRISE UI SYSTEM
 }
 
 :where(.tn-unified-tool-control__output) {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--exec-authority-workspace-border);
   border-radius: var(--radius-md);
-  padding: 16px;
-  background: color-mix(in srgb, var(--runtime-output-surface) 96%, #000 4%);
+  padding: 14px 16px 15px;
+  background: var(--exec-authority-workspace-bg);
   display: grid;
-  gap: 14px;
+  gap: 12px;
   min-height: 260px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--exec-authority-workspace-shadow);
 }
 
 :where(.tn-unified-tool-control__output-block) {
@@ -792,7 +825,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tn-unified-tool-control__output-block[data-output-tier="diagnostics"]) {
   border-style: dashed;
-  opacity: 0.9;
+  opacity: var(--exec-authority-status-opacity);
 }
 
 :where(.tool-article-prose) {
@@ -1108,7 +1141,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 :where(.tool-article-prose) {
   font-size: var(--type-caption);
-  opacity: 0.82;
+  opacity: var(--exec-authority-doc-opacity);
 }
 
 :where(.runtime-doc-disclosure summary) {
@@ -1118,10 +1151,10 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs) {
-  gap: var(--space-1);
-  padding: var(--space-2);
-  border-color: color-mix(in srgb, var(--color-border) 42%, transparent);
-  background: color-mix(in srgb, var(--bg-secondary) 26%, transparent);
+  gap: 11px;
+  padding: 11px 12px;
+  border-color: color-mix(in srgb, var(--color-border) 34%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 18%, transparent);
 }
 
 :where(.tool-shell-page__docs .runtime-doc-disclosure) {
@@ -1132,7 +1165,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs .runtime-doc-disclosure__body) {
-  padding-top: 4px;
+  padding-top: 3px;
 }
 
 :where(.tool-shell-page__docs .tool-md-section) {
@@ -1140,16 +1173,16 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs .tool-md-section[data-doc-priority="primary"]) {
-  padding-bottom: var(--space-1);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 56%, transparent);
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 44%, transparent);
 }
 
 :where(.tool-shell-page__docs .tool-md-section[data-doc-priority="secondary"]) {
-  opacity: 0.9;
+  opacity: 0.82;
 }
 
 :where([data-tool-content-host="true"]) {
-  border-top: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  border-top: 1px solid var(--exec-authority-shell-border);
   padding-top: 6px;
 }
 
