@@ -1,0 +1,43 @@
+:where([data-tool-shell]) {
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+:where([data-tool-shell].runtime-state-idle) {
+  opacity: 1;
+}
+
+:where([data-tool-shell].runtime-state-running) {
+  background-color: color-mix(in srgb, var(--bg-secondary) 94%, var(--accent) 6%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent), 0 14px 28px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+:where([data-tool-shell].runtime-state-success) {
+  background-color: color-mix(in srgb, var(--bg-secondary) 95%, var(--success) 5%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 24%, transparent), 0 10px 20px color-mix(in srgb, var(--success) 10%, transparent);
+}
+
+:where([data-tool-shell].runtime-state-warning) {
+  background-color: color-mix(in srgb, var(--bg-secondary) 94%, var(--warning) 6%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning) 26%, transparent), 0 12px 22px color-mix(in srgb, var(--warning) 11%, transparent);
+}
+
+:where([data-tool-shell].runtime-state-error) {
+  background-color: color-mix(in srgb, var(--bg-secondary) 93%, var(--danger) 7%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--danger) 32%, transparent), 0 14px 24px color-mix(in srgb, var(--danger) 14%, transparent);
+}
+
+:where([data-tool-followup].toolbar-execution-active) {
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+:where([data-tool-followup].toolbar-recovery-mode) {
+  border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--danger) 18%, transparent);
+}
+
+:where([data-tool-output].editor-result-focus) {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
+}
