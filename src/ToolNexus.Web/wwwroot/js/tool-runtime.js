@@ -25,6 +25,7 @@ import { assertDomContractRootsUnchanged, freezeDomContractRoots } from './runti
 import { isModuleContractError, validateModuleContract } from './runtime/module-contract-validator.js';
 import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runtime/execution-ui-law-validator.js';
 import { validateExecutionDensity as defaultExecutionDensityValidator, writeExecutionDensityReport as defaultWriteExecutionDensityReport } from './runtime/execution-density-validator.js';
+import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -179,7 +180,8 @@ export function createToolRuntime({
   containerManager = createToolContainerManager({ doc: document }),
   validateExecutionUiLaw = defaultExecutionUiLawValidator,
   validateExecutionDensity = defaultExecutionDensityValidator,
-  writeExecutionDensityReport = defaultWriteExecutionDensityReport
+  writeExecutionDensityReport = defaultWriteExecutionDensityReport,
+  applyExecutionIntelligence = defaultApplyExecutionIntelligence
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -1061,6 +1063,17 @@ export function createToolRuntime({
         violations: densityValidation.violations
       });
     }
+
+    const executionIntelligence = applyExecutionIntelligence(root, {
+      toolSlug: slug,
+      emitTelemetry: emit
+    });
+
+    logger.info('[ExecutionIntelligence] mode selected.', {
+      slug,
+      mode: executionIntelligence.mode,
+      profile: executionIntelligence.profile
+    });
 
     scheduleNonCriticalTask(() => {
       Promise.resolve(writeExecutionDensityReport({
