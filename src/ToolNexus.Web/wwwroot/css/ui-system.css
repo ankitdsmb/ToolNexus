@@ -29,6 +29,7 @@ ENTERPRISE UI SYSTEM
 
   --radius-control: var(--radius-md);
   --radius-panel: var(--radius-lg);
+  --tool-page-max-width-authority: 1200px;
   --page-max-width: 1200px;
   --exec-gap-tight: var(--tn-exec-space-1, var(--space-1));
   --exec-gap-normal: var(--tn-exec-space-2, var(--space-2));
@@ -89,7 +90,44 @@ ENTERPRISE UI SYSTEM
 }
 
 :where(.container, .footer__container, .topbar__inner) {
-  width: min(var(--page-max-width), calc(100% - (var(--container-gutter) * 2)));
+  width: min(var(--tool-page-max-width-authority, var(--page-max-width)), calc(100% - (var(--container-gutter) * 2)));
+}
+
+:where(.tool-shell-page) {
+  --tool-shell-max-width: var(--tool-page-max-width-authority, var(--page-max-width));
+  --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
+  --tool-shell-flow-gap: clamp(14px, 1.9vw, 24px);
+  --tool-shell-footer-gap: clamp(14px, 2vw, 22px);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--tool-shell-flow-gap);
+  margin-bottom: var(--tool-shell-footer-gap);
+}
+
+:where(.tool-shell-page > h1,
+  .tool-shell-page > .tool-shell-page__workspace,
+  .tool-shell-page > .tool-shell-page__docs) {
+  width: var(--tool-shell-rail-width);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+:where(.tool-shell-page.workspace-shell) {
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
+  row-gap: var(--tool-shell-flow-gap);
+  padding-block: var(--space-2);
+  padding-inline: 0;
+}
+
+:where(.tool-shell-page .workspace-shell__runtime-zone,
+  .tool-shell-page .workspace-shell__context-rail) {
+  grid-column: 1;
+  position: static;
+  top: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 :where(.tool-page, .static-page, .home-page, .tools-index) {
