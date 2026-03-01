@@ -40,7 +40,7 @@
   /* editor region spacing */
   --tn-exec-editor-gap: 1px;
   --tn-exec-editor-padding: var(--tn-exec-space-2);
-  --tn-exec-editor-min-height: clamp(430px, 74vh, 820px);
+  --tn-exec-editor-min-height: clamp(220px, 34vh, 420px);
   --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
@@ -144,7 +144,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--tn-exec-editor-gap);
   align-items: stretch;
-  min-height: var(--tn-exec-editor-min-height);
+  min-height: unset;
   padding-top: 0;
   margin-top: 0;
   background: color-mix(in srgb, var(--tn-exec-workspace-divider) 62%, transparent);
@@ -169,13 +169,18 @@
 
 :where([data-tool-content-host="true"] .tool-runtime-widget > .tool-local-body > *) {
   min-width: 0;
-  min-height: calc(var(--tn-exec-editor-min-height) - 1px);
-  height: 100%;
+  min-height: 0;
+  height: auto;
   align-self: stretch;
   overflow: hidden;
   border: 0;
   border-radius: 0;
   background: color-mix(in srgb, var(--tn-exec-workspace-surface) 96%, var(--bg-primary));
+}
+
+
+:where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-surface:empty) {
+  display: none;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-editor-panel) {
@@ -436,6 +441,7 @@
     grid-template-columns: minmax(0, 1fr);
     min-height: 0;
   }
+
 
   :where([data-tool-content-host="true"] .tool-runtime-widget .tool-editor-panel) {
     min-height: 220px;
