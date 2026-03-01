@@ -1,30 +1,23 @@
 <div class="tool-runtime-widget">
  <header class="tool-local-header">
-  <h2>
-   Text Intelligence Analyzer
-  </h2>
+  <h2>Text Intelligence Analyzer</h2>
  </header>
- <section class="tool-local-actions">
-  <button id="analyzeButton" type="button" data-tool-primary-action>
-   Analyze
-  </button>
+ <section class="tool-local-actions" role="toolbar" aria-label="Text intelligence actions">
+  <button id="analyzeButton" class="tool-btn tool-btn--primary tool-action-primary" type="button" data-tool-primary-action>Analyze</button>
+  <div class="tool-action-group-utility">
+   <p aria-live="polite" id="analysisStatus" class="tool-runtime-strip-compact" role="status">Ready</p>
+  </div>
  </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
-   <label for="inputEditor">
-    Input text
-   </label>
+ <section class="tool-local-body tool-workspace-unified">
+  <section class="tool-local-surface" data-workspace-panel="primary">
+   <label for="inputEditor">Input text</label>
    <textarea id="inputEditor" placeholder="Paste text to analyze..." rows="12"></textarea>
   </section>
-  <section class="tool-local-surface">
-   <p aria-live="polite" id="analysisStatus" role="status">
-    Ready
-   </p>
+  <section class="tool-local-surface" data-workspace-panel="secondary">
    <pre id="outputViewer">No output yet.</pre>
   </section>
  </section>
- <section class="tool-local-metrics">
-  <section hidden="" id="errorBox">
-  </section>
+ <section class="tool-local-metrics tool-metrics-compact-grid">
+  <section hidden="" id="errorBox"></section>
  </section>
 </div>

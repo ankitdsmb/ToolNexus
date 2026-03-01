@@ -1,21 +1,39 @@
 <div class="tool-runtime-widget">
  <header class="tool-local-header">
+  <h2><span data-bind="tool.title">JSON to XML</span></h2>
+  <p>Convert JSON payloads into XML with deterministic local serialization controls.</p>
+  <span class="json-xml-badge">Client-side processing</span>
  </header>
- <section class="tool-local-actions">
- 
-  <button type="button" data-tool-primary-action hidden aria-hidden="true" tabindex="-1">Run</button>
+ <section class="tool-local-actions" role="toolbar" aria-label="JSON to XML actions">
+  <button id="runBtn" class="tool-btn tool-btn--primary tool-action-primary" type="button" data-tool-primary-action><span class="tool-btn__label">Convert</span></button>
+  <div class="tool-action-group-transform">
+   <button id="jsonXmlClearBtn" class="tool-btn tool-btn--outline" type="button">Clear input</button>
+  </div>
+  <div class="tool-action-group-utility">
+   <span id="editorShortcutHint" class="tool-runtime-strip-compact">Shortcuts: Ctrl/Cmd + Enter convert, Ctrl/Cmd + L clear input.</span>
+  </div>
  </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
+ <section class="json-xml-controls">
+  <label class="json-xml-controls__field"><span>Root element</span><input id="jsonXmlRootName" type="text" value="root" /></label>
+  <label class="json-xml-controls__field"><span>Pretty print</span><input id="jsonXmlPrettyPrint" type="checkbox" checked /></label>
+  <label class="json-xml-controls__field"><span>Indentation</span><select id="jsonXmlIndentSize"><option value="2">2 spaces</option><option value="4">4 spaces</option></select></label>
+  <label class="json-xml-controls__field"><span>Auto root wrapper</span><input id="jsonXmlAutoRoot" type="checkbox" checked /></label>
+  <label class="json-xml-controls__field"><span>Primitive to attributes</span><input id="jsonXmlAttributeMode" type="checkbox" /></label>
+  <label class="json-xml-controls__field"><span>Null handling</span><select id="jsonXmlNullMode"><option value="self-closing">Self-closing tag</option><option value="empty">Empty element pair</option></select></label>
+  <label class="json-xml-controls__field"><span>Auto convert</span><input id="jsonXmlAutoConvert" type="checkbox" /></label>
+ </section>
+ <section class="tool-local-body tool-workspace-unified">
+  <section class="tool-local-surface" data-workspace-panel="primary">
+   <label for="inputEditor">Input JSON</label>
    <textarea class="tool-editor" id="inputEditor"></textarea>
   </section>
-  <section class="tool-local-surface">
+  <section class="tool-local-surface" data-workspace-panel="secondary">
+   <div class="tool-runtime-strip-compact"><strong>Result</strong><span id="resultStatus">Ready</span></div>
    <textarea class="tool-editor" id="outputField"></textarea>
   </section>
  </section>
- <section class="tool-local-metrics">
-  <section hidden="" id="errorBox">
-  </section>
+ <section class="tool-local-metrics tool-metrics-compact-grid">
+  <section hidden="" id="errorMessage"></section>
+  <section hidden="" id="errorBox"></section>
  </section>
 </div>
-
