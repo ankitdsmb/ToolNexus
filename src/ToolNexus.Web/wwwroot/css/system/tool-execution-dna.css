@@ -15,8 +15,8 @@
   --tn-exec-space-5: 20px;
 
   /* runtime panel tokens */
-  --tn-runtime-panel-gap: 6px;
-  --tn-runtime-panel-padding: 8px;
+  --tn-runtime-panel-gap: 4px;
+  --tn-runtime-panel-padding: 6px;
   --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
   --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
   --tn-runtime-panel-shadow: none;
@@ -29,14 +29,14 @@
   --tn-exec-header-title-size: var(--text-sm);
 
   /* toolbar density */
-  --tn-exec-toolbar-min-height: 36px;
-  --tn-exec-toolbar-max-height: 42px;
-  --tn-exec-toolbar-gap: 8px;
+  --tn-exec-toolbar-min-height: 32px;
+  --tn-exec-toolbar-max-height: 38px;
+  --tn-exec-toolbar-gap: 6px;
 
   /* editor region spacing */
   --tn-exec-editor-gap: 1px;
   --tn-exec-editor-padding: var(--tn-exec-space-2);
-  --tn-exec-editor-min-height: clamp(380px, 56vh, 620px);
+  --tn-exec-editor-min-height: clamp(520px, 74vh, 860px);
   --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
@@ -62,9 +62,9 @@
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: 6px 8px 8px;
+  padding: 6px 8px 6px;
   display: grid;
-  gap: 6px;
+  gap: 4px;
   align-content: start;
   border: var(--tn-exec-workspace-border);
   border-radius: var(--tn-exec-radius-md);
@@ -92,12 +92,12 @@
   overflow-x: auto;
   overflow-y: hidden;
   gap: var(--tn-exec-toolbar-gap);
-  padding: 3px 0;
+  padding: 2px 8px;
   margin-top: 0;
-  margin-bottom: 8px;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) 26%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 34%, transparent);
-  background: transparent;
+  margin-bottom: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 30%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 42%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
   scrollbar-width: thin;
 }
 
@@ -115,13 +115,13 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :not(:first-child))::before {
   content: '';
   width: 1px;
-  height: 18px;
+  height: 14px;
   margin-right: 2px;
-  background: color-mix(in srgb, var(--border-default) 70%, transparent);
+  background: color-mix(in srgb, var(--border-default) 62%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions :is(button, .tool-btn, [role="button"], a.tool-btn)) {
-  min-height: 30px;
+  min-height: 28px;
   white-space: nowrap;
 }
 
@@ -133,7 +133,7 @@
   min-height: var(--tn-exec-editor-min-height);
   padding-top: 0;
   margin-top: 0;
-  background: var(--tn-exec-workspace-divider);
+  background: color-mix(in srgb, var(--tn-exec-workspace-divider) 84%, transparent);
   border-radius: var(--tn-exec-radius-sm);
   overflow: hidden;
 }
@@ -153,22 +153,22 @@
 
 :where([data-tool-content-host="true"] .tool-runtime-widget > .tool-local-body > *) {
   min-width: 0;
-  min-height: calc(var(--tn-exec-editor-min-height) - 18px);
+  min-height: calc(var(--tn-exec-editor-min-height) - 10px);
   height: 100%;
   align-self: stretch;
   overflow: hidden;
   border: 0;
   border-radius: 0;
-  background: color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary));
+  background: color-mix(in srgb, var(--bg-secondary) 52%, var(--bg-primary));
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-editor-panel) {
-  min-height: calc(var(--tn-exec-editor-min-height) - 18px);
+  min-height: calc(var(--tn-exec-editor-min-height) - 10px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 2px;
   align-content: stretch;
-  padding: 6px 8px 8px;
+  padding: 5px 7px 7px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :first-child) {
@@ -180,6 +180,16 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
   min-height: 0;
   overflow: auto;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child:empty) {
+  min-height: 56px;
+  max-height: 80px;
+}
+
+:where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child:is([data-empty="true"], .is-empty, [aria-busy="false"]:empty)) {
+  min-height: 56px;
+  max-height: 80px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
@@ -220,17 +230,17 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--tn-exec-metrics-gap);
+  gap: 6px;
   font-size: var(--tn-exec-metrics-font-size);
   line-height: 1.15;
-  padding: 1px 6px;
+  padding: 0 6px;
   border: 0;
   border-top: 1px solid color-mix(in srgb, var(--border-default) 24%, transparent);
   border-radius: 0;
   background: color-mix(in srgb, var(--bg-secondary) calc(48% - (var(--tn-shell-passive-mode) * 4%)), var(--bg-primary));
-  min-height: 22px;
-  max-height: 24px;
-  opacity: 0.74;
+  min-height: 18px;
+  max-height: 22px;
+  opacity: 0.66;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions :is(label.tool-toggle, .tool-toggle)) {
@@ -263,6 +273,9 @@
 
 :where(.tool-shell-page__docs, .tool-seo.tool-shell-page__docs) {
   max-width: 76ch;
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 18%, transparent);
 }
 
 :where(.tool-shell-page__docs .tool-md-section h2, .tool-shell-page__docs .tool-md-section h3) {
