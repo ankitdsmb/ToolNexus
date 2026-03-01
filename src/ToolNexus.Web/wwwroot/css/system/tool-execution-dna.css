@@ -15,8 +15,8 @@
   --tn-exec-space-5: 20px;
 
   /* runtime panel tokens */
-  --tn-runtime-panel-gap: 11px;
-  --tn-runtime-panel-padding: 14px;
+  --tn-runtime-panel-gap: 8px;
+  --tn-runtime-panel-padding: 11px;
   --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
   --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
   --tn-runtime-panel-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
@@ -29,13 +29,13 @@
   --tn-exec-header-title-size: var(--text-sm);
 
   /* toolbar density */
-  --tn-exec-toolbar-min-height: 34px;
-  --tn-exec-toolbar-gap: 12px;
+  --tn-exec-toolbar-min-height: 30px;
+  --tn-exec-toolbar-gap: 8px;
 
   /* editor region spacing */
-  --tn-exec-editor-gap: 16px;
+  --tn-exec-editor-gap: 12px;
   --tn-exec-editor-padding: var(--tn-exec-space-2);
-  --tn-exec-editor-min-height: clamp(380px, 46vh, 460px);
+  --tn-exec-editor-min-height: clamp(340px, 42vh, 430px);
   --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
@@ -61,16 +61,16 @@
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: 12px 14px 16px;
+  padding: 9px 10px 11px;
   display: grid;
-  gap: 14px;
+  gap: 9px;
   align-content: start;
   border: var(--tn-exec-workspace-border);
   border-radius: var(--tn-exec-radius-md);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--accent) calc(6% + (var(--tn-workspace-dominance) * 3%)), transparent) 0%, transparent 58%),
     var(--tn-exec-workspace-surface);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, calc(0.08 + (var(--tn-workspace-dominance) * 0.02)));
+  box-shadow: 0 4px 12px rgba(15, 23, 42, calc(0.04 + (var(--tn-workspace-dominance) * 0.01)));
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-header) {
@@ -85,15 +85,15 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions) {
   min-height: var(--tn-exec-toolbar-min-height);
   display: flex;
-  align-items: center;
+  align-items: baseline;
   flex-wrap: wrap;
-  gap: 14px;
-  padding: 11px 0 14px;
-  margin-top: -1px;
+  gap: var(--tn-exec-toolbar-gap);
+  padding: 6px 0 8px;
+  margin-top: 0;
   margin-bottom: 0;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) calc(44% - (var(--tn-control-recession) * 8%)), transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) calc(20% + (var(--tn-execution-surface-anchor) * 7%)), transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 16%, transparent) 0%, transparent 72%);
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 36%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 52%, transparent);
+  background: transparent;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn)) {
@@ -117,10 +117,10 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-body) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 34vw, 420px), 1fr));
-  gap: 14px;
+  gap: var(--tn-exec-editor-gap);
   align-items: stretch;
   min-height: var(--tn-exec-editor-min-height);
-  padding-top: 11px;
+  padding-top: 5px;
 }
 
 /* Auto-layout ownership contract: panel-count aware, forced at runtime anchor level. */
@@ -142,7 +142,7 @@
   height: 100%;
   align-self: stretch;
   overflow: hidden;
-  border: 1px solid var(--tn-exec-workspace-divider);
+  border: 1px solid color-mix(in srgb, var(--tn-exec-workspace-divider) 72%, transparent);
   border-radius: var(--tn-exec-radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) 56%, transparent);
 }
@@ -151,7 +151,7 @@
   min-height: calc(var(--tn-exec-editor-min-height) - 24px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 3px;
+  gap: 2px;
   align-content: stretch;
   padding: var(--tn-exec-space-2);
 }
@@ -208,12 +208,12 @@
   gap: var(--tn-exec-metrics-gap);
   font-size: var(--tn-exec-metrics-font-size);
   line-height: 1.15;
-  padding: 4px 12px;
-  border: 1px solid color-mix(in srgb, var(--border-default) calc(70% - (var(--tn-shell-passive-mode) * 12%)), transparent);
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--border-default) 44%, transparent);
   border-radius: var(--tn-exec-radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) calc(68% - (var(--tn-shell-passive-mode) * 6%)), var(--bg-primary));
-  min-height: 30px;
-  opacity: calc(0.66 + ((1 - var(--tn-shell-passive-mode)) * 0.14));
+  min-height: 24px;
+  opacity: calc(0.58 + ((1 - var(--tn-shell-passive-mode)) * 0.12));
 }
 
 /* Tool personality modifiers (micro-delta only, no layout ownership changes). */
