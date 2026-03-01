@@ -17,12 +17,12 @@
   /* runtime panel tokens */
   --tn-runtime-panel-gap: 2px;
   --tn-runtime-panel-padding: 4px;
-  --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
-  --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
+  --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 74%, transparent);
+  --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 97%, var(--bg-primary));
   --tn-runtime-panel-shadow: none;
-  --tn-exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
-  --tn-exec-workspace-border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border-default));
-  --tn-exec-workspace-divider: color-mix(in srgb, var(--border-default) 58%, transparent);
+  --tn-exec-workspace-surface: color-mix(in srgb, var(--bg-secondary) 94%, var(--bg-primary));
+  --tn-exec-workspace-border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-default));
+  --tn-exec-workspace-divider: color-mix(in srgb, var(--border-default) 64%, transparent);
 
   /* header sizing */
   --tn-exec-header-min-height: 34px;
@@ -31,7 +31,7 @@
   /* toolbar density */
   --tn-exec-toolbar-min-height: 32px;
   --tn-exec-toolbar-max-height: 38px;
-  --tn-exec-toolbar-gap: 6px;
+  --tn-exec-toolbar-gap: 5px;
 
   /* editor region spacing */
   --tn-exec-editor-gap: 1px;
@@ -40,7 +40,7 @@
   --tn-exec-motion-fast: 150ms;
 
   /* metrics row styling */
-  --tn-exec-metrics-gap: 8px;
+  --tn-exec-metrics-gap: 11px;
   --tn-exec-metrics-font-size: var(--text-xs);
   --tn-exec-metrics-pill-padding: 4px 12px;
 
@@ -62,14 +62,14 @@
 /* Tool-internal execution widget baseline */
 :where([data-tool-content-host="true"] .tool-runtime-widget) {
   margin: 0;
-  padding: 4px 6px 5px;
+  padding: 4px 6px;
   display: grid;
   gap: 1px;
   align-content: start;
   border: var(--tn-exec-workspace-border);
   border-radius: var(--tn-exec-radius-md);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) calc(6% + (var(--tn-workspace-dominance) * 3%)), transparent) 0%, transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) calc(7% + (var(--tn-workspace-dominance) * 3%)), transparent) 0%, transparent 56%),
     var(--tn-exec-workspace-surface);
   box-shadow: none;
 }
@@ -80,13 +80,14 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px 12px;
-  padding: 0 2px;
+  gap: 8px 11px;
+  padding: 0 2px 1px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-header :is(h2, h3, .tool-title, .tool-local-title)) {
-  font-weight: 650;
+  font-weight: 675;
   letter-spacing: 0.005em;
+  color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions) {
@@ -98,12 +99,12 @@
   overflow-x: auto;
   overflow-y: hidden;
   gap: var(--tn-exec-toolbar-gap);
-  padding: 3px 2px 2px;
+  padding: 2px 2px 1px;
   margin-top: 0;
   margin-bottom: 0;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) 34%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 26%, transparent);
-  background: color-mix(in srgb, var(--tn-exec-workspace-surface) 96%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 42%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 31%, transparent);
+  background: color-mix(in srgb, var(--tn-exec-workspace-surface) 98%, transparent);
   scrollbar-width: thin;
 }
 
@@ -111,7 +112,7 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :not(:first-child)) {
@@ -123,12 +124,14 @@
   width: 1px;
   height: 14px;
   margin-right: 2px;
-  background: color-mix(in srgb, var(--border-default) 62%, transparent);
+  background: color-mix(in srgb, var(--border-default) 54%, transparent);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions :is(button, .tool-btn, [role="button"], a.tool-btn)) {
   min-height: 28px;
   white-space: nowrap;
+  border-color: color-mix(in srgb, var(--border-default) 58%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, var(--bg-primary));
   box-shadow: none;
 }
 
@@ -173,15 +176,17 @@
   min-height: calc(var(--tn-exec-editor-min-height) - 6px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 1px;
+  gap: 2px;
   align-content: stretch;
-  padding: 2px 4px 4px;
+  padding: 2px 4px 3px;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :first-child) {
   min-height: 28px;
   display: flex;
   align-items: baseline;
+  font-weight: 620;
+  color: color-mix(in srgb, var(--text-primary) 92%, var(--text-secondary));
   margin-bottom: 1px;
 }
 
@@ -206,9 +211,9 @@
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
   background: color-mix(in srgb, var(--bg-elevated) calc(80% + (var(--tn-workspace-dominance) * 4%)), #000 calc(20% - (var(--tn-workspace-dominance) * 3%)));
-  border: 1px solid color-mix(in srgb, var(--accent) calc(10% + (var(--tn-workspace-dominance) * 4%)), var(--border-default));
+  border: 1px solid color-mix(in srgb, var(--accent) calc(13% + (var(--tn-workspace-dominance) * 4%)), var(--border-default));
   border-radius: var(--tn-exec-radius-sm);
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, calc(0.06 + (var(--tn-workspace-dominance) * 0.012)));
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, calc(0.08 + (var(--tn-workspace-dominance) * 0.01)));
   transition: border-color var(--tn-exec-motion-fast) var(--ease-standard), box-shadow var(--tn-exec-motion-fast) var(--ease-standard);
 }
 
@@ -242,7 +247,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--tn-exec-metrics-gap);
   font-size: var(--tn-exec-metrics-font-size);
   line-height: 1.15;
   padding: 1px 2px 0;
@@ -252,18 +257,18 @@
   background: color-mix(in srgb, var(--bg-secondary) calc(48% - (var(--tn-shell-passive-mode) * 4%)), var(--bg-primary));
   min-height: 18px;
   max-height: 22px;
-  opacity: 0.74;
+  opacity: 0.66;
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions :is(label.tool-toggle, .tool-toggle)) {
   min-height: 28px;
-  padding: 0 8px;
-  border: 1px solid color-mix(in srgb, var(--border-default) 54%, transparent);
+  padding: 0 7px;
+  border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--bg-elevated) 66%, var(--bg-primary));
+  background: color-mix(in srgb, var(--bg-elevated) 60%, var(--bg-primary));
   color: var(--text-secondary);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 580;
   line-height: 1;
   white-space: nowrap;
 }
@@ -287,19 +292,19 @@
   width: var(--tool-shell-rail-width);
   max-width: min(100%, 88ch);
   margin-top: 0;
-  padding-top: 6px;
-  border-top: 1px solid color-mix(in srgb, var(--border-default) 24%, transparent);
+  padding-top: 7px;
+  border-top: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
 }
 
 :where(.tool-shell-page__docs .tool-md-section h2, .tool-shell-page__docs .tool-md-section h3) {
-  margin-block: 0.36em 0.24em;
+  margin-block: 0.34em 0.2em;
   color: color-mix(in srgb, var(--text-primary) 92%, var(--text-secondary));
 }
 
 :where(.tool-shell-page__docs .tool-md-content p) {
   max-width: 76ch;
-  margin-block: 0.35em 0.52em;
-  color: color-mix(in srgb, var(--text-primary) 84%, var(--text-secondary));
+  margin-block: 0.28em 0.6em;
+  color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
 }
 
 :where(.tool-shell-page__docs .tool-md-section) {
