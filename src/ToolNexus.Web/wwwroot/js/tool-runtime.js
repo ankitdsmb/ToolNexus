@@ -1082,10 +1082,12 @@ export function createToolRuntime({
       emitTelemetry: emit
     });
 
-    logger.info('[RuntimeOrchestrator] profile created in passive mode.', {
+    logger.info('[RuntimeOrchestrator] adaptive execution profile selected.', {
       slug,
+      genome: runtimeOrchestrator.genomeProfile?.genome,
+      chosenStrategy: runtimeOrchestrator.strategy,
+      appliedRuntimeClasses: runtimeOrchestrator.appliedRuntimeClasses,
       mode: runtimeOrchestrator.mode,
-      genome: runtimeOrchestrator.genomeProfile,
       governance: runtimeOrchestrator.governanceProfile
     });
 

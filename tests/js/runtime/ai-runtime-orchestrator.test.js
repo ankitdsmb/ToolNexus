@@ -46,19 +46,27 @@ describe('ai runtime orchestrator', () => {
       emitTelemetry: (eventName, payload) => events.push({ eventName, payload })
     });
 
-    expect(result.mode).toMatch(/^passive_/);
+    expect(result.mode).toMatch(/^(simple|workspace|advanced)$/);
     expect(root.getAttribute('data-tool-genome')).toContain('single-step');
     expect(root.getAttribute('data-orchestrator-mode')).toBe(result.mode);
     expect(root.getAttribute('data-orchestrator-complexity')).toBe(result.complexity);
-    expect(events).toEqual([
+    expect(events).toEqual(expect.arrayContaining([
       expect.objectContaining({
         eventName: 'runtime_orchestrator_observation_created',
         payload: expect.objectContaining({
           toolSlug: 'json-formatter',
           mode: result.mode
         })
+      }),
+      expect.objectContaining({
+        eventName: 'runtime_strategy_selected',
+        payload: expect.objectContaining({
+          toolSlug: 'json-formatter',
+          mode: result.mode,
+          appliedRuntimeClasses: expect.any(Array)
+        })
       })
-    ]);
+    ]));
   });
 
   test('governance warnings flag overload and density/layout risk', () => {
