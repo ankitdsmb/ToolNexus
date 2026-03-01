@@ -4,6 +4,7 @@ import { evaluateRuntimeGovernance } from './runtime-governance-engine.js';
 import { applyAdaptiveRuntimeClasses, selectExecutionStrategy } from './execution-strategy-engine.js';
 import { applyExecutionDensityAutobalancer } from './execution-density-autobalancer.js';
 import { createExecutionVisualBrain } from './execution-visual-brain.js';
+import { createExecutionFlowIntelligence } from './execution-flow-intelligence.js';
 
 function resolveOrchestratorMode({ behaviorProfile = {}, governanceProfile = {}, genomeProfile = {} } = {}) {
   if (governanceProfile.riskLevel === 'high' || genomeProfile.workflowType === 'pipeline') {
@@ -54,6 +55,10 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     toolSlug: options.toolSlug ?? null,
     emitTelemetry: options.emitTelemetry
   });
+  const flowIntelligence = createExecutionFlowIntelligence(root, {
+    toolSlug: options.toolSlug ?? null,
+    emitTelemetry: options.emitTelemetry
+  });
 
   const runtimeProfile = {
     genomeProfile,
@@ -64,7 +69,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     strategy,
     appliedRuntimeClasses,
     densityAutobalancer,
-    visualBrain
+    visualBrain,
+    flowIntelligence
   };
 
   if (root && typeof root.setAttribute === 'function') {
@@ -85,7 +91,9 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
       strategy,
       appliedRuntimeClasses,
       densityAutobalancer,
-      visualBrainState: visualBrain.state
+      visualBrainState: visualBrain.state,
+      flowState: flowIntelligence.state,
+      flowMetrics: flowIntelligence.metrics
     }
   };
 
@@ -100,7 +108,9 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
         strategy,
         appliedRuntimeClasses,
         densityAutobalancer,
-        visualBrainState: visualBrain.state
+        visualBrainState: visualBrain.state,
+        flowState: flowIntelligence.state,
+        flowMetrics: flowIntelligence.metrics
       });
     } catch {
       // best-effort telemetry
@@ -108,6 +118,7 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
   }
 
   console.info('EXECUTION VISUAL BRAIN ACTIVE\n');
+  console.info('ADAPTIVE EXECUTION FLOW ACTIVE\n');
 
   return {
     mode,
@@ -120,6 +131,7 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     appliedRuntimeClasses,
     runtimeProfile,
     visualBrain,
+    flowIntelligence,
     passive: true
   };
 }
