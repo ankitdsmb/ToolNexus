@@ -96,8 +96,8 @@ ENTERPRISE UI SYSTEM
 :where(.tool-shell-page) {
   --tool-shell-max-width: var(--tool-page-max-width-authority, var(--page-max-width));
   --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
-  --tool-shell-flow-gap: clamp(14px, 1.9vw, 24px);
-  --tool-shell-footer-gap: clamp(14px, 2vw, 22px);
+  --tool-shell-flow-gap: clamp(8px, 1.25vw, 14px);
+  --tool-shell-footer-gap: clamp(10px, 1.5vw, 16px);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -117,7 +117,7 @@ ENTERPRISE UI SYSTEM
   grid-template-columns: minmax(0, 1fr);
   column-gap: 0;
   row-gap: var(--tool-shell-flow-gap);
-  padding-block: var(--space-2);
+  padding-block: 4px;
   padding-inline: 0;
 }
 
@@ -665,50 +665,59 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 :where(.tool-shell-page__runtime > [data-tool-status="true"]) { grid-area: status; align-self: start; margin: 0; }
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) { grid-area: followup; align-self: start; margin-top: 0; }
 :where(.tool-shell-page__runtime > [data-tool-content-host="true"]) { grid-area: content; align-self: start; width: 100%; }
+
+:where(.tool-shell-page__runtime > [data-tool-content-host="true"][data-execution-surface="unified"]) {
+  margin-top: -1px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 44%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
+  border-radius: 0 0 var(--tn-exec-radius-sm, 8px) var(--tn-exec-radius-sm, 8px);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+}
 :where(.tool-shell-page__runtime > [data-tool-content-host="true"] > [data-tool-runtime="true"]) { width: 100%; }
 
 :where(.tool-shell-page__runtime > [data-tool-context="true"],
   .tool-shell-page__runtime > [data-tool-status="true"],
   .tool-shell-page__runtime > [data-tool-followup="true"]) {
-  border-radius: var(--tn-exec-radius-sm, 8px);
-  border: var(--tn-exec-border, 1px solid var(--color-border));
-  background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+  border-radius: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--bg-secondary) 66%, transparent);
 }
 
 :where(.tool-shell-page__runtime > [data-tool-context="true"]) {
-  min-height: var(--tn-exec-header-min-height, 34px);
-  padding: 6px var(--exec-cadence-11);
+  min-height: 28px;
+  padding: 3px 8px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
-  min-height: var(--tn-exec-toolbar-min-height, 34px);
-  padding: var(--exec-cadence-11) var(--exec-cadence-12) var(--exec-cadence-12);
-  margin-top: calc(var(--exec-cadence-11) * -1);
-  border-top-color: transparent;
+  min-height: 32px;
+  padding: 4px 8px 5px;
+  margin-top: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 46%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 42%, transparent);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 98%, transparent) 0%, color-mix(in srgb, var(--bg-secondary) 92%, transparent) 100%);
+  background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
 }
 
 :where(.tool-shell-page__runtime > [data-tool-status="true"]) {
-  min-height: 30px;
-  padding: 4px var(--exec-cadence-11);
-  border-style: solid;
-  background: color-mix(in srgb, var(--accent-soft) 22%, var(--bg-secondary));
+  min-height: 24px;
+  padding: 2px 8px;
+  border-style: none;
+  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"]) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--exec-cadence-11);
+  gap: 8px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-execution-panel__primary-actions,
   .tool-shell-page__runtime > [data-tool-followup="true"] .tool-execution-panel__secondary-actions) {
   display: inline-flex;
   align-items: center;
-  gap: var(--exec-cadence-11);
+  gap: 8px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-execution-panel__secondary-actions) {
@@ -721,8 +730,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] button) {
-  min-height: 30px;
-  padding: 4px 10px;
+  min-height: 28px;
+  padding: 3px 9px;
 }
 
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-btn--primary) {
@@ -1119,17 +1128,18 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 /* Premium execution polish phase */
 :where(.tool-shell-page__runtime) {
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+  box-shadow: none;
   border-radius: 10px;
-  gap: var(--exec-cadence-11);
-  padding: var(--exec-cadence-12) var(--exec-cadence-14);
-  background-image: linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 22%, transparent), transparent 28%);
+  gap: 6px;
+  padding: 6px 8px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 56%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 84%, var(--bg-primary));
 }
 
 
 :where(.tool-context-pill, .tn-unified-tool-control__capsule) {
-  border-radius: 7px;
-  padding: 4px 8px;
+  border-radius: 6px;
+  padding: 2px 7px;
   font-size: var(--type-micro);
   background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
 }
@@ -1200,8 +1210,8 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs) {
-  gap: 11px;
-  padding: 11px 12px;
+  gap: 8px 10px;
+  padding: 7px 10px 8px;
   border-color: color-mix(in srgb, var(--color-border) 34%, transparent);
   background: color-mix(in srgb, var(--bg-secondary) 18%, transparent);
 }
@@ -1214,25 +1224,33 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tool-shell-page__docs .runtime-doc-disclosure__body) {
-  padding-top: var(--exec-cadence-11);
+  padding-top: 7px;
 }
 
 :where(.tool-shell-page__docs .tool-md-section) {
   margin: 0;
 }
 
+:where(.tool-shell-page__docs .tool-md-section:nth-child(odd)) {
+  padding-inline-end: 6px;
+}
+
+:where(.tool-shell-page__docs .tool-md-section:nth-child(even)) {
+  padding-inline-start: 2px;
+}
+
 :where(.tool-shell-page__docs .tool-md-section[data-doc-priority="primary"]) {
-  padding-bottom: var(--exec-cadence-12);
+  padding-bottom: 8px;
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 44%, transparent);
 }
 
 :where(.tool-shell-page__docs .tool-md-section[data-doc-priority="secondary"]) {
-  opacity: 0.82;
+  opacity: 0.74;
 }
 
 :where([data-tool-content-host="true"]) {
-  border-top: 1px solid var(--exec-authority-shell-border);
-  padding-top: var(--exec-cadence-14);
+  border-top: 1px solid color-mix(in srgb, var(--exec-authority-shell-border) 72%, transparent);
+  padding-top: 6px;
 }
 
 :where([data-tool-content-host="true"] > [data-tool-runtime="true"] .tn-tool-body,
@@ -1241,7 +1259,7 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 }
 
 :where(.tn-editor-skeleton) {
-  min-height: 220px;
+  min-height: 180px;
   border: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
   border-radius: 10px;
   background: linear-gradient(100deg, color-mix(in srgb, var(--bg-secondary) 96%, transparent) 10%, color-mix(in srgb, var(--accent-soft) 16%, transparent) 48%, color-mix(in srgb, var(--bg-secondary) 96%, transparent) 90%);
