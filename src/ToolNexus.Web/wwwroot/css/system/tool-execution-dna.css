@@ -15,7 +15,7 @@
   --tn-exec-space-5: 20px;
 
   /* runtime panel tokens */
-  --tn-runtime-panel-gap: var(--tn-exec-space-2);
+  --tn-runtime-panel-gap: 12px;
   --tn-runtime-panel-padding: 14px;
   --tn-runtime-panel-border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
   --tn-runtime-panel-surface: color-mix(in srgb, var(--bg-secondary) 96%, var(--bg-primary));
@@ -30,7 +30,7 @@
   --tn-exec-toolbar-gap: var(--tn-exec-space-2);
 
   /* editor region spacing */
-  --tn-exec-editor-gap: 14px;
+  --tn-exec-editor-gap: 16px;
   --tn-exec-editor-padding: var(--tn-exec-space-2);
   --tn-exec-editor-min-height: clamp(380px, 46vh, 460px);
   --tn-exec-motion-fast: 150ms;
@@ -60,7 +60,7 @@
   margin: 0;
   padding: 0 var(--tn-exec-space-0) calc(var(--tn-exec-space-1) + 1px);
   display: grid;
-  gap: 12px;
+  gap: 14px;
   align-content: start;
 }
 
@@ -79,11 +79,12 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 11px;
-  padding: 4px 0 3px;
-  margin-top: 1px;
-  margin-bottom: 1px;
+  padding: 11px 0 12px;
+  margin-top: -2px;
+  margin-bottom: 0;
   border-top: 1px solid color-mix(in srgb, var(--border-default) calc(56% - (var(--tn-control-recession) * 8%)), transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) calc(10% + (var(--tn-execution-surface-anchor) * 8%)), transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) calc(14% + (var(--tn-execution-surface-anchor) * 8%)), transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-secondary) 22%, transparent) 0%, transparent 66%);
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-actions > :is(button, .tool-btn, [role="button"], a.tool-btn)) {
@@ -107,7 +108,7 @@
 :where([data-tool-content-host="true"] .tool-runtime-widget .tool-local-body) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 34vw, 420px), 1fr));
-  gap: calc(var(--tn-exec-editor-gap) + 1px);
+  gap: 16px;
   align-items: stretch;
   min-height: var(--tn-exec-editor-min-height);
   padding-top: 3px;
@@ -154,10 +155,10 @@
 }
 
 :where([data-tool-content-host="true"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child) {
-  background: color-mix(in srgb, var(--bg-elevated) calc(68% + (var(--tn-workspace-dominance) * 6%)), #000 calc(32% - (var(--tn-workspace-dominance) * 6%)));
-  border: var(--tn-exec-border);
+  background: color-mix(in srgb, var(--bg-elevated) calc(71% + (var(--tn-workspace-dominance) * 6%)), #000 calc(29% - (var(--tn-workspace-dominance) * 5%)));
+  border: 1px solid color-mix(in srgb, var(--accent) calc(18% + (var(--tn-workspace-dominance) * 6%)), var(--border-default));
   border-radius: var(--tn-exec-radius-sm);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, calc(0.08 + (var(--tn-workspace-dominance) * 0.02))), 0 1px 2px rgba(15, 23, 42, calc(0.12 + (var(--tn-workspace-dominance) * 0.03)));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(15, 23, 42, calc(0.1 + (var(--tn-workspace-dominance) * 0.02))), 0 2px 5px rgba(15, 23, 42, calc(0.1 + (var(--tn-workspace-dominance) * 0.02)));
   transition: border-color var(--tn-exec-motion-fast) var(--ease-standard), box-shadow var(--tn-exec-motion-fast) var(--ease-standard);
 }
 
@@ -199,7 +200,7 @@
   border-radius: var(--tn-exec-radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) calc(68% - (var(--tn-shell-passive-mode) * 6%)), var(--bg-primary));
   min-height: 30px;
-  opacity: calc(0.76 + ((1 - var(--tn-shell-passive-mode)) * 0.12));
+  opacity: calc(0.66 + ((1 - var(--tn-shell-passive-mode)) * 0.14));
 }
 
 /* Tool personality modifiers (micro-delta only, no layout ownership changes). */
