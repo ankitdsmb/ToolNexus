@@ -1947,3 +1947,8 @@
   border-color: color-mix(in srgb, var(--upgread-accent-blue) 25%, var(--upgread-border-hairline)) !important;
 }
 
+.editor-surface textarea {
+  min-height: 320px;
+  height: 100%;
+  resize: vertical;
+}

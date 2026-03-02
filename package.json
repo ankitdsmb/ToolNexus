@@ -22,10 +22,13 @@
     "check:ui-immunity": "node scripts/ui-immunity-guard.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
-    "@playwright/test": "^1.55.0",
-    "vitest": "^2.1.9",
-    "@vitest/coverage-v8": "^2.1.9"
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.55.1"
   }
 }
