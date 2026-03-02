@@ -31,7 +31,29 @@ describe('runtime density autobalancer', () => {
     expect(widget.classList.contains('density-tight')).toBe(true);
   });
 
-  test('applies density-balanced and editor balancing for dual editor workspace', () => {
+  
+  test('compresses toolbar when action row wraps beyond height threshold', () => {
+    const root = mountRuntime(`
+      <section data-tool-shell>
+        <div class="tool-runtime-widget" style="height: 420px;">
+          <div class="tool-local-actions" style="width: 300px; height: 72px;">
+            <button style="width: 120px;">Run</button>
+            <button style="width: 120px;">Transform</button>
+            <button style="width: 120px;">Compare</button>
+          </div>
+          <textarea style="height: 220px;"></textarea>
+        </div>
+      </section>
+    `);
+
+    const result = applyExecutionDensityAutobalancer(root);
+
+    expect(result.toolbarCompressed).toBe(true);
+    expect(result.metrics.toolbarHeightPx).toBeGreaterThan(56);
+    expect(root.querySelector('.tool-runtime-widget')?.classList.contains('toolbar-compressed')).toBe(true);
+  });
+
+test('applies density-balanced and editor balancing for dual editor workspace', () => {
     const root = mountRuntime(`
       <section data-tool-shell style="height: 700px;">
         <div class="tool-runtime-widget" style="height: 560px;">

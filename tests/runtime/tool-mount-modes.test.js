@@ -74,6 +74,26 @@ describe('tool mount modes foundation', () => {
     expect(window.ToolNexus.runtime.getActiveMounts()).toHaveLength(0);
   });
 
+
+  test('container manager exposes static-ready window controls', async () => {
+    const manager = createToolContainerManager({ doc: document });
+    const host = document.createElement('div');
+    document.body.append(host);
+
+    const first = manager.mount({ host, toolId: 't1', mountMode: 'inline' });
+    const second = manager.mount({ host, toolId: 't2', mountMode: 'panel' });
+
+    expect(manager.focus(second.mountId)).toBe(true);
+    expect(manager.minimize(first.mountId)).toBe(true);
+    expect(manager.restore(first.mountId)).toBe(true);
+
+    const mounts = manager.getActiveMounts();
+    expect(mounts.find((entry) => entry.mountId === second.mountId)?.windowState).toBe('focused');
+    expect(mounts.find((entry) => entry.mountId === first.mountId)?.windowState).toBe('restored');
+
+    await manager.cleanupAll();
+  });
+
   test('container manager supports listener cleanup and multiple concurrent mounts', async () => {
     const manager = createToolContainerManager({ doc: document });
     const host = document.createElement('div');

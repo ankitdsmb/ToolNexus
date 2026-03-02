@@ -1,5 +1,11 @@
 const SUPPORTED_MOUNT_MODES = new Set(['fullscreen', 'panel', 'inline', 'popover', 'command']);
 
+const WINDOW_STATES = Object.freeze({
+  focused: 'focused',
+  minimized: 'minimized',
+  restored: 'restored'
+});
+
 function normalizeMountMode(mountMode) {
   const normalized = String(mountMode ?? 'fullscreen').trim().toLowerCase();
   return SUPPORTED_MOUNT_MODES.has(normalized) ? normalized : 'fullscreen';
@@ -41,7 +47,9 @@ export function createToolContainerManager({ doc = document } = {}) {
       container,
       root,
       listeners: [],
-      cleanup: null
+      cleanup: null,
+      windowState: WINDOW_STATES.focused,
+      zIndex: 1
     });
 
     return {
@@ -80,6 +88,43 @@ export function createToolContainerManager({ doc = document } = {}) {
     };
   }
 
+
+  function focus(mountId) {
+    const record = mounts.get(mountId);
+    if (!record) {
+      return false;
+    }
+
+    const topZ = Math.max(1, ...Array.from(mounts.values()).map((entry) => Number(entry.zIndex) || 1));
+    record.zIndex = topZ + 1;
+    record.windowState = WINDOW_STATES.focused;
+    record.container.style.zIndex = String(record.zIndex);
+    record.container.dataset.windowState = record.windowState;
+    return true;
+  }
+
+  function minimize(mountId) {
+    const record = mounts.get(mountId);
+    if (!record) {
+      return false;
+    }
+
+    record.windowState = WINDOW_STATES.minimized;
+    record.container.dataset.windowState = record.windowState;
+    return true;
+  }
+
+  function restore(mountId) {
+    const record = mounts.get(mountId);
+    if (!record) {
+      return false;
+    }
+
+    record.windowState = WINDOW_STATES.restored;
+    record.container.dataset.windowState = record.windowState;
+    return true;
+  }
+
   async function unmount(mountId) {
     const record = mounts.get(mountId);
     if (!record) {
@@ -114,13 +159,18 @@ export function createToolContainerManager({ doc = document } = {}) {
     mount,
     setCleanup,
     addListener,
+    focus,
+    minimize,
+    restore,
     unmount,
     cleanupAll,
     getActiveMounts() {
       return Array.from(mounts.values()).map((entry) => ({
         mountId: entry.mountId,
         toolId: entry.toolId,
-        mountMode: entry.mountMode
+        mountMode: entry.mountMode,
+        windowState: entry.windowState,
+        zIndex: entry.zIndex
       }));
     }
   };

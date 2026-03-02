@@ -63,6 +63,10 @@ function requireMonaco() {
   });
 }
 
+function isWorkerRuntimeSupported() {
+  return typeof globalThis.Worker === 'function' && typeof globalThis.Blob === 'function';
+}
+
 export async function loadMonaco() {
   if (window.monaco?.editor) {
     console.info('[runtime] Monaco already loaded');
@@ -88,8 +92,14 @@ export async function loadMonaco() {
       }
     });
 
+    const workerRuntimeSupported = isWorkerRuntimeSupported();
+
     window.MonacoEnvironment = {
       getWorkerUrl: (_moduleId, label) => {
+        if (!workerRuntimeSupported) {
+          return `${MONACO_BASE}/base/worker/workerMain.js`;
+        }
+
         const workerMap = {
           json: 'language/json/json.worker',
           css: 'language/css/css.worker',
@@ -118,7 +128,9 @@ export async function loadMonaco() {
       return null;
     }
 
-    console.info('[runtime] Monaco loaded successfully');
+    if (window.ToolNexusLogging?.runtimeDebugEnabled) {
+      console.info('[runtime] Monaco loaded successfully');
+    }
     return window.monaco;
   })().catch((error) => {
     monacoPromise = null;
@@ -127,7 +139,9 @@ export async function loadMonaco() {
       throw error;
     }
 
-    console.warn('[runtime] Monaco unavailable; falling back to basic editors', error);
+    if (window.ToolNexusLogging?.runtimeDebugEnabled) {
+      console.warn('[runtime] Monaco unavailable; falling back to basic editors', error);
+    }
     return null;
   });
 

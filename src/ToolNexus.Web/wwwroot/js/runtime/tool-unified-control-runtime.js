@@ -57,6 +57,20 @@ const RUN_BUTTON_LABELS = Object.freeze({
   uncertain: 'Run Tool Again'
 });
 
+const WINDOW_STATES = Object.freeze({
+  focused: 'focused',
+  minimized: 'minimized',
+  restored: 'restored'
+});
+
+const FULLSCREEN_CLASSES = Object.freeze({
+  shell: 'runtime-fullscreen',
+  page: 'runtime-fullscreen-active',
+  docsHidden: 'runtime-docs-hidden',
+  editorExpanded: 'runtime-editor-expanded',
+  widget: 'runtime-widget-fullscreen'
+});
+
 function safeStringify(payload) {
   if (typeof payload === 'string') {
     return payload;
@@ -706,6 +720,29 @@ export function enforceProfessionalLayout(root) {
 
   return { widgetCount: widgets.length, normalized: true };
 }
+function applyFullscreenMode({ shell, pageShell, enabled }) {
+  if (!shell) {
+    return;
+  }
+
+  const docsRail = shell.querySelector('[data-tool-docs], .tool-local-docs, .tool-docs, .runtime-doc-disclosure');
+  const editorZones = shell.querySelectorAll('[data-tool-input], .tool-local-body, .tool-editor-panel, .monaco-editor');
+  const widget = shell.querySelector('.tool-runtime-widget');
+
+  shell.classList.toggle(FULLSCREEN_CLASSES.shell, enabled);
+  pageShell?.classList?.toggle(FULLSCREEN_CLASSES.page, enabled);
+  widget?.classList?.toggle(FULLSCREEN_CLASSES.widget, enabled);
+
+  if (docsRail) {
+    docsRail.classList.toggle(FULLSCREEN_CLASSES.docsHidden, enabled);
+    docsRail.setAttribute('aria-hidden', enabled ? 'true' : 'false');
+  }
+
+  for (const zone of editorZones) {
+    zone.classList.toggle(FULLSCREEN_CLASSES.editorExpanded, enabled);
+  }
+}
+
 export function createUnifiedToolControl({
   root,
   doc = root?.ownerDocument ?? document,
@@ -779,14 +816,27 @@ export function createUnifiedToolControl({
   suggestionReason.className = 'tn-unified-tool-control__suggestion-reason';
   suggestionReason.hidden = true;
 
+  const fullscreenButton = doc.createElement('button');
+  fullscreenButton.type = 'button';
+  fullscreenButton.className = 'tool-btn tn-unified-tool-control__fullscreen-toggle';
+  fullscreenButton.dataset.action = 'runtime-fullscreen';
+  fullscreenButton.setAttribute('aria-pressed', 'false');
+  fullscreenButton.textContent = 'Focus';
+
+  const windowStateBadge = doc.createElement('span');
+  windowStateBadge.className = 'tn-unified-tool-control__window-state';
+  windowStateBadge.dataset.windowState = WINDOW_STATES.focused;
+  windowStateBadge.textContent = 'Focused';
+
   ensureIcon(runButton, 'play');
   ensureIcon(suggestionBadge, 'wand');
+  ensureIcon(fullscreenButton, 'runtime');
 
   const { primaryActions, secondaryActions } = presentationEngine.renderActionHierarchy({
     actionsHost: actions,
     runButton,
     executionHint,
-    secondaryNodes: [suggestionBadge, suggestionReason]
+    secondaryNodes: [fullscreenButton, suggestionBadge, suggestionReason, windowStateBadge]
   });
 
   if (contractStatus === toolRoot) {
@@ -827,6 +877,35 @@ export function createUnifiedToolControl({
   }
 
   const pageShell = shell.closest?.('.tool-shell-page') ?? doc;
+  let fullscreenActive = false;
+  let windowState = WINDOW_STATES.focused;
+
+  function setWindowState(nextState) {
+    windowState = nextState;
+    windowStateBadge.dataset.windowState = nextState;
+    windowStateBadge.textContent = nextState === WINDOW_STATES.minimized
+      ? 'Minimized'
+      : 'Focused';
+    shell.dataset.windowState = nextState;
+  }
+
+  function setFullscreen(nextEnabled) {
+    fullscreenActive = Boolean(nextEnabled);
+    applyFullscreenMode({
+      shell,
+      pageShell,
+      enabled: fullscreenActive
+    });
+
+    fullscreenButton.setAttribute('aria-pressed', fullscreenActive ? 'true' : 'false');
+    fullscreenButton.textContent = fullscreenActive ? 'Exit Focus' : 'Focus';
+  }
+
+  fullscreenButton.addEventListener('click', () => {
+    setFullscreen(!fullscreenActive);
+    setWindowState(WINDOW_STATES.focused);
+  });
+
   presentationEngine.applyArticleTypography(pageShell);
 
   if (!errors.parentElement) {
@@ -899,6 +978,29 @@ export function createUnifiedToolControl({
       suggestionReason.hidden = true;
       suggestionReason.textContent = '';
     },
+    minimize() {
+      setFullscreen(false);
+      shell.classList.add('runtime-window-minimized');
+      setWindowState(WINDOW_STATES.minimized);
+    },
+    restore() {
+      shell.classList.remove('runtime-window-minimized');
+      shell.classList.remove('runtime-window-focused');
+      setWindowState(WINDOW_STATES.restored);
+    },
+    focus() {
+      shell.classList.add('runtime-window-focused');
+      shell.classList.remove('runtime-window-minimized');
+      setWindowState(WINDOW_STATES.focused);
+    },
+    setFullscreen,
+    isFullscreenActive() {
+      return fullscreenActive;
+    },
+    getWindowState() {
+      return windowState;
+    },
+
     showSuggestion({ toolId, reason, contextType, confidence } = {}) {
       if (!toolId) {
         this.hideSuggestion();
