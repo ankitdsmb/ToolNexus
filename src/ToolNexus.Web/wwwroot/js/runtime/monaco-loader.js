@@ -28,6 +28,7 @@ let monacoLoadSequence = 0;
 
 const MONACO_SINGLETON_KEY = '__toolnexus_monaco';
 const MONACO_SINGLETON_PROMISE_KEY = '__toolnexus_monaco_promise';
+const MONACO_SINGLETON_STATE_KEY = '__toolnexus_monaco_state';
 
 function emitMonacoAssetInvalidWarning() {
   console.warn(`[runtime] ${MONACO_ASSET_INVALID_EVENT}`);
@@ -63,6 +64,28 @@ function logRuntimeMonaco(message, detail) {
 function createMonacoLoadCorrelationId() {
   monacoLoadSequence += 1;
   return `monaco-${Date.now()}-${monacoLoadSequence}`;
+}
+
+function readMonacoLoadState() {
+  return window[MONACO_SINGLETON_STATE_KEY] ?? null;
+}
+
+function writeMonacoLoadState(state) {
+  window[MONACO_SINGLETON_STATE_KEY] = state;
+  return state;
+}
+
+function createMonacoLoadError(error, correlationId) {
+  if (error?.correlationId) {
+    return error;
+  }
+
+  const monacoError = error instanceof Error
+    ? error
+    : new Error(typeof error === 'string' ? error : 'Monaco load failed');
+
+  monacoError.correlationId = correlationId;
+  return monacoError;
 }
 
 function assertValidAmdLoader() {
@@ -237,23 +260,44 @@ function activateMonacoEnvironment() {
 
 export async function loadMonaco() {
   const correlationId = createMonacoLoadCorrelationId();
+  const existingState = readMonacoLoadState();
 
   if (isMonacoReady()) {
     logRuntimeMonaco('Monaco already loaded', { correlationId });
     const monaco = window[MONACO_SINGLETON_KEY] ?? window.monaco;
     assignGlobalMonaco(monaco);
+    writeMonacoLoadState({
+      phase: 'ready',
+      correlationId,
+      updatedAt: Date.now(),
+      error: null
+    });
     return monaco;
   }
 
   if (window[MONACO_SINGLETON_PROMISE_KEY]) {
-    logRuntimeMonaco('Monaco load joining shared promise', { correlationId });
+    logRuntimeMonaco('Monaco load joining shared promise', {
+      correlationId,
+      activeCorrelationId: existingState?.correlationId ?? null
+    });
     return window[MONACO_SINGLETON_PROMISE_KEY];
   }
 
   if (monacoPromise) {
-    logRuntimeMonaco('Monaco load joining in-flight promise', { correlationId });
+    logRuntimeMonaco('Monaco load joining in-flight promise', {
+      correlationId,
+      activeCorrelationId: existingState?.correlationId ?? null
+    });
     return monacoPromise;
   }
+
+  writeMonacoLoadState({
+    phase: 'loading',
+    correlationId,
+    startedAt: Date.now(),
+    updatedAt: Date.now(),
+    error: null
+  });
 
   monacoPromise = (async () => {
     logRuntimeMonaco('Monaco loading start', { correlationId });
@@ -287,21 +331,33 @@ export async function loadMonaco() {
     }
 
     window[MONACO_SINGLETON_KEY] = monaco ?? window.monaco;
+    writeMonacoLoadState({
+      phase: 'ready',
+      correlationId,
+      completedAt: Date.now(),
+      updatedAt: Date.now(),
+      error: null
+    });
     logRuntimeMonaco('Monaco ready', { correlationId });
     return window[MONACO_SINGLETON_KEY];
   })().catch((error) => {
+    const loadError = createMonacoLoadError(error, correlationId);
+
     monacoPromise = null;
     window[MONACO_SINGLETON_PROMISE_KEY] = null;
-
-    if (error?.message === 'Invalid Monaco AMD loader detected') {
-      throw error;
-    }
-
-    console.warn('[runtime] Monaco unavailable; falling back to basic editors', {
+    writeMonacoLoadState({
+      phase: 'failed',
       correlationId,
-      error
+      completedAt: Date.now(),
+      updatedAt: Date.now(),
+      error: loadError
     });
-    throw error;
+
+    console.error('[runtime] Monaco loader failed', {
+      correlationId,
+      error: loadError
+    });
+    throw loadError;
   });
 
   window[MONACO_SINGLETON_PROMISE_KEY] = monacoPromise;
@@ -316,10 +372,13 @@ export async function initializeMonacoRuntime(options = {}) {
   } = options;
 
   let timeoutId;
+  let didTimeout = false;
 
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = window.setTimeout(() => {
-      reject(new Error(`[${logPrefix}] Monaco load timeout (${timeoutMs}ms)`));
+      didTimeout = true;
+      const activeCorrelationId = readMonacoLoadState()?.correlationId ?? null;
+      reject(createMonacoLoadError(new Error(`[${logPrefix}] Monaco load timeout (${timeoutMs}ms)`), activeCorrelationId));
     }, timeoutMs);
   });
 
@@ -333,11 +392,17 @@ export async function initializeMonacoRuntime(options = {}) {
       mode: ready ? 'monaco' : 'fallback'
     };
   } catch (error) {
-    console.error(`[${logPrefix}] Monaco load failed`, error);
+    const activeCorrelationId = error?.correlationId ?? readMonacoLoadState()?.correlationId ?? null;
+    console.warn(`[${logPrefix}] Monaco runtime using fallback`, {
+      correlationId: activeCorrelationId,
+      reason: didTimeout ? 'timeout' : 'loader-failure',
+      error
+    });
     return {
       monaco: null,
       ready: false,
       mode: 'fallback',
+      correlationId: activeCorrelationId,
       error
     };
   } finally {
@@ -347,14 +412,39 @@ export async function initializeMonacoRuntime(options = {}) {
   }
 }
 
+export function getMonacoRuntimeStatus() {
+  const state = readMonacoLoadState();
+  const ready = isMonacoReady();
+
+  if (ready) {
+    return {
+      ready: true,
+      mode: 'monaco',
+      phase: 'ready',
+      correlationId: state?.correlationId ?? null,
+      error: null
+    };
+  }
+
+  return {
+    ready: false,
+    mode: 'fallback',
+    phase: state?.phase ?? 'idle',
+    correlationId: state?.correlationId ?? null,
+    error: state?.error ?? null
+  };
+}
+
 export function resetMonacoLoaderForTesting() {
   monacoPromise = null;
   window[MONACO_SINGLETON_KEY] = null;
   window[MONACO_SINGLETON_PROMISE_KEY] = null;
+  window[MONACO_SINGLETON_STATE_KEY] = null;
 }
 
 window.ToolNexusRuntimeServices ??= {};
 window.ToolNexusRuntimeServices.monacoLoader = {
   load: loadMonaco,
-  initialize: initializeMonacoRuntime
+  initialize: initializeMonacoRuntime,
+  status: getMonacoRuntimeStatus
 };
