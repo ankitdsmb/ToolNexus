@@ -1,5 +1,5 @@
-const MONACO_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs';
-const MONACO_LOADER_URL = `${MONACO_BASE}/loader.min.js`;
+const MONACO_BASE = '/lib/monaco/vs';
+const MONACO_LOADER_URL = `${MONACO_BASE}/loader.js`;
 const MONACO_ASSET_INVALID_EVENT = 'monaco_asset_invalid';
 
 let monacoPromise = null;
@@ -33,14 +33,13 @@ function ensureMonacoLoaderScript() {
       }
 
       existing.addEventListener('load', resolve, { once: true });
-      existing.addEventListener('error', () => reject(new Error('[runtime] Monaco loader CDN script failed')), { once: true });
+      existing.addEventListener('error', () => reject(new Error('[runtime] Monaco loader local script failed')), { once: true });
       return;
     }
 
     const script = document.createElement('script');
     script.async = true;
     script.src = MONACO_LOADER_URL;
-    script.crossOrigin = 'anonymous';
     script.dataset.runtimeMonacoLoader = MONACO_LOADER_URL;
 
     script.addEventListener('load', () => {
@@ -48,7 +47,7 @@ function ensureMonacoLoaderScript() {
       resolve();
     }, { once: true });
 
-    script.addEventListener('error', () => reject(new Error('[runtime] Monaco loader CDN script failed')), { once: true });
+    script.addEventListener('error', () => reject(new Error('[runtime] Monaco loader local script failed')), { once: true });
 
     document.head.appendChild(script);
   });
@@ -90,7 +89,22 @@ export async function loadMonaco() {
     });
 
     window.MonacoEnvironment = {
-      getWorkerUrl: () => `${MONACO_BASE}/base/worker/workerMain.js`
+      getWorkerUrl: (_moduleId, label) => {
+        const workerMap = {
+          json: 'language/json/json.worker',
+          css: 'language/css/css.worker',
+          scss: 'language/css/css.worker',
+          less: 'language/css/css.worker',
+          html: 'language/html/html.worker',
+          handlebars: 'language/html/html.worker',
+          razor: 'language/html/html.worker',
+          typescript: 'language/typescript/ts.worker',
+          javascript: 'language/typescript/ts.worker'
+        };
+
+        const workerEntry = workerMap[label] ?? 'base/worker/workerMain';
+        return `${MONACO_BASE}/${workerEntry}.js`;
+      }
     };
 
     const resolvedMonaco = await requireMonaco();

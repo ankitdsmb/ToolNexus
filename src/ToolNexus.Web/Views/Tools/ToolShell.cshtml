@@ -47,6 +47,7 @@
 
 <article class="tool-shell-page tool-shell-page--workspace workspace-shell page-shell upgread_tool_shell_page"
          data-upgread="surface"
+         data-runtime-layout="modern"
          aria-label="Tool runtime page">
 
     @* SSR contract marker *@
@@ -62,6 +63,7 @@
                  data-upgread="surface"
                  data-tool-shell="true"
                  data-tool-root="true"
+                 data-runtime-density="balanced"
                  data-tool-slug="@Model.Tool.Slug"
                  aria-label="Interactive runtime"
                  data-execution-flow="input-action-result-reference">
@@ -108,6 +110,9 @@
 
                 <div class="tool-execution-panel__secondary-actions"
                      aria-label="Secondary execution actions">
+                    <button type="button" class="tool-btn tool-btn--ghost" data-tool-fullscreen-toggle="true" aria-pressed="false">
+                        Expand workspace
+                    </button>
                     <button type="button" disabled class="tool-btn tool-btn--ghost">
                         <span class="tn-skeleton-chip"></span>Command dock loading
                     </button>
@@ -146,6 +151,7 @@
 
     <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose control-recession shell-passive-mode upgread_tool_docs_rail"
            data-upgread="surface"
+           data-tool-docs="true"
            data-nosnippet="false"
            data-workspace-zone="context"
            aria-label="Tool documentation"
@@ -194,6 +200,22 @@
 
 @section Scripts {
     <script>
+        document.addEventListener('click', function (event) {
+            const toggle = event.target.closest?.('[data-tool-fullscreen-toggle="true"]');
+            if (!toggle) {
+                return;
+            }
+
+            const shell = document.querySelector('.tool-shell-page[data-runtime-layout="modern"]');
+            if (!shell) {
+                return;
+            }
+
+            const expanded = shell.classList.toggle('tool-shell-page--fullscreen');
+            toggle.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+            toggle.textContent = expanded ? 'Exit fullscreen' : 'Expand workspace';
+        });
+
         window.ToolNexusConfig = {
             apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
             toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
