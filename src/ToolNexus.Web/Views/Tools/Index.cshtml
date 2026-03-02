@@ -24,11 +24,15 @@
 }
 
 <article class="tools-index page-shell" data-reveal aria-label="Tool catalog">
-    <header class="u-stack">
-        <p class="tool-section__eyebrow">Tool discovery workspace</p>
-        <h1>All Tools</h1>
-        <p class="u-muted">Discover utilities by job-to-be-done, then launch instantly into the workflow panel.</p>
-        <p class="u-muted">Start with format, move to validate, then convert when your structure is stable and review-ready.</p>
+    <header class="u-stack upgread_index-hero" aria-labelledby="allToolsHeading">
+        <p class="tool-section__eyebrow upgread_index-hero__eyebrow">ToolNexus execution platform</p>
+        <h1 id="allToolsHeading">All Tools</h1>
+        <p class="u-muted upgread_index-hero__lead">Discover production-ready utilities by workflow, then launch directly into execution with no setup overhead.</p>
+        <div class="upgread_index-hero__meta" role="list" aria-label="Platform highlights">
+            <span role="listitem">Client-side processing</span>
+            <span role="listitem">No account required</span>
+            <span role="listitem">Fast deterministic outputs</span>
+        </div>
     </header>
 
     <section class="tools-index__toolbar" aria-label="Tool filters">
@@ -75,29 +79,40 @@
             </div>
         </section>
     }
-    <section class="static-page__section" aria-labelledby="chooseToolHeading">
-        <h2 id="chooseToolHeading">How to choose the right tool</h2>
-        <ol>
-            <li>Start with formatters when input is hard to read.</li>
-            <li>Run validators before converting or sharing output.</li>
-            <li>Use encoders and decoders only when transport protocols require them.</li>
-            <li>Compare old and new output with Text Diff before merge.</li>
-        </ol>
-    </section>
+    <section class="static-page__section upgread_docs-guide" aria-labelledby="docsGuideHeading">
+        <h2 id="docsGuideHeading">Discovery guide</h2>
+        <div class="upgread_docs-tabs" role="tablist" aria-label="Tool documentation sections">
+            <a class="upgread_dtab upgread_dtab--active" href="#chooseToolHeading" role="tab" aria-selected="true">Choose</a>
+            <a class="upgread_dtab" href="#workflowDiscoveryHeading" role="tab" aria-selected="false">Workflows</a>
+            <a class="upgread_dtab" href="#relatedCategoriesHeading" role="tab" aria-selected="false">Categories</a>
+        </div>
 
-    <section class="static-page__section" aria-labelledby="workflowDiscoveryHeading">
-        <h2 id="workflowDiscoveryHeading">Workflow-based discovery</h2>
-        <p>For API debugging, start with <a href="/tools/json-formatter">JSON Formatter</a>, then <a href="/tools/json-validator">JSON Validator</a>, then <a href="/tools/text-diff">Text Diff</a>.</p>
-        <p>For data interchange tasks, pair <a href="/tools/json-to-csv">JSON to CSV</a> with <a href="/tools/csv-to-json">CSV to JSON</a> so teams can move between systems without hand-editing raw values.</p>
-    </section>
+        <div class="upgread_docs-guide__grid">
+            <section class="upgread_docs-guide__panel" aria-labelledby="chooseToolHeading">
+                <h3 id="chooseToolHeading">How to choose the right tool</h3>
+                <ol>
+                    <li>Start with formatters when input is hard to read.</li>
+                    <li>Run validators before converting or sharing output.</li>
+                    <li>Use encoders and decoders only when transport protocols require them.</li>
+                    <li>Compare old and new output with Text Diff before merge.</li>
+                </ol>
+            </section>
 
-    <section class="static-page__section" aria-labelledby="relatedCategoriesHeading">
-        <h2 id="relatedCategoriesHeading">Related categories</h2>
-        <ul class="static-page__link-list">
-            @foreach (var category in Model.Categories.OrderBy(c => c))
-            {
-                <li><a href="/tools/@Uri.EscapeDataString(category)">@CultureInfo.CurrentCulture.TextInfo.ToTitleCase(category)</a></li>
-            }
-        </ul>
+            <section class="upgread_docs-guide__panel" aria-labelledby="workflowDiscoveryHeading">
+                <h3 id="workflowDiscoveryHeading">Workflow-based discovery</h3>
+                <p>For API debugging, start with <a href="/tools/json-formatter">JSON Formatter</a>, then <a href="/tools/json-validator">JSON Validator</a>, then <a href="/tools/text-diff">Text Diff</a>.</p>
+                <p>For data interchange tasks, pair <a href="/tools/json-to-csv">JSON to CSV</a> with <a href="/tools/csv-to-json">CSV to JSON</a> so teams can move between systems without hand-editing raw values.</p>
+            </section>
+
+            <section class="upgread_docs-guide__panel" aria-labelledby="relatedCategoriesHeading">
+                <h3 id="relatedCategoriesHeading">Related categories</h3>
+                <ul class="static-page__link-list upgread_docs-guide__links">
+                    @foreach (var category in Model.Categories.OrderBy(c => c))
+                    {
+                        <li><a href="/tools/@Uri.EscapeDataString(category)">@CultureInfo.CurrentCulture.TextInfo.ToTitleCase(category)</a></li>
+                    }
+                </ul>
+            </section>
+        </div>
     </section>
 </article>
