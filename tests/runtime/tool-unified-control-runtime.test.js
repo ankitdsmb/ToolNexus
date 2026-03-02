@@ -59,6 +59,34 @@ describe('tool unified control runtime', () => {
   });
 
 
+
+  test('supports fullscreen focus mode and window state transitions', () => {
+    const root = createContractHost();
+    const docsRail = document.createElement('aside');
+    docsRail.className = 'tool-docs';
+    root.querySelector('[data-tool-shell]').append(docsRail);
+
+    const control = createUnifiedToolControl({
+      root,
+      slug: 'json-formatter',
+      manifest: { title: 'JSON Formatter' }
+    });
+
+    control.setFullscreen(true);
+    expect(control.isFullscreenActive()).toBe(true);
+    expect(root.querySelector('[data-tool-shell]').classList.contains('runtime-fullscreen')).toBe(true);
+    expect(docsRail.classList.contains('runtime-docs-hidden')).toBe(true);
+
+    control.minimize();
+    expect(control.getWindowState()).toBe('minimized');
+
+    control.restore();
+    expect(control.getWindowState()).toBe('restored');
+
+    control.focus();
+    expect(control.getWindowState()).toBe('focused');
+  });
+
   test('classifies warning_partial and uncertain_result outcomes for adaptive runtime wording', () => {
     const root = createContractHost();
     const control = createUnifiedToolControl({

@@ -7,6 +7,8 @@ const DENSITY_CLASSES = Object.freeze([
   'editor-balance-active'
 ]);
 
+const TOOLBAR_COMPRESSION_HEIGHT_THRESHOLD_PX = 56;
+
 function toFinite(value, fallback = 0) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
@@ -58,7 +60,8 @@ function getToolbarMetrics(widget) {
   return {
     toolbar,
     toolbarButtonCount: toolbarButtons.length,
-    toolbarWidthUsage: widthUsage
+    toolbarWidthUsage: widthUsage,
+    toolbarHeightPx: heightOf(toolbar)
   };
 }
 
@@ -131,6 +134,7 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
   const metrics = {
     toolbarButtonCount: toolbarMetrics.toolbarButtonCount,
     toolbarWidthUsage: toolbarMetrics.toolbarWidthUsage,
+    toolbarHeightPx: toolbarMetrics.toolbarHeightPx,
     editorPanelCount,
     panelCount,
     verticalScrollPressure,
@@ -141,7 +145,9 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
   };
 
   const profile = determineDensityProfile(metrics);
-  const toolbarCompressed = metrics.toolbarButtonCount >= 6 || metrics.toolbarWidthUsage >= 0.9;
+  const toolbarCompressed = metrics.toolbarButtonCount >= 6
+    || metrics.toolbarWidthUsage >= 0.9
+    || metrics.toolbarHeightPx > TOOLBAR_COMPRESSION_HEIGHT_THRESHOLD_PX;
   const editorBalanceActive = profile === 'density-balanced' && metrics.editorPanelCount === 2;
 
   applyDensityClasses(widget, profile, {

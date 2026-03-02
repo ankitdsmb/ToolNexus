@@ -1,8 +1,8 @@
 import { loadMonaco, resetMonacoLoaderForTesting } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/monaco-loader.js';
 import { jest } from '@jest/globals';
 
-const MONACO_CDN_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs';
-const MONACO_LOADER_URL = `${MONACO_CDN_BASE}/loader.min.js`;
+const MONACO_BASE = '/lib/monaco/vs';
+const MONACO_LOADER_URL = `${MONACO_BASE}/loader.js`;
 
 describe('runtime monaco loader', () => {
   beforeEach(() => {
@@ -21,14 +21,14 @@ describe('runtime monaco loader', () => {
     jest.restoreAllMocks();
   });
 
-  test('injects CDN loader, configures AMD path, and returns monaco namespace', async () => {
+  test('injects local loader, configures AMD path, and returns monaco namespace', async () => {
     const monacoNamespace = { editor: { create: jest.fn() } };
     const requireFn = jest.fn((deps, callback) => callback(monacoNamespace));
     requireFn.config = jest.fn();
     requireFn.s = { contexts: { _: { config: { paths: {} } } } };
 
     const appendSpy = jest.spyOn(document.head, 'appendChild').mockImplementation((node) => {
-      if (node.tagName === 'SCRIPT' && node.src === MONACO_LOADER_URL) {
+      if (node.tagName === 'SCRIPT' && node.src.endsWith(MONACO_LOADER_URL)) {
         window.require = requireFn;
         queueMicrotask(() => node.dispatchEvent(new Event('load')));
       }
@@ -38,8 +38,8 @@ describe('runtime monaco loader', () => {
     const runtime = await loadMonaco();
 
     expect(appendSpy).toHaveBeenCalled();
-    expect(requireFn.config).toHaveBeenCalledWith({ paths: { vs: MONACO_CDN_BASE } });
-    expect(window.MonacoEnvironment.getWorkerUrl()).toBe(`${MONACO_CDN_BASE}/base/worker/workerMain.js`);
+    expect(requireFn.config).toHaveBeenCalledWith({ paths: { vs: MONACO_BASE } });
+    expect(window.MonacoEnvironment.getWorkerUrl()).toBe(`${MONACO_BASE}/base/worker/workerMain.js`);
     expect(runtime).toBe(monacoNamespace);
   });
 
@@ -51,7 +51,7 @@ describe('runtime monaco loader', () => {
     requireFn.s = { contexts: { _: { config: { paths: {} } } } };
 
     jest.spyOn(document.head, 'appendChild').mockImplementation((node) => {
-      if (node.tagName === 'SCRIPT' && node.src === MONACO_LOADER_URL) {
+      if (node.tagName === 'SCRIPT' && node.src.endsWith(MONACO_LOADER_URL)) {
         window.require = requireFn;
         queueMicrotask(() => node.dispatchEvent(new Event('load')));
       }
@@ -64,13 +64,12 @@ describe('runtime monaco loader', () => {
 
   test('throws when require exists but AMD context is invalid', async () => {
     const requireFn = jest.fn();
-    requireFn.config = jest.fn();
     requireFn.s = { contexts: {} };
 
     window.require = requireFn;
 
     jest.spyOn(document.head, 'appendChild').mockImplementation((node) => {
-      if (node.tagName === 'SCRIPT' && node.src === MONACO_LOADER_URL) {
+      if (node.tagName === 'SCRIPT' && node.src.endsWith(MONACO_LOADER_URL)) {
         queueMicrotask(() => node.dispatchEvent(new Event('load')));
       }
       return node;
