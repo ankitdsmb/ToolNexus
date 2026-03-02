@@ -1,4 +1,4 @@
-import { loadMonaco } from '/js/runtime/monaco-loader.js';
+import { initializeMonacoRuntime } from '/js/runtime/monaco-loader.js';
 import { JSON_FORMATTER_CONFIG } from './constants.js';
 
 export class JsonFormatterUi {

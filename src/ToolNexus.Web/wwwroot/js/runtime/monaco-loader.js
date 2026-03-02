@@ -243,6 +243,44 @@ export async function loadMonaco() {
   return monacoPromise;
 }
 
+export async function initializeMonacoRuntime(options = {}) {
+  const {
+    timeoutMs = 4000,
+    logPrefix = 'runtime'
+  } = options;
+
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new Error(`[${logPrefix}] Monaco load timeout (${timeoutMs}ms)`));
+    }, timeoutMs);
+  });
+
+  try {
+    const monaco = await Promise.race([loadMonaco(), timeoutPromise]);
+    const ready = Boolean(monaco?.editor && typeof monaco.editor.create === 'function');
+
+    return {
+      monaco: ready ? monaco : null,
+      ready,
+      mode: ready ? 'monaco' : 'fallback'
+    };
+  } catch (error) {
+    console.error(`[${logPrefix}] Monaco load failed`, error);
+    return {
+      monaco: null,
+      ready: false,
+      mode: 'fallback',
+      error
+    };
+  } finally {
+    if (typeof timeoutId === 'number') {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 export function resetMonacoLoaderForTesting() {
   monacoPromise = null;
   window[MONACO_SINGLETON_KEY] = null;
@@ -251,5 +289,6 @@ export function resetMonacoLoaderForTesting() {
 
 window.ToolNexusRuntimeServices ??= {};
 window.ToolNexusRuntimeServices.monacoLoader = {
-  load: loadMonaco
+  load: loadMonaco,
+  initialize: initializeMonacoRuntime
 };
