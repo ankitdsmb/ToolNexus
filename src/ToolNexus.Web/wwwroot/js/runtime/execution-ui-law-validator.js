@@ -65,6 +65,12 @@ function collectCssRuleViolations(violations) {
   if (!globalThis.document?.styleSheets) return;
 
   for (const styleSheet of document.styleSheets) {
+    const ownerNode = styleSheet.ownerNode;
+    const isToolOwnedStylesheet = ownerNode?.matches?.('link[data-tool-css], style[data-tool-css], style[data-tool-style-scope="tool"]');
+    if (!isToolOwnedStylesheet) {
+      continue;
+    }
+
     let rules = [];
     try {
       rules = styleSheet.cssRules ?? [];
