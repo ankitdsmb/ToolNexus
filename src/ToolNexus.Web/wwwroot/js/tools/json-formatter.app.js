@@ -1,4 +1,4 @@
-import { initializeMonacoRuntime } from '/js/runtime/monaco-loader.js';
+import { loadMonaco } from '/js/runtime/monaco-loader.js';
 import { FORMAT_MODE, runJsonFormatter } from './json-formatter.api.js';
 import { JSON_FORMATTER_CONFIG } from './json-formatter/constants.js';
 import { formatCountSummary } from './json-formatter/utils.js';
@@ -188,13 +188,12 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
-        const runtime = await initializeMonacoRuntime({
-          timeoutMs: 4000,
-          logPrefix: 'json-formatter'
-        });
-        state.monaco = runtime.monaco;
+        state.monaco = await loadMonaco();
 
-        const monacoLoaded = runtime.ready;
+        const monacoLoaded = Boolean(
+          state.monaco?.editor
+          && typeof state.monaco.editor.create === 'function'
+        );
 
         if (monacoLoaded) {
           buildMonacoEditors();

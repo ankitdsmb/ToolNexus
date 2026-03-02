@@ -27,13 +27,9 @@ export class JsonFormatterUi {
   }
 
   async initEditors() {
-    const runtime = await initializeMonacoRuntime({
-      timeoutMs: 4000,
-      logPrefix: 'json-formatter'
-    });
-    this.monaco = runtime.monaco;
+    this.monaco = await loadMonaco();
 
-    if (!runtime.ready) {
+    if (!this.monaco?.editor) {
       console.warn('[json-formatter] Monaco unavailable → fallback editor');
       return false;
     }
