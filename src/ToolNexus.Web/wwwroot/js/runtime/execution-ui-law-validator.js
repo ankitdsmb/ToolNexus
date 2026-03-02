@@ -1,13 +1,13 @@
 import { EXECUTION_UI_IMMUNITY, scoreFromViolations, severityForRule } from './execution-ui-immunity-constants.js';
 
 const DEFAULT_THRESHOLDS = Object.freeze({
-  toolbarMinHeightPx: 36,
-  toolbarMaxHeightPx: 72,
+  toolbarMinHeightPx: 40,
+  toolbarMaxHeightPx: 88,
   editorMinHeightPx: 240,
   editorMaxHeightPx: 720,
   editorHeightDeltaMaxPx: 40,
-  minGapPx: 4,
-  maxGapPx: 20
+  minGapPx: 12,
+  maxGapPx: 16
 });
 
 function px(value) {

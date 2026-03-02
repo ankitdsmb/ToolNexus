@@ -79,12 +79,13 @@ function determineDensityProfile(metrics) {
   const isPipeline = metrics.pipelineDetected;
   const isMultiPanel = metrics.panelCount >= 3 || metrics.editorPanelCount >= 3;
   const isDualEditorWorkspace = metrics.editorPanelCount === 2;
+  const modernWorkspace = metrics.modernWorkspace;
 
   if (isPipeline || isMultiPanel) {
     return 'density-relaxed';
   }
 
-  if (isDualEditorWorkspace) {
+  if (isDualEditorWorkspace || modernWorkspace) {
     return 'density-balanced';
   }
 
@@ -134,7 +135,9 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
     panelCount,
     verticalScrollPressure,
     widgetHeightRatio: widgetHeight / shellHeight,
-    pipelineDetected: hasPipelineWidget(widget)
+    pipelineDetected: hasPipelineWidget(widget),
+    modernWorkspace: shell.matches?.('.tool-shell-page--workspace, [data-runtime-layout="modern"]')
+      || widget.matches?.('[data-runtime-density="balanced"]')
   };
 
   const profile = determineDensityProfile(metrics);

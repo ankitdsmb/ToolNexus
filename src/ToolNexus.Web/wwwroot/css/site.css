@@ -1593,12 +1593,12 @@ RESPONSIVE
 /* Platform feel layer */
 .workspace-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+  grid-template-columns: minmax(0, 1.86fr) minmax(320px, 1fr);
   column-gap: var(--runtime-context-gap);
   row-gap: var(--subsection-gap);
   padding-block: var(--subsection-gap);
   align-items: start;
-  max-width: var(--container-max);
+  max-width: min(var(--container-max), 1280px);
   margin-inline: auto;
   padding-inline: clamp(0px, 0.5vw, var(--internal-gap));
 }

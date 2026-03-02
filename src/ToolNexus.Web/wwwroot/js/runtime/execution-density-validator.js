@@ -1,18 +1,20 @@
 const DENSITY_TELEMETRY_CATEGORY = 'density_drift';
 
 const DEFAULT_THRESHOLDS = Object.freeze({
-  compactGapMinPx: 6,
-  compactGapMaxPx: 18,
+  compactGapMinPx: 12,
+  compactGapMaxPx: 16,
   nestedSurfaceDepthMax: 2,
   toolbarEditorDistanceMaxPx: 24,
   dualEditorHeightDeltaMaxPx: 8,
   shellPaddingMaxPx: 20,
   statusZoneHeightMaxPx: 48,
-  headerViewportMaxRatio: 0.15
+  headerViewportMaxRatio: 0.15,
+  runtimeToDocsMinRatio: 1.7,
+  runtimeToDocsMaxRatio: 2.1
 });
 
 const RULES = Object.freeze({
-  D1: { severity: 'medium', weight: 6, message: 'Section spacing must remain compact (6-18px).' },
+  D1: { severity: 'medium', weight: 6, message: 'Section spacing must remain balanced (12-16px).' },
   D2: { severity: 'high', weight: 14, message: 'Nested surfaces exceed allowed depth (max 2).' },
   D3: { severity: 'high', weight: 10, message: 'Toolbar must remain near editor (<=24px).' },
   D4: { severity: 'high', weight: 12, message: 'Dual editor heights are imbalanced (>8px delta).' },
@@ -21,7 +23,8 @@ const RULES = Object.freeze({
   D7: { severity: 'medium', weight: 7, message: 'Status zone height exceeds 48px.' },
   D8: { severity: 'medium', weight: 6, message: 'Documentation must stay visually secondary.' },
   D9: { severity: 'high', weight: 10, message: 'Header must remain <=15% of viewport height.' },
-  D10: { severity: 'critical', weight: 12, message: 'Density scoring must remain deterministic.' }
+  D10: { severity: 'critical', weight: 12, message: 'Density scoring must remain deterministic.' },
+  D11: { severity: 'high', weight: 10, message: 'Workspace/docs shell ratio must stay near 65/35.' }
 });
 
 function toPx(value) {
@@ -130,6 +133,8 @@ export function validateExecutionDensity(root, options = {}) {
   const statusZone = shell?.querySelector?.('[data-tool-status]') ?? scope.querySelector?.('[data-tool-status]');
   const docs = shell?.querySelector?.('[data-tool-docs], .tool-docs, .runtime-doc-disclosure') ?? scope.querySelector?.('[data-tool-docs], .tool-docs, .runtime-doc-disclosure');
   const header = shell?.querySelector?.('[data-tool-header], .tool-header, .tool-shell-header') ?? scope.querySelector?.('[data-tool-header], .tool-header, .tool-shell-header');
+  const runtimeZone = scope.querySelector?.('.workspace-shell__runtime-zone, .tool-shell-page__workspace');
+  const docsZone = scope.querySelector?.('.workspace-shell__context-rail, .tool-shell-page__docs');
 
   const sectionGapsPx = computeSectionGaps(widget);
   const toolbarEditorDistancePx = maxFinite([
@@ -158,6 +163,11 @@ export function validateExecutionDensity(root, options = {}) {
     toPx(styleOf(editors[0])?.opacity || editors[0]?.style?.opacity)
   ]);
   const headerHeightPx = elementHeight(header);
+  const runtimeWidthPx = widthOf(runtimeZone);
+  const docsWidthPx = widthOf(docsZone);
+  const runtimeToDocsRatio = Number.isFinite(runtimeWidthPx) && Number.isFinite(docsWidthPx) && docsWidthPx > 0
+    ? runtimeWidthPx / docsWidthPx
+    : Number.NaN;
   const viewportHeight = Math.max(Number(globalThis.innerHeight ?? 0), 1);
   const headerViewportRatio = Number.isFinite(headerHeightPx) ? headerHeightPx / viewportHeight : Number.NaN;
   const primaryActionCount = scope.querySelectorAll('.tool-btn--primary').length;
@@ -198,6 +208,11 @@ export function validateExecutionDensity(root, options = {}) {
     addViolation(violations, 'D9', `Header uses ${(headerViewportRatio * 100).toFixed(2)}% of viewport; max ${(thresholds.headerViewportMaxRatio * 100).toFixed(2)}%.`, { headerHeightPx, viewportHeight, headerViewportRatio });
   }
 
+  if (Number.isFinite(runtimeToDocsRatio)
+    && (runtimeToDocsRatio < thresholds.runtimeToDocsMinRatio || runtimeToDocsRatio > thresholds.runtimeToDocsMaxRatio)) {
+    addViolation(violations, 'D11', `Runtime/docs ratio ${runtimeToDocsRatio.toFixed(2)} outside ${thresholds.runtimeToDocsMinRatio.toFixed(2)}-${thresholds.runtimeToDocsMaxRatio.toFixed(2)}.`, { runtimeWidthPx, docsWidthPx, runtimeToDocsRatio });
+  }
+
   const sortedViolations = violations.slice().sort((a, b) => a.ruleId.localeCompare(b.ruleId));
   const totalPenalty = sortedViolations.reduce((sum, violation) => sum + violation.weight, 0);
   const deterministicPenalty = sortedViolations.reduce((sum, violation) => sum + RULES[violation.ruleId].weight, 0);
@@ -225,6 +240,9 @@ export function validateExecutionDensity(root, options = {}) {
       docsOpacity,
       runtimeEmphasisOpacity,
       headerHeightPx,
+      runtimeWidthPx,
+      docsWidthPx,
+      runtimeToDocsRatio,
       viewportHeight,
       headerViewportRatio,
       primaryActionCount
@@ -233,20 +251,39 @@ export function validateExecutionDensity(root, options = {}) {
   };
 }
 
+function widthOf(el) {
+  if (!el) return Number.NaN;
+  const computed = styleOf(el);
+  const fromComputed = toPx(computed?.width);
+  if (Number.isFinite(fromComputed) && fromComputed > 0) return fromComputed;
+  const rectWidth = Number(el.getBoundingClientRect?.().width ?? Number.NaN);
+  return Number.isFinite(rectWidth) && rectWidth > 0 ? rectWidth : Number.NaN;
+}
+
 export async function writeExecutionDensityReport(report, filePath = 'reports/execution-density-report.json') {
   if (!report || typeof report !== 'object') {
     return false;
   }
 
   try {
-    const [{ mkdir, writeFile }, pathModule] = await Promise.all([
-      import('node:fs/promises'),
-      import('node:path')
-    ]);
+    const payload = `${JSON.stringify(report, null, 2)}\n`;
+    const storageKey = `toolnexus:${filePath}`;
 
-    const target = pathModule.resolve(process.cwd(), filePath);
-    await mkdir(pathModule.dirname(target), { recursive: true });
-    await writeFile(target, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    if (globalThis.localStorage) {
+      globalThis.localStorage.setItem(storageKey, payload);
+      return true;
+    }
+
+    if (globalThis.sessionStorage) {
+      globalThis.sessionStorage.setItem(storageKey, payload);
+      return true;
+    }
+
+    if (globalThis.console?.info) {
+      globalThis.console.info('[runtime] density report generated', { filePath, report });
+      return true;
+    }
+
     return true;
   } catch {
     return false;
