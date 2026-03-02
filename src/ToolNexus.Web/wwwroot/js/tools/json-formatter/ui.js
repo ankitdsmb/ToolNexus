@@ -1,4 +1,4 @@
-import { loadMonaco } from '/js/runtime/monaco-loader.js';
+import { initializeMonacoRuntime } from '/js/runtime/monaco-loader.js';
 import { JSON_FORMATTER_CONFIG } from './constants.js';
 
 export class JsonFormatterUi {
@@ -27,17 +27,13 @@ export class JsonFormatterUi {
   }
 
   async initEditors() {
-    let monaco = null;
+    const runtime = await initializeMonacoRuntime({
+      timeoutMs: 4000,
+      logPrefix: 'json-formatter'
+    });
+    this.monaco = runtime.monaco;
 
-    try {
-      monaco = await loadMonaco();
-    } catch (error) {
-      console.error('[json-formatter] Monaco load failed', error);
-    }
-
-    this.monaco = monaco;
-
-    if (!monaco?.editor) {
+    if (!runtime.ready) {
       console.warn('[json-formatter] Monaco unavailable → fallback editor');
       return false;
     }
