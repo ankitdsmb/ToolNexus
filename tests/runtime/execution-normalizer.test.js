@@ -88,13 +88,10 @@ describe('execution normalizer runtime safety', () => {
       });
 
       await normalized.create();
-      await normalized.init();
+      await expect(normalized.init()).rejects.toThrow('context-first signature unsupported');
 
       const retryEvent = emitted.find((entry) => entry.event === 'runtime_lifecycle_retry');
-      expect(retryEvent).toBeDefined();
-      expect(retryEvent.payload.toolSlug).toBe('retry-observability');
-      expect(retryEvent.payload.metadata.originalError).toContain('context-first signature unsupported');
-      expect(retryEvent.payload.metadata.retryStrategy).toBe('root-first');
+      expect(retryEvent).toBeUndefined();
     } finally {
       runtimeObserver.emit = originalEmit;
     }

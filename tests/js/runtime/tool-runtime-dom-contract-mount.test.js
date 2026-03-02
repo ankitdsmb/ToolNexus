@@ -1,18 +1,9 @@
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 import { validateToolDom } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
+import { createCanonicalToolShellMarkup } from '../../runtime/helpers/createCanonicalToolShell.js';
 
 function createShellMarkup() {
-  return `
-    <section data-tool-shell="true">
-      <header data-tool-context="true"></header>
-      <section data-tool-input="true"></section>
-      <section>
-        <div data-tool-status="true"></div>
-        <section data-tool-output="true"></section>
-      </section>
-      <footer data-tool-followup="true"></footer>
-    </section>
-  `;
+  return createCanonicalToolShellMarkup();
 }
 
 describe('runtime DOM contract mount order', () => {
