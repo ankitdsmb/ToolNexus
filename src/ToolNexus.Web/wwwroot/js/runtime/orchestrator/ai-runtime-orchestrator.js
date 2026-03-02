@@ -117,8 +117,8 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     }
   }
 
-  console.info('EXECUTION VISUAL BRAIN ACTIVE\n');
-  console.info('ADAPTIVE EXECUTION FLOW ACTIVE\n');
+  console.info('Runtime visual state monitor initialized.\n');
+  console.info('Runtime execution flow controller initialized.\n');
 
   return {
     mode,
