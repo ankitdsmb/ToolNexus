@@ -50,7 +50,23 @@ export function inspectLifecycleContract(module) {
 async function mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities }) {
   const normalized = normalizeToolExecution(module, capabilities, { slug, root, context });
   await normalized.create();
-  await normalized.init();
+
+  try {
+    await normalized.init();
+  } catch (error) {
+    try {
+      await normalized.destroy();
+    } catch (destroyError) {
+      console.error(`[RuntimeLifecycle] Destroy rollback failed for "${slug}" after init failure.`, destroyError);
+    }
+
+    const lifecycleError = new Error(`[RuntimeLifecycle] init() failed for "${slug}": ${error?.message ?? String(error)}`);
+    lifecycleError.code = 'TOOL_INIT_FAILED';
+    lifecycleError.stage = 'init';
+    lifecycleError.slug = slug;
+    lifecycleError.cause = error;
+    throw lifecycleError;
+  }
 
   const normalizedMode = normalized.metadata.mode === 'modern.lifecycle'
     ? 'module.lifecycle-contract'
@@ -63,7 +79,8 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
     cleanup: normalized.destroy,
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,
-    autoDestroyGenerated: normalized.metadata.autoDestroyGenerated
+    autoDestroyGenerated: normalized.metadata.autoDestroyGenerated,
+    trace: [...(normalized.metadata.lifecycleStages ?? [])]
   });
 
   guardInvalidLifecycleResult(lifecycleResult, {
@@ -77,7 +94,17 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
 
 export async function mountToolLifecycle({ module, slug, root, manifest, context, capabilities }) {
   const logger = createRuntimeMigrationLogger({ channel: 'lifecycle' });
-  const normalizedResult = await mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities });
+  let normalizedResult;
+  try {
+    normalizedResult = await mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities });
+  } catch (error) {
+    logger.error(`Failed normalized lifecycle for "${slug}" at stage "${error?.stage ?? 'unknown'}".`, {
+      code: error?.code,
+      message: error?.message ?? String(error),
+      cause: error?.cause?.message
+    });
+    throw error;
+  }
 
   if (normalizedResult.mode === 'none') {
     logger.error(`No lifecycle contract found for "${slug}".`);

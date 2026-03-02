@@ -167,6 +167,21 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
   let instance = null;
   const __runtimeLifecycleAudit = [];
 
+  function recordStage(stage, status, metadata = {}) {
+    const entry = {
+      slug,
+      mode,
+      stage,
+      status,
+      timestamp: new Date().toISOString(),
+      ...metadata
+    };
+
+    __runtimeLifecycleAudit.push(entry);
+    logger.debug('[LifecycleStage]', entry);
+    return entry;
+  }
+
   function auditLifecycleCall(toolSlug, phase, payload, lifecycleMode) {
     const lifecycleRoot = payload?.root || payload?.toolRoot || payload;
     const signatureValid = Boolean(payload && typeof payload === 'object'
@@ -191,6 +206,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
   }
 
   async function create() {
+    recordStage('create', 'start');
     if (typeof target?.create === 'function') {
       logger.debug('Invoking normalized create lifecycle.', { slug, mode });
       instance = await target.create(root, context?.manifest, context);
@@ -198,10 +214,13 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
       instance = { root, context };
     }
 
+    recordStage('create', 'success', { hasInstance: Boolean(instance) });
+
     return instance;
   }
 
   async function init(lifecycleContextOverride) {
+    recordStage('init', 'start');
     if (capability?.needsDOMReady) {
       await safeInitScheduler();
     }
@@ -245,7 +264,9 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
         }
 
         if (initSignatureMode !== 'ADAPTIVE') {
-          return await target.init(safeLifecycleContext);
+          const strictResult = await target.init(safeLifecycleContext);
+          recordStage('init', 'success', { signatureMode: initSignatureMode });
+          return strictResult;
         }
 
         const adaptiveInitAttempts = [
@@ -282,6 +303,11 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
               attemptIndex: index + 1,
               successfulSignature: attempt.signature
             });
+            recordStage('init', 'success', {
+              signatureMode: 'ADAPTIVE',
+              attemptIndex: index + 1,
+              successfulSignature: attempt.signature
+            });
             return result;
           } catch (error) {
             adaptiveErrors.push({
@@ -292,28 +318,39 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           }
         }
 
-        throw createLifecycleSignatureError(slug, {
+        const adaptiveError = createLifecycleSignatureError(slug, {
           reason: 'adaptive init attempts failed',
           attempts: adaptiveErrors
         });
+        recordStage('init', 'failed', {
+          reason: adaptiveError?.message,
+          signatureMode: 'ADAPTIVE'
+        });
+        throw adaptiveError;
       });
     }
 
     if (typeof target?.runTool === 'function' && mode !== 'legacy.runTool.execution-only') {
       logger.debug('Invoking normalized runTool lifecycle.', { slug, mode });
-      return withDomTracking(root, context, () => target.runTool(root, context?.manifest, context));
+      const runToolResult = withDomTracking(root, context, () => target.runTool(root, context?.manifest, context));
+      recordStage('init', 'success', { signatureMode: 'runTool' });
+      return runToolResult;
     }
+
+    recordStage('init', 'success', { signatureMode: 'none' });
 
     return undefined;
   }
 
   async function destroy() {
+    recordStage('destroy', 'start');
     if (typeof target?.destroy === 'function') {
       logger.debug('Invoking normalized destroy lifecycle.', { slug, mode });
       await target.destroy(instance ?? context, root, context?.manifest, context);
     }
 
     await context?.destroy?.();
+    recordStage('destroy', 'success');
   }
 
   const normalized = {
@@ -323,7 +360,8 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     metadata: {
       mode,
       autoDestroyGenerated: !hasDestroy,
-      normalized: true
+      normalized: true,
+      lifecycleStages: __runtimeLifecycleAudit
     }
   };
 
@@ -338,7 +376,12 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     };
 
     auditLifecycleCall(slug, 'init', safeLifecycleContext, mode);
-    return originalInit(safeLifecycleContext);
+    try {
+      return await originalInit(safeLifecycleContext);
+    } catch (error) {
+      recordStage('init', 'failed', { reason: error?.message ?? String(error) });
+      throw error;
+    }
   };
 
   window.ToolNexusLifecycleAudit = () => {
