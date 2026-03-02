@@ -2,20 +2,20 @@
 
 .json-formatter-page {
   display: grid;
-  gap: 11px;
-  padding: 11px;
+  gap: 8px;
+  padding: 8px;
 }
 
   .json-formatter-page .json-formatter-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 11px;
+    gap: 8px;
     flex-wrap: wrap;
   }
 
   .json-formatter-page .json-formatter-description {
-    margin: 2px 0 0;
+    margin: 1px 0 0;
     color: var(--text-secondary);
     font-size: 11px;
     line-height: 1.5;
@@ -37,10 +37,10 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 5px 7px;
-    padding: 6px 10px;
+    gap: 4px 6px;
+    padding: 4px 8px;
     border: 1px solid color-mix(in srgb, var(--border-default) 70%, transparent);
-    border-radius: 7px;
+    border-radius: 6px;
     background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
   }
 
@@ -48,7 +48,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 
     .json-formatter-page .json-toolbar-row:first-child .tool-btn--primary {
@@ -73,20 +73,21 @@
     font-size: 11px;
   }
 
-  .json-formatter-page .json-workspace {
+.json-formatter-page .json-workspace {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0;
     border: 1px solid color-mix(in srgb, var(--border-default) 75%, transparent);
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
+    margin-top: -1px;
     overflow: clip;
   }
 
   .json-formatter-page .json-panel {
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    padding: 10px;
+    gap: 5px;
+    padding: 8px;
     background: transparent;
   }
 
@@ -95,7 +96,7 @@
   }
 
   .json-formatter-page .panel-header {
-    margin-bottom: 2px;
+    margin-bottom: 0;
   }
 
     .json-formatter-page .panel-header h2 {
@@ -112,7 +113,7 @@
 
   .json-formatter-page .editor-surface {
     flex: 1;
-    min-height: 380px;
+    min-height: 440px;
     border: 0;
     border-radius: 5px;
     background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
@@ -122,7 +123,7 @@
   .json-formatter-page .tool-metrics-compact-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 5px;
+    gap: 4px;
   }
 
     .json-formatter-page .tool-metrics-compact-grid p {
@@ -197,7 +198,7 @@
   }
 
   .json-formatter-page .editor-surface {
-    min-height: 280px;
+    min-height: 320px;
   }
 }
 
@@ -208,12 +209,12 @@
   }
 
     .json-formatter-page .json-toolbar {
-      padding: 5px 8px;
+      padding: 4px 7px;
       gap: 4px;
     }
 
     .json-formatter-page .editor-surface {
-      min-height: 210px;
+      min-height: 240px;
     }
 
     .json-formatter-page .tool-metrics-compact-grid {
