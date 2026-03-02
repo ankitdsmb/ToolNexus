@@ -730,11 +730,6 @@ function updateActionButtons() {
 function setInputEditorValue(value) {
   const inputEditor = document.getElementById('inputEditor');
   if (inputEditor) inputEditor.value = value;
-
-  if (window.monaco?.editor?.getModels) {
-    const [inputModel] = window.monaco.editor.getModels();
-    inputModel?.setValue(value);
-  }
 }
 
 function nextFrame() {
@@ -841,5 +836,4 @@ export function destroy(context) {
   if (!root) return;
   getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
-
 

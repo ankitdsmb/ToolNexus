@@ -27,12 +27,15 @@ export class JsonFormatterUi {
   }
 
   async initEditors() {
-    this.monaco = await loadMonaco();
+    const monacoRuntime = await initializeMonacoRuntime({
+      logPrefix: 'json-formatter-ui'
+    });
 
-    if (!this.monaco?.editor) {
-      console.warn('[json-formatter] Monaco unavailable → fallback editor');
-      return false;
+    if (!monacoRuntime.ready || !monacoRuntime.monaco?.editor) {
+      throw monacoRuntime.error ?? new Error('[json-formatter] Monaco runtime contract unavailable');
     }
+
+    this.monaco = monacoRuntime.monaco;
 
     this.inputModel = this.monaco.editor.createModel(window.ToolNexusConfig?.jsonExampleInput ?? '', 'json');
     this.outputModel = this.monaco.editor.createModel('', 'json');

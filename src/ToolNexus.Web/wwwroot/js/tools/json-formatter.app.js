@@ -1,4 +1,4 @@
-import { loadMonaco } from '/js/runtime/monaco-loader.js';
+import { initializeMonacoRuntime } from '/js/runtime/monaco-loader.js';
 import { FORMAT_MODE, runJsonFormatter } from './json-formatter.api.js';
 import { JSON_FORMATTER_CONFIG } from './json-formatter/constants.js';
 import { formatCountSummary } from './json-formatter/utils.js';
@@ -31,29 +31,6 @@ export function createJsonFormatterApp(root) {
     state.disposers.push(() => el?.removeEventListener(ev, fn));
   };
 
-  const createFallbackEditor = (host, { readOnly = false } = {}) => {
-    const existing = host?.querySelector(':scope > .json-formatter-fallback-editor');
-    const textarea = existing ?? document.createElement('textarea');
-
-    textarea.className = 'json-formatter-fallback-editor';
-    textarea.readOnly = readOnly;
-    textarea.spellcheck = false;
-
-    if (!existing) host.appendChild(textarea);
-
-    return {
-      getValue: () => textarea.value,
-      setValue: v => (textarea.value = v ?? ''),
-      revealLine: () => { },
-      updateOptions: () => { },
-      onDidChangeContent: h => {
-        textarea.addEventListener('input', h);
-        return { dispose: () => textarea.removeEventListener('input', h) };
-      },
-      dispose: () => { }
-    };
-  };
-
   const updateButtons = () => {
     const hasInput = state.inputModel.getValue().trim().length > 0;
     const hasOutput = state.outputModel.getValue().trim().length > 0;
@@ -74,17 +51,15 @@ export function createJsonFormatterApp(root) {
         startColumn: location.column,
         endColumn: location.column + 1,
         message,
-        severity: state.monaco?.MarkerSeverity?.Error
+        severity: state.monaco.MarkerSeverity.Error
       }]
       : [];
 
-    if (state.monaco?.editor && state.inputModel) {
-      state.monaco.editor.setModelMarkers(
-        state.inputModel,
-        JSON_FORMATTER_CONFIG.markerOwner,
-        markers
-      );
-    }
+    state.monaco.editor.setModelMarkers(
+      state.inputModel,
+      JSON_FORMATTER_CONFIG.markerOwner,
+      markers
+    );
   };
 
   const updateStats = () => {
@@ -146,13 +121,6 @@ export function createJsonFormatterApp(root) {
           return;
         }
 
-        const buildFallbackEditors = () => {
-          state.inputEditor = createFallbackEditor(dom.jsonEditor);
-          state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
-          state.inputModel = state.inputEditor;
-          state.outputModel = state.outputEditor;
-        };
-
         const buildMonacoEditors = () => {
           console.debug('[json-formatter] Monaco createModel(input) start');
           state.inputModel = state.monaco.editor.createModel(
@@ -188,23 +156,17 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
-        state.monaco = await loadMonaco();
+        const monacoRuntime = await initializeMonacoRuntime({
+          logPrefix: 'json-formatter-runtime'
+        });
 
-        const monacoLoaded = Boolean(
-          state.monaco?.editor
-          && typeof state.monaco.editor.create === 'function'
-        );
-
-        if (monacoLoaded) {
-          buildMonacoEditors();
-          console.info('[json-formatter] Monaco editor initialized');
-        } else {
-          console.warn('[json-formatter] Monaco unavailable → fallback editor');
+        if (!monacoRuntime.ready || !monacoRuntime.monaco?.editor) {
+          throw monacoRuntime.error ?? new Error('[json-formatter] Monaco runtime contract unavailable');
         }
 
-        if (!monacoLoaded) {
-          buildFallbackEditors();
-        }
+        state.monaco = monacoRuntime.monaco;
+        buildMonacoEditors();
+        console.info('[json-formatter] Monaco editor initialized');
 
         const onInputChanged = () => updateStats();
 
@@ -231,13 +193,7 @@ export function createJsonFormatterApp(root) {
           e?.stack
         );
 
-        if (!state.inputModel || !state.outputModel) {
-          state.inputEditor = createFallbackEditor(dom.jsonEditor);
-          state.outputEditor = createFallbackEditor(dom.outputEditor, { readOnly: true });
-          state.inputModel = state.inputEditor;
-          state.outputModel = state.outputEditor;
-          updateStats();
-        }
+        throw e;
       }
     },
 
