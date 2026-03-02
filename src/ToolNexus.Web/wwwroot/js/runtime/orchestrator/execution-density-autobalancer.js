@@ -8,6 +8,7 @@ const DENSITY_CLASSES = Object.freeze([
 ]);
 
 const TOOLBAR_COMPRESSION_HEIGHT_THRESHOLD_PX = 56;
+const LAYOUT_CLASSES = Object.freeze(['density-tight', 'density-balanced', 'density-relaxed']);
 
 function toFinite(value, fallback = 0) {
   const numeric = Number(value);
@@ -95,6 +96,22 @@ function determineDensityProfile(metrics) {
   return 'density-tight';
 }
 
+function resolveRuntimeNodes(root) {
+  const scope = root ?? document;
+  const shell = scope?.matches?.('[data-tool-shell]') ? scope : scope?.querySelector?.('[data-tool-shell]');
+  const contentHost = shell?.querySelector?.('[data-tool-content-host]');
+  const widget = contentHost?.querySelector?.('.tool-runtime-widget')
+    ?? shell?.querySelector?.('.tool-runtime-widget')
+    ?? scope?.querySelector?.('.tool-runtime-widget');
+
+  return { scope, shell, widget };
+}
+
+function hasOwnedLayoutClass(widget) {
+  if (!widget?.classList) return false;
+  return LAYOUT_CLASSES.some((name) => widget.classList.contains(name)) && !widget.classList.contains('density-autobalanced');
+}
+
 function applyDensityClasses(widget, profile, options = {}) {
   DENSITY_CLASSES.forEach((name) => widget.classList.remove(name));
   widget.classList.add('density-autobalanced', profile);
@@ -109,8 +126,7 @@ function applyDensityClasses(widget, profile, options = {}) {
 }
 
 export function applyExecutionDensityAutobalancer(root, options = {}) {
-  const shell = root?.matches?.('[data-tool-shell]') ? root : root?.querySelector?.('[data-tool-shell]');
-  const widget = shell?.querySelector?.('.tool-runtime-widget');
+  const { shell, widget } = resolveRuntimeNodes(root);
 
   if (!widget || !shell.contains(widget)) {
     return {
@@ -119,6 +135,17 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
       profile: null,
       metrics: null,
       classes: []
+    };
+  }
+
+  if (hasOwnedLayoutClass(widget)) {
+    return {
+      applied: false,
+      reason: 'layout_owned_by_tool',
+      profile: null,
+      metrics: null,
+      classes: Array.from(widget.classList),
+      widget
     };
   }
 

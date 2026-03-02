@@ -89,6 +89,28 @@ test('applies density-balanced and editor balancing for dual editor workspace', 
     ]));
   });
 
+
+
+  test('observes and does not override tool-owned density layout classes', () => {
+    const root = mountRuntime(`
+      <section data-tool-shell>
+        <div data-tool-content-host>
+          <div class="tool-runtime-widget density-relaxed" style="height: 420px;">
+            <textarea style="height: 180px;"></textarea>
+          </div>
+        </div>
+      </section>
+    `);
+
+    const result = applyExecutionDensityAutobalancer(root);
+    const widget = root.querySelector('.tool-runtime-widget');
+
+    expect(result.applied).toBe(false);
+    expect(result.reason).toBe('layout_owned_by_tool');
+    expect(widget.classList.contains('density-relaxed')).toBe(true);
+    expect(widget.classList.contains('density-autobalanced')).toBe(false);
+  });
+
   test('applies density-relaxed + toolbar compression for multi-panel pipeline and preserves shell contract', () => {
     const root = mountRuntime(`
       <section data-tool-shell>

@@ -18,12 +18,12 @@ const RULES = Object.freeze({
   D2: { severity: 'high', weight: 14, message: 'Nested surfaces exceed allowed depth (max 2).' },
   D3: { severity: 'high', weight: 10, message: 'Toolbar must remain near editor (<=24px).' },
   D4: { severity: 'high', weight: 12, message: 'Dual editor heights are imbalanced (>8px delta).' },
-  D5: { severity: 'critical', weight: 15, message: 'Exactly one .tool-btn--primary is required.' },
+  D5: { severity: 'high', weight: 15, message: 'Primary action hierarchy must remain unambiguous.' },
   D6: { severity: 'medium', weight: 8, message: 'Shell runtime content padding exceeds 20px.' },
   D7: { severity: 'medium', weight: 7, message: 'Status zone height exceeds 48px.' },
   D8: { severity: 'medium', weight: 6, message: 'Documentation must stay visually secondary.' },
   D9: { severity: 'high', weight: 10, message: 'Header must remain <=15% of viewport height.' },
-  D10: { severity: 'critical', weight: 12, message: 'Density scoring must remain deterministic.' },
+  D10: { severity: 'high', weight: 12, message: 'Density scoring must remain deterministic.' },
   D11: { severity: 'high', weight: 10, message: 'Workspace/docs shell ratio must stay near 65/35.' }
 });
 
@@ -68,6 +68,11 @@ function addViolation(violations, ruleId, details, measurement) {
 
 function findEditors(scope) {
   return Array.from(scope.querySelectorAll('[data-editor-surface], .tool-local-surface, textarea, [contenteditable="true"], .monaco-editor'));
+}
+
+function findActionButtons(scope) {
+  if (!scope?.querySelectorAll) return [];
+  return Array.from(scope.querySelectorAll('.tool-btn, button, [role="button"], [data-action]'));
 }
 
 function findSurfaceDepth(scope) {
@@ -171,6 +176,8 @@ export function validateExecutionDensity(root, options = {}) {
   const viewportHeight = Math.max(Number(globalThis.innerHeight ?? 0), 1);
   const headerViewportRatio = Number.isFinite(headerHeightPx) ? headerHeightPx / viewportHeight : Number.NaN;
   const primaryActionCount = scope.querySelectorAll('.tool-btn--primary').length;
+  const actionButtons = findActionButtons(widget ?? shell ?? scope);
+  const hasActionToolbar = Boolean(toolbar || actionButtons.length > 0);
 
   if (sectionGapsPx.some((gap) => gap < thresholds.compactGapMinPx || gap > thresholds.compactGapMaxPx)) {
     addViolation(violations, 'D1', `Detected section gaps: ${sectionGapsPx.join(', ')}px.`, { sectionGapsPx });
@@ -188,8 +195,12 @@ export function validateExecutionDensity(root, options = {}) {
     addViolation(violations, 'D4', `Dual editor delta ${dualEditorHeightDeltaPx}px exceeds ${thresholds.dualEditorHeightDeltaMaxPx}px.`, { dualEditorHeightDeltaPx, editorHeightsPx });
   }
 
-  if (primaryActionCount !== 1) {
-    addViolation(violations, 'D5', `Found ${primaryActionCount} .tool-btn--primary actions.`, { primaryActionCount });
+  if (hasActionToolbar && primaryActionCount > 1) {
+    addViolation(violations, 'D5', `Found ${primaryActionCount} .tool-btn--primary actions; max allowed is 1.`, { primaryActionCount });
+  }
+
+  if (hasActionToolbar && actionButtons.length > 1 && primaryActionCount === 0) {
+    addViolation(violations, 'D5', 'Action toolbar has multiple actions but no primary action marker.', { primaryActionCount, actionButtonCount: actionButtons.length });
   }
 
   if (Number.isFinite(shellPaddingPx) && shellPaddingPx > thresholds.shellPaddingMaxPx) {
