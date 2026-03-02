@@ -1,4 +1,4 @@
-import { isMonacoReady, loadMonaco } from '/js/runtime/monaco-loader.js';
+import { loadMonaco } from '/js/runtime/monaco-loader.js';
 import { FORMAT_MODE, runJsonFormatter } from './json-formatter.api.js';
 import { JSON_FORMATTER_CONFIG } from './json-formatter/constants.js';
 import { formatCountSummary } from './json-formatter/utils.js';
@@ -188,35 +188,12 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
-        const loadMonacoWithTimeout = async (timeoutMs = 4000) => {
-          let timeoutId;
+        state.monaco = await loadMonaco();
 
-          try {
-            return await Promise.race([
-              loadMonaco(),
-              new Promise((_, reject) => {
-                timeoutId = window.setTimeout(() => {
-                  reject(new Error(`[json-formatter] Monaco load timeout (${timeoutMs}ms)`));
-                }, timeoutMs);
-              })
-            ]);
-          } finally {
-            if (typeof timeoutId === 'number') {
-              clearTimeout(timeoutId);
-            }
-          }
-        };
-
-        let monaco = null;
-        try {
-          monaco = await loadMonacoWithTimeout();
-        } catch (error) {
-          console.error('[json-formatter] Monaco load failed', error);
-        }
-
-        state.monaco = monaco;
-
-        const monacoLoaded = isMonacoReady();
+        const monacoLoaded = Boolean(
+          state.monaco?.editor
+          && typeof state.monaco.editor.create === 'function'
+        );
 
         if (monacoLoaded) {
           buildMonacoEditors();

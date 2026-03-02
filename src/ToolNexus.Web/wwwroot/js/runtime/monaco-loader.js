@@ -4,6 +4,7 @@ const MONACO_EDITOR_MAIN_URL = `${MONACO_BASE}/editor/editor.main.js`;
 const MONACO_ASSET_INVALID_EVENT = 'monaco_asset_invalid';
 
 let monacoPromise = null;
+let monacoLoadSequence = 0;
 
 const MONACO_SINGLETON_KEY = '__toolnexus_monaco';
 const MONACO_SINGLETON_PROMISE_KEY = '__toolnexus_monaco_promise';
@@ -37,6 +38,11 @@ function logRuntimeMonaco(message, detail) {
   }
 
   console.info(`[runtime] ${message}`);
+}
+
+function createMonacoLoadCorrelationId() {
+  monacoLoadSequence += 1;
+  return `monaco-${Date.now()}-${monacoLoadSequence}`;
 }
 
 function assertValidAmdLoader() {
@@ -167,26 +173,30 @@ function activateMonacoEnvironment() {
 }
 
 export async function loadMonaco() {
+  const correlationId = createMonacoLoadCorrelationId();
+
   if (isMonacoReady()) {
-    logRuntimeMonaco('Monaco already loaded');
+    logRuntimeMonaco('Monaco already loaded', { correlationId });
     const monaco = window[MONACO_SINGLETON_KEY] ?? window.monaco;
     assignGlobalMonaco(monaco);
     return monaco;
   }
 
   if (window[MONACO_SINGLETON_PROMISE_KEY]) {
+    logRuntimeMonaco('Monaco load joining shared promise', { correlationId });
     return window[MONACO_SINGLETON_PROMISE_KEY];
   }
 
   if (monacoPromise) {
+    logRuntimeMonaco('Monaco load joining in-flight promise', { correlationId });
     return monacoPromise;
   }
 
   monacoPromise = (async () => {
-    logRuntimeMonaco('Monaco loading start');
+    logRuntimeMonaco('Monaco loading start', { correlationId });
     await assertMonacoAssetsAvailable();
     await ensureMonacoLoaderScript();
-    logRuntimeMonaco('Monaco loader resolved');
+    logRuntimeMonaco('Monaco loader resolved', { correlationId });
 
     if (typeof window.require !== 'function' || typeof window.require.config !== 'function') {
       throw new Error('Invalid Monaco AMD loader detected');
@@ -211,7 +221,7 @@ export async function loadMonaco() {
     }
 
     window[MONACO_SINGLETON_KEY] = monaco ?? window.monaco;
-    logRuntimeMonaco('Monaco ready');
+    logRuntimeMonaco('Monaco ready', { correlationId });
     return window[MONACO_SINGLETON_KEY];
   })().catch((error) => {
     monacoPromise = null;
@@ -221,7 +231,10 @@ export async function loadMonaco() {
       throw error;
     }
 
-    console.warn('[runtime] Monaco unavailable; falling back to basic editors', error);
+    console.warn('[runtime] Monaco unavailable; falling back to basic editors', {
+      correlationId,
+      error
+    });
     throw error;
   });
 
