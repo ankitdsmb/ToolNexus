@@ -12,6 +12,24 @@ function emitMonacoAssetInvalidWarning() {
   console.warn(`[runtime] ${MONACO_ASSET_INVALID_EVENT}`);
 }
 
+export function isMonacoReady() {
+  return Boolean(
+    window.monaco
+    && window.monaco.editor
+    && typeof window.monaco.editor.create === 'function'
+  );
+}
+
+function assignGlobalMonaco(monacoNamespace) {
+  if (!monacoNamespace) {
+    return null;
+  }
+
+  window.monaco = monacoNamespace;
+  globalThis.monaco = monacoNamespace;
+  return monacoNamespace;
+}
+
 function logRuntimeMonaco(message, detail) {
   if (detail) {
     console.info(`[runtime] ${message}`, detail);
@@ -114,7 +132,7 @@ function requireMonaco() {
   return new Promise((resolve, reject) => {
     window.require(
       ['vs/editor/editor.main'],
-      (monacoNamespace) => resolve(monacoNamespace ?? window.monaco ?? null),
+      (monacoNamespace) => resolve(monacoNamespace ?? window.monaco ?? globalThis.monaco ?? null),
       reject
     );
   });
@@ -149,9 +167,11 @@ function activateMonacoEnvironment() {
 }
 
 export async function loadMonaco() {
-  if (window[MONACO_SINGLETON_KEY]?.editor) {
+  if (isMonacoReady()) {
     logRuntimeMonaco('Monaco already loaded');
-    return window[MONACO_SINGLETON_KEY];
+    const monaco = window[MONACO_SINGLETON_KEY] ?? window.monaco;
+    assignGlobalMonaco(monaco);
+    return monaco;
   }
 
   if (window[MONACO_SINGLETON_PROMISE_KEY]) {
@@ -183,21 +203,16 @@ export async function loadMonaco() {
     activateMonacoEnvironment();
 
     const resolvedMonaco = await requireMonaco();
+    const monaco = assignGlobalMonaco(resolvedMonaco ?? window.monaco ?? globalThis.monaco ?? null);
 
-    if (resolvedMonaco && !window.monaco) {
-      window.monaco = resolvedMonaco;
-    }
-
-    const monaco = resolvedMonaco ?? window.monaco ?? null;
-
-    if (!monaco?.editor) {
+    if (!isMonacoReady()) {
       emitMonacoAssetInvalidWarning();
       throw new Error('[runtime] Monaco namespace unavailable after loader resolution');
     }
 
-    window[MONACO_SINGLETON_KEY] = monaco;
+    window[MONACO_SINGLETON_KEY] = monaco ?? window.monaco;
     logRuntimeMonaco('Monaco ready');
-    return monaco;
+    return window[MONACO_SINGLETON_KEY];
   })().catch((error) => {
     monacoPromise = null;
     window[MONACO_SINGLETON_PROMISE_KEY] = null;

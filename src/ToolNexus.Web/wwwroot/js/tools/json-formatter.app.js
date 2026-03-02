@@ -1,4 +1,4 @@
-import { loadMonaco } from '/js/runtime/monaco-loader.js';
+import { isMonacoReady, loadMonaco } from '/js/runtime/monaco-loader.js';
 import { FORMAT_MODE, runJsonFormatter } from './json-formatter.api.js';
 import { JSON_FORMATTER_CONFIG } from './json-formatter/constants.js';
 import { formatCountSummary } from './json-formatter/utils.js';
@@ -188,19 +188,39 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
+        const loadMonacoWithTimeout = async (timeoutMs = 4000) => {
+          let timeoutId;
+
+          try {
+            return await Promise.race([
+              loadMonaco(),
+              new Promise((_, reject) => {
+                timeoutId = window.setTimeout(() => {
+                  reject(new Error(`[json-formatter] Monaco load timeout (${timeoutMs}ms)`));
+                }, timeoutMs);
+              })
+            ]);
+          } finally {
+            if (typeof timeoutId === 'number') {
+              clearTimeout(timeoutId);
+            }
+          }
+        };
+
         let monaco = null;
         try {
-          monaco = await loadMonaco();
+          monaco = await loadMonacoWithTimeout();
         } catch (error) {
           console.error('[json-formatter] Monaco load failed', error);
         }
 
         state.monaco = monaco;
 
-        const monacoLoaded = Boolean(monaco?.editor);
+        const monacoLoaded = isMonacoReady();
 
         if (monacoLoaded) {
           buildMonacoEditors();
+          console.info('[json-formatter] Monaco editor initialized');
         } else {
           console.warn('[json-formatter] Monaco unavailable → fallback editor');
         }
