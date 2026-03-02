@@ -1,3 +1,12 @@
+/* =========================================================
+   UPGREAD UI SYSTEM — COMPLETE FULL WIDTH FIX
+   ToolNexus runtime SAFE (CSS only)
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   TOKENS + BASE
+   --------------------------------------------------------- */
+
 .upgread_workspace {
   --upgread_bg_0: #0a0d11;
   --upgread_bg_1: #0f1318;
@@ -14,52 +23,165 @@
   --upgread_space_11: 11px;
   --upgread_space_13: 13px;
   --upgread_space_15: 15px;
+  /* kill legacy rail width */
+  --tool-shell-rail-width: 100%;
   background: radial-gradient(circle at top, #121a26 0%, var(--upgread_bg_0) 45%);
   color: var(--upgread_text_0);
 }
 
-.upgread_workspace .app-shell {
-  gap: 0;
-  background: transparent;
+  /* ---------------------------------------------------------
+   SHELL LAYERS
+   --------------------------------------------------------- */
+
+  .upgread_workspace .app-shell {
+    gap: 0;
+    background: transparent;
+  }
+
+  .upgread_workspace .shell-layer--command {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: blur(8px);
+  }
+
+  .upgread_workspace .site-header,
+  .upgread_workspace .header,
+  .upgread_workspace header[role='banner'] {
+    border-bottom: 1px solid var(--upgread_border_1);
+    background: color-mix(in srgb, var(--upgread_bg_1) 88%, #0a0d11 12%);
+  }
+
+  .upgread_workspace .shell-layer--workspace {
+    padding-top: 0;
+  }
+
+  .upgread_workspace .shell-layer--system {
+    border-top: 1px solid var(--upgread_border_1);
+    background: color-mix(in srgb, var(--upgread_bg_1) 94%, #000 6%);
+  }
+
+  /* ---------------------------------------------------------
+   CONTAINER — TRUE FULL WIDTH
+   --------------------------------------------------------- */
+
+  .upgread_workspace main.container,
+  .upgread_workspace .container {
+    max-width: 100% !important;
+    width: 100%;
+    padding-top: var(--upgread_space_11);
+    padding-left: 12px;
+    padding-right: 12px;
+    margin-inline: 0;
+  }
+
+  /* ---------------------------------------------------------
+   GENERIC SURFACE STYLING
+   --------------------------------------------------------- */
+
+  .upgread_workspace [data-upgread='surface'] {
+    border: 1px solid var(--upgread_border_1);
+    border-radius: var(--upgread_radius_md);
+    background: linear-gradient( 180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01) );
+  }
+
+  .upgread_workspace [data-upgread='rail-title'] {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--upgread_text_2);
+  }
+
+  /* =========================================================
+   TOOL SHELL — FORCE REAL FULL WIDTH
+   (kills inherited rail system completely)
+   ========================================================= */
+
+  .upgread_workspace .tool-shell-page,
+  .upgread_workspace .tool-shell-page__workspace,
+  .upgread_workspace .tool-shell-page__docs,
+  .upgread_workspace .tool-seo,
+  .upgread_workspace .tool-seo.tool-shell-page__docs {
+    width: 100% !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+
+  /* remove hidden prose / rail limits */
+  .upgread_workspace .tool-md-content,
+  .upgread_workspace .tool-md-section,
+  .upgread_workspace .tool-article-prose,
+  .upgread_workspace .section-frame {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  /* docs rail cleanup */
+  .upgread_workspace .tool-shell-page__docs,
+  .upgread_workspace .tool-seo.tool-shell-page__docs {
+    margin-top: 0;
+    padding-top: 11px;
+    border-top: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
+  }
+
+  /* ---------------------------------------------------------
+   OPTIONAL: keep docs passive (IDE feel)
+   --------------------------------------------------------- */
+
+  .upgread_workspace .tool-shell-page__docs {
+    opacity: 0.94;
+  }
+
+/* ---------------------------------------------------------
+   SMALL SCREEN SAFETY
+   --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .upgread_workspace main.container,
+  .upgread_workspace .container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
-.upgread_workspace .shell-layer--command {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  backdrop-filter: blur(8px);
+/* =====================================================
+   Utility Window Layer
+   ===================================================== */
+
+.upgread_utility_layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 120;
 }
 
-.upgread_workspace .site-header,
-.upgread_workspace .header,
-.upgread_workspace header[role='banner'] {
-  border-bottom: 1px solid var(--upgread_border_1);
-  background: color-mix(in srgb, var(--upgread_bg_1) 88%, #0a0d11 12%);
+/* each utility window */
+.upgread_utility_window {
+  position: absolute;
+  width: 340px;
+  min-height: 180px;
+  background: #0f1318;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  box-shadow: 0 14px 38px rgba(0,0,0,.5);
+  pointer-events: auto;
+  overflow: hidden;
 }
 
-.upgread_workspace .container {
-  max-width: 1480px;
-  padding-top: var(--upgread_space_11);
+/* header (drag area) */
+.upgread_utility_window_header {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  cursor: move;
+  font-size: 12px;
 }
 
-.upgread_workspace .shell-layer--workspace {
-  padding-top: 0;
-}
-
-.upgread_workspace .shell-layer--system {
-  border-top: 1px solid var(--upgread_border_1);
-  background: color-mix(in srgb, var(--upgread_bg_1) 94%, #000 6%);
-}
-
-.upgread_workspace [data-upgread='surface'] {
-  border: 1px solid var(--upgread_border_1);
-  border-radius: var(--upgread_radius_md);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-}
-
-.upgread_workspace [data-upgread='rail-title'] {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--upgread_text_2);
+/* minimized state */
+.upgread_utility_window--minimized {
+  height: 34px !important;
+  overflow: hidden;
 }

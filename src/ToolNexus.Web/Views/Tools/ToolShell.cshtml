@@ -45,48 +45,122 @@
     }
 }
 
-<article class="tool-shell-page tool-shell-page--workspace workspace-shell page-shell upgread_tool_shell_page" data-upgread="surface" aria-label="Tool runtime page">
-    @* SSR contract marker: <h1> *@
+<article class="tool-shell-page tool-shell-page--workspace workspace-shell page-shell upgread_tool_shell_page"
+         data-upgread="surface"
+         aria-label="Tool runtime page">
+
+    @* SSR contract marker *@
     <h1 class="tool-shell-page__title">@Model.Tool.Title</h1>
-    <section class="tool-shell-page__workspace workspace-shell__runtime-zone" aria-label="Runtime workspace" data-workspace-zone="runtime">
-        @* Architecture lock: ToolShell owns execution framing only.
-           Tool widgets render their own internal layout inside the full content host.
-           Canonical anchor contract must remain stable for runtime guards and telemetry. *@
-        <section id="tool-root" class="tool-shell-page__runtime upgread_tool_runtime" data-upgread="surface" data-tool-shell="true" data-tool-root="true" data-tool-slug="@Model.Tool.Slug" aria-label="Interactive runtime" data-execution-flow="input-action-result-reference">
-            <header data-tool-context="true" data-tool-header="true" class="tn-tool-header" aria-label="Tool execution context">
-                <span class="tool-context-pill tool-context-pill--authority"><span class="tn-skeleton-chip"></span>Authority: Unified Runtime</span>
-                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Runtime: Auto Resolve</span>
-                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Policy: Conformance Guarded</span>
-                <span class="tool-context-pill"><span class="tn-skeleton-chip"></span>Lifecycle: Ready</span>
+
+    <section class="tool-shell-page__workspace workspace-shell__runtime-zone"
+             aria-label="Runtime workspace"
+             data-workspace-zone="runtime">
+
+        @* Runtime contract: DO NOT CHANGE anchor attributes *@
+        <section id="tool-root"
+                 class="tool-shell-page__runtime upgread_tool_runtime"
+                 data-upgread="surface"
+                 data-tool-shell="true"
+                 data-tool-root="true"
+                 data-tool-slug="@Model.Tool.Slug"
+                 aria-label="Interactive runtime"
+                 data-execution-flow="input-action-result-reference">
+
+            <header data-tool-context="true"
+                    data-tool-header="true"
+                    class="tn-tool-header"
+                    aria-label="Tool execution context">
+                <span class="tool-context-pill tool-context-pill--authority">
+                    <span class="tn-skeleton-chip"></span>Authority: Unified Runtime
+                </span>
+                <span class="tool-context-pill">
+                    <span class="tn-skeleton-chip"></span>Runtime: Auto Resolve
+                </span>
+                <span class="tool-context-pill">
+                    <span class="tn-skeleton-chip"></span>Policy: Conformance Guarded
+                </span>
+                <span class="tool-context-pill">
+                    <span class="tn-skeleton-chip"></span>Lifecycle: Ready
+                </span>
             </header>
-            <div data-tool-status="true" data-runtime-status-primary="true" class="tool-execution-status runtime-metrics-row tn-runtime-skeleton" role="status" aria-live="polite">
+
+            <div data-tool-status="true"
+                 data-runtime-status-primary="true"
+                 class="tool-execution-status runtime-metrics-row tn-runtime-skeleton"
+                 role="status"
+                 aria-live="polite">
                 <span class="tn-skeleton-chip"></span>
                 <span>Ready · Initializing execution intelligence…</span>
             </div>
-            <footer data-tool-followup="true" data-tool-actions="true" class="tool-execution-panel tn-toolbar-skeleton" data-command-dock="true" aria-label="Follow-up actions">
-                <div class="tool-execution-panel__primary-actions" aria-label="Primary execution actions">
-                    <button type="button" disabled class="tool-btn tool-btn--primary"><span class="tn-skeleton-chip"></span>Run command</button>
+
+            <footer data-tool-followup="true"
+                    data-tool-actions="true"
+                    class="tool-execution-panel tn-toolbar-skeleton"
+                    data-command-dock="true"
+                    aria-label="Follow-up actions">
+
+                <div class="tool-execution-panel__primary-actions"
+                     aria-label="Primary execution actions">
+                    <button type="button" disabled class="tool-btn tool-btn--primary">
+                        <span class="tn-skeleton-chip"></span>Run command
+                    </button>
                 </div>
-                <div class="tool-execution-panel__secondary-actions" aria-label="Secondary execution actions">
-                    <button type="button" disabled class="tool-btn tool-btn--ghost"><span class="tn-skeleton-chip"></span>Command dock loading</button>
+
+                <div class="tool-execution-panel__secondary-actions"
+                     aria-label="Secondary execution actions">
+                    <button type="button" disabled class="tool-btn tool-btn--ghost">
+                        <span class="tn-skeleton-chip"></span>Command dock loading
+                    </button>
                 </div>
             </footer>
-            @* ToolShell framing only: no shell-defined editor/result grid ownership.
-               Template/lifecycle runtime mounts directly into this full-width host. *@
-            <section data-tool-content-host="true" class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode upgread_tool_content_host" data-upgread="surface" aria-label="Tool content host" data-execution-surface="unified">
-                @* Canonical extension anchors are preserved; tool widget owns content within them. *@
-                <section data-tool-input="true" aria-label="Tool input extension slot" class="tn-editor-skeleton"></section>
-                <section data-tool-output="true" aria-label="Tool output extension slot" class="tn-editor-skeleton"></section>
+
+            @* FULL WIDTH runtime host — template mounts here *@
+            <section data-tool-content-host="true"
+                     class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode upgread_tool_content_host"
+                     data-upgread="surface"
+                     aria-label="Tool content host"
+                     data-execution-surface="unified">
+
+                @* Runtime template handoff (SAFE — required by upgraded template flow) *@
+                <section data-runtime-template-handoff="true"
+                         data-runtime-template-mount-target="content-host"
+                         class="tool-runtime-template-handoff"
+                         aria-label="Tool runtime template handoff">
+                </section>
+
+                @* Canonical extension anchors — DO NOT CHANGE *@
+                <section data-tool-input="true"
+                         aria-label="Tool input extension slot"
+                         class="tn-editor-skeleton"></section>
+
+                <section data-tool-output="true"
+                         aria-label="Tool output extension slot"
+                         class="tn-editor-skeleton"></section>
             </section>
+
+            <section class="tn-runtime-toast-region"
+                     aria-live="polite"
+                     aria-label="Runtime notifications"></section>
         </section>
     </section>
 
-    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose control-recession shell-passive-mode upgread_tool_docs_rail" data-upgread="surface" data-nosnippet="false" data-workspace-zone="context" aria-label="Tool documentation" data-reference-layer="secondary">
+    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose control-recession shell-passive-mode upgread_tool_docs_rail"
+           data-upgread="surface"
+           data-nosnippet="false"
+           data-workspace-zone="context"
+           aria-label="Tool documentation"
+           data-reference-layer="secondary">
+
         @foreach (var plugin in contextPlugins)
         {
-            var isPrimaryDocSection = plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase)
-                || plugin.Equals("QuickStart", StringComparison.OrdinalIgnoreCase);
-            <section class="tool-md-section" data-doc-section="@plugin" data-doc-priority="@(isPrimaryDocSection ? "primary" : "secondary")">
+            var isPrimaryDocSection =
+            plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase) ||
+            plugin.Equals("QuickStart", StringComparison.OrdinalIgnoreCase);
+
+            <section class="tool-md-section"
+                     data-doc-section="@plugin"
+                     data-doc-priority="@(isPrimaryDocSection ? "primary" : "secondary")">
+
                 @if (isPrimaryDocSection)
                 {
                     <h3>@contextPluginLabels[plugin]</h3>
@@ -106,6 +180,7 @@
             </section>
         }
     </aside>
+
     @* SSR section contract anchors:
        <h2>Overview</h2>
        <h2>Features</h2>
@@ -135,22 +210,33 @@
             },
             runtimeUiMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeUiMode)),
             runtimeComplexityTier: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeComplexityTier)),
-            runtimeEnvironment: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>().EnvironmentName)),
-            runtimeTemplateMountMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuration["RuntimeOptions:TemplateMountMode"] ?? "content-host")),
-            isAdmin: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IsAdminPreview)),
-            runtimeLogEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint)),
-            runtimeRoutes: {
-                clientLogEndpoints: [@Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint))]
-            }
-        };
+            runtimeEnvironment: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                            Context.RequestServices
+                                    .GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>()
+                                    .EnvironmentName)),
+        runtimeTemplateMountMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                        configuration["RuntimeOptions:TemplateMountMode"] ?? "content-host")),
+        isAdmin: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IsAdminPreview)),
+        runtimeLogEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint)),
+        runtimeRoutes: {
+            clientLogEndpoints: [@Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint))]
+        }
+    };
+
         window.ToolNexusLogging = {
-            minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuration["LoggingOptions:RuntimeLogLevel"] ?? configuration["LoggingOptions:MinimumLevel"] ?? "Information")),
-            runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuration.GetValue<bool>("LoggingOptions:RuntimeDebugEnabled"))),
-            enableRuntimeLogCapture: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogCaptureEnabled))
-        };
+            minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                        configuration["LoggingOptions:RuntimeLogLevel"] ??
+                        configuration["LoggingOptions:MinimumLevel"] ??
+                                "Information")),
+        runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                        configuration.GetValue<bool>("LoggingOptions:RuntimeDebugEnabled"))),
+        enableRuntimeLogCapture: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogCaptureEnabled))
+    };
+
         window.ToolNexus = window.ToolNexus || {};
         window.ToolNexus.correlationId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.TraceIdentifier));
     </script>
+
     <script type="module" src="~/js/tool-runtime.js" asp-append-version="true"></script>
     <script type="module" src="~/js/tool-shell-feel.js" asp-append-version="true"></script>
 }

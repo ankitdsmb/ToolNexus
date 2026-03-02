@@ -1,14 +1,21 @@
+/* =====================================================
+   TOOL SHELL — UPGRADED WORKSPACE (FULL WIDTH SAFE)
+   Runtime-safe visual layer only
+   ===================================================== */
+
 .upgread_workspace .tool-shell-page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 13px;
   align-items: start;
 }
 
+/* remove old rail spacing */
 .upgread_workspace .tool-shell-page__workspace {
   margin: 0;
 }
 
+/* compact title strip */
 .upgread_workspace .tool-shell-page__title {
   grid-column: 1 / -1;
   margin: 0;
@@ -17,14 +24,16 @@
   border-bottom: 1px solid var(--upgread_border_1);
 }
 
+/* runtime surface */
 .upgread_workspace .tool-shell-page__runtime,
 .upgread_workspace .tool-runtime-widget {
   border: 1px solid rgba(59, 130, 246, 0.24);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.07), rgba(10, 14, 20, 0.9) 34%);
+  background: linear-gradient( 180deg, rgba(59, 130, 246, 0.07), rgba(10, 14, 20, 0.9) 34% );
   box-shadow: 0 12px 34px rgba(3, 6, 10, 0.34);
 }
 
+/* context + status + toolbar compact */
 .upgread_workspace [data-tool-context='true'],
 .upgread_workspace [data-tool-status='true'],
 .upgread_workspace [data-tool-followup='true'] {
@@ -34,6 +43,7 @@
   padding-bottom: 6px;
 }
 
+/* execution content host */
 .upgread_workspace [data-tool-content-host='true'] {
   gap: 1px;
   background: rgba(255, 255, 255, 0.07);
@@ -41,18 +51,46 @@
   overflow: hidden;
 }
 
+/* =====================================================
+   RUNTIME EXTENSION SLOTS (CRITICAL FIX)
+   Remove extra height safely
+   ===================================================== */
+
 .upgread_workspace [data-tool-input='true'],
 .upgread_workspace [data-tool-output='true'] {
   background: #0c1015;
-  min-height: clamp(280px, 61vh, 700px);
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  margin: 0;
 }
 
+/* collapse skeleton when empty */
+.upgread_workspace .tn-editor-skeleton:empty {
+  min-height: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden;
+}
+
+/* remove odd shimmer feel (visual only) */
+.upgread_workspace .tn-editor-skeleton,
+.upgread_workspace .tn-toolbar-skeleton,
+.upgread_workspace .tn-runtime-skeleton {
+  animation: none !important;
+  background: transparent;
+}
+
+/* tool buttons density */
 .upgread_workspace .tool-execution-panel .tool-btn,
 .upgread_workspace .tool-runtime-widget .tool-btn {
   min-height: 29px;
   border-radius: 6px;
 }
 
+/* docs rail */
 .upgread_workspace .tool-seo,
 .upgread_workspace .tool-shell-page__docs {
   border: 1px solid var(--upgread_border_1);
@@ -63,12 +101,17 @@
   top: 60px;
 }
 
+/* docs rhythm */
 .upgread_workspace .runtime-doc-disclosure,
 .upgread_workspace .tool-md-section {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 8px;
   margin-top: 8px;
 }
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
 
 @media (max-width: 1100px) {
   .upgread_workspace .tool-shell-page {

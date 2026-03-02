@@ -110,7 +110,7 @@ ENTERPRISE UI SYSTEM
 :where(.tool-shell-page > h1,
   .tool-shell-page > .tool-shell-page__workspace,
   .tool-shell-page > .tool-shell-page__docs) {
-  width: var(--tool-shell-rail-width);
+  width: 100%;
   max-width: 100%;
   margin-inline: auto;
 }
