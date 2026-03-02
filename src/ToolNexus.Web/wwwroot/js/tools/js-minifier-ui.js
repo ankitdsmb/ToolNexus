@@ -34,20 +34,14 @@ function dom() {
 }
 
 function readInput() {
-  const model = window.monaco?.editor?.getModels?.()[0];
-  return model ? model.getValue() : (document.getElementById(JS_MINIFIER_CONFIG.ids.inputEditor)?.value ?? '');
+  return document.getElementById(JS_MINIFIER_CONFIG.ids.inputEditor)?.value ?? '';
 }
 
 function readOutput() {
-  const model = window.monaco?.editor?.getModels?.()[1];
-  return model ? model.getValue() : (document.getElementById(JS_MINIFIER_CONFIG.ids.outputEditor)?.value ?? '');
+  return document.getElementById(JS_MINIFIER_CONFIG.ids.outputEditor)?.value ?? '';
 }
 
 function clearEditors() {
-  const models = window.monaco?.editor?.getModels?.() ?? [];
-  if (models[0]) models[0].setValue('');
-  if (models[1]) models[1].setValue('');
-
   const input = document.getElementById(JS_MINIFIER_CONFIG.ids.inputEditor);
   const output = document.getElementById(JS_MINIFIER_CONFIG.ids.outputEditor);
   if (input) input.value = '';
@@ -130,12 +124,7 @@ export function ensureUi() {
 }
 
 function setEditorLanguage() {
-  const monaco = window.monaco;
-  if (!monaco?.editor?.getModels || !monaco.editor.setModelLanguage) return;
-
-  const models = monaco.editor.getModels();
-  if (models[0]) monaco.editor.setModelLanguage(models[0], 'javascript');
-  if (models[1]) monaco.editor.setModelLanguage(models[1], 'javascript');
+  // Runtime owns Monaco model language configuration.
 }
 
 const triggerAutoRun = debounce(() => {
