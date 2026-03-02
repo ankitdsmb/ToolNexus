@@ -29,8 +29,8 @@ ENTERPRISE UI SYSTEM
 
   --radius-control: var(--radius-md);
   --radius-panel: var(--radius-lg);
-  --tool-page-max-width-authority: 1180px;
-  --page-max-width: 1180px;
+  --tool-page-max-width-authority: 1480px;
+  --page-max-width: 1480px;
   --exec-gap-tight: var(--tn-exec-space-1, var(--space-1));
   --exec-gap-normal: var(--tn-exec-space-2, var(--space-2));
   --exec-gap-loose: var(--tn-exec-space-3, var(--space-3));
@@ -96,7 +96,7 @@ ENTERPRISE UI SYSTEM
 }
 
 :where(.tool-shell-page) {
-  --tool-shell-max-width: min(1280px, var(--tool-page-max-width-authority, var(--page-max-width)));
+  --tool-shell-max-width: min(1480px, var(--tool-page-max-width-authority, var(--page-max-width)));
   --tool-shell-rail-width: min(var(--tool-shell-max-width), calc(100% - (var(--container-gutter) * 2)));
   --tool-shell-flow-gap: clamp(12px, 1.2vw, 16px);
   --tool-shell-footer-gap: clamp(12px, 1.2vw, 16px);
@@ -105,14 +105,6 @@ ENTERPRISE UI SYSTEM
   grid-template-columns: minmax(0, 1fr);
   row-gap: var(--tool-shell-flow-gap);
   margin-bottom: var(--tool-shell-footer-gap);
-}
-
-:where(.tool-shell-page > h1,
-  .tool-shell-page > .tool-shell-page__workspace,
-  .tool-shell-page > .tool-shell-page__docs) {
-  width: 100%;
-  max-width: 100%;
-  margin-inline: auto;
 }
 
 :where(.tool-shell-page > .tool-shell-page__workspace) {
@@ -794,19 +786,6 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
   gap: 12px;
 }
 
-:where(.tool-shell-page--fullscreen) {
-  max-width: 100%;
-  width: 100%;
-}
-
-:where(.tool-shell-page--fullscreen.workspace-shell) {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-:where(.tool-shell-page--fullscreen .workspace-shell__context-rail) {
-  display: none;
-}
-
 :where(.tool-shell-page__runtime > [data-tool-followup="true"] .tool-btn--primary) {
   font-weight: 700;
   min-width: 128px;
@@ -993,11 +972,6 @@ TOOL SHELL PROFESSIONAL EXECUTION POLISH
 
 
 
-:where([data-tool-content-host="true"]) {
-  width: 100%;
-  max-width: 100%;
-  display: block;
-}
 @media (max-width: 1080px) {
   :where(.tool-shell-page__runtime) {
     grid-template-columns: 1fr;

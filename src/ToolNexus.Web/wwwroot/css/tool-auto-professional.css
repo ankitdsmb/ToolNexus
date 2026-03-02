@@ -2,10 +2,8 @@
   --exec-gap-tight: 12px;
   --exec-gap-normal: 14px;
   --exec-gap-loose: 16px;
-  width: 100%;
   margin: 0;
   padding: clamp(12px, 1.2vw, 16px);
-  display: grid;
   gap: var(--exec-gap-tight);
   align-content: start;
   background: transparent;
@@ -64,18 +62,6 @@
   gap: var(--exec-gap-normal);
   min-height: 320px;
   align-items: stretch;
-}
-
-:where(.tool-runtime-widget > .tool-local-body:has(> :only-child)) {
-  grid-template-columns: minmax(0, 1fr) !important;
-}
-
-:where(.tool-runtime-widget > .tool-local-body:has(> :nth-child(2):last-child)) {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-}
-
-:where(.tool-runtime-widget > .tool-local-body:has(> :nth-child(3))) {
-  grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 30vw, 360px), 1fr)) !important;
 }
 
 :where(.tool-runtime-widget .tool-local-body > *) {
