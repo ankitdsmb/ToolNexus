@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { createToolRuntime } from '../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { createCanonicalToolShellMarkup } from './helpers/createCanonicalToolShell.js';
 import { validateModuleContract } from '../../src/ToolNexus.Web/wwwroot/js/runtime/module-contract-validator.js';
 import { getToolPlatformKernel, normalizeToolRoot } from '../../src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js';
 
@@ -14,14 +15,7 @@ describe('module contract validator', () => {
   function setShell(slug = 'contract-tool') {
     document.body.innerHTML = `
       <div data-runtime-container="true">
-        <div id="tool-root" data-tool-root="true" data-tool-slug="${slug}">
-          <header data-tool-header="true"></header>
-          <section data-tool-body="true">
-            <section data-tool-input="true"></section>
-            <section data-tool-output="true"></section>
-            <div data-tool-actions="true"></div>
-          </section>
-        </div>
+        ${createCanonicalToolShellMarkup({ shellAttributes: `id="tool-root" data-tool-root="true" data-tool-slug="${slug}"` })}
       </div>`;
   }
 

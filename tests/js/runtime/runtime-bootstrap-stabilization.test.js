@@ -1,17 +1,8 @@
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { createCanonicalToolShellMarkup } from '../../runtime/helpers/createCanonicalToolShell.js';
 
 function createShellMarkup() {
-  return `
-    <section data-tool-shell="true">
-      <header data-tool-context="true"></header>
-      <section data-tool-input="true"></section>
-      <section>
-        <div data-tool-status="true"></div>
-        <section data-tool-output="true"></section>
-      </section>
-      <footer data-tool-followup="true"></footer>
-    </section>
-  `;
+  return createCanonicalToolShellMarkup();
 }
 
 describe('runtime bootstrap stabilization', () => {

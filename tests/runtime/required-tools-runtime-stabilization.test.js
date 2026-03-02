@@ -2,6 +2,7 @@ import { describe, expect, test, beforeEach, afterEach } from 'vitest';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { createToolRuntime } from '../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { createCanonicalToolShellMarkup } from './helpers/createCanonicalToolShell.js';
 
 import * as jsonFormatterModule from '../../src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js';
 import * as jsonValidatorModule from '../../src/ToolNexus.Web/wwwroot/js/tools/json-validator.js';
@@ -53,14 +54,7 @@ function installMonacoStub() {
 function createShell(slug) {
   document.body.innerHTML = `
     <div data-runtime-container="true">
-      <div id="tool-root" data-tool-root="true" data-tool-slug="${slug}">
-        <header data-tool-header="true"></header>
-        <section data-tool-body="true">
-          <section data-tool-input="true"></section>
-          <section data-tool-output="true"></section>
-          <div data-tool-actions="true"></div>
-        </section>
-      </div>
+      ${createCanonicalToolShellMarkup({ shellAttributes: `id="tool-root" data-tool-root="true" data-tool-slug="${slug}"` })}
     </div>`;
 
   return document.getElementById('tool-root');
@@ -115,7 +109,14 @@ describe('required tool runtime stabilization', () => {
         complexityTier: 3
       }),
       templateLoader: async (templateSlug, targetRoot) => {
-        targetRoot.innerHTML = await readTemplate(templateSlug);
+        const outputHost = targetRoot.querySelector?.('[data-tool-output]');
+        const contentHost = targetRoot.matches?.('[data-tool-content-host]')
+          ? targetRoot
+          : targetRoot.querySelector?.('[data-tool-content-host]');
+        const mountHost = outputHost ?? contentHost;
+        if (mountHost) {
+          mountHost.innerHTML = await readTemplate(templateSlug);
+        }
       },
       dependencyLoader: { loadDependencies: async () => {} },
       importModule: async (modulePath) => {

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { createToolRuntime } from '../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { createCanonicalToolShellMarkup } from './helpers/createCanonicalToolShell.js';
 
 describe('tool runtime auto/custom loader', () => {
   afterEach(() => {
@@ -10,16 +11,12 @@ describe('tool runtime auto/custom loader', () => {
   });
 
   function setShell(slug = 'auto-tool') {
-    document.body.innerHTML = `
-      <section id="tool-root" data-tool-root="true" data-tool-shell="true" data-tool-slug="${slug}">
-        <header data-tool-context="true" data-tool-header="true"></header>
-        <section data-tool-input="true"></section>
-        <section>
-          <div data-tool-status="true"></div>
-          <section data-tool-output="true"></section>
-        </section>
-        <footer data-tool-followup="true" data-tool-actions="true"></footer>
-      </section>`;
+    document.body.innerHTML = createCanonicalToolShellMarkup({
+      shellAttributes: `id="tool-root" data-tool-root="true" data-tool-slug="${slug}"`,
+      contextHtml: '',
+      followupHtml: '',
+      statusHtml: ''
+    });
   }
 
   test('custom runtime success resolves to custom_active mode', async () => {

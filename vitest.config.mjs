@@ -1,6 +1,11 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '/js': '/src/ToolNexus.Web/wwwroot/js'
+    }
+  },
   test: {
     include: ['tests/runtime/**/*.test.js', 'tests/ui/**/*.test.js'],
     environment: 'jsdom',

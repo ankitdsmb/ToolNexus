@@ -1,17 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createAutoToolRuntimeModule } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-auto-runtime.js';
+import { createCanonicalToolShell } from './helpers/createCanonicalToolShell.js';
 
-function createContractHost() {
-  const host = document.createElement('div');
-  host.innerHTML = `
-    <section data-tool-shell="true">
-      <header data-tool-context="true"></header>
-      <section data-tool-input="true"></section>
-      <section data-tool-status="true"></section>
-      <section data-tool-output="true"></section>
-      <footer data-tool-followup="true"></footer>
-    </section>`;
-  return host;
+function createContractHost(options = {}) {
+  return createCanonicalToolShell(options);
 }
 
 describe('tool auto runtime', () => {
@@ -30,15 +22,7 @@ describe('tool auto runtime', () => {
 
 
   test('auto runtime mounts only inside [data-tool-shell] and preserves canonical shell', () => {
-    const host = document.createElement('div');
-    host.innerHTML = `
-      <section data-tool-shell="true">
-        <header data-tool-context="true"></header>
-        <section data-tool-input="true"><p data-preexisting>existing</p></section>
-        <section data-tool-status="true"></section>
-        <section data-tool-output="true"></section>
-        <footer data-tool-followup="true"></footer>
-      </section>`;
+    const host = createContractHost({ inputHtml: '<p data-preexisting>existing</p>' });
     document.body.append(host);
     const runtimeContainer = host.querySelector('[data-tool-shell]');
 
@@ -56,15 +40,7 @@ describe('tool auto runtime', () => {
   });
 
   test('uses canonical shell contract without throwing', () => {
-    const host = document.createElement('div');
-    host.innerHTML = `
-      <section data-tool-shell="true">
-        <header data-tool-context="true"></header>
-        <section data-tool-input="true"></section>
-        <section data-tool-status="true"></section>
-        <section data-tool-output="true"></section>
-        <footer data-tool-followup="true"></footer>
-      </section>`;
+    const host = createContractHost();
 
     const module = createAutoToolRuntimeModule({
       slug: 'auto-tool',

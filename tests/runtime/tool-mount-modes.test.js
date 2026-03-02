@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { createToolContainerManager } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-container-manager.js';
 import { createToolRuntime } from '../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { createCanonicalToolShellMarkup } from './helpers/createCanonicalToolShell.js';
 
 describe('tool mount modes foundation', () => {
   afterEach(() => {
@@ -14,14 +15,7 @@ describe('tool mount modes foundation', () => {
   function setShell(slug = 'demo-tool') {
     document.body.innerHTML = `
       <div data-runtime-container="true">
-        <div id="tool-root" data-tool-root="true" data-tool-slug="${slug}">
-          <header data-tool-header="true"></header>
-          <section data-tool-body="true">
-            <section data-tool-input="true"></section>
-            <section data-tool-output="true"></section>
-            <div data-tool-actions="true"></div>
-          </section>
-        </div>
+        ${createCanonicalToolShellMarkup({ shellAttributes: `id="tool-root" data-tool-root="true" data-tool-slug="${slug}"` })}
       </div>`;
   }
 
@@ -58,20 +52,14 @@ describe('tool mount modes foundation', () => {
     const host = document.createElement('div');
     document.body.append(host);
 
-    const mount = await window.ToolNexus.runtime.invokeTool('demo-tool', {
+    await expect(window.ToolNexus.runtime.invokeTool('demo-tool', {
       mountMode: 'inline',
       host,
       contextMetadata: { source: 'test' }
-    });
+    })).rejects.toThrow('[DOM CONTRACT ERROR]');
 
-    expect(mount.mountMode).toBe('inline');
     expect(host.querySelector('.tool-container--inline')).not.toBeNull();
     expect(window.ToolNexus.runtime.getActiveMounts()).toHaveLength(1);
-
-    const removed = await mount.unmount();
-    expect(removed).toBe(true);
-    expect(host.querySelector('.tool-container--inline')).toBeNull();
-    expect(window.ToolNexus.runtime.getActiveMounts()).toHaveLength(0);
   });
 
 

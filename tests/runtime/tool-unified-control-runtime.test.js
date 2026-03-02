@@ -1,17 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { buildAdaptiveGuidance, buildAdaptiveGuidanceFromReasons, buildObservationTonePrefix, buildRuntimeReasoning, createRuntimeObservationState, createUnifiedToolControl, enforceProfessionalLayout, generateRuntimeOptimizationInsight, observeRuntimeReasoning, observeRuntimeStabilitySignals, useUnifiedToolControl, validateRuntimeStability } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js';
+import { createCanonicalToolShell } from './helpers/createCanonicalToolShell.js';
 
-function createContractHost() {
-  const host = document.createElement('div');
-  host.innerHTML = `
-    <section data-tool-shell="true">
-      <header data-tool-context="true"></header>
-      <section data-tool-input="true"></section>
-      <section data-tool-status="true"></section>
-      <section data-tool-output="true"></section>
-      <footer data-tool-followup="true"></footer>
-    </section>`;
-  return host;
+function createContractHost(options = {}) {
+  return createCanonicalToolShell(options);
 }
 
 describe('tool unified control runtime', () => {
@@ -35,15 +27,7 @@ describe('tool unified control runtime', () => {
 
 
   test('renders inside [data-tool-shell] without replacing canonical shell', () => {
-    const host = document.createElement('div');
-    host.innerHTML = `
-      <section data-tool-shell="true">
-        <header data-tool-context="true"></header>
-        <section data-tool-input="true"><p data-sentinel>sentinel</p></section>
-        <section data-tool-status="true"></section>
-        <section data-tool-output="true"></section>
-        <footer data-tool-followup="true"></footer>
-      </section>`;
+    const host = createContractHost({ inputHtml: '<p data-sentinel>sentinel</p>' });
     const runtimeContainer = host.querySelector('[data-tool-shell]');
 
     const control = createUnifiedToolControl({

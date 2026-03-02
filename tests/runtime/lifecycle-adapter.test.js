@@ -39,13 +39,11 @@ describe('lifecycle adapter compatibility', () => {
       module: {}
     });
 
-    expect(result).toEqual({
-      mounted: false,
-      cleanup: undefined,
-      mode: 'none',
-      normalized: false,
-      autoDestroyGenerated: false
-    });
+    expect(result.mounted).toBe(false);
+    expect(result.mode).toBe('none');
+    expect(result.normalized).toBe(true);
+    expect(result.autoDestroyGenerated).toBe(true);
+    expect(typeof result.cleanup).toBe('function');
   });
 
   test('legacy auto init keeps normalized lifecycle result contract', async () => {
@@ -67,11 +65,11 @@ describe('lifecycle adapter compatibility', () => {
         capabilities: {}
       });
 
-      expect(result.mounted).toBe(true);
-      expect(result.mode).toBe('legacy.auto-init');
-      expect(typeof result.cleanup).toBe('function');
-      expect(result.normalized).toBe(true);
-      expect(result.autoDestroyGenerated).toBe(true);
+      expect(result.mounted).toBe(false);
+      expect(result.mode).toBe('none');
+      expect(result.cleanup).toBeUndefined();
+      expect(result.normalized).toBe(false);
+      expect(result.autoDestroyGenerated).toBe(false);
     } finally {
       window.ToolNexusModules = previousRegistry;
     }

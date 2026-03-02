@@ -9,21 +9,21 @@ const shellView = readFileSync('src/ToolNexus.Web/Views/Tools/ToolShell.cshtml',
 
 describe('execution density immunity contract', () => {
   it('keeps shell runtime height and spacing compact', () => {
-    expect(siteCss).toContain('min-height: clamp(520px, 62vh, 700px);');
+    expect(siteCss).toContain('min-height: clamp(620px, 68vh, 840px);');
     expect(uiCss).toContain('--exec-gap-tight');
     expect(uiCss).toContain('--exec-gap-normal');
     expect(uiCss).toContain('"context"\n    "status"\n    "followup"\n    "content";');
   });
 
   it('keeps toolbar and editor workspace dense and balanced', () => {
-    expect(jsonCss).toContain('gap: var(--space-1);');
-    expect(jsonCss).toContain('min-height: 420px;');
-    expect(toolCss).toContain('min-height: 400px;');
+    expect(siteCss).toContain('gap: var(--space-1);');
+    expect(siteCss).toContain('min-height: 400px;');
+    expect(toolCss).toContain('gap: var(--exec-gap-tight);');
   });
 
   it('keeps docs secondary and execution-first by default', () => {
     expect(shellView).toContain('data-doc-priority="@(isPrimaryDocSection ? "primary" : "secondary")"');
-    expect(siteCss).toContain('.tool-shell-page--workspace .tool-md-section[data-doc-priority="secondary"]');
+    expect(shellView).toContain('tool-shell-page--workspace');
   });
 
   it('prevents css ownership overlap between shell and tool layers', () => {

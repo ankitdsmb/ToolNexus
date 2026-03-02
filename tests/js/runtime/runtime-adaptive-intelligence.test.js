@@ -1,16 +1,8 @@
 import { applyAiRuntimeOrchestrator } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/ai-runtime-orchestrator.js';
+import { createCanonicalToolShell } from '../../runtime/helpers/createCanonicalToolShell.js';
 
 function buildRoot(markup = '') {
-  const host = document.createElement('div');
-  host.innerHTML = `
-    <section data-tool-shell="true">
-      <header data-tool-context="true"></header>
-      <div data-tool-status="true"></div>
-      <section data-tool-content-host="true">${markup}</section>
-      <footer data-tool-followup="true"></footer>
-    </section>
-  `;
-
+  const host = createCanonicalToolShell({ inputHtml: markup });
   const root = host.querySelector('[data-tool-shell]');
   document.body.appendChild(root);
   return root;

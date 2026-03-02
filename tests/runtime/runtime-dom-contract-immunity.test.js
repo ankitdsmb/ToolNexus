@@ -2,22 +2,16 @@ import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createToolRuntime } from '../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
+import { createCanonicalToolShellMarkup } from './helpers/createCanonicalToolShell.js';
 import { validateToolDom } from '../../src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js';
 
 const manifestDir = path.join(process.cwd(), 'src/ToolNexus.Web/App_Data/tool-manifests');
 const manifestFiles = fs.readdirSync(manifestDir).filter((file) => file.endsWith('.json')).sort();
 
 function createCanonicalShell(slug) {
-  document.body.innerHTML = `
-    <section id="tool-root" data-tool-root="true" data-tool-shell="true" data-tool-slug="${slug}">
-      <header data-tool-context="true" data-tool-header="true"></header>
-      <section data-tool-input="true"></section>
-      <section>
-        <div data-tool-status="true"></div>
-        <section data-tool-output="true"></section>
-      </section>
-      <footer data-tool-followup="true" data-tool-actions="true"></footer>
-    </section>`;
+  document.body.innerHTML = createCanonicalToolShellMarkup({
+    shellAttributes: `id="tool-root" data-tool-root="true" data-tool-slug="${slug}"`
+  });
 
   return document.getElementById('tool-root');
 }

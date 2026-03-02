@@ -2,18 +2,9 @@ import { jest } from '@jest/globals';
 import { createToolRuntime } from '../../../src/ToolNexus.Web/wwwroot/js/tool-runtime.js';
 import { clearToolTemplateCache, loadToolTemplate } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js';
 import { mountToolLifecycle } from '../../../src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js';
+import { createCanonicalToolShellMarkup } from '../../runtime/helpers/createCanonicalToolShell.js';
 
-const buildToolShellMarkup = (slug = 'test-tool') => `
-  <section id="tool-root" data-tool-shell="true" data-tool-root="true" data-tool-slug="${slug}">
-    <header data-tool-context="true"></header>
-    <div data-tool-status="true"></div>
-    <footer data-tool-followup="true"></footer>
-    <section data-tool-content-host="true">
-      <section data-tool-input="true"></section>
-      <section data-tool-output="true"></section>
-    </section>
-  </section>
-`;
+const buildToolShellMarkup = (slug = 'test-tool') => createCanonicalToolShellMarkup({ shellAttributes: `id="tool-root" data-tool-root="true" data-tool-slug="${slug}"` });
 
 describe('tool runtime ui bootstrap', () => {
   beforeEach(() => {
