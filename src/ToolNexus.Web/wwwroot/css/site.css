@@ -1214,6 +1214,12 @@ RESPONSIVE
 
 .csv-viewer-controls__actions {
   margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .case-controls {
   margin-top: var(--space-3);
   display: flex;
@@ -1369,6 +1375,8 @@ RESPONSIVE
 
 .csv-viewer-output-hidden {
   display: none;
+}
+
 .case-preview-btn.is-active {
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
@@ -1447,6 +1455,8 @@ RESPONSIVE
   grid-column: 1 / -1;
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
 .html-formatter-badge {
   display: inline-flex;
   margin-top: var(--space-2);
@@ -1579,9 +1589,6 @@ RESPONSIVE
   margin: 0;
 }
 
-  .readme-card-grid {
-    grid-template-columns: 1fr;
-  }
 
 /* Platform feel layer */
 .workspace-shell {
@@ -1974,3 +1981,602 @@ RESPONSIVE
 
 /* UPGREAD WORKSPACE LAYER — activate via body.upgread_workspace */
 @import url('./upgread-workspace.css');
+
+
+/* =====================================================
+   UPGREAD RESPONSIVE + THEME POLISH — site.css
+   Appended block — do not edit above this line
+   Breakpoints: 480 / 680 / 760 / 1100 / 1800
+   ===================================================== */
+
+/* --- HD 1800px+: let the layout breathe --- */
+@media (min-width: 1800px) {
+  :root {
+    --container-max: 1600px;
+  }
+
+  .workspace-shell {
+    grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.68fr);
+    column-gap: clamp(20px, 1.8vw, 32px);
+  }
+
+  .tool-shell-page__runtime {
+    min-height: clamp(700px, 72vh, 960px);
+  }
+
+  .hero__container {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: clamp(32px, 3vw, 56px);
+  }
+
+  .tool-grid,
+  .category-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* --- 1100px: workspace goes single-column --- */
+/* (existing rules at line ~1080 already cover this; these are additive) */
+@media (max-width: 1100px) {
+  .tool-ux__grid,
+  .tool-workflow-intelligence__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .readme-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tool-shell-page__runtime {
+    min-height: 520px;
+  }
+
+  .topbar__search-shortcut {
+    display: none;
+  }
+}
+
+/* --- 900px: tablet hybrid --- */
+@media (max-width: 900px) {
+  .hero__container {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-preview {
+    display: none;
+  }
+
+  .tool-grid,
+  .category-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .tool-card { grid-column: span 3; }
+
+  .trust-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-stat { grid-column: span 1; }
+
+  .tool-ux__grid,
+  .tool-workflow-intelligence__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .readme-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar__inner {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "brand actions" "search search";
+    padding-block: var(--space-3);
+  }
+
+  .brand { grid-area: brand; }
+  .topbar__search-wrap { grid-area: search; }
+  .topbar__actions { grid-area: actions; justify-self: end; }
+
+  .brand__tagline { display: none; }
+
+  .tool-toolbar__actions {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+/* --- 760px: mobile tightening (additive to existing) --- */
+@media (max-width: 760px) {
+  .tool-card,
+  .card { grid-column: span 12; }
+
+  .trust-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-stat { grid-column: span 1; }
+
+  .tool-shell-page__runtime {
+    min-height: 400px;
+  }
+
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-panel__list > div {
+    padding-block: var(--space-3);
+  }
+
+  .footer__columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer__column:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- 680px: single column mobile --- */
+@media (max-width: 680px) {
+  .container {
+    padding-block: var(--space-4) var(--space-6);
+  }
+
+  .page-shell {
+    gap: var(--space-4);
+  }
+
+  .hero {
+    padding: var(--space-4);
+  }
+
+  .hero__container {
+    gap: var(--space-4);
+  }
+
+  .hero-preview {
+    display: none;
+  }
+
+  .hero__title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .hero-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero__badges {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .section-title {
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+  }
+
+  .tool-section__header,
+  .workflow-section__header,
+  .trust-section__header,
+  .social-section__header {
+    gap: var(--space-2);
+  }
+
+  .tool-discovery {
+    gap: var(--space-2);
+  }
+
+  .tool-discovery__row {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tool-discovery__chips {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .tool-grid,
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-card { grid-column: auto; }
+  .card { grid-column: auto; }
+
+  .tool-card__meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tool-card__meta-item--hide-xs {
+    display: none;
+  }
+
+  .trust-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-stat { grid-column: auto; }
+
+  .trust-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .footer__shortcuts {
+    display: none;
+  }
+
+  .footer__separator { display: none; }
+
+  .tool-layout,
+  .json-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-toolbar__actions {
+    flex-wrap: wrap;
+  }
+
+  .tool-toolbar__actions > .tool-btn--primary {
+    width: 100%;
+    min-width: unset;
+    justify-content: center;
+  }
+
+  .topbar__inner {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "brand actions" "search search";
+    gap: var(--space-2);
+    padding-block: var(--space-2);
+  }
+
+  .brand__tagline { display: none; }
+
+  .workspace-shell {
+    padding-block: var(--space-3);
+  }
+
+  .tool-shell-page__runtime {
+    min-height: 360px;
+  }
+
+  .shortcut-hint {
+    display: none;
+  }
+
+  .sample-panel {
+    display: none;
+  }
+}
+
+/* --- 480px: extreme mobile density --- */
+@media (max-width: 480px) {
+  .container {
+    padding-block: var(--space-3) var(--space-5);
+  }
+
+  .hero {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
+  .hero__title {
+    font-size: clamp(1.25rem, 7vw, 1.6rem);
+  }
+
+  .hero__subtitle {
+    font-size: var(--text-sm);
+  }
+
+  .hero__badges {
+    display: none;
+  }
+
+  .hero__typewriter {
+    font-size: var(--text-sm);
+  }
+
+  .trust-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .trust-stat__value {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+  }
+
+  .tool-card {
+    padding: var(--space-3);
+  }
+
+  .tool-card__highlights {
+    display: none;
+  }
+
+  .topbar__explore {
+    padding-inline: var(--space-2);
+    font-size: 0;
+  }
+
+  .topbar__explore::before {
+    content: "Tools";
+    font-size: var(--text-sm);
+  }
+
+  .panel-header h2 {
+    font-size: var(--text-md);
+  }
+
+  .tool-shell-page__runtime {
+    min-height: 300px;
+  }
+}
+
+/* =====================================================
+   LIGHT THEME OVERRIDES — site.css
+   ===================================================== */
+:root[data-theme="light"] {
+
+  /* Topbar */
+  .topbar {
+    background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--border-default) 80%, transparent);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Search shells */
+  .topbar__search-shell,
+  .discovery-search-shell {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 75%, transparent);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .topbar__search-shell:hover,
+  .discovery-search-shell:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  /* Badges / chips */
+  .topbar__search-shortcut,
+  .discovery-search-shell__icon,
+  kbd,
+  .hero-badge,
+  .tool-card__badge,
+  .tool-card__tag,
+  .card__badge,
+  .chip,
+  .testimonial-card__badge,
+  .tool-group__count,
+  .command-palette__badge {
+    background: var(--bg-secondary);
+    border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+    color: var(--text-secondary);
+  }
+
+  /* Buttons */
+  .topbar__explore,
+  .theme-toggle,
+  .view-toggle__btn,
+  .tool-toggle,
+  .trust-link,
+  .hero-btn--secondary,
+  .tool-btn--outline,
+  .tool-btn--ghost {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+    color: var(--text-primary);
+  }
+
+  .topbar__explore:hover,
+  .theme-toggle:hover,
+  .tool-btn--outline:hover,
+  .tool-btn--ghost:hover,
+  .trust-link:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    background: color-mix(in srgb, var(--accent-soft) 14%, var(--bg-primary));
+  }
+
+  /* Cards */
+  .tool-card,
+  .card,
+  .tool-panel,
+  .tool-layout__panel,
+  .static-page__section,
+  .contact-form,
+  .contact-card,
+  .faq-accordion__item,
+  .readme-card {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 68%, transparent);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  }
+
+  .tool-card:hover,
+  .card:hover {
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--border-default));
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.09);
+    background: color-mix(in srgb, var(--accent-soft) 6%, var(--bg-primary));
+  }
+
+  /* Hero */
+  .hero {
+    background: color-mix(in srgb, var(--bg-secondary) 60%, var(--bg-primary));
+    border-color: color-mix(in srgb, var(--border-default) 60%, transparent);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
+  }
+
+  .hero__gradient {
+    opacity: 0.55;
+  }
+
+  /* Tool panels */
+  .tool-panel {
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  }
+
+  .tool-panel:hover {
+    border-color: color-mix(in srgb, var(--accent) 22%, var(--border-default));
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Editors */
+  .editor-surface,
+  .drop-zone,
+  .tree-view,
+  .json-editor {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 65%, transparent);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  /* Trust stats */
+  .trust-stat {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 65%, transparent);
+  }
+
+  /* Workspace shell */
+  .workspace-shell {
+    background: transparent;
+  }
+
+  .tool-shell-page__docs {
+    background: color-mix(in srgb, var(--bg-secondary) 35%, var(--bg-primary));
+    border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  }
+
+  .tool-shell-page__hero {
+    background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-primary));
+    border-color: color-mix(in srgb, var(--accent) 12%, var(--border-subtle));
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+  }
+
+  .tool-shell-page__runtime {
+    background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+    border-color: color-mix(in srgb, var(--accent) 18%, var(--border-default));
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  }
+
+  .tool-shell-page__runtime-zone-shell {
+    box-shadow: 0 12px 32px rgba(29, 110, 245, 0.12);
+  }
+
+  /* Footer */
+  .footer {
+    background: color-mix(in srgb, var(--bg-secondary) 70%, var(--bg-primary));
+    border-top-color: color-mix(in srgb, var(--border-default) 65%, transparent);
+  }
+
+  /* Disclosure */
+  .readme-disclosure {
+    background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+    border-color: color-mix(in srgb, var(--border-default) 65%, transparent);
+  }
+
+  .readme-disclosure[open],
+  .readme-disclosure.is-transitioning {
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
+  }
+
+  /* Section frame */
+  .section-frame {
+    background: color-mix(in srgb, var(--bg-secondary) 75%, var(--bg-primary));
+    border-color: color-mix(in srgb, var(--border-default) 62%, transparent);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  }
+
+  /* Toasts */
+  .toast {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+  }
+
+  /* Form elements */
+  .tool-page__action-selector select,
+  .csv-viewer-controls input,
+  .csv-viewer-controls select,
+  .html-md-options__select select,
+  .html-formatter-options input,
+  .floating-field input,
+  .floating-field textarea {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  /* Result indicators */
+  .result-indicator--idle {
+    background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+    color: var(--text-secondary);
+  }
+
+  /* Empty states */
+  .tool-empty-state {
+    background: color-mix(in srgb, var(--bg-secondary) 55%, var(--bg-primary));
+    border-color: color-mix(in srgb, var(--border-default) 60%, transparent);
+  }
+
+  /* Intel badges */
+  .tool-intel-badge {
+    background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+    border-color: color-mix(in srgb, var(--border-default) 68%, transparent);
+  }
+
+  /* CSV viewer */
+  .csv-viewer-table thead th {
+    background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+  }
+
+  .csv-table-frame {
+    border-color: color-mix(in srgb, var(--border-default) 65%, transparent);
+  }
+}
+
+/* =====================================================
+   REDUCED MOTION — global
+   ===================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .tool-card,
+  .card,
+  .tool-panel,
+  .hero-btn,
+  .tool-btn,
+  .readme-card,
+  .readme-guidance__action,
+  .workflow-pathway-card {
+    transition: none;
+    transform: none !important;
+  }
+
+  .hero-preview,
+  .tool-shell-page__runtime::after,
+  .tool-shell-page__runtime-zone-shell::after {
+    animation: none;
+    transition: none;
+  }
+}

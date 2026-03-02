@@ -9,11 +9,14 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .json-formatter-page .json-formatter-description {
   margin: var(--space-1) 0 0;
   color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .json-formatter-page .json-processing-badge {
@@ -23,6 +26,8 @@
   background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
   font-size: 0.76rem;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .json-formatter-page .json-toolbar {
@@ -51,13 +56,14 @@
 }
 
 .json-formatter-page .json-toolbar-row:first-child .tool-btn--primary {
-  min-width: 156px;
+  min-width: 140px;
 }
 
 .json-formatter-page .tool-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  flex-shrink: 0;
 }
 
 .json-formatter-page .tool-select {
@@ -104,20 +110,20 @@
 }
 
 .json-formatter-page .editor-surface {
-  min-height: 420px;
+  min-height: 400px;
   border: 0;
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
   overflow: hidden;
 }
 
-.json-formatter-page .json-metrics {
+.json-formatter-page .tool-metrics-compact-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-1);
 }
 
-.json-formatter-page .json-metrics p {
+.json-formatter-page .tool-metrics-compact-grid p {
   margin: 0;
   padding: 0.38rem 0.55rem;
   border: 0;
@@ -125,7 +131,9 @@
   background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: var(--space-2);
+  font-size: 11px;
 }
 
 .json-formatter-page .tool-error {
@@ -151,6 +159,7 @@
   display: grid;
   justify-items: end;
   gap: var(--space-2);
+  pointer-events: none;
 }
 
 .json-formatter-page .toast {
@@ -158,6 +167,8 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   background: var(--bg-secondary);
+  font-size: 11px;
+  pointer-events: auto;
 }
 
 .json-formatter-page .toast--success {
@@ -168,9 +179,13 @@
   border-color: var(--danger-500);
 }
 
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+/* Tablet */
 @media (max-width: 1100px) {
-  .json-formatter-page .json-workspace,
-  .json-formatter-page .json-metrics {
+  .json-formatter-page .json-workspace {
     grid-template-columns: 1fr;
   }
 
@@ -179,7 +194,70 @@
     border-top: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
   }
 
+  .json-formatter-page .tool-metrics-compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .json-formatter-page .json-formatter-header {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .json-formatter-page .editor-surface {
+    min-height: 300px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 680px) {
+  .json-formatter-page {
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .json-formatter-page .json-toolbar {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .json-formatter-page .json-toolbar-row {
+    gap: 4px;
+  }
+
+  .json-formatter-page .json-toolbar-row:first-child .tool-btn--primary {
+    min-width: 100px;
+  }
+
+  .json-formatter-page .editor-surface {
+    min-height: 220px;
+  }
+
+  .json-formatter-page .tool-metrics-compact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .json-formatter-page .json-panel {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .json-formatter-page .tool-toggle {
+    font-size: 11px;
+  }
+}
+
+/* Mobile small */
+@media (max-width: 480px) {
+  .json-formatter-page .editor-surface {
+    min-height: 170px;
+  }
+
+  .json-formatter-page .panel-header p {
+    display: none;
+  }
+}
+
+/* Desktop HD */
+@media (min-width: 1800px) {
+  .json-formatter-page .editor-surface {
+    min-height: 520px;
   }
 }

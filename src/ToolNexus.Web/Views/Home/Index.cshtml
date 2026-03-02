@@ -46,21 +46,21 @@
 
             <div class="tool-discovery__row" aria-label="Quick utilities">
                 <span class="tool-discovery__label">Quick utilities</span>
-                <div class="tool-discovery__chips">
-                    <a class="tool-discovery__chip" href="/tools/uuid-generator" data-utility="uuid">UUID</a>
-                    <a class="tool-discovery__chip" href="/tools/base64-encode" data-utility="base64">Base64</a>
-                    <a class="tool-discovery__chip" href="/tools/json-formatter" data-utility="json">JSON</a>
+                <div class="tool-discovery__chips" role="list">
+                    <a class="tool-discovery__chip" href="/tools/uuid-generator" data-utility="uuid" role="listitem">UUID</a>
+                    <a class="tool-discovery__chip" href="/tools/base64-encode" data-utility="base64" role="listitem">Base64</a>
+                    <a class="tool-discovery__chip" href="/tools/json-formatter" data-utility="json" role="listitem">JSON</a>
                 </div>
             </div>
 
             <div class="tool-discovery__row" aria-label="Trending tools" id="trendingRow">
                 <span class="tool-discovery__label">Trending</span>
-                <div class="tool-discovery__chips" id="trendingTools"></div>
+                <div class="tool-discovery__chips" id="trendingTools" role="list"></div>
             </div>
 
             <div class="tool-discovery__row" aria-label="Recently used tools" id="recentRow">
                 <span class="tool-discovery__label">Recently used</span>
-                <div class="tool-discovery__chips" id="recentTools"></div>
+                <div class="tool-discovery__chips" id="recentTools" role="list"></div>
             </div>
         </div>
     </header>
@@ -86,7 +86,7 @@
                 _ => "new"
             };
 
-            <a class="card" href="/tools/@slug" data-tool-slug="@slug" data-title="@title" data-description="@description">
+            <a class="card" href="/tools/@slug" data-tool-slug="@slug" data-title="@title" data-description="@description" aria-label="Open @title">
                 <header class="card__header">
                     <div class="card__title-row">
                         <span class="card__icon" aria-hidden="true">@title.Substring(0, Math.Min(title.Length, 2)).ToUpperInvariant()</span>
@@ -213,22 +213,21 @@
     <div class="testimonial-grid" aria-label="Developer testimonials">
         <article class="testimonial-card" data-reveal>
             <span class="testimonial-card__badge" aria-hidden="true">PR</span>
-            <p class="testimonial-card__quote">“ToolNexus replaced half of our ad-hoc scripts. Fast enough to stay in flow, polished enough to trust in demos.”</p>
+            <p class="testimonial-card__quote">"ToolNexus replaced half of our ad-hoc scripts. Fast enough to stay in flow, polished enough to trust in demos."</p>
             <p class="testimonial-card__meta"><strong>Priya R.</strong><span>Staff Engineer, Fintech platform</span></p>
         </article>
         <article class="testimonial-card" data-reveal>
             <span class="testimonial-card__badge" aria-hidden="true">JM</span>
-            <p class="testimonial-card__quote">“The command-palette UX and keyboard shortcuts feel native to modern dev tooling. It’s now part of our daily toolkit.”</p>
+            <p class="testimonial-card__quote">"The command-palette UX and keyboard shortcuts feel native to modern dev tooling. It's now part of our daily toolkit."</p>
             <p class="testimonial-card__meta"><strong>Jordan M.</strong><span>Developer Experience Lead</span></p>
         </article>
         <article class="testimonial-card" data-reveal>
             <span class="testimonial-card__badge" aria-hidden="true">AK</span>
-            <p class="testimonial-card__quote">“Privacy guarantees mattered for our enterprise clients. In-browser processing made the security review straightforward.”</p>
+            <p class="testimonial-card__quote">"Privacy guarantees mattered for our enterprise clients. In-browser processing made the security review straightforward."</p>
             <p class="testimonial-card__meta"><strong>Ava K.</strong><span>Principal Solutions Architect</span></p>
         </article>
     </div>
 </section>
-
 
 <section class="home-surface home-surface--base" data-reveal aria-labelledby="homeGuideHeading">
     <header class="tool-section__header">
@@ -249,8 +248,8 @@
             <p>Format SQL, XML, or YAML so support and QA teams can reproduce issues without manually reformatting long blocks of text.</p>
         </article>
     </div>
-    <section class="static-page__section" aria-labelledby="homeFaqHeading">
-        <h3 id="homeFaqHeading">Homepage FAQ</h3>
+    <section class="static-page__section" aria-labelledby="homeFaqSectionHeading">
+        <h3 id="homeFaqSectionHeading">Homepage FAQ</h3>
         <div class="static-page__faq-list" itemscope itemtype="https://schema.org/FAQPage">
             <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                 <h4 itemprop="name">Which tools should I start with for API debugging?</h4>

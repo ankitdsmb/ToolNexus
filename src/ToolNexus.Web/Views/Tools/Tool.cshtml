@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="~/css/pages/xml-formatter.css" asp-append-version="true" />
 }
 
-<article class="tool-page tn-tool-shell" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
+<article class="tool-page tn-tool-shell upgread_tool_legacy_page" data-slug="@Model.Tool.Slug" data-client-safe-actions="@string.Join(",", Model.Tool.ClientSafeActions)">
   <header class="tool-page__heading tn-tool-header">
     <div>
       <h1>@Model.Tool.Title</h1>
@@ -38,7 +38,7 @@
 
       <div class="tool-page__action-selector">
         <label for="actionSelect">Action</label>
-        <select id="actionSelect">
+        <select id="actionSelect" class="tool-select">
           @foreach (var action in Model.Tool.Actions)
           {
             <option value="@action">@action</option>
@@ -51,9 +51,9 @@
           <span class="spinner" aria-hidden="true"></span>
           <span class="tool-btn__label" data-loading-label="Running…" data-default-label="Run">Run</span>
         </button>
-        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button">Copy</button>
-        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button">Download</button>
-        <button id="shareBtn" class="tool-btn tool-btn--ghost" type="button">Share</button>
+        <button id="copyBtn" class="tool-btn tool-btn--outline" type="button" aria-label="Copy output">Copy</button>
+        <button id="downloadBtn" class="tool-btn tool-btn--ghost" type="button" aria-label="Download output">Download</button>
+        <button id="shareBtn" class="tool-btn tool-btn--ghost" type="button" aria-label="Share output">Share</button>
       </div>
 
       <p class="shortcut-hint" id="editorShortcutHint">Shortcut: Ctrl/Cmd + Enter to run</p>
@@ -155,7 +155,7 @@
 
 @if (Model.Content is not null)
 {
-  <section class="tool-panel">
+  <section class="tool-panel tool-content-rail">
     <h2>How It Works</h2>
     <p>@Model.Content.LongArticle</p>
 

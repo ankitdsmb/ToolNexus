@@ -1,39 +1,46 @@
 <div class="tool-runtime-widget execution-style-utility upgread_tool-widget">
- <header class="tool-local-header upgread_tool-header">
-  <h2 data-bind="tool.title"></h2>
-  <p>Merge multiple text-based files safely in your browser with type-aware strategies.</p>
- </header>
- <section class="tool-local-actions upgread_tool-toolbar" role="toolbar" aria-label="File merge actions">
-  <button class="tool-btn tool-btn--primary" id="mergeBtn" type="button" data-tool-primary-action>
-   Merge
-  </button>
- </section>
- <section class="tool-local-body tool-workspace-unified upgread_tool-workspace">
-  <section class="tool-local-surface" data-workspace-panel="primary">
-   <h2>
-    Upload
-   </h2>
-   <label class="dropzone" for="fileInput" id="dropzone">
-    Drop files or click to select
-   </label>
-   <input accept=".txt,.md,.log,.ini,.cfg,.conf,.cs,.js,.ts,.html,.css,.scss,.sql,.json,.csv,.xml,.yaml,.yml" hidden="" id="fileInput" multiple="" type="file"/>
-   <ul aria-label="Uploaded files" class="file-list" id="fileList">
-   </ul>
+  <header class="tool-local-header upgread_tool-header">
+    <div class="tool-local-header__identity">
+      <h2 data-bind="tool.title"></h2>
+      <p>Merge multiple text-based files safely in your browser with type-aware strategies.</p>
+    </div>
+    <span class="tool-processing-badge" aria-label="Processing mode">Client-side processing</span>
+  </header>
+
+  <section class="tool-local-actions upgread_tool-toolbar" role="toolbar" aria-label="File merge actions">
+    <button class="tool-btn tool-btn--primary" id="mergeBtn" type="button" data-tool-primary-action aria-label="Merge uploaded files">
+      Merge
+    </button>
   </section>
-  <section class="tool-local-surface" data-workspace-panel="secondary">
-   <div class="preview-header">
-    <h2>
-     Preview
-    </h2>
-   </div>
-   <pre class="preview-output" id="previewOutput"></pre>
-   <p class="merge-stats" id="mergeStats">
-    Files: 0 | In: 0 B | Out: 0 B | Time: 0 ms
-   </p>
+
+  <section class="tool-local-body tool-workspace-unified upgread_tool-workspace">
+    <section class="tool-local-surface" data-workspace-panel="primary">
+      <div class="panel-header">
+        <h2>Upload</h2>
+      </div>
+      <label class="dropzone" for="fileInput" id="dropzone">
+        Drop files or click to select
+      </label>
+      <input accept=".txt,.md,.log,.ini,.cfg,.conf,.cs,.js,.ts,.html,.css,.scss,.sql,.json,.csv,.xml,.yaml,.yml"
+             hidden
+             id="fileInput"
+             multiple
+             type="file" />
+      <ul aria-label="Uploaded files" class="file-list" id="fileList" role="list"></ul>
+    </section>
+
+    <section class="tool-local-surface" data-workspace-panel="secondary">
+      <div class="panel-header">
+        <h2>Preview</h2>
+      </div>
+      <pre class="preview-output" id="previewOutput" aria-label="Merge preview output" tabindex="0"></pre>
+      <p class="merge-stats" id="mergeStats" aria-live="polite">
+        Files: 0 | In: 0 B | Out: 0 B | Time: 0 ms
+      </p>
+    </section>
   </section>
- </section>
- <section class="tool-local-metrics">
-  <section hidden="" id="errorBox">
+
+  <section class="tool-local-metrics" aria-live="polite">
+    <section hidden id="errorBox" role="alert" aria-live="assertive"></section>
   </section>
- </section>
 </div>

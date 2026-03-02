@@ -1,26 +1,26 @@
 <div class="tool-runtime-widget execution-style-editor upgread_tool-widget">
     <header class="tool-local-header upgread_tool-header">
-        <div>
+        <div class="tool-local-header__identity">
             <h2><span data-bind="tool.title"></span></h2>
             <p class="json-formatter-description">Validate, format, and minify JSON locally in your browser with deterministic output.</p>
         </div>
-        <span class="json-processing-badge">Client-side processing</span>
+        <span class="json-processing-badge" aria-label="Processing mode">Client-side processing</span>
     </header>
 
     <section class="tool-local-actions json-toolbar upgread_tool-toolbar" role="toolbar" aria-label="JSON formatter actions">
         <div class="json-toolbar-row">
-            <button id="formatBtn" class="tool-btn tool-btn--primary tool-action-primary" type="button" data-tool-primary-action>Format</button>
+            <button id="formatBtn" class="tool-btn tool-btn--primary tool-action-primary" type="button" data-tool-primary-action aria-label="Format JSON">Format</button>
         </div>
-        <div class="json-toolbar-row tool-action-group-transform" aria-label="Transform actions">
-            <button id="minifyBtn" class="tool-btn" type="button">Minify</button>
-            <button id="validateBtn" class="tool-btn" type="button">Validate only</button>
+        <div class="json-toolbar-row tool-action-group-transform" role="group" aria-label="Transform actions">
+            <button id="minifyBtn" class="tool-btn" type="button" aria-label="Minify JSON">Minify</button>
+            <button id="validateBtn" class="tool-btn" type="button" aria-label="Validate JSON only">Validate only</button>
         </div>
-        <div class="json-toolbar-row tool-action-group-utility" aria-label="Utility actions">
-            <button id="clearBtn" class="tool-btn" type="button">Clear</button>
-            <button id="copyBtn" class="tool-btn" type="button">Copy output</button>
-            <button id="downloadBtn" class="tool-btn" type="button">Download JSON</button>
+        <div class="json-toolbar-row tool-action-group-utility" role="group" aria-label="Utility actions">
+            <button id="clearBtn" class="tool-btn" type="button" aria-label="Clear input">Clear</button>
+            <button id="copyBtn" class="tool-btn" type="button" aria-label="Copy output to clipboard">Copy output</button>
+            <button id="downloadBtn" class="tool-btn" type="button" aria-label="Download JSON file">Download JSON</button>
         </div>
-        <div class="json-toolbar-row">
+        <div class="json-toolbar-row json-toolbar-row--options" role="group" aria-label="Format options">
             <span id="processingIndicator" class="tool-runtime-strip-compact" aria-live="polite">Ready</span>
             <label class="tool-toggle" for="indentSizeSelect">Indentation
                 <select id="indentSizeSelect" class="tool-select" aria-label="Indentation size">
@@ -28,8 +28,8 @@
                     <option value="4">4 spaces</option>
                 </select>
             </label>
-            <label class="tool-toggle"><input id="sortKeysToggle" type="checkbox" /> Sort object keys</label>
-            <label class="tool-toggle"><input id="autoFormatToggle" type="checkbox" /> Auto format on input</label>
+            <label class="tool-toggle"><input id="sortKeysToggle" type="checkbox" /> Sort keys</label>
+            <label class="tool-toggle"><input id="autoFormatToggle" type="checkbox" /> Auto format</label>
             <label class="tool-toggle"><input id="wrapToggle" type="checkbox" /> Word wrap</label>
         </div>
     </section>
@@ -40,26 +40,26 @@
                 <h2>Input JSON</h2>
                 <p>Ctrl+Enter to format · Ctrl+L to clear</p>
             </div>
-            <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor"></div>
+            <div id="jsonEditor" class="editor-surface" aria-label="JSON input editor" role="textbox" aria-multiline="true"></div>
         </section>
 
         <section class="tool-local-surface json-panel json-panel--output" data-workspace-panel="secondary">
             <div class="panel-header tool-runtime-strip-compact">
                 <h2>Output JSON</h2>
-                <p id="resultStatus">Ready for formatting.</p>
+                <p id="resultStatus" aria-live="polite">Ready for formatting.</p>
             </div>
-            <div id="outputEditor" class="editor-surface" aria-label="JSON output editor"></div>
+            <div id="outputEditor" class="editor-surface" aria-label="JSON output editor" role="textbox" aria-multiline="true" aria-readonly="true"></div>
         </section>
     </section>
 
-    <section class="tool-local-metrics tool-metrics-compact-grid" aria-live="polite">
+    <section class="tool-local-metrics tool-metrics-compact-grid" aria-live="polite" aria-label="Execution metrics">
         <p><span>Validation</span><strong id="validationState">Awaiting input</strong></p>
         <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
         <p><span>Input size</span><strong id="payloadStats">0 chars / 0 lines</strong></p>
         <p><span>Output size</span><strong id="outputStats">0 chars / 0 lines</strong></p>
     </section>
 
-    <section id="errorBox" class="tool-error" hidden>
+    <section id="errorBox" class="tool-error" hidden role="alert" aria-live="assertive">
         <h3 id="errorTitle" class="tool-error-title"></h3>
         <p id="errorDetail" class="tool-error-detail"></p>
         <p id="errorLocation" class="tool-error-location" hidden></p>

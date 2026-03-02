@@ -1,201 +1,123 @@
-<div class="tool-runtime-widget execution-style-editor">
- <header class="tool-local-header">
-  <div>
-   <h2>
-    <span data-bind="tool.title">
-    </span>
-   </h2>
-   <p class="sql-formatter-description">
-    Beautify SQL safely in your browser with dialect-aware, deterministic formatting.
-   </p>
-  </div>
-  <span class="sql-processing-badge">
-   Client-side processing
-  </span>
- </header>
- <section class="tool-local-actions sql-control-ribbon" role="toolbar" aria-label="SQL formatter controls">
-  <div class="sql-toolbar-row tool-action-group-primary" role="group" aria-label="Primary action">
-   <button class="tool-btn tool-btn--primary" id="formatBtn" type="button" data-tool-primary-action>
-    Format
-   </button>
-  </div>
-  <div class="sql-toolbar-row tool-action-group-transform" role="group" aria-label="Transform actions">
-   <button class="tool-btn" id="clearBtn" type="button">
-    Clear
-   </button>
-   <button class="tool-btn" id="copyBtn" type="button">
-    Copy output
-   </button>
-   <button class="tool-btn" id="downloadBtn" type="button">
-    Download .sql
-   </button>
-  </div>
-  <div class="sql-toolbar-row tool-action-group-utility" role="group" aria-label="Formatting options">
-   <label class="tool-toggle">
-    <input id="autoFormatToggle" type="checkbox"/>
-    Auto format
-   </label>
-   <label class="tool-toggle">
-    <input checked="" id="commentToggle" type="checkbox"/>
-    Preserve comments
-   </label>
-   <label class="tool-toggle">
-    <input checked="" id="blankLineToggle" type="checkbox"/>
-    Preserve blank lines
-   </label>
-  </div>
-  <div class="sql-toolbar-row tool-action-group-utility" role="group" aria-label="SQL style controls">
-   <label class="tool-toggle" for="dialectSelect">
-    Dialect
-    <select aria-label="SQL dialect" class="tool-select" id="dialectSelect">
-     <option value="ansi">
-      ANSI SQL
-     </option>
-     <option value="mysql">
-      MySQL
-     </option>
-     <option value="postgresql">
-      PostgreSQL
-     </option>
-     <option value="sqlserver">
-      SQL Server
-     </option>
-     <option value="sqlite">
-      SQLite
-     </option>
-    </select>
-   </label>
-   <label class="tool-toggle" for="keywordCaseSelect">
-    Keyword case
-    <select aria-label="Keyword case" class="tool-select" id="keywordCaseSelect">
-     <option value="upper">
-      UPPER
-     </option>
-     <option value="lower">
-      lower
-     </option>
-     <option value="preserve">
-      Preserve
-     </option>
-    </select>
-   </label>
-   <label class="tool-toggle" for="indentSizeSelect">
-    Indent size
-    <select aria-label="Indent size" class="tool-select" id="indentSizeSelect">
-     <option value="2">
-      2 spaces
-     </option>
-     <option selected="" value="4">
-      4 spaces
-     </option>
-    </select>
-   </label>
-   <label class="tool-toggle" for="indentTypeSelect">
-    Indent style
-    <select aria-label="Indent style" class="tool-select" id="indentTypeSelect">
-     <option selected="" value="spaces">
-      Spaces
-     </option>
-     <option value="tabs">
-      Tabs
-     </option>
-    </select>
-   </label>
-   <label class="tool-toggle" for="commaStyleSelect">
-    Comma style
-    <select aria-label="Comma style" class="tool-select" id="commaStyleSelect">
-     <option selected="" value="trailing">
-      Trailing
-     </option>
-     <option value="leading">
-      Leading
-     </option>
-    </select>
-   </label>
-   <label class="tool-toggle" for="modeSelect">
-    Mode
-    <select aria-label="Formatting mode" class="tool-select" id="modeSelect">
-     <option selected="" value="pretty">
-      Pretty
-     </option>
-     <option value="compact">
-      Compact
-     </option>
-    </select>
-   </label>
-  </div>
- </section>
- <section class="tool-local-body">
-  <section class="tool-local-surface">
-   <div class="panel-header">
-    <h2>
-     Raw SQL input
-    </h2>
-    <p>
-     Ctrl+Enter to format · Ctrl+L to clear
-    </p>
-   </div>
-   <textarea aria-label="SQL input" class="sql-editor" id="sqlInput" spellcheck="false"></textarea>
+<div class="tool-runtime-widget execution-style-editor upgread_tool-widget">
+  <header class="tool-local-header upgread_tool-header">
+    <div class="tool-local-header__identity">
+      <h2>
+        <span data-bind="tool.title"></span>
+      </h2>
+      <p class="sql-formatter-description">
+        Beautify SQL safely in your browser with dialect-aware, deterministic formatting.
+      </p>
+    </div>
+    <span class="sql-processing-badge" aria-label="Processing mode">Client-side processing</span>
+  </header>
+
+  <section class="tool-local-actions sql-control-ribbon upgread_tool-toolbar" role="toolbar" aria-label="SQL formatter controls">
+    <div class="sql-toolbar-row tool-action-group-primary" role="group" aria-label="Primary action">
+      <button class="tool-btn tool-btn--primary" id="formatBtn" type="button" data-tool-primary-action aria-label="Format SQL">
+        Format
+      </button>
+    </div>
+    <div class="sql-toolbar-row tool-action-group-transform" role="group" aria-label="Output actions">
+      <button class="tool-btn" id="clearBtn" type="button" aria-label="Clear input">Clear</button>
+      <button class="tool-btn" id="copyBtn" type="button" aria-label="Copy output to clipboard">Copy output</button>
+      <button class="tool-btn" id="downloadBtn" type="button" aria-label="Download SQL file">Download .sql</button>
+    </div>
+    <div class="sql-toolbar-row tool-action-group-utility" role="group" aria-label="Formatting options">
+      <label class="tool-toggle">
+        <input id="autoFormatToggle" type="checkbox" />
+        Auto format
+      </label>
+      <label class="tool-toggle">
+        <input checked id="commentToggle" type="checkbox" />
+        Preserve comments
+      </label>
+      <label class="tool-toggle">
+        <input checked id="blankLineToggle" type="checkbox" />
+        Preserve blank lines
+      </label>
+    </div>
+    <div class="sql-toolbar-row tool-action-group-utility" role="group" aria-label="SQL style controls">
+      <label class="tool-toggle" for="dialectSelect">
+        Dialect
+        <select aria-label="SQL dialect" class="tool-select" id="dialectSelect">
+          <option value="ansi">ANSI SQL</option>
+          <option value="mysql">MySQL</option>
+          <option value="postgresql">PostgreSQL</option>
+          <option value="sqlserver">SQL Server</option>
+          <option value="sqlite">SQLite</option>
+        </select>
+      </label>
+      <label class="tool-toggle" for="keywordCaseSelect">
+        Keyword case
+        <select aria-label="Keyword case" class="tool-select" id="keywordCaseSelect">
+          <option value="upper">UPPER</option>
+          <option value="lower">lower</option>
+          <option value="preserve">Preserve</option>
+        </select>
+      </label>
+      <label class="tool-toggle" for="indentSizeSelect">
+        Indent size
+        <select aria-label="Indent size" class="tool-select" id="indentSizeSelect">
+          <option value="2">2 spaces</option>
+          <option selected value="4">4 spaces</option>
+        </select>
+      </label>
+      <label class="tool-toggle" for="indentTypeSelect">
+        Indent style
+        <select aria-label="Indent style" class="tool-select" id="indentTypeSelect">
+          <option selected value="spaces">Spaces</option>
+          <option value="tabs">Tabs</option>
+        </select>
+      </label>
+      <label class="tool-toggle" for="commaStyleSelect">
+        Comma style
+        <select aria-label="Comma style" class="tool-select" id="commaStyleSelect">
+          <option selected value="trailing">Trailing</option>
+          <option value="leading">Leading</option>
+        </select>
+      </label>
+      <label class="tool-toggle" for="modeSelect">
+        Mode
+        <select aria-label="Formatting mode" class="tool-select" id="modeSelect">
+          <option selected value="pretty">Pretty</option>
+          <option value="compact">Compact</option>
+        </select>
+      </label>
+    </div>
   </section>
-  <section class="tool-local-surface">
-   <div class="panel-header">
-    <h2>
-     Formatted SQL output
-    </h2>
-    <p id="resultStatus">
-     Ready for formatting.
-    </p>
-   </div>
-   <textarea aria-label="SQL output" class="sql-editor" id="sqlOutput" readonly="" spellcheck="false"></textarea>
+
+  <section class="tool-local-body tool-workspace-unified upgread_tool-workspace">
+    <section class="tool-local-surface" data-workspace-panel="primary">
+      <div class="panel-header">
+        <h2>Raw SQL input</h2>
+        <p>Ctrl+Enter to format · Ctrl+L to clear</p>
+      </div>
+      <textarea aria-label="SQL input" class="sql-editor" id="sqlInput" spellcheck="false"></textarea>
+    </section>
+    <section class="tool-local-surface" data-workspace-panel="secondary">
+      <div class="panel-header">
+        <h2>Formatted SQL output</h2>
+        <p id="resultStatus" aria-live="polite">Ready for formatting.</p>
+      </div>
+      <textarea aria-label="SQL output" class="sql-editor" id="sqlOutput" readonly spellcheck="false"></textarea>
+    </section>
   </section>
- </section>
- <section class="tool-local-metrics">
-  <section aria-live="assertive" class="tool-error" hidden="" id="errorBox" role="alert">
-   <h2 class="tool-error-title" id="errorTitle">
-   </h2>
-   <p class="tool-error-detail" id="errorDetail">
-   </p>
-   <p class="tool-error-location" hidden="" id="errorLocation">
-   </p>
+
+  <section class="tool-local-metrics">
+    <section aria-live="assertive" class="tool-error" hidden id="errorBox" role="alert">
+      <h2 class="tool-error-title" id="errorTitle"></h2>
+      <p class="tool-error-detail" id="errorDetail"></p>
+      <p class="tool-error-location" hidden id="errorLocation"></p>
+    </section>
+    <section aria-live="polite" class="sql-metrics" aria-label="SQL metrics">
+      <p><span>Input</span><strong id="inputStats">0 chars / 0 lines</strong></p>
+      <p><span>Output</span><strong id="outputStats">0 chars / 0 lines</strong></p>
+      <p><span>Execution</span><strong id="perfTime">0 ms</strong></p>
+      <p><span>Length</span><strong id="charCount">0 chars</strong></p>
+    </section>
+    <section class="tool-warning" hidden id="processingIndicator" aria-live="polite">
+      Formatting large SQL payload…
+    </section>
+    <section aria-atomic="true" aria-live="polite" class="toast-region" id="toastRegion"></section>
   </section>
-  <section aria-live="polite" class="sql-metrics">
-   <p>
-    <span>
-     Input
-    </span>
-    <strong id="inputStats">
-     0 chars / 0 lines
-    </strong>
-   </p>
-   <p>
-    <span>
-     Output
-    </span>
-    <strong id="outputStats">
-     0 chars / 0 lines
-    </strong>
-   </p>
-   <p>
-    <span>
-     Execution
-    </span>
-    <strong id="perfTime">
-     0 ms
-    </strong>
-   </p>
-   <p>
-    <span>
-     Length
-    </span>
-    <strong id="charCount">
-     0 chars
-    </strong>
-   </p>
-  </section>
-  <section class="tool-warning" hidden="" id="processingIndicator">
-   Formatting large SQL payload…
-  </section>
-  <section aria-atomic="true" aria-live="polite" class="toast-region" id="toastRegion">
-  </section>
- </section>
 </div>
