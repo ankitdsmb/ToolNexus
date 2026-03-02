@@ -1341,6 +1341,7 @@ export function createToolRuntime({
     const safeMount = async () => {
       const mountStartedAt = now();
       emit('mount_start', { toolSlug: slug });
+      emit('lifecycle_stage_trace', { toolSlug: slug, metadata: { stage: 'mount_start' } });
 
       let legacyBridgeUsed = false;
       const strictMode = isStrictModeEnabled();
@@ -1350,13 +1351,30 @@ export function createToolRuntime({
         const contractRootSnapshot = freezeDomContractRoots(root);
         let result;
         try {
+          emit('lifecycle_stage_trace', { toolSlug: slug, metadata: { stage: 'lifecycle_create_init_start' } });
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+          emit('lifecycle_stage_trace', {
+            toolSlug: slug,
+            metadata: {
+              stage: 'lifecycle_create_init_complete',
+              mode: result?.mode ?? 'unknown',
+              trace: Array.isArray(result?.trace) ? result.trace : []
+            }
+          });
           const shouldAssertLifecycleRoots = strictMode && String(result?.mode ?? '') === 'module.lifecycle-contract';
           if (shouldAssertLifecycleRoots) {
             assertDomContractRootsUnchanged(contractRootSnapshot, 'mount.lifecycle');
           }
           guardInvalidLifecycleResult(result, { slug, mode: result?.mode ?? 'unknown', phase: 'mount.result' });
         } catch (error) {
+          emit('lifecycle_stage_trace', {
+            toolSlug: slug,
+            metadata: {
+              stage: 'lifecycle_create_init_failed',
+              error: error?.message ?? String(error),
+              code: error?.code ?? 'unknown'
+            }
+          });
           if (strictMode || shouldExposeRuntimeErrors()) {
             console.error(`[ToolRuntime DEV] Lifecycle crash for "${slug}"`, error);
             emit('lifecycle_crash_dev', {
@@ -1401,6 +1419,11 @@ export function createToolRuntime({
             throw new Error(`Strict runtime mode disallows legacy execution bridge for "${slug}".`);
           }
           legacyBridgeUsed = true;
+          lifecycleLogger.warn(`Lifecycle for "${slug}" did not mount UI; entering compatibility bridge.`, {
+            mounted,
+            lifecycleMode,
+            hasRootChildren: Boolean(root.firstElementChild)
+          });
           emit('compatibility_mode_used', { toolSlug: slug, modeUsed: 'fallback' });
           const legacyExecution = await legacyExecuteTool({ slug, root, module, context: executionContext });
           executionContext.addCleanup(legacyExecution.cleanup);
@@ -1446,6 +1469,9 @@ export function createToolRuntime({
         }
 
         if (ensureRootFallback(root, slug)) {
+          fallbackLogger.warn(`Fallback container activated for "${slug}" after lifecycle evaluation.`, {
+            lifecycleMode: String(result?.mode ?? 'unknown')
+          });
           emit('mount_fallback_content', { toolSlug: slug });
         }
 
