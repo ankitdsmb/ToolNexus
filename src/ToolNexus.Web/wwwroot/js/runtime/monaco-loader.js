@@ -5,6 +5,9 @@ const MONACO_ASSET_INVALID_EVENT = 'monaco_asset_invalid';
 
 let monacoPromise = null;
 
+const MONACO_SINGLETON_KEY = '__toolnexus_monaco';
+const MONACO_SINGLETON_PROMISE_KEY = '__toolnexus_monaco_promise';
+
 function emitMonacoAssetInvalidWarning() {
   console.warn(`[runtime] ${MONACO_ASSET_INVALID_EVENT}`);
 }
@@ -146,9 +149,13 @@ function activateMonacoEnvironment() {
 }
 
 export async function loadMonaco() {
-  if (window.monaco?.editor) {
+  if (window[MONACO_SINGLETON_KEY]?.editor) {
     logRuntimeMonaco('Monaco already loaded');
-    return window.monaco;
+    return window[MONACO_SINGLETON_KEY];
+  }
+
+  if (window[MONACO_SINGLETON_PROMISE_KEY]) {
+    return window[MONACO_SINGLETON_PROMISE_KEY];
   }
 
   if (monacoPromise) {
@@ -181,29 +188,37 @@ export async function loadMonaco() {
       window.monaco = resolvedMonaco;
     }
 
-    if (!window.monaco?.editor) {
+    const monaco = resolvedMonaco ?? window.monaco ?? null;
+
+    if (!monaco?.editor) {
       emitMonacoAssetInvalidWarning();
-      return null;
+      throw new Error('[runtime] Monaco namespace unavailable after loader resolution');
     }
 
+    window[MONACO_SINGLETON_KEY] = monaco;
     logRuntimeMonaco('Monaco ready');
-    return window.monaco;
+    return monaco;
   })().catch((error) => {
     monacoPromise = null;
+    window[MONACO_SINGLETON_PROMISE_KEY] = null;
 
     if (error?.message === 'Invalid Monaco AMD loader detected') {
       throw error;
     }
 
     console.warn('[runtime] Monaco unavailable; falling back to basic editors', error);
-    return null;
+    throw error;
   });
+
+  window[MONACO_SINGLETON_PROMISE_KEY] = monacoPromise;
 
   return monacoPromise;
 }
 
 export function resetMonacoLoaderForTesting() {
   monacoPromise = null;
+  window[MONACO_SINGLETON_KEY] = null;
+  window[MONACO_SINGLETON_PROMISE_KEY] = null;
 }
 
 window.ToolNexusRuntimeServices ??= {};

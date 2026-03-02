@@ -188,9 +188,16 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(output) complete');
         };
 
-        state.monaco = await loadMonaco();
+        let monaco = null;
+        try {
+          monaco = await loadMonaco();
+        } catch (error) {
+          console.error('[json-formatter] Monaco load failed', error);
+        }
 
-        const monacoLoaded = Boolean(state.monaco?.editor);
+        state.monaco = monaco;
+
+        const monacoLoaded = Boolean(monaco?.editor);
 
         if (monacoLoaded) {
           buildMonacoEditors();
