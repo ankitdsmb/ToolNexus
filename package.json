@@ -19,7 +19,8 @@
     "env:setup": "bash ./scripts/setup-toolnexus.sh",
     "env:maintenance": "bash ./scripts/maintenance-toolnexus.sh full",
     "env:maintenance:quick": "bash ./scripts/maintenance-toolnexus.sh quick",
-    "check:ui-immunity": "node scripts/ui-immunity-guard.mjs"
+    "check:ui-immunity": "node scripts/ui-immunity-guard.mjs",
+    "check:monaco-assets": "node scripts/check-monaco-assets.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
