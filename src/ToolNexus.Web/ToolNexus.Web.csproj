@@ -20,7 +20,4 @@
     <ProjectReference Include="..\ToolNexus.Infrastructure\ToolNexus.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\templete_files\css\" />
-  </ItemGroup>
 </Project>
