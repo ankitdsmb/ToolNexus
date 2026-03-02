@@ -71,6 +71,42 @@ describe('execution density validator', () => {
     expect(result.violations.some((item) => item.ruleId === 'D4')).toBe(true);
   });
 
+
+  test('does not flag missing primary action for passive runtime surfaces', () => {
+    document.body.innerHTML = `
+      <div data-tool-shell style="padding: 16px;">
+        <header data-tool-header style="height: 72px;"></header>
+        <div data-tool-status style="height: 40px; opacity: 1;">READY</div>
+        <section class="tool-runtime-widget" style="display:grid; gap: 12px;">
+          <div class="tool-local-actions" style="height: 40px; opacity:1;"></div>
+          <textarea style="height: 320px; opacity:1;"></textarea>
+        </section>
+      </div>
+    `;
+
+    const result = validateExecutionDensity(document.body);
+    expect(result.violations.some((item) => item.ruleId === 'D5')).toBe(false);
+  });
+
+  test('flags ambiguous primary hierarchy when multiple actions exist without primary marker', () => {
+    document.body.innerHTML = `
+      <div data-tool-shell style="padding: 16px;">
+        <header data-tool-header style="height: 72px;"></header>
+        <div data-tool-status style="height: 40px; opacity: 1;">READY</div>
+        <section class="tool-runtime-widget" style="display:grid; gap: 12px;">
+          <div class="tool-local-actions" style="height: 40px; opacity:1;">
+            <button class="tool-btn">Run</button>
+            <button class="tool-btn">Copy</button>
+          </div>
+          <textarea style="height: 320px; opacity:1;"></textarea>
+        </section>
+      </div>
+    `;
+
+    const result = validateExecutionDensity(document.body);
+    expect(result.violations.some((item) => item.ruleId === 'D5')).toBe(true);
+  });
+
   test('nested surface fail', async () => {
     document.body.innerHTML = `
       <div data-tool-shell style="padding: 24px;">
