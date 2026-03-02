@@ -1,4 +1,5 @@
 import { EXECUTION_UI_IMMUNITY, scoreFromViolations, severityForRule } from './execution-ui-immunity-constants.js';
+import { runtimeMigrationLogger } from './runtime-migration-logger.js';
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   toolbarMinHeightPx: 40,
@@ -163,9 +164,25 @@ export function validateExecutionUiLaw(root, options = {}) {
   const score = scoreFromViolations(violations);
   const passed = violations.length === 0;
 
-  if (!passed && globalThis.console?.warn) {
-    globalThis.console.warn('[ExecutionUiLaw] violations detected; tool load continues.', { violations, score });
+  if (!passed) {
+    const severitySummary = violations.reduce((acc, violation) => {
+      const severity = String(violation.severity || 'unknown').toLowerCase();
+      acc[severity] = (acc[severity] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    runtimeMigrationLogger.warn('ExecutionUiLaw validation failed; summarized findings emitted.', {
+      score,
+      totalViolations: violations.length,
+      severitySummary
+    });
+
+    runtimeMigrationLogger.debug('ExecutionUiLaw violation details.', { violations });
+  } else {
+    runtimeMigrationLogger.info('ExecutionUiLaw validation passed.', { score });
   }
+
+  runtimeMigrationLogger.summary('info', 'ExecutionUiLaw validation summary');
 
   return { passed, score, violations };
 }
