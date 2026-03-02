@@ -1,51 +1,106 @@
-@model ToolNexus.Web.Models.Layout.LayoutFooterViewModel
+@* ToolNexus — Execution Ecosystem Footer | Runtime Safe *@
+<footer class="upgread_footer" role="contentinfo">
+    <div class="upgread_footer__inner">
 
-<footer class="footer" role="contentinfo">
-    <div class="footer__container">
-        <div class="footer__columns" role="navigation" aria-label="Footer navigation">
-            <section class="footer__column" aria-labelledby="footerToolsHeading">
-                <h3 id="footerToolsHeading">Tools</h3>
-                <a href="/tools/json-formatter">JSON Formatter</a>
-                <a href="/tools/json-to-yaml">YAML Converter</a>
-                <a href="/tools/uuid-generator">UUID</a>
-            </section>
-
-            <section class="footer__column" aria-labelledby="footerResourcesHeading">
-                <h3 id="footerResourcesHeading">Resources</h3>
-                <a href="/docs">Docs</a>
-                <a href="/roadmap">Roadmap</a>
-                <a href="/changelog">Changelog</a>
-            </section>
-
-            <section class="footer__column" aria-labelledby="footerCommunityHeading">
-                <h3 id="footerCommunityHeading">Community</h3>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-                <a href="/request-tool">Request Tool</a>
-                <a href="/feedback">Feedback</a>
-            </section>
-
-            <section class="footer__column" aria-labelledby="footerTrustHeading">
-                <h3 id="footerTrustHeading">Trust</h3>
-                <a href="/privacy">Client-side Processing</a>
-                <a href="/privacy">Privacy First</a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer">Open Source ↗</a>
-            </section>
+        <div class="upgread_footer__brand-col">
+            <a href="/" class="upgread_brand upgread_brand--sm" aria-label="ToolNexus">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <rect x="2" y="2" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9" />
+                    <rect x="11" y="2" width="7" height="7" rx="1.5" fill="currentColor" opacity=".55" />
+                    <rect x="2" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity=".55" />
+                    <rect x="11" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9" />
+                </svg>
+                <span class="upgread_brand__name">ToolNexus</span>
+            </a>
+            <p class="upgread_footer__tagline">
+                Developer utilities that run entirely in your browser. Fast, private, deterministic.
+            </p>
+            <div class="upgread_footer__social" aria-label="Social links">
+                <a href="https://github.com" class="upgread_social-link" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.58 9.58 0 0112 6.8c.85.004 1.7.115 2.5.337 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z" />
+                    </svg>
+                </a>
+                <a href="https://facebook.com" class="upgread_social-link" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M22 12a10 10 0 10-11.56 9.88V14.89h-2.9V12h2.9v-2.16c0-2.86 1.7-4.44 4.31-4.44 1.25 0 2.55.22 2.55.22v2.8h-1.44c-1.42 0-1.86.88-1.86 1.78V12h3.17l-.51 2.89H14v6.99A10 10 0 0022 12z" />
+                    </svg>
+                </a>
+                <a href="https://instagram.com" class="upgread_social-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.975.975 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.851s-.012 3.585-.07 4.851c-.062 1.366-.334 2.633-1.308 3.608-.975.975-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308C2.497 19.483 2.226 18.216 2.164 16.85 2.106 15.584 2.094 15.204 2.094 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.447 2.497 5.714 2.226 7.08 2.164 8.346 2.106 8.726 2.094 12 2.094zM12 0C8.741 0 8.332.013 7.052.072 2.695.272.273 2.69.073 7.052.013 8.332 0 8.741 0 12c0 3.259.013 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.987 8.741 24 12 24c3.259 0 3.668-.013 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.013 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                    </svg>
+                </a>
+            </div>
         </div>
 
-        <div class="footer__bottom-strip" aria-label="System information and keyboard shortcuts">
-            <div class="footer__meta">
-                <span class="footer__brand">© 2026 ToolNexus</span>
-                <span class="footer__separator" aria-hidden="true">│</span>
-                <span class="footer__tagline">Built for developer velocity ⚡</span>
-                <span class="footer__separator footer__separator--hide-mobile" aria-hidden="true">│</span>
-                <span class="footer__version footer__version--hide-mobile">@Model.VersionDisplay · Build @Model.BuildNumber</span>
+        <div class="upgread_footer__links-grid">
+            <div class="upgread_footer__col">
+                <h4 class="upgread_footer__col-title">Formatters</h4>
+                <ul class="upgread_footer__list">
+                    <li><a href="/tools/json-formatter">JSON Formatter</a></li>
+                    <li><a href="/tools/html-formatter">HTML Formatter</a></li>
+                    <li><a href="/tools/css-formatter">CSS Formatter</a></li>
+                    <li><a href="/tools/xml-formatter">XML Formatter</a></li>
+                    <li><a href="/tools/sql-formatter">SQL Formatter</a></li>
+                </ul>
             </div>
-            <span class="footer__shortcuts" aria-label="Keyboard shortcuts">
-                <kbd>⌘K</kbd> Palette
-                <span aria-hidden="true">·</span>
-                <kbd>⌘Enter</kbd> Run
-                <span aria-hidden="true">·</span>
-                <kbd>⌘⇧S</kbd> Share
+            <div class="upgread_footer__col">
+                <h4 class="upgread_footer__col-title">Converters</h4>
+                <ul class="upgread_footer__list">
+                    <li><a href="/tools/html-to-markdown">HTML → Markdown</a></li>
+                    <li><a href="/tools/json-to-csv">JSON → CSV</a></li>
+                    <li><a href="/tools/base64">Base64 Encode/Decode</a></li>
+                    <li><a href="/tools/url-encode">URL Encoder</a></li>
+                    <li><a href="/tools/timestamp">Timestamp Converter</a></li>
+                </ul>
+            </div>
+            <div class="upgread_footer__col">
+                <h4 class="upgread_footer__col-title">Minifiers</h4>
+                <ul class="upgread_footer__list">
+                    <li><a href="/tools/js-minifier">JS Minifier</a></li>
+                    <li><a href="/tools/css-minifier">CSS Minifier</a></li>
+                    <li><a href="/tools/html-minifier">HTML Minifier</a></li>
+                    <li><a href="/tools/json-minifier">JSON Minifier</a></li>
+                </ul>
+            </div>
+            <div class="upgread_footer__col">
+                <h4 class="upgread_footer__col-title">Platform</h4>
+                <ul class="upgread_footer__list">
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/tools">All Tools</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/privacy">Privacy</a></li>
+                    <li><a href="/terms">Terms</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="upgread_footer__bar">
+        <span class="upgread_footer__copy">
+            © @DateTime.Now.Year ToolNexus &mdash; All tools run client-side. Your data never leaves your browser.
+        </span>
+        <div class="upgread_footer__trust-chips" aria-label="Trust indicators">
+            <span class="upgread_trust-chip">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 1L2 4v4c0 3.31 2.56 6.41 6 7 3.44-.59 6-3.69 6-7V4L8 1z" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+                Private
+            </span>
+            <span class="upgread_trust-chip">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                No signup
+            </span>
+            <span class="upgread_trust-chip">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+                    <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                </svg>
+                Always free
             </span>
         </div>
     </div>
