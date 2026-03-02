@@ -212,6 +212,12 @@ function createLocalMonacoWorker(label) {
   const workerPath = createWorkerUrlForLabel(label);
   const workerUrl = createLocalWorkerAbsoluteUrl(workerPath);
 
+  logRuntimeMonaco('Monaco worker URL resolved', {
+    label: label || 'default',
+    workerPath,
+    workerUrl
+  });
+
   return new Worker(workerUrl, {
     name: `toolnexus-monaco-${label || 'editor'}-worker`
   });
