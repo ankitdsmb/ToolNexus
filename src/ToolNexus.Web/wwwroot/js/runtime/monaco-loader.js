@@ -3,6 +3,26 @@ const MONACO_LOADER_URL = `${MONACO_BASE}/loader.js`;
 const MONACO_EDITOR_MAIN_URL = `${MONACO_BASE}/editor/editor.main.js`;
 const MONACO_ASSET_INVALID_EVENT = 'monaco_asset_invalid';
 
+const MONACO_WORKER_PATHS = Object.freeze({
+  json: '/lib/monaco/vs/language/json/json.worker.js',
+  css: '/lib/monaco/vs/language/css/css.worker.js',
+  html: '/lib/monaco/vs/language/html/html.worker.js',
+  typescript: '/lib/monaco/vs/language/typescript/ts.worker.js',
+  default: '/lib/monaco/vs/editor/editor.worker.js'
+});
+
+const MONACO_WORKER_LABELS = Object.freeze({
+  json: MONACO_WORKER_PATHS.json,
+  css: MONACO_WORKER_PATHS.css,
+  scss: MONACO_WORKER_PATHS.css,
+  less: MONACO_WORKER_PATHS.css,
+  html: MONACO_WORKER_PATHS.html,
+  handlebars: MONACO_WORKER_PATHS.html,
+  razor: MONACO_WORKER_PATHS.html,
+  typescript: MONACO_WORKER_PATHS.typescript,
+  javascript: MONACO_WORKER_PATHS.typescript
+});
+
 let monacoPromise = null;
 let monacoLoadSequence = 0;
 
@@ -83,7 +103,11 @@ async function isAssetAvailable(assetUrl) {
 }
 
 async function assertMonacoAssetsAvailable() {
-  const requiredAssets = [MONACO_LOADER_URL, MONACO_EDITOR_MAIN_URL];
+  const requiredAssets = [
+    MONACO_LOADER_URL,
+    MONACO_EDITOR_MAIN_URL,
+    ...new Set([...Object.values(MONACO_WORKER_PATHS), ...Object.values(MONACO_WORKER_LABELS)])
+  ];
 
   const missingAssets = [];
   for (const assetUrl of requiredAssets) {
@@ -145,28 +169,67 @@ function requireMonaco() {
 }
 
 function createWorkerUrlForLabel(label) {
-  switch (label) {
-    case 'json':
-      return '/lib/monaco/vs/language/json/json.worker.js';
-    case 'css':
-    case 'scss':
-    case 'less':
-      return '/lib/monaco/vs/language/css/css.worker.js';
-    case 'html':
-    case 'handlebars':
-    case 'razor':
-      return '/lib/monaco/vs/language/html/html.worker.js';
-    case 'typescript':
-    case 'javascript':
-      return '/lib/monaco/vs/language/typescript/ts.worker.js';
-    default:
-      return '/lib/monaco/vs/editor/editor.worker.js';
+  if (!label) {
+    return MONACO_WORKER_PATHS.default;
+  }
+
+  return MONACO_WORKER_LABELS[label] ?? MONACO_WORKER_PATHS.default;
+}
+
+function createLocalWorkerAbsoluteUrl(workerPath) {
+  const workerUrl = new URL(workerPath, window.location.origin);
+  if (workerUrl.origin !== window.location.origin) {
+    throw new Error(`[runtime] Monaco worker rejected non-local origin: ${workerUrl.href}`);
+  }
+
+  return workerUrl.href;
+}
+
+function createLocalMonacoWorker(label) {
+  const workerPath = createWorkerUrlForLabel(label);
+  const workerUrl = createLocalWorkerAbsoluteUrl(workerPath);
+
+  return new Worker(workerUrl, {
+    name: `toolnexus-monaco-${label || 'editor'}-worker`
+  });
+}
+
+async function assertMonacoWorkerMapping() {
+  const labelsToVerify = [...new Set(['', ...Object.keys(MONACO_WORKER_LABELS)])];
+  const invalidMappings = [];
+
+  for (const label of labelsToVerify) {
+    const mappedWorkerPath = createWorkerUrlForLabel(label);
+
+    if (!mappedWorkerPath.startsWith('/lib/monaco/vs/')) {
+      invalidMappings.push(`${label || 'default'} -> ${mappedWorkerPath}`);
+      continue;
+    }
+
+    let absoluteWorkerUrl;
+    try {
+      absoluteWorkerUrl = createLocalWorkerAbsoluteUrl(mappedWorkerPath);
+    } catch {
+      invalidMappings.push(`${label || 'default'} -> ${mappedWorkerPath}`);
+      continue;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const workerExists = await isAssetAvailable(absoluteWorkerUrl);
+    if (!workerExists) {
+      invalidMappings.push(`${label || 'default'} -> ${mappedWorkerPath}`);
+    }
+  }
+
+  if (invalidMappings.length > 0) {
+    throw new Error(`[runtime] Monaco worker mapping invalid: ${invalidMappings.join(', ')}`);
   }
 }
 
 function activateMonacoEnvironment() {
   window.MonacoEnvironment = {
-    getWorkerUrl: (_moduleId, label) => createWorkerUrlForLabel(label)
+    getWorkerUrl: (_moduleId, label) => createWorkerUrlForLabel(label),
+    getWorker: (_moduleId, label) => createLocalMonacoWorker(label)
   };
 
   logRuntimeMonaco('Monaco worker mapping active');
@@ -203,6 +266,9 @@ export async function loadMonaco() {
     }
 
     assertValidAmdLoader();
+
+    await assertMonacoWorkerMapping();
+    logRuntimeMonaco('Monaco worker mapping verified', { correlationId });
 
     window.require.config({
       paths: {
