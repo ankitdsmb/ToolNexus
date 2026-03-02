@@ -1,5 +1,6 @@
 const MONACO_BASE = '/lib/monaco/vs';
 const MONACO_LOADER_URL = `${MONACO_BASE}/loader.js`;
+const MONACO_EDITOR_MAIN_URL = `${MONACO_BASE}/editor/editor.main.js`;
 const MONACO_ASSET_INVALID_EVENT = 'monaco_asset_invalid';
 
 let monacoPromise = null;
@@ -8,14 +9,67 @@ function emitMonacoAssetInvalidWarning() {
   console.warn(`[runtime] ${MONACO_ASSET_INVALID_EVENT}`);
 }
 
-function assertValidAmdLoader() {
+function logRuntimeMonaco(message, detail) {
+  if (detail) {
+    console.info(`[runtime] ${message}`, detail);
+    return;
+  }
 
+  console.info(`[runtime] ${message}`);
+}
+
+function assertValidAmdLoader() {
   if (typeof window.require !== 'function') {
     throw new Error('Monaco loader missing');
   }
+}
 
-  // CDN loader may NOT expose contexts early.
-  // only validate require exists.
+async function isAssetAvailable(assetUrl) {
+  const hasFetch = typeof globalThis.fetch === 'function';
+  if (!hasFetch) {
+    return true;
+  }
+
+  const probe = async (method) => {
+    const response = await fetch(assetUrl, {
+      method,
+      cache: 'no-store'
+    });
+
+    return response.ok;
+  };
+
+  try {
+    const headOk = await probe('HEAD');
+    if (headOk) {
+      return true;
+    }
+  } catch {
+    // some static hosts may reject HEAD; fall through to GET
+  }
+
+  try {
+    return await probe('GET');
+  } catch {
+    return false;
+  }
+}
+
+async function assertMonacoAssetsAvailable() {
+  const requiredAssets = [MONACO_LOADER_URL, MONACO_EDITOR_MAIN_URL];
+
+  const missingAssets = [];
+  for (const assetUrl of requiredAssets) {
+    // eslint-disable-next-line no-await-in-loop
+    const exists = await isAssetAvailable(assetUrl);
+    if (!exists) {
+      missingAssets.push(assetUrl);
+    }
+  }
+
+  if (missingAssets.length > 0) {
+    throw new Error(`[runtime] Monaco asset missing: ${missingAssets.join(', ')}`);
+  }
 }
 
 function ensureMonacoLoaderScript() {
@@ -33,7 +87,7 @@ function ensureMonacoLoaderScript() {
       }
 
       existing.addEventListener('load', resolve, { once: true });
-      existing.addEventListener('error', () => reject(new Error('[runtime] Monaco loader local script failed')), { once: true });
+      existing.addEventListener('error', () => reject(new Error(`[runtime] Monaco loader local script failed: ${MONACO_LOADER_URL}`)), { once: true });
       return;
     }
 
@@ -47,7 +101,7 @@ function ensureMonacoLoaderScript() {
       resolve();
     }, { once: true });
 
-    script.addEventListener('error', () => reject(new Error('[runtime] Monaco loader local script failed')), { once: true });
+    script.addEventListener('error', () => reject(new Error(`[runtime] Monaco loader local script failed: ${MONACO_LOADER_URL}`)), { once: true });
 
     document.head.appendChild(script);
   });
@@ -63,13 +117,37 @@ function requireMonaco() {
   });
 }
 
-function isWorkerRuntimeSupported() {
-  return typeof globalThis.Worker === 'function' && typeof globalThis.Blob === 'function';
+function createWorkerUrlForLabel(label) {
+  switch (label) {
+    case 'json':
+      return '/lib/monaco/vs/language/json/json.worker.js';
+    case 'css':
+    case 'scss':
+    case 'less':
+      return '/lib/monaco/vs/language/css/css.worker.js';
+    case 'html':
+    case 'handlebars':
+    case 'razor':
+      return '/lib/monaco/vs/language/html/html.worker.js';
+    case 'typescript':
+    case 'javascript':
+      return '/lib/monaco/vs/language/typescript/ts.worker.js';
+    default:
+      return '/lib/monaco/vs/editor/editor.worker.js';
+  }
+}
+
+function activateMonacoEnvironment() {
+  window.MonacoEnvironment = {
+    getWorkerUrl: (_moduleId, label) => createWorkerUrlForLabel(label)
+  };
+
+  logRuntimeMonaco('Monaco worker mapping active');
 }
 
 export async function loadMonaco() {
   if (window.monaco?.editor) {
-    console.info('[runtime] Monaco already loaded');
+    logRuntimeMonaco('Monaco already loaded');
     return window.monaco;
   }
 
@@ -78,7 +156,10 @@ export async function loadMonaco() {
   }
 
   monacoPromise = (async () => {
+    logRuntimeMonaco('Monaco loading start');
+    await assertMonacoAssetsAvailable();
     await ensureMonacoLoaderScript();
+    logRuntimeMonaco('Monaco loader resolved');
 
     if (typeof window.require !== 'function' || typeof window.require.config !== 'function') {
       throw new Error('Invalid Monaco AMD loader detected');
@@ -92,30 +173,7 @@ export async function loadMonaco() {
       }
     });
 
-    const workerRuntimeSupported = isWorkerRuntimeSupported();
-
-    window.MonacoEnvironment = {
-      getWorkerUrl: (_moduleId, label) => {
-        if (!workerRuntimeSupported) {
-          return `${MONACO_BASE}/base/worker/workerMain.js`;
-        }
-
-        const workerMap = {
-          json: 'language/json/json.worker',
-          css: 'language/css/css.worker',
-          scss: 'language/css/css.worker',
-          less: 'language/css/css.worker',
-          html: 'language/html/html.worker',
-          handlebars: 'language/html/html.worker',
-          razor: 'language/html/html.worker',
-          typescript: 'language/typescript/ts.worker',
-          javascript: 'language/typescript/ts.worker'
-        };
-
-        const workerEntry = workerMap[label] ?? 'base/worker/workerMain';
-        return `${MONACO_BASE}/${workerEntry}.js`;
-      }
-    };
+    activateMonacoEnvironment();
 
     const resolvedMonaco = await requireMonaco();
 
@@ -128,9 +186,7 @@ export async function loadMonaco() {
       return null;
     }
 
-    if (window.ToolNexusLogging?.runtimeDebugEnabled) {
-      console.info('[runtime] Monaco loaded successfully');
-    }
+    logRuntimeMonaco('Monaco ready');
     return window.monaco;
   })().catch((error) => {
     monacoPromise = null;
@@ -139,9 +195,7 @@ export async function loadMonaco() {
       throw error;
     }
 
-    if (window.ToolNexusLogging?.runtimeDebugEnabled) {
-      console.warn('[runtime] Monaco unavailable; falling back to basic editors', error);
-    }
+    console.warn('[runtime] Monaco unavailable; falling back to basic editors', error);
     return null;
   });
 

@@ -11,6 +11,7 @@ describe('runtime monaco loader', () => {
     delete window.monaco;
     delete window.require;
     delete window.MonacoEnvironment;
+    global.fetch = jest.fn().mockResolvedValue({ ok: true });
   });
 
   afterEach(() => {
@@ -18,6 +19,7 @@ describe('runtime monaco loader', () => {
     delete window.monaco;
     delete window.require;
     delete window.MonacoEnvironment;
+    delete global.fetch;
     jest.restoreAllMocks();
   });
 
@@ -39,7 +41,9 @@ describe('runtime monaco loader', () => {
 
     expect(appendSpy).toHaveBeenCalled();
     expect(requireFn.config).toHaveBeenCalledWith({ paths: { vs: MONACO_BASE } });
-    expect(window.MonacoEnvironment.getWorkerUrl()).toBe(`${MONACO_BASE}/base/worker/workerMain.js`);
+    expect(window.MonacoEnvironment.getWorkerUrl(undefined, 'json')).toBe(`${MONACO_BASE}/language/json/json.worker.js`);
+    expect(window.MonacoEnvironment.getWorkerUrl(undefined, 'javascript')).toBe(`${MONACO_BASE}/language/typescript/ts.worker.js`);
+    expect(window.MonacoEnvironment.getWorkerUrl()).toBe(`${MONACO_BASE}/editor/editor.worker.js`);
     expect(runtime).toBe(monacoNamespace);
   });
 
