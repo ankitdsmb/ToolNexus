@@ -1,0 +1,37 @@
+/* Canonical shared primitives — move-only consolidation */
+
+/* Force full-width on inner pieces */
+.upgread_workspace .tool-shell-page,
+.upgread_workspace .tool-shell-page__workspace,
+.upgread_workspace .tool-shell-page__docs,
+.upgread_workspace .tool-seo {
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+
+.upgread_workspace .tool-md-content,
+.upgread_workspace .tool-md-section,
+.upgread_workspace .tool-article-prose,
+.upgread_workspace .section-frame {
+  width: 100%;
+  max-width: none !important;
+}
+
+.upgread_workspace .tool-focus-mode {
+  background: radial-gradient(ellipse at top, rgba(17,28,45,0.88) 0%, #05070a 56%);
+  min-height: 100vh;
+}
+
+.upgread_workspace .tool-focus-mode main.container,
+.upgread_workspace .tool-focus-mode .container,
+.upgread_workspace .tool-focus-mode .shell-layer--workspace,
+.upgread_workspace .tool-focus-mode .app-shell {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+[data-theme="light"] .upgread_workspace .tool-focus-mode,
+:root[data-theme="light"] .upgread_workspace .tool-focus-mode {
+  background: radial-gradient(ellipse at top, #dce6fb 0%, #e9eef7 60%);
+}
