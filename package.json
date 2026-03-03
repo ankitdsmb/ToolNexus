@@ -30,7 +30,7 @@
     "integrity:bundle:baseline": "node scripts/integrity/bundle-size-regression.mjs --write-baseline",
     "integrity:runtime": "node scripts/integrity/runtime-coverage.mjs",
     "integrity:ci": "node scripts/integrity/ci-enforce.mjs",
-    "integrity:css-advanced": "bash ./scripts/css-audit"
+    "integrity:governance": "node scripts/governance/governance-dashboard.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

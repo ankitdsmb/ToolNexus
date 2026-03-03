@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
+using ToolNexus.Infrastructure.Options;
 using ToolNexus.Web.Services;
 
 namespace ToolNexus.Web.Tests;
@@ -53,6 +54,26 @@ public sealed class ToolManifestLoaderTests
         Assert.Equal("regex-tester", generated.Slug);
         Assert.Equal("ToolShell", generated.ViewName);
         Assert.Equal("/js/tools/regex-tester.js", generated.ModulePath);
+    }
+
+    [Fact]
+    public void LoadAll_DoesNotPersistManifestWhenRuntimeMutationDisabled()
+    {
+        using var fixture = new ManifestFixture();
+        fixture.WritePlatformManifest("""
+        {
+          "tools": [
+            { "slug": "runtime-only-tool" }
+          ]
+        }
+        """);
+
+        var loader = fixture.CreateLoader(allowRuntimeMutation: false);
+
+        var manifests = loader.LoadAll();
+
+        Assert.Contains(manifests, x => x.Slug == "runtime-only-tool");
+        Assert.False(File.Exists(fixture.GetManifestPath("runtime-only-tool.json")));
     }
 
     [Fact]
@@ -213,7 +234,13 @@ public sealed class ToolManifestLoaderTests
             File.WriteAllText(Path.Combine(ManifestDirectory, name), content);
         }
 
-        public ToolManifestLoader CreateLoader() => new(NullLogger<ToolManifestLoader>.Instance, new StubHostEnvironment(rootPath));
+        public string GetManifestPath(string fileName) => Path.Combine(ManifestDirectory, fileName);
+
+        public ToolManifestLoader CreateLoader(bool allowRuntimeMutation = true)
+            => new(
+                NullLogger<ToolManifestLoader>.Instance,
+                new StubHostEnvironment(rootPath),
+                Microsoft.Extensions.Options.Options.Create(new HostingMutationOptions { AllowRuntimeMutation = allowRuntimeMutation }));
 
         public void Dispose()
         {
