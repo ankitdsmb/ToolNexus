@@ -1,0 +1,1763 @@
+{
+  "generatedAtUtc": "2026-03-03T06:23:22.109Z",
+  "summary": {
+    "cssFileCount": 57,
+    "totalImportant": 842,
+    "duplicateSelectorCount": 385,
+    "maxSelectorDepth": 10,
+    "uniqueBreakpoints": [
+      "1024px",
+      "1080px",
+      "1100px",
+      "1800px",
+      "420px",
+      "480px",
+      "680px",
+      "720px",
+      "760px",
+      "768px",
+      "900px",
+      "920px",
+      "960px",
+      "980px",
+      "992px"
+    ],
+    "transitionAllCount": 5
+  },
+  "reports": {
+    "importantByFile": {
+      "src/ToolNexus.Web/wwwroot/css/admin-shell.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/base.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/command-palette.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/design-tokens.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/home-system.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/base64-decode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/base64-encode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/case-converter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/css-minifier.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/csv-to-json.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/csv-viewer.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/document-converter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/file-merge.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/html-entities.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/html-formatter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/html-to-markdown.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/js-minifier.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-formatter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-to-csv.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-to-xml.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-to-yaml.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-toolkit-pro.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-transform-studio.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-validator.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/markdown-to-html.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/regex-tester.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/sql-formatter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/text-diff.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/text-intelligence-analyzer.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/url-decode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/url-encode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/uuid-generator.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/xml-formatter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/xml-to-json.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/yaml-to-json.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/product-transform.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/site.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/system/execution-flow-intelligence.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/system/execution-visual-brain.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/system/tool-execution-dna.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/theme.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tool-auto-professional.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/base64-encode.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/tools/csv-to-json.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/document-converter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/file-merge.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/html-entities.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/json-formatter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/text-diff.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/url-decode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/url-encode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/tools/uuid-generator.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/ui-system.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css": 821,
+      "src/ToolNexus.Web/wwwroot/css/upgread_pages.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css": 8,
+      "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css": 7
+    },
+    "maxSelectorDepthByFile": {
+      "src/ToolNexus.Web/wwwroot/css/admin-shell.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/base.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/command-palette.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/design-tokens.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/home-system.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/pages/base64-decode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/base64-encode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/case-converter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/css-minifier.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/csv-to-json.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/pages/csv-viewer.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/document-converter.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/pages/file-merge.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/html-entities.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/html-formatter.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/html-to-markdown.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/js-minifier.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-formatter.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-to-csv.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-to-xml.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-to-yaml.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-toolkit-pro.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-transform-studio.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/pages/json-validator.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/pages/markdown-to-html.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/regex-tester.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/sql-formatter.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/pages/text-diff.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/text-intelligence-analyzer.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/url-decode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/url-encode.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/uuid-generator.css": 0,
+      "src/ToolNexus.Web/wwwroot/css/pages/xml-formatter.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/pages/xml-to-json.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/pages/yaml-to-json.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/product-transform.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/site.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/system/execution-flow-intelligence.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/system/execution-visual-brain.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/system/tool-execution-dna.css": 8,
+      "src/ToolNexus.Web/wwwroot/css/theme.css": 1,
+      "src/ToolNexus.Web/wwwroot/css/tool-auto-professional.css": 9,
+      "src/ToolNexus.Web/wwwroot/css/tools/base64-encode.css": 4,
+      "src/ToolNexus.Web/wwwroot/css/tools/csv-to-json.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/tools/document-converter.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/tools/file-merge.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/tools/html-entities.css": 4,
+      "src/ToolNexus.Web/wwwroot/css/tools/json-formatter.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/tools/text-diff.css": 2,
+      "src/ToolNexus.Web/wwwroot/css/tools/url-decode.css": 4,
+      "src/ToolNexus.Web/wwwroot/css/tools/url-encode.css": 4,
+      "src/ToolNexus.Web/wwwroot/css/tools/uuid-generator.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/ui-system.css": 10,
+      "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css": 5,
+      "src/ToolNexus.Web/wwwroot/css/upgread_pages.css": 3,
+      "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css": 4,
+      "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css": 3
+    },
+    "specificityHistogram": {
+      "0,1,0": 1031,
+      "0,1,2": 7,
+      "0,2,0": 649,
+      "0,1,1": 159,
+      "1,0,0": 4,
+      "0,0,0": 8,
+      "0,0,1": 42,
+      "0,3,0": 300,
+      "0,2,1": 97,
+      "0,3,1": 31,
+      "1,1,0": 10,
+      "0,4,0": 57,
+      "0,2,2": 9,
+      "0,7,0": 15,
+      "0,6,0": 9,
+      "0,4,1": 8,
+      "0,5,0": 17,
+      "0,10,0": 2,
+      "0,9,0": 1,
+      "0,7,1": 1,
+      "0,8,1": 1,
+      "0,8,0": 2,
+      "0,12,0": 3,
+      "0,13,0": 2,
+      "0,11,0": 2,
+      "1,2,0": 2,
+      "0,5,1": 1,
+      "0,3,2": 2
+    },
+    "duplicateSelectors": [
+      {
+        "selector": ".tool-card",
+        "count": 16
+      },
+      {
+        "selector": ":root",
+        "count": 12
+      },
+      {
+        "selector": ".card",
+        "count": 12
+      },
+      {
+        "selector": ".hero",
+        "count": 10
+      },
+      {
+        "selector": ".tool-shell-page__runtime",
+        "count": 10
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__output)",
+        "count": 9
+      },
+      {
+        "selector": ".trust-stat",
+        "count": 9
+      },
+      {
+        "selector": ".upgread_workspace .container",
+        "count": 9
+      },
+      {
+        "selector": ":where(.tool-shell-page__runtime)",
+        "count": 8
+      },
+      {
+        "selector": ".upgread_workspace main.container",
+        "count": 8
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__run)",
+        "count": 7
+      },
+      {
+        "selector": ".hero__container",
+        "count": 7
+      },
+      {
+        "selector": ".privacy-card",
+        "count": 7
+      },
+      {
+        "selector": ".testimonial-card",
+        "count": 7
+      },
+      {
+        "selector": ".trust-stats",
+        "count": 7
+      },
+      {
+        "selector": ".hero-preview",
+        "count": 6
+      },
+      {
+        "selector": ".json-formatter-page .editor-surface",
+        "count": 6
+      },
+      {
+        "selector": ".static-page__section",
+        "count": 6
+      },
+      {
+        "selector": ".tool-panel",
+        "count": 6
+      },
+      {
+        "selector": ".tool-ux__grid",
+        "count": 6
+      },
+      {
+        "selector": ".upgread_workspace .tool-shell-page__docs",
+        "count": 6
+      },
+      {
+        "selector": ".workspace-shell",
+        "count": 6
+      },
+      {
+        "selector": ":where(.tn-editor-skeleton)",
+        "count": 5
+      },
+      {
+        "selector": ".category-grid",
+        "count": 5
+      },
+      {
+        "selector": ".container",
+        "count": 5
+      },
+      {
+        "selector": ".footer__columns",
+        "count": 5
+      },
+      {
+        "selector": ".hero-btn",
+        "count": 5
+      },
+      {
+        "selector": ".readme-card-grid",
+        "count": 5
+      },
+      {
+        "selector": ".toast",
+        "count": 5
+      },
+      {
+        "selector": ".tool-empty-state",
+        "count": 5
+      },
+      {
+        "selector": ".tool-grid",
+        "count": 5
+      },
+      {
+        "selector": ".tool-workflow-intelligence__grid",
+        "count": 5
+      },
+      {
+        "selector": ".topbar__inner",
+        "count": 5
+      },
+      {
+        "selector": ".upgread_workspace .hero",
+        "count": 5
+      },
+      {
+        "selector": ".upgread_workspace .home-page",
+        "count": 5
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-surface",
+        "count": 5
+      },
+      {
+        "selector": ".upgread_workspace .tool-runtime-widget",
+        "count": 5
+      },
+      {
+        "selector": ".workflow-grid",
+        "count": 5
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__actions)",
+        "count": 4
+      },
+      {
+        "selector": ":where(.tool-shell-page__runtime > [data-tool-context=\"true\"])",
+        "count": 4
+      },
+      {
+        "selector": ":where(.tool-shell-page__runtime > [data-tool-followup=\"true\"])",
+        "count": 4
+      },
+      {
+        "selector": ".brand__tagline",
+        "count": 4
+      },
+      {
+        "selector": ".discovery-search-shell",
+        "count": 4
+      },
+      {
+        "selector": ".footer__bottom-strip",
+        "count": 4
+      },
+      {
+        "selector": ".hero__subtitle",
+        "count": 4
+      },
+      {
+        "selector": ".json-formatter-page",
+        "count": 4
+      },
+      {
+        "selector": ".json-formatter-page .json-panel--output",
+        "count": 4
+      },
+      {
+        "selector": ".json-formatter-page .json-workspace",
+        "count": 4
+      },
+      {
+        "selector": ".json-formatter-page .panel-header p",
+        "count": 4
+      },
+      {
+        "selector": ".json-formatter-page .tool-error-location",
+        "count": 4
+      },
+      {
+        "selector": ".sample-panel",
+        "count": 4
+      },
+      {
+        "selector": ".sql-metrics",
+        "count": 4
+      },
+      {
+        "selector": ".testimonial-grid",
+        "count": 4
+      },
+      {
+        "selector": ".tool-btn",
+        "count": 4
+      },
+      {
+        "selector": ".tool-layout",
+        "count": 4
+      },
+      {
+        "selector": ".tool-shell-page__hero",
+        "count": 4
+      },
+      {
+        "selector": ".tool-toolbar__actions",
+        "count": 4
+      },
+      {
+        "selector": ".topbar__search-shortcut",
+        "count": 4
+      },
+      {
+        "selector": ".trust-grid",
+        "count": 4
+      },
+      {
+        "selector": ".trust-link",
+        "count": 4
+      },
+      {
+        "selector": ".trust-links",
+        "count": 4
+      },
+      {
+        "selector": ".upgread_footer__links-grid",
+        "count": 4
+      },
+      {
+        "selector": ".upgread_tgrid",
+        "count": 4
+      },
+      {
+        "selector": ".upgread_workspace .hero__title",
+        "count": 4
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-actions",
+        "count": 4
+      },
+      {
+        "selector": ".upgread_workspace .tool-shell-page__runtime",
+        "count": 4
+      },
+      {
+        "selector": ".workflow-card",
+        "count": 4
+      },
+      {
+        "selector": ":root[data-theme=\"light\"]",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__actions-secondary)",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__capsules)",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__input, .tn-unified-tool-control__input-card)",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__run:hover:not(:disabled))",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tool-action-group-transform, .tool-action-group-utility)",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tool-article-prose)",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tool-shell-page__docs)",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tool-workspace-unified > [data-workspace-panel=\"secondary\"])",
+        "count": 3
+      },
+      {
+        "selector": ".brand",
+        "count": 3
+      },
+      {
+        "selector": ".card__badge",
+        "count": 3
+      },
+      {
+        "selector": ".card__header",
+        "count": 3
+      },
+      {
+        "selector": ".card__title-row",
+        "count": 3
+      },
+      {
+        "selector": ".card:hover",
+        "count": 3
+      },
+      {
+        "selector": ".chip",
+        "count": 3
+      },
+      {
+        "selector": ".contact-card",
+        "count": 3
+      },
+      {
+        "selector": ".contact-form",
+        "count": 3
+      },
+      {
+        "selector": ".contact-form__submit",
+        "count": 3
+      },
+      {
+        "selector": ".contact-grid",
+        "count": 3
+      },
+      {
+        "selector": ".drop-zone",
+        "count": 3
+      },
+      {
+        "selector": ".editor-surface",
+        "count": 3
+      },
+      {
+        "selector": ".floating-field textarea",
+        "count": 3
+      },
+      {
+        "selector": ".form-status",
+        "count": 3
+      },
+      {
+        "selector": ".hero__actions",
+        "count": 3
+      },
+      {
+        "selector": ".hero__badges",
+        "count": 3
+      },
+      {
+        "selector": ".hero__gradient",
+        "count": 3
+      },
+      {
+        "selector": ".hero__title",
+        "count": 3
+      },
+      {
+        "selector": ".hero__typewriter",
+        "count": 3
+      },
+      {
+        "selector": ".hero-badge",
+        "count": 3
+      },
+      {
+        "selector": ".hero-btn--secondary",
+        "count": 3
+      },
+      {
+        "selector": ".home-page",
+        "count": 3
+      },
+      {
+        "selector": ".json-editor",
+        "count": 3
+      },
+      {
+        "selector": ".json-formatter-hero",
+        "count": 3
+      },
+      {
+        "selector": ".json-formatter-page .json-formatter-header",
+        "count": 3
+      },
+      {
+        "selector": ".json-formatter-page .json-panel",
+        "count": 3
+      },
+      {
+        "selector": ".json-formatter-page .json-toolbar",
+        "count": 3
+      },
+      {
+        "selector": ".json-formatter-page .tool-metrics-compact-grid",
+        "count": 3
+      },
+      {
+        "selector": ".json-panel",
+        "count": 3
+      },
+      {
+        "selector": ".json-workspace",
+        "count": 3
+      },
+      {
+        "selector": ".page-shell",
+        "count": 3
+      },
+      {
+        "selector": ".readme-card",
+        "count": 3
+      },
+      {
+        "selector": ".readme-disclosure[open]",
+        "count": 3
+      },
+      {
+        "selector": ".result-indicator",
+        "count": 3
+      },
+      {
+        "selector": ".section-title",
+        "count": 3
+      },
+      {
+        "selector": ".shortcut-hint",
+        "count": 3
+      },
+      {
+        "selector": ".sql-panel",
+        "count": 3
+      },
+      {
+        "selector": ".sql-toolbar",
+        "count": 3
+      },
+      {
+        "selector": ".sql-workspace",
+        "count": 3
+      },
+      {
+        "selector": ".testimonial-card__meta",
+        "count": 3
+      },
+      {
+        "selector": ".theme-toggle",
+        "count": 3
+      },
+      {
+        "selector": ".tool-card__meta-item",
+        "count": 3
+      },
+      {
+        "selector": ".tool-card:hover",
+        "count": 3
+      },
+      {
+        "selector": ".tool-discovery",
+        "count": 3
+      },
+      {
+        "selector": ".tool-error",
+        "count": 3
+      },
+      {
+        "selector": ".tool-json-yaml__header",
+        "count": 3
+      },
+      {
+        "selector": ".tool-json-yaml__panel-header",
+        "count": 3
+      },
+      {
+        "selector": ".tool-json-yaml__workspace",
+        "count": 3
+      },
+      {
+        "selector": ".tool-layout__panel",
+        "count": 3
+      },
+      {
+        "selector": ".tool-option",
+        "count": 3
+      },
+      {
+        "selector": ".tool-option--select select",
+        "count": 3
+      },
+      {
+        "selector": ".tool-page__heading",
+        "count": 3
+      },
+      {
+        "selector": ".tool-shell-page__docs",
+        "count": 3
+      },
+      {
+        "selector": ".tool-yaml-json__header",
+        "count": 3
+      },
+      {
+        "selector": ".tool-yaml-json__panel-header",
+        "count": 3
+      },
+      {
+        "selector": ".tool-yaml-json__workspace",
+        "count": 3
+      },
+      {
+        "selector": ".topbar__actions",
+        "count": 3
+      },
+      {
+        "selector": ".topbar__explore",
+        "count": 3
+      },
+      {
+        "selector": ".topbar__search-shell",
+        "count": 3
+      },
+      {
+        "selector": ".tree-view",
+        "count": 3
+      },
+      {
+        "selector": ".trust-link:focus-visible",
+        "count": 3
+      },
+      {
+        "selector": ".trust-stat__meta",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_footer__inner",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_index-hero",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .editor-surface",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .json-metrics",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-discovery",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-body",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-metrics",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-runtime-widget .tool-local-surface",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-seo",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-shell-page__layout",
+        "count": 3
+      },
+      {
+        "selector": ".upgread_workspace .tool-workspace-unified",
+        "count": 3
+      },
+      {
+        "selector": ".workflow-pathway-card",
+        "count": 3
+      },
+      {
+        "selector": ".workspace-shell__runtime-zone",
+        "count": 3
+      },
+      {
+        "selector": "0%",
+        "count": 3
+      },
+      {
+        "selector": "100%",
+        "count": 3
+      },
+      {
+        "selector": "kbd",
+        "count": 3
+      },
+      {
+        "selector": "textarea",
+        "count": 3
+      },
+      {
+        "selector": "to",
+        "count": 3
+      },
+      {
+        "selector": ":where(.tn-skeleton-chip)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__actions-primary, .tn-unified-tool-control__actions-secondary)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__actions-secondary .tool-btn)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__output-block)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__status-note)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__status)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__status[data-execution-state=\"failed\"])",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__status[data-execution-state=\"idle\"])",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__status[data-execution-state=\"success\"])",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tn-unified-tool-control__status[data-execution-state=\"warning\"], .tn-unified-tool-control__status[data-execution-state=\"uncertain\"])",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-action-primary)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-context-pill)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-layout__panel, .tool-panel, .tn-tool-panel)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-metrics-compact-grid > *)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-metrics-compact-grid)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-runtime-strip-compact)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-runtime-widget .tool-local-body)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-runtime-widget)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-shell-page__docs .tool-md-section)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-shell-page__runtime > [data-tool-context=\"true\"], .tool-shell-page__runtime > [data-tool-status=\"true\"], .tool-shell-page__runtime > [data-tool-followup=\"true\"])",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-shell-page__runtime > [data-tool-followup=\"true\"] .tool-btn--primary)",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-shell-page__runtime > [data-tool-status=\"true\"])",
+        "count": 2
+      },
+      {
+        "selector": ":where(.tool-workspace-unified)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-content-host=\"true\"] .tool-runtime-widget :is(.tool-editor-panel, .tool-local-surface) > :last-child)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-content-host=\"true\"] .tool-runtime-widget .tool-editor-panel)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-content-host=\"true\"] .tool-runtime-widget .tool-local-actions)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-content-host=\"true\"] .tool-runtime-widget .tool-local-body)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-output=\"true\"] ::-webkit-scrollbar-thumb)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-output=\"true\"] ::selection)",
+        "count": 2
+      },
+      {
+        "selector": ":where([data-tool-shell])",
+        "count": 2
+      },
+      {
+        "selector": ".admin-action-bar",
+        "count": 2
+      },
+      {
+        "selector": ".admin-action-slot[data-admin-action-center]",
+        "count": 2
+      },
+      {
+        "selector": ".admin-action-slot[data-admin-action-right]",
+        "count": 2
+      },
+      {
+        "selector": ".admin-ops-actions .btn",
+        "count": 2
+      },
+      {
+        "selector": ".admin-ops-header",
+        "count": 2
+      },
+      {
+        "selector": ".base64-workspace",
+        "count": 2
+      },
+      {
+        "selector": ".card__highlights",
+        "count": 2
+      },
+      {
+        "selector": ".card__icon",
+        "count": 2
+      },
+      {
+        "selector": ".card:focus-visible",
+        "count": 2
+      },
+      {
+        "selector": ".command-palette",
+        "count": 2
+      },
+      {
+        "selector": ".command-palette__badge",
+        "count": 2
+      },
+      {
+        "selector": ".command-palette__section-title",
+        "count": 2
+      },
+      {
+        "selector": ".contact-form__grid",
+        "count": 2
+      },
+      {
+        "selector": ".contact-form__meta-row",
+        "count": 2
+      },
+      {
+        "selector": ".contact-form__submit:active",
+        "count": 2
+      },
+      {
+        "selector": ".csv-json-layout",
+        "count": 2
+      },
+      {
+        "selector": ".csv-json-page .csv-json-controls .tool-action-group-utility",
+        "count": 2
+      },
+      {
+        "selector": ".csv-json-panel",
+        "count": 2
+      },
+      {
+        "selector": ".csv-table-frame",
+        "count": 2
+      },
+      {
+        "selector": ".csv-viewer-controls input",
+        "count": 2
+      },
+      {
+        "selector": ".csv-viewer-controls select",
+        "count": 2
+      },
+      {
+        "selector": ".csv-viewer-table thead th",
+        "count": 2
+      },
+      {
+        "selector": ".diff-pane + .diff-pane",
+        "count": 2
+      },
+      {
+        "selector": ".diff-sbs",
+        "count": 2
+      },
+      {
+        "selector": ".discovery-search-shell__icon",
+        "count": 2
+      },
+      {
+        "selector": ".discovery-search-shell:hover",
+        "count": 2
+      },
+      {
+        "selector": ".document-converter-runtime",
+        "count": 2
+      },
+      {
+        "selector": ".document-converter-runtime .tool-local-actions",
+        "count": 2
+      },
+      {
+        "selector": ".document-converter-runtime #conversionMode",
+        "count": 2
+      },
+      {
+        "selector": ".document-converter-runtime #downloadLink",
+        "count": 2
+      },
+      {
+        "selector": ".document-converter-runtime #fileInput",
+        "count": 2
+      },
+      {
+        "selector": ".faq-accordion__item",
+        "count": 2
+      },
+      {
+        "selector": ".file-merge-layout",
+        "count": 2
+      },
+      {
+        "selector": ".floating-field input",
+        "count": 2
+      },
+      {
+        "selector": ".footer",
+        "count": 2
+      },
+      {
+        "selector": ".footer__column a",
+        "count": 2
+      },
+      {
+        "selector": ".footer__separator",
+        "count": 2
+      },
+      {
+        "selector": ".footer__shortcuts",
+        "count": 2
+      },
+      {
+        "selector": ".grid",
+        "count": 2
+      },
+      {
+        "selector": ".hero__content",
+        "count": 2
+      },
+      {
+        "selector": ".hero__noise",
+        "count": 2
+      },
+      {
+        "selector": ".hero__shape",
+        "count": 2
+      },
+      {
+        "selector": ".hero-btn--primary",
+        "count": 2
+      },
+      {
+        "selector": ".hero-btn:active",
+        "count": 2
+      },
+      {
+        "selector": ".hero-btn:focus-visible",
+        "count": 2
+      },
+      {
+        "selector": ".hero-preview__code",
+        "count": 2
+      },
+      {
+        "selector": ".hero-preview__head",
+        "count": 2
+      },
+      {
+        "selector": ".hero::after",
+        "count": 2
+      },
+      {
+        "selector": ".home-page > section",
+        "count": 2
+      },
+      {
+        "selector": ".home-surface",
+        "count": 2
+      },
+      {
+        "selector": ".html-entities-options",
+        "count": 2
+      },
+      {
+        "selector": ".html-entities-workspace",
+        "count": 2
+      },
+      {
+        "selector": ".html-md-options__select",
+        "count": 2
+      },
+      {
+        "selector": ".html-md-options__select select",
+        "count": 2
+      },
+      {
+        "selector": ".js-minifier-metrics",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .json-formatter-description",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .json-metrics",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .json-processing-badge",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .json-toolbar-row",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .json-toolbar-row--utility",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .json-toolbar-row:first-child .tool-btn--primary",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .panel-header h2",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .toast",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .toast--error",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .toast--success",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .toast-region",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .tool-error",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .tool-error-detail",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .tool-error-title",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .tool-select",
+        "count": 2
+      },
+      {
+        "selector": ".json-formatter-page .tool-toggle",
+        "count": 2
+      },
+      {
+        "selector": ".json-transform-filter",
+        "count": 2
+      },
+      {
+        "selector": ".json-transform-filter input",
+        "count": 2
+      },
+      {
+        "selector": ".json-transform-runtime .tool-local-body",
+        "count": 2
+      },
+      {
+        "selector": ".json-transform-runtime .tool-local-metrics",
+        "count": 2
+      },
+      {
+        "selector": ".json-validator-error",
+        "count": 2
+      },
+      {
+        "selector": ".json-validator-layout",
+        "count": 2
+      },
+      {
+        "selector": ".json-validator-success",
+        "count": 2
+      },
+      {
+        "selector": ".panel-header",
+        "count": 2
+      },
+      {
+        "selector": ".panel-header h2",
+        "count": 2
+      },
+      {
+        "selector": ".readme-disclosure",
+        "count": 2
+      },
+      {
+        "selector": ".readme-disclosure.is-transitioning",
+        "count": 2
+      },
+      {
+        "selector": ".readme-guidance__action",
+        "count": 2
+      },
+      {
+        "selector": ".result-indicator--idle",
+        "count": 2
+      },
+      {
+        "selector": ".section-frame",
+        "count": 2
+      },
+      {
+        "selector": ".section-subtitle",
+        "count": 2
+      },
+      {
+        "selector": ".social-section__header",
+        "count": 2
+      },
+      {
+        "selector": ".static-page__header",
+        "count": 2
+      },
+      {
+        "selector": ".testimonial-card__badge",
+        "count": 2
+      },
+      {
+        "selector": ".text-diff-editors",
+        "count": 2
+      },
+      {
+        "selector": ".theme-toggle:hover",
+        "count": 2
+      },
+      {
+        "selector": ".toast-region",
+        "count": 2
+      },
+      {
+        "selector": ".toast.is-visible",
+        "count": 2
+      },
+      {
+        "selector": ".tool-btn--ghost",
+        "count": 2
+      },
+      {
+        "selector": ".tool-btn--outline",
+        "count": 2
+      },
+      {
+        "selector": ".tool-btn:active",
+        "count": 2
+      },
+      {
+        "selector": ".tool-card__badge",
+        "count": 2
+      },
+      {
+        "selector": ".tool-card__header",
+        "count": 2
+      },
+      {
+        "selector": ".tool-card__meta",
+        "count": 2
+      },
+      {
+        "selector": ".tool-card__tag",
+        "count": 2
+      },
+      {
+        "selector": ".tool-discovery__chip:focus-visible",
+        "count": 2
+      },
+      {
+        "selector": ".tool-discovery__chips",
+        "count": 2
+      },
+      {
+        "selector": ".tool-discovery__label",
+        "count": 2
+      },
+      {
+        "selector": ".tool-discovery__row",
+        "count": 2
+      },
+      {
+        "selector": ".tool-group__count",
+        "count": 2
+      },
+      {
+        "selector": ".tool-group__header",
+        "count": 2
+      },
+      {
+        "selector": ".tool-intel-badge",
+        "count": 2
+      },
+      {
+        "selector": ".tool-json-csv__workspace",
+        "count": 2
+      },
+      {
+        "selector": ".tool-json-yaml__panel",
+        "count": 2
+      },
+      {
+        "selector": ".tool-option--input",
+        "count": 2
+      },
+      {
+        "selector": ".tool-option--input input",
+        "count": 2
+      },
+      {
+        "selector": ".tool-option--select",
+        "count": 2
+      },
+      {
+        "selector": ".tool-page__action-selector select",
+        "count": 2
+      },
+      {
+        "selector": ".tool-page__heading h1",
+        "count": 2
+      },
+      {
+        "selector": ".tool-page__insights",
+        "count": 2
+      },
+      {
+        "selector": ".tool-page__stats",
+        "count": 2
+      },
+      {
+        "selector": ".tool-page__workspace",
+        "count": 2
+      },
+      {
+        "selector": ".tool-panel:hover",
+        "count": 2
+      },
+      {
+        "selector": ".tool-section__header",
+        "count": 2
+      },
+      {
+        "selector": ".tool-shell-page__hero-meta",
+        "count": 2
+      },
+      {
+        "selector": ".tool-shell-page__runtime-zone-shell",
+        "count": 2
+      },
+      {
+        "selector": ".tool-shell-page__runtime-zone-shell::after",
+        "count": 2
+      },
+      {
+        "selector": ".tool-shell-page__runtime::after",
+        "count": 2
+      },
+      {
+        "selector": ".tool-toggle",
+        "count": 2
+      },
+      {
+        "selector": ".tool-toolbar__actions > .tool-btn--primary",
+        "count": 2
+      },
+      {
+        "selector": ".tool-warning",
+        "count": 2
+      },
+      {
+        "selector": ".tool-yaml-json__controls .tool-action-group-utility",
+        "count": 2
+      },
+      {
+        "selector": ".tool-yaml-json__panel",
+        "count": 2
+      },
+      {
+        "selector": ".tools-index__toolbar",
+        "count": 2
+      },
+      {
+        "selector": ".topbar",
+        "count": 2
+      },
+      {
+        "selector": ".topbar__explore:hover",
+        "count": 2
+      },
+      {
+        "selector": ".topbar__search-shell:hover",
+        "count": 2
+      },
+      {
+        "selector": ".topbar__search-wrap",
+        "count": 2
+      },
+      {
+        "selector": ".trust-link:hover",
+        "count": 2
+      },
+      {
+        "selector": ".trust-section__eyebrow",
+        "count": 2
+      },
+      {
+        "selector": ".trust-section__header",
+        "count": 2
+      },
+      {
+        "selector": ".trust-stat__label",
+        "count": 2
+      },
+      {
+        "selector": ".trust-stat__value",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_cmd__kbd",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_docs-guide__grid",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_docs-rail",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_footer__bar",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_header__inner",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_masthead__sub",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_shell-split",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .app-shell",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .card",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .footer__bottom-strip",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .footer__columns",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .hero__subtitle",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .hero-preview",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .json-panel--output",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .json-toolbar",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .json-workspace",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .section-frame",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-card",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-focus-mode .tool-runtime-widget",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-focus-mode .upgread_tool-widget",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-header h2",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-header h3",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-local-surface + .tool-local-surface",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-md-section",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-metrics-compact-grid",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-section__header",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-shell-page__workspace",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-shell-page--workspace",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tool-toggle",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .tools-index__toolbar",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .upgread_tool-toolbar",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .upgread_tool-widget",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace .workflow-section__header",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace [data-tool-context='true']",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace [data-tool-followup='true']",
+        "count": 2
+      },
+      {
+        "selector": ".upgread_workspace [data-tool-status='true']",
+        "count": 2
+      },
+      {
+        "selector": ".url-decode-tool__options",
+        "count": 2
+      },
+      {
+        "selector": ".url-decode-tool__workspace",
+        "count": 2
+      },
+      {
+        "selector": ".url-encode-error",
+        "count": 2
+      },
+      {
+        "selector": ".url-encode-layout",
+        "count": 2
+      },
+      {
+        "selector": ".uuid-tool textarea",
+        "count": 2
+      },
+      {
+        "selector": ".view-toggle__btn",
+        "count": 2
+      },
+      {
+        "selector": ".workflow-card__link:focus-visible",
+        "count": 2
+      },
+      {
+        "selector": ".workflow-section__header",
+        "count": 2
+      },
+      {
+        "selector": ".workspace-grid",
+        "count": 2
+      },
+      {
+        "selector": ".workspace-panel",
+        "count": 2
+      },
+      {
+        "selector": ".workspace-shell__context-rail",
+        "count": 2
+      },
+      {
+        "selector": ".workspace-shell__hero",
+        "count": 2
+      },
+      {
+        "selector": "[data-theme=\"light\"] .upgread_workspace .tool-local-metrics",
+        "count": 2
+      },
+      {
+        "selector": "[data-theme=\"light\"] .upgread_workspace .tool-shell-page__docs",
+        "count": 2
+      },
+      {
+        "selector": "[data-theme=\"light\"] .upgread_workspace .tool-shell-page__runtime",
+        "count": 2
+      },
+      {
+        "selector": "body",
+        "count": 2
+      },
+      {
+        "selector": "button",
+        "count": 2
+      },
+      {
+        "selector": "details",
+        "count": 2
+      },
+      {
+        "selector": "h1",
+        "count": 2
+      },
+      {
+        "selector": "h2",
+        "count": 2
+      },
+      {
+        "selector": "h3",
+        "count": 2
+      },
+      {
+        "selector": "html",
+        "count": 2
+      },
+      {
+        "selector": "input",
+        "count": 2
+      },
+      {
+        "selector": "select",
+        "count": 2
+      }
+    ],
+    "breakpointFrequency": {
+      "992px": 3,
+      "760px": 4,
+      "1100px": 14,
+      "680px": 5,
+      "480px": 5,
+      "1800px": 6,
+      "960px": 3,
+      "980px": 4,
+      "1024px": 2,
+      "1080px": 3,
+      "900px": 5,
+      "920px": 1,
+      "768px": 1,
+      "720px": 1,
+      "420px": 1
+    },
+    "transitionAll": [
+      {
+        "file": "src/ToolNexus.Web/wwwroot/css/home-system.css",
+        "line": 242,
+        "declaration": "transition: all var(--home-transition);"
+      },
+      {
+        "file": "src/ToolNexus.Web/wwwroot/css/site.css",
+        "line": 635,
+        "declaration": "transition: all var(--motion-base) var(--ease-standard);"
+      },
+      {
+        "file": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
+        "line": 623,
+        "declaration": "transition: all 0.12s;"
+      },
+      {
+        "file": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
+        "line": 779,
+        "declaration": "transition: all 0.13s;"
+      },
+      {
+        "file": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
+        "line": 878,
+        "declaration": "transition: all 0.12s;"
+      }
+    ]
+  }
+}
