@@ -50,6 +50,72 @@ function getDynamicRootWeight(root) {
   return ROOT_WEIGHT_BY_TYPE[root.type] ?? 0.3;
 }
 
+async function loadRuntimeObservedModules(runtimeCoveragePath, knownNodes) {
+  try {
+    const raw = await fs.readFile(runtimeCoveragePath, 'utf8');
+    const coverage = JSON.parse(raw);
+    const observed = new Set();
+
+    for (const file of coverage?.js?.files ?? []) {
+      if (!file?.url || file.usedBytes <= 0) continue;
+
+      let pathname = null;
+      try {
+        pathname = new URL(file.url).pathname;
+      } catch {
+        pathname = file.url;
+      }
+
+      const relative = pathname.replace(/^\/+/, '');
+      const repoPath = `src/ToolNexus.Web/wwwroot/${relative}`;
+      if (knownNodes.has(repoPath)) {
+        observed.add(repoPath);
+      }
+    }
+
+    return observed;
+  } catch {
+    return new Set();
+  }
+}
+
+async function loadManifestDrivenModules(manifestPath, knownNodes) {
+  const driven = new Set();
+
+  try {
+    const raw = await fs.readFile(manifestPath, 'utf8');
+    const manifest = JSON.parse(raw);
+
+    for (const tool of manifest?.tools ?? []) {
+      if (typeof tool?.modulePath === 'string' && tool.modulePath.length > 0) {
+        const modulePath = `src/ToolNexus.Web/wwwroot/${tool.modulePath.replace(/^\/+/, '')}`;
+        if (knownNodes.has(modulePath)) {
+          driven.add(modulePath);
+        }
+      }
+
+      if (typeof tool?.slug === 'string' && tool.slug.length > 0) {
+        const slugCandidates = [
+          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}.js`,
+          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}.app.js`,
+          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}.dom.js`,
+          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}/index.js`
+        ];
+
+        for (const candidate of slugCandidates) {
+          if (knownNodes.has(candidate)) {
+            driven.add(candidate);
+          }
+        }
+      }
+    }
+  } catch {
+    return driven;
+  }
+
+  return driven;
+}
+
 const config = await loadConfig();
 const jsFiles = await listFiles([
   `${config.jsRoot}/**/*.js`,
@@ -61,6 +127,8 @@ const jsFiles = await listFiles([
 const graph = {};
 const violations = [];
 const nodes = new Set(jsFiles);
+const runtimeObservedModules = await loadRuntimeObservedModules(config.playwright.reportPath, nodes);
+const manifestDrivenModules = await loadManifestDrivenModules(config.manifestPath, nodes);
 
 for (const file of jsFiles) {
   const src = await fs.readFile(file, 'utf8');
@@ -119,15 +187,37 @@ while (stack.length > 0) {
 }
 
 const scoredModules = [...nodes].map((filePath) => {
-  if (reachable.has(filePath)) {
-    return { filePath, confidence: 1.0, confidenceWeight: 1.0, classification: 'reachable' };
+  const staticReachable = reachable.has(filePath);
+  const runtimeObserved = runtimeObservedModules.has(filePath);
+  const dynamicRootMatch = getDynamicRootMatch(filePath);
+  const protectedDynamic = Boolean(dynamicRootMatch);
+  const manifestDriven = manifestDrivenModules.has(filePath);
+
+  const eligibilityScore = (!staticReachable && !runtimeObserved && !protectedDynamic && !manifestDriven) ? 1.0 : 0.0;
+
+  if (staticReachable) {
+    return {
+      filePath,
+      staticReachable,
+      runtimeObserved,
+      protectedDynamic,
+      manifestDriven,
+      eligibilityScore,
+      confidence: 1.0,
+      confidenceWeight: 1.0,
+      classification: 'reachable'
+    };
   }
 
-  const dynamicRootMatch = getDynamicRootMatch(filePath);
-  if (dynamicRootMatch) {
+  if (protectedDynamic) {
     const confidenceWeight = getDynamicRootWeight(dynamicRootMatch);
     return {
       filePath,
+      staticReachable,
+      runtimeObserved,
+      protectedDynamic,
+      manifestDriven,
+      eligibilityScore,
       confidence: confidenceWeight,
       confidenceWeight,
       classification: 'protected-dynamic',
@@ -135,7 +225,17 @@ const scoredModules = [...nodes].map((filePath) => {
     };
   }
 
-  return { filePath, confidence: 0.8, confidenceWeight: 0.8, classification: 'high-confidence-dead' };
+  return {
+    filePath,
+    staticReachable,
+    runtimeObserved,
+    protectedDynamic,
+    manifestDriven,
+    eligibilityScore,
+    confidence: 0.8,
+    confidenceWeight: 0.8,
+    classification: 'high-confidence-dead'
+  };
 });
 
 const unreachable = scoredModules
@@ -169,6 +269,14 @@ const report = {
   graph,
   unreachable,
   confidenceScores: reclassifiedModules,
+  pruningEligibility: reclassifiedModules.map((module) => ({
+    module: module.filePath,
+    staticReachable: module.staticReachable,
+    runtimeObserved: module.runtimeObserved,
+    protectedDynamic: module.protectedDynamic,
+    manifestDriven: module.manifestDriven,
+    eligibilityScore: module.eligibilityScore
+  })),
   violations
 };
 
@@ -200,6 +308,37 @@ const jsGovernanceReport = {
 };
 
 await fs.writeFile('artifacts/js-governance-report.json', `${JSON.stringify(jsGovernanceReport, null, 2)}\n`, 'utf8');
+
+const pruningProposal = {
+  timestampUtc: new Date().toISOString(),
+  proposalType: 'candidate-only',
+  constraints: {
+    noModuleRemoval: true,
+    noRuntimeMutation: true,
+    noLifecycleEdits: true,
+    noDynamicRootChanges: true
+  },
+  eligibilityCriteria: {
+    staticReachable: false,
+    runtimeObserved: false,
+    protectedDynamic: false,
+    manifestDriven: false
+  },
+  candidates: reclassifiedModules
+    .filter((module) => module.eligibilityScore === 1.0)
+    .map((module) => ({
+      module: module.filePath,
+      staticReachable: module.staticReachable,
+      runtimeObserved: module.runtimeObserved,
+      protectedDynamic: module.protectedDynamic,
+      manifestDriven: module.manifestDriven,
+      eligibilityScore: module.eligibilityScore,
+      classification: module.classification,
+      disposition: 'candidate-only'
+    }))
+};
+
+await fs.writeFile('artifacts/pruning-proposal.json', `${JSON.stringify(pruningProposal, null, 2)}\n`, 'utf8');
 
 if (violations.length > 0) {
   console.error('[integrity] static graph validation failed. See reports/integrity/static-graph.json');

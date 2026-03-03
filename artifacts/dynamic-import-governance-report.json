@@ -6,10 +6,11 @@
     "import(modulePath)",
     "./command-palette.js"
   ],
-  "adjustedUnreachableCount": 235,
+  "adjustedUnreachableCount": 236,
   "confidenceDistribution": {
-    "high": 0,
-    "protected": 235,
-    "reachable": 55
+    "high-confidence-dead": 0,
+    "protected-dynamic": 236,
+    "medium-risk": 0,
+    "reachable": 59
   }
 }
