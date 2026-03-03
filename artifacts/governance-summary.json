@@ -1,0 +1,46 @@
+{
+  "timestampUtc": "2026-03-03T06:23:42.694Z",
+  "sourceReports": {
+    "cssMetrics": null,
+    "a11yReport": null,
+    "bundleReport": null,
+    "runtimeCoverageReport": null,
+    "manifestValidationReport": null
+  },
+  "scores": {
+    "cssRiskScore": 70,
+    "jsIntegrityScore": 35,
+    "accessibilityScore": 55,
+    "performanceScore": 100,
+    "overallPlatformHealthScore": 54.25
+  },
+  "scoreDetails": {
+    "cssRisk": {
+      "reason": "missing_report",
+      "totalRejectedSelectors": 0,
+      "totalCssFiles": 0
+    },
+    "jsIntegrity": {
+      "jsUsagePercent": 0,
+      "bundleViolations": 0,
+      "manifestViolations": 0
+    },
+    "accessibility": {
+      "reason": "missing_report",
+      "violations": 0
+    },
+    "performance": {
+      "jsUnusedPercent": 0,
+      "cssUnusedPercent": 0,
+      "bundleViolations": 0,
+      "regressedAssets": 0
+    }
+  },
+  "missingReports": [
+    "cssMetrics",
+    "a11yReport",
+    "bundleReport",
+    "runtimeCoverageReport",
+    "manifestValidationReport"
+  ]
+}

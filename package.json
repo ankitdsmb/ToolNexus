@@ -9,7 +9,7 @@
     "check:design-system": "node scripts/design-system-guard.mjs",
     "check:tool-ecosystem": "node scripts/tool-ecosystem-validate.mjs",
     "check:seo-a11y": "node scripts/seo-a11y-guard.mjs",
-    "check:release": "node scripts/release-readiness-check.mjs",
+    "check:release": "npm run release:verify",
     "test:playwright": "playwright test",
     "test:playwright:contracts": "playwright test tests/playwright/contracts",
     "test:playwright:runtime": "playwright test tests/playwright/runtime",
@@ -29,8 +29,8 @@
     "integrity:bundle": "node scripts/integrity/bundle-size-regression.mjs",
     "integrity:bundle:baseline": "node scripts/integrity/bundle-size-regression.mjs --write-baseline",
     "integrity:runtime": "node scripts/integrity/runtime-coverage.mjs",
-    "integrity:ci": "node scripts/integrity/ci-enforce.mjs && npm run check:performance-budget",
-    "check:performance-budget": "node scripts/performance/enforce-performance-budget.mjs"
+    "integrity:ci": "node scripts/integrity/ci-enforce.mjs",
+    "integrity:governance": "node scripts/governance/governance-dashboard.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

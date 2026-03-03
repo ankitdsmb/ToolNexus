@@ -9,6 +9,7 @@ namespace ToolNexus.Infrastructure.Content;
 public sealed class StartupOrchestratorHostedService(
     IEnumerable<IStartupPhaseService> startupPhaseServices,
     IOptions<StartupDiagnosticsOptions> diagnosticsOptions,
+    IOptions<HostingMutationOptions> hostingMutationOptions,
     ILogger<StartupOrchestratorHostedService> logger) : IHostedService
 {
     private readonly IReadOnlyList<IStartupPhaseService> _orderedPhases = startupPhaseServices
@@ -60,6 +61,12 @@ public sealed class StartupOrchestratorHostedService(
         var options = diagnosticsOptions.Value;
         if (!options.Enabled)
         {
+            return;
+        }
+
+        if (!hostingMutationOptions.Value.AllowRuntimeMutation)
+        {
+            logger.LogWarning("Runtime mutation attempted in read-only mode. Startup diagnostics file write skipped.");
             return;
         }
 
