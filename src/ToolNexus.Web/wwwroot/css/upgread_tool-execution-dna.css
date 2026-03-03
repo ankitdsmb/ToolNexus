@@ -7,16 +7,16 @@
    RUNTIME SURFACE
    ===================================================== */
 
-.upgread_workspace .tool-shell-page__runtime,
-.upgread_workspace .tool-runtime-widget {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget {
   border: 1px solid rgba(59,130,246,0.20);
   border-radius: 10px;
   background: linear-gradient( 180deg, rgba(59,130,246,0.055) 0%, rgba(10,14,20,0.93) 30% );
   box-shadow: 0 8px 24px rgba(3,6,10,0.28);
 }
 
-[data-theme="light"] .upgread_workspace .tool-shell-page__runtime,
-[data-theme="light"] .upgread_workspace .tool-runtime-widget {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget {
   border-color: rgba(29,110,245,0.18);
   background: linear-gradient( 180deg, rgba(29,110,245,0.035) 0%, rgba(245,247,250,0.99) 28% );
   box-shadow: 0 3px 14px rgba(0,0,0,0.07);
@@ -26,7 +26,7 @@
    EXECUTION-FIRST WORKSPACE LAYOUT (65 / 35)
    ===================================================== */
 
-.upgread_workspace .tool-shell-page--workspace {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(280px, 1fr);
   gap: 12px;
@@ -35,15 +35,15 @@
 
 /* OVERRIDE LAYER — EXECUTION DNA */
 /* Execution workspace constraints for .tool-shell-page__workspace */
-.upgread_workspace .tool-shell-page__workspace,
-.upgread_workspace .workspace-shell__runtime-zone {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__workspace,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workspace-shell__runtime-zone {
   min-width: 0;
 }
 
 /* OVERRIDE LAYER — EXECUTION DNA */
 /* Execution docs rail constraints for .tool-shell-page__docs */
-.upgread_workspace .tool-shell-page__docs,
-.upgread_workspace .workspace-shell__context-rail {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workspace-shell__context-rail {
   min-width: 0;
   max-height: calc(100vh - 120px);
   overflow: auto;
@@ -53,27 +53,27 @@
    CONTEXT / STATUS / FOLLOWUP STRIPS — COMPACT
    ===================================================== */
 
-.upgread_workspace [data-tool-context='true'],
-.upgread_workspace [data-tool-status='true'],
-.upgread_workspace [data-tool-followup='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-context='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-status='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-followup='true'] {
   border-radius: 0;
   border-color: var(--upgread_border_1);
   padding-top: 5px;
   padding-bottom: 5px;
 }
 
-.upgread_workspace [data-tool-context='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-context='true'] {
   padding-left: 10px;
   padding-right: 10px;
 }
 
-.upgread_workspace [data-tool-status='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-status='true'] {
   padding-left: 10px;
   padding-right: 10px;
   font-size: 11px;
 }
 
-.upgread_workspace [data-tool-followup='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-followup='true'] {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -87,14 +87,14 @@
    CONTENT HOST
    ===================================================== */
 
-.upgread_workspace [data-tool-content-host='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-content-host='true'] {
   gap: 1px;
   background: rgba(255,255,255,0.06);
   border-radius: 0 0 8px 8px;
   overflow: hidden;
 }
 
-[data-theme="light"] .upgread_workspace [data-tool-content-host='true'] {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-content-host='true'] {
   background: rgba(0,0,0,0.04);
 }
 
@@ -102,8 +102,8 @@
    RUNTIME SLOTS — CRITICAL NO MIN-HEIGHT
    ===================================================== */
 
-.upgread_workspace [data-tool-input='true'],
-.upgread_workspace [data-tool-output='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-input='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-output='true'] {
   background: #0b0f14;
   min-height: 0;
   height: auto;
@@ -111,13 +111,13 @@
   margin: 0;
 }
 
-[data-theme="light"] .upgread_workspace [data-tool-input='true'],
-[data-theme="light"] .upgread_workspace [data-tool-output='true'] {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-input='true'],
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-output='true'] {
   background: #f6f8fc;
 }
 
 /* Collapse empty skeletons */
-.upgread_workspace .tn-editor-skeleton:empty {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tn-editor-skeleton:empty {
   min-height: 0 !important;
   height: 0 !important;
   padding: 0 !important;
@@ -126,9 +126,9 @@
   overflow: hidden;
 }
 
-.upgread_workspace .tn-editor-skeleton,
-.upgread_workspace .tn-toolbar-skeleton,
-.upgread_workspace .tn-runtime-skeleton {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tn-editor-skeleton,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tn-toolbar-skeleton,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tn-runtime-skeleton {
   animation: none !important;
   background: transparent;
 }
@@ -137,8 +137,8 @@
    TOOL WIDGET ROOT
    ===================================================== */
 
-.upgread_workspace .upgread_tool-widget,
-.upgread_workspace .tool-runtime-widget {
+:is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-widget,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -149,8 +149,8 @@
    BUTTONS
    ===================================================== */
 
-  .upgread_workspace .tool-execution-panel .tool-btn,
-  .upgread_workspace .tool-runtime-widget .tool-btn {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-execution-panel .tool-btn,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-btn {
     min-height: 28px;
     border-radius: 6px;
     font-size: 12px;
@@ -160,8 +160,8 @@
    TOOLBAR — ATTACHED RIBBON
    ===================================================== */
 
-.upgread_workspace .tool-local-actions,
-.upgread_workspace .upgread_tool-toolbar {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions,
+:is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -172,22 +172,22 @@
   background: rgba(255,255,255,0.03);
 }
 
-.upgread_workspace .tool-local-actions {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions {
   margin-bottom: -1px;
   border-radius: 8px 8px 0 0;
   border-bottom: 0;
 }
 
-.upgread_workspace .tool-local-actions + .tool-workspace-unified,
-.upgread_workspace .tool-local-actions + .tool-local-body,
-.upgread_workspace .upgread_tool-toolbar + .tool-workspace-unified,
-.upgread_workspace .upgread_tool-toolbar + .tool-local-body {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions + .tool-workspace-unified,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions + .tool-local-body,
+:is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-toolbar + .tool-workspace-unified,
+:is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-toolbar + .tool-local-body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
 
-[data-theme="light"] .upgread_workspace .tool-local-actions,
-[data-theme="light"] .upgread_workspace .upgread_tool-toolbar {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-toolbar {
   background: rgba(0,0,0,0.025);
   border-color: rgba(0,0,0,0.09);
 }
@@ -196,8 +196,8 @@
    TOOL HEADER STRIP
    ===================================================== */
 
-.upgread_workspace .tool-local-header,
-.upgread_workspace .upgread_tool-header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header,
+:is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-header {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -207,19 +207,19 @@
   border-bottom: 1px solid var(--upgread_border_1);
 }
 
-[data-theme="light"] .upgread_workspace .tool-local-header,
-[data-theme="light"] .upgread_workspace .upgread_tool-header {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-header {
   border-bottom-color: rgba(0,0,0,0.08);
 }
 
-.upgread_workspace .tool-local-header h2,
-.upgread_workspace .tool-local-header h3 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header h2,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header h3 {
   font-size: 13px;
   font-weight: 600;
   margin: 0;
 }
 
-.upgread_workspace .tool-local-header p {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header p {
   font-size: 11px;
   margin: 1px 0 0;
   opacity: 0.7;
@@ -229,8 +229,8 @@
    SPLIT PANEL
    ===================================================== */
 
-.upgread_workspace .tool-workspace-unified,
-.upgread_workspace .tool-local-body {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-workspace-unified,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
@@ -239,7 +239,7 @@
   overflow: clip;
 }
 
-.upgread_workspace .tool-local-surface {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface {
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -247,16 +247,16 @@
   min-height: 180px;
 }
 
-.upgread_workspace .tool-workspace-unified,
-.upgread_workspace .tool-local-body {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-workspace-unified,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-body {
   min-height: clamp(360px, 68vh, 840px);
 }
 
-  .upgread_workspace .tool-local-surface + .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface + .tool-local-surface {
     border-left: 1px solid var(--upgread_border_1);
   }
 
-[data-theme="light"] .upgread_workspace .tool-local-surface + .tool-local-surface {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface + .tool-local-surface {
   border-left-color: rgba(0,0,0,0.08);
 }
 
@@ -264,7 +264,7 @@
    METRICS BAR
    ===================================================== */
 
-.upgread_workspace .tool-local-metrics {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -276,7 +276,7 @@
   background: rgba(255,255,255,0.02);
 }
 
-[data-theme="light"] .upgread_workspace .tool-local-metrics {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics {
   background: rgba(0,0,0,0.025);
   border-color: rgba(0,0,0,0.08);
 }
@@ -287,23 +287,23 @@
 
 /* OVERRIDE LAYER */
 /* Execution chrome for .tool-seo and .tool-shell-page__docs */
-.upgread_workspace .tool-seo,
-.upgread_workspace .tool-shell-page__docs {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-seo,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs {
   border: 1px solid var(--upgread_border_1);
   border-radius: 10px;
   background: rgba(15,19,24,0.86);
 }
 
-[data-theme="light"] .upgread_workspace .tool-seo,
-[data-theme="light"] .upgread_workspace .tool-shell-page__docs {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-seo,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs {
   background: rgba(255,255,255,0.97);
   border-color: rgba(0,0,0,0.09);
 }
 
-.upgread_workspace .runtime-doc-disclosure,
+:is(.upgread_workspace, .upgread_workspace--scoped) .runtime-doc-disclosure,
 /* OVERRIDE LAYER */
 /* Execution docs cards for .tool-md-section */
-.upgread_workspace .tool-md-section {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-section {
   border-top: 1px solid rgba(255,255,255,0.05);
   padding-top: 8px;
   margin-top: 8px;
@@ -313,22 +313,22 @@
    FULLSCREEN VISUAL MODE
    ===================================================== */
 
-.upgread_workspace .tool-shell-page--fullscreen {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--fullscreen {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.upgread_workspace .tool-shell-page--fullscreen .tool-shell-page__docs,
-.upgread_workspace .tool-shell-page--fullscreen .workspace-shell__context-rail {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--fullscreen .tool-shell-page__docs,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--fullscreen .workspace-shell__context-rail {
   display: none;
 }
 
-.upgread_workspace .tool-shell-page--fullscreen .tool-shell-page__runtime,
-.upgread_workspace .tool-shell-page--fullscreen .tool-runtime-widget {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--fullscreen .tool-shell-page__runtime,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--fullscreen .tool-runtime-widget {
   min-height: calc(100vh - 90px);
   max-height: calc(100vh - 90px);
 }
 
-.upgread_workspace .tool-shell-page--fullscreen [data-tool-content-host='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--fullscreen [data-tool-content-host='true'] {
   min-height: calc(100vh - 220px);
 }
 
@@ -336,53 +336,53 @@
 /* Class-driven immersive fullscreen mode (no runtime anchor changes) */
 /* OVERRIDE LAYER */
 /* Focus-mode execution behavior for .tool-focus-mode and tool shell children */
-.upgread_workspace .tool-focus-mode.tool-shell-page--workspace,
-.upgread_workspace .tool-focus-mode .tool-shell-page--workspace {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode.tool-shell-page--workspace,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-shell-page--workspace {
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
 }
 
-.upgread_workspace .tool-focus-mode .tool-shell-page__docs,
-.upgread_workspace .tool-focus-mode .workspace-shell__context-rail,
-.upgread_workspace .tool-focus-mode .tool-seo {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-shell-page__docs,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .workspace-shell__context-rail,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-seo {
   display: none !important;
 }
 
-.upgread_workspace .tool-focus-mode .tool-shell-page__workspace,
-.upgread_workspace .tool-focus-mode .tool-shell-page__runtime,
-.upgread_workspace .tool-focus-mode .tool-runtime-widget,
-.upgread_workspace .tool-focus-mode .upgread_tool-widget {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-shell-page__workspace,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-shell-page__runtime,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-runtime-widget,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .upgread_tool-widget {
   width: 100%;
   max-width: none;
   min-height: 100vh;
 }
 
-.upgread_workspace .tool-focus-mode .tool-runtime-widget,
-.upgread_workspace .tool-focus-mode .upgread_tool-widget,
-.upgread_workspace .tool-focus-mode [data-tool-shell='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .tool-runtime-widget,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .upgread_tool-widget,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-shell='true'] {
   padding: 0 !important;
   border-radius: 0;
   border-left: 0;
   border-right: 0;
 }
 
-.upgread_workspace .tool-focus-mode [data-tool-content-host='true'],
-.upgread_workspace .tool-focus-mode [data-tool-input='true'],
-.upgread_workspace .tool-focus-mode [data-tool-output='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-content-host='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-input='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-output='true'] {
   border-radius: 0;
   min-height: calc(100vh - 96px);
 }
 
-.upgread_workspace .tool-focus-mode [data-tool-context='true'],
-.upgread_workspace .tool-focus-mode [data-tool-status='true'],
-.upgread_workspace .tool-focus-mode [data-tool-followup='true'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-context='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-status='true'],
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode [data-tool-followup='true'] {
   margin: 0;
   border-left: 0;
   border-right: 0;
 }
 
-[data-theme="light"] .upgread_workspace .runtime-doc-disclosure,
-[data-theme="light"] .upgread_workspace .tool-md-section {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .runtime-doc-disclosure,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-section {
   border-top-color: rgba(0,0,0,0.07);
 }
 
@@ -391,13 +391,13 @@
    ===================================================== */
 
 @media (max-width: 1100px) {
-  .upgread_workspace .tool-shell-page--workspace {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page--workspace {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .upgread_workspace .tool-seo,
-  .upgread_workspace .tool-shell-page__docs {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-seo,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs {
     position: static;
     top: auto;
     max-height: none;
@@ -406,54 +406,54 @@
 }
 
 @media (max-width: 720px) {
-  .upgread_workspace .tool-workspace-unified,
-  .upgread_workspace .tool-local-body {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-workspace-unified,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-body {
     grid-template-columns: 1fr;
   }
 
-  .upgread_workspace .tool-local-surface + .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface + .tool-local-surface {
     border-left: 0;
     border-top: 1px solid var(--upgread_border_1);
   }
 
-  .upgread_workspace .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface {
     min-height: 200px;
     padding: 8px;
   }
 
-  .upgread_workspace .tool-local-actions,
-  .upgread_workspace .upgread_tool-toolbar {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-toolbar {
     gap: 4px;
     padding: 5px 8px;
   }
 
-  .upgread_workspace .upgread_tool-widget,
-  .upgread_workspace .tool-runtime-widget {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .upgread_tool-widget,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget {
     padding: 10px;
     gap: 9px;
   }
 }
 
 @media (max-width: 480px) {
-  .upgread_workspace .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface {
     min-height: 160px;
     padding: 7px;
   }
 
-  .upgread_workspace .tool-local-metrics {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics {
     font-size: 10px;
     gap: 3px;
     padding: 4px 8px;
   }
 
-  .upgread_workspace .tool-local-header h2,
-  .upgread_workspace .tool-local-header h3 {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header h2,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-header h3 {
     font-size: 12px;
   }
 }
 
 @media (min-width: 1800px) {
-  .upgread_workspace .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface {
     min-height: 340px;
   }
 }

@@ -8,7 +8,7 @@
 /* =========================================================
    DESIGN TOKENS — IDE WORKSPACE PALETTE
    ========================================================= */
-.upgread_workspace {
+:is(.upgread_workspace, .upgread_workspace--scoped) {
   --upgread-bg-canvas:       #0d1117;
   --upgread-bg-surface:      #161b22;
   --upgread-bg-elevated:     #1c2128;
@@ -61,8 +61,8 @@
 /* =========================================================
    GLOBAL CANVAS RESET
    ========================================================= */
-.upgread_workspace,
-.upgread_workspace body {
+:is(.upgread_workspace, .upgread_workspace--scoped),
+:is(.upgread_workspace, .upgread_workspace--scoped) body {
   background: var(--upgread-bg-canvas) !important;
   color: var(--upgread-text-primary) !important;
   font-family: var(--upgread-font-sans) !important;
@@ -75,14 +75,14 @@
 /* Override legacy surface colors */
 /* OVERRIDE LAYER */
 /* Workspace theme override for shell primitive .app-shell */
-.upgread_workspace .app-shell {
+:is(.upgread_workspace, .upgread_workspace--scoped) .app-shell {
   background: var(--upgread-bg-canvas) !important;
   min-height: 100vh;
 }
 
 /* OVERRIDE LAYER */
 /* Workspace theme override for shell primitive .container */
-.upgread_workspace .container {
+:is(.upgread_workspace, .upgread_workspace--scoped) .container {
   padding-block: var(--upgread-space-6) var(--upgread-space-7) !important;
 }
 
@@ -208,7 +208,7 @@
 /* =========================================================
    HERO → WORKSPACE COMMAND MODULE
    ========================================================= */
-.upgread_workspace .hero {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero {
   padding: var(--upgread-space-7) var(--upgread-space-7) !important;
   border-radius: var(--upgread-radius-lg) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
@@ -219,7 +219,7 @@
 }
 
 /* Subtle IDE top-edge rule */
-.upgread_workspace .hero::before {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero::before {
   content: "" !important;
   position: absolute !important;
   inset: 0 0 auto 0 !important;
@@ -231,11 +231,11 @@
   background-position: unset !important;
 }
 
-.upgread_workspace .hero::after {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero::after {
   display: none !important;
 }
 
-.upgread_workspace .hero__title {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__title {
   font-size: clamp(1.4rem, 2.6vw, 2rem) !important;
   line-height: 1.15 !important;
   letter-spacing: -0.025em !important;
@@ -243,35 +243,35 @@
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .hero__title strong {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__title strong {
   font-weight: 700 !important;
   color: var(--upgread-accent-blue) !important;
 }
 
-.upgread_workspace .hero__subtitle {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__subtitle {
   font-size: 13px !important;
   color: var(--upgread-text-secondary) !important;
   line-height: 1.55 !important;
   max-width: 52ch !important;
 }
 
-.upgread_workspace .hero__typewriter {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__typewriter {
   font-family: var(--upgread-font-ui) !important;
   font-size: 11px !important;
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .hero__typewriter-value {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__typewriter-value {
   color: var(--upgread-accent-teal) !important;
 }
 
-.upgread_workspace .hero__cursor {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__cursor {
   background: var(--upgread-accent-blue) !important;
 }
 
-.upgread_workspace .hero-badge,
-.upgread_workspace .chip,
-.upgread_workspace kbd {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-badge,
+:is(.upgread_workspace, .upgread_workspace--scoped) .chip,
+:is(.upgread_workspace, .upgread_workspace--scoped) kbd {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   background: var(--upgread-bg-elevated) !important;
@@ -281,7 +281,7 @@
   padding: 2px 6px !important;
 }
 
-.upgread_workspace .hero-btn--primary {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn--primary {
   background: var(--upgread-accent-blue) !important;
   border: 1px solid var(--upgread-accent-blue) !important;
   color: var(--upgread-text-inverse) !important;
@@ -294,13 +294,13 @@
   transition: background var(--upgread-transition), border-color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .hero-btn--primary:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn--primary:hover {
   background: color-mix(in srgb, var(--upgread-accent-blue) 82%, white) !important;
   border-color: color-mix(in srgb, var(--upgread-accent-blue) 82%, white) !important;
   transform: none !important;
 }
 
-.upgread_workspace .hero-btn--secondary {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn--secondary {
   background: transparent !important;
   border: 1px solid var(--upgread-border-default) !important;
   color: var(--upgread-text-secondary) !important;
@@ -311,25 +311,25 @@
   transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .hero-btn--secondary:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn--secondary:hover {
   border-color: var(--upgread-border-active) !important;
   color: var(--upgread-text-primary) !important;
   transform: none !important;
 }
 
-.upgread_workspace .hero-btn:active {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn:active {
   transform: scale(0.98) !important;
 }
 
 /* Hero code preview */
-.upgread_workspace .hero-preview {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-preview {
   background: var(--upgread-bg-canvas) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
   box-shadow: var(--upgread-shadow-md) !important;
 }
 
-.upgread_workspace .hero-preview__head {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-preview__head {
   background: var(--upgread-bg-elevated) !important;
   border-bottom: 1px solid var(--upgread-border-hairline) !important;
   padding: var(--upgread-space-2) var(--upgread-space-4) !important;
@@ -338,7 +338,7 @@
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .hero-preview__code {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-preview__code {
   font-family: var(--upgread-font-ui) !important;
   font-size: 11px !important;
   line-height: 1.7 !important;
@@ -349,32 +349,32 @@
 /* =========================================================
    SECTION HEADERS — COMPACT IDE RAIL
    ========================================================= */
-.upgread_workspace .tool-section__header,
-.upgread_workspace .workflow-section__header,
-.upgread_workspace .trust-section__header,
-.upgread_workspace .social-section__header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-section__header,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-section__header,
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-section__header,
+:is(.upgread_workspace, .upgread_workspace--scoped) .social-section__header {
   padding-bottom: var(--upgread-space-3) !important;
   border-bottom: 1px solid var(--upgread-border-hairline) !important;
   gap: var(--upgread-space-2) !important;
 }
 
-.upgread_workspace .section-title {
+:is(.upgread_workspace, .upgread_workspace--scoped) .section-title {
   font-size: clamp(0.95rem, 1.5vw, 1.15rem) !important;
   font-weight: 600 !important;
   letter-spacing: -0.01em !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .section-subtitle {
+:is(.upgread_workspace, .upgread_workspace--scoped) .section-subtitle {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
   margin-top: 2px !important;
 }
 
-.upgread_workspace .tool-section__eyebrow,
-.upgread_workspace .trust-section__eyebrow,
-.upgread_workspace .hero__eyebrow,
-.upgread_workspace .json-formatter-eyebrow {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-section__eyebrow,
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-section__eyebrow,
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__eyebrow,
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-formatter-eyebrow {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   color: var(--upgread-accent-blue) !important;
@@ -385,7 +385,7 @@
 /* =========================================================
    TOOL DISCOVERY BAR
    ========================================================= */
-.upgread_workspace .tool-discovery {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
@@ -393,7 +393,7 @@
   gap: var(--upgread-space-2) !important;
 }
 
-.upgread_workspace .discovery-search-shell {
+:is(.upgread_workspace, .upgread_workspace--scoped) .discovery-search-shell {
   background: var(--upgread-bg-input) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -404,13 +404,13 @@
   font-size: 12px !important;
 }
 
-.upgread_workspace .discovery-search-shell:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .discovery-search-shell:hover {
   border-color: var(--upgread-border-active) !important;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.upgread_workspace .tool-discovery__chip {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__chip {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -420,13 +420,13 @@
   transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .tool-discovery__chip:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__chip:hover {
   border-color: var(--upgread-border-active) !important;
   color: var(--upgread-text-primary) !important;
   background: color-mix(in srgb, var(--upgread-accent-blue) 8%, var(--upgread-bg-elevated)) !important;
 }
 
-.upgread_workspace .tool-discovery__label {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__label {
   font-size: 11px !important;
   font-family: var(--upgread-font-ui) !important;
   color: var(--upgread-text-muted) !important;
@@ -436,12 +436,12 @@
 /* =========================================================
    TOOL CARDS → EXECUTION MODULES
    ========================================================= */
-.upgread_workspace .card,
-.upgread_workspace .tool-card,
-.upgread_workspace .workflow-card,
-.upgread_workspace .trust-stat,
-.upgread_workspace .privacy-card,
-.upgread_workspace .testimonial-card {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card,
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-stat,
+:is(.upgread_workspace, .upgread_workspace--scoped) .privacy-card,
+:is(.upgread_workspace, .upgread_workspace--scoped) .testimonial-card {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
@@ -450,17 +450,17 @@
   transition: border-color var(--upgread-transition), background var(--upgread-transition) !important;
 }
 
-.upgread_workspace .card::before,
-.upgread_workspace .workflow-card::before,
-.upgread_workspace .trust-stat::before,
-.upgread_workspace .testimonial-card::before,
-.upgread_workspace .privacy-card::before {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card::before,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card::before,
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-stat::before,
+:is(.upgread_workspace, .upgread_workspace--scoped) .testimonial-card::before,
+:is(.upgread_workspace, .upgread_workspace--scoped) .privacy-card::before {
   display: none !important;
 }
 
-.upgread_workspace .card:hover,
-.upgread_workspace .tool-card:hover,
-.upgread_workspace .workflow-card:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card:hover,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card:hover,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card:hover {
   border-color: var(--upgread-border-active) !important;
   background: color-mix(in srgb, var(--upgread-accent-blue) 4%, var(--upgread-bg-surface)) !important;
   transform: none !important;
@@ -468,42 +468,42 @@
 }
 
 /* Remove the hover overlay shimmer */
-.upgread_workspace .tool-card::before {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card::before {
   display: none !important;
 }
 
-.upgread_workspace .card__title-row h3,
-.upgread_workspace .tool-card h3 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card__title-row h3,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card h3 {
   font-size: 12px !important;
   font-weight: 600 !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .card__description,
-.upgread_workspace .tool-card__description,
-.upgread_workspace .tool-smart-context {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card__description,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card__description,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-smart-context {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
   line-height: 1.5 !important;
   margin: 0 !important;
 }
 
-.upgread_workspace .card__action {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card__action {
   border-top: 1px solid var(--upgread-border-hairline) !important;
   padding-top: var(--upgread-space-2) !important;
   margin-top: var(--upgread-space-2) !important;
 }
 
-.upgread_workspace .card__cta {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card__cta {
   font-size: 11px !important;
   font-family: var(--upgread-font-ui) !important;
   color: var(--upgread-text-accent) !important;
   font-weight: 500 !important;
 }
 
-.upgread_workspace .card__badge,
-.upgread_workspace .tool-card__badge,
-.upgread_workspace .tool-card__tag {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card__badge,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card__badge,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-card__tag {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   background: var(--upgread-bg-elevated) !important;
@@ -513,7 +513,7 @@
   padding: 1px 5px !important;
 }
 
-.upgread_workspace .card__icon {
+:is(.upgread_workspace, .upgread_workspace--scoped) .card__icon {
   box-shadow: none !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   background: var(--upgread-bg-elevated) !important;
@@ -523,49 +523,49 @@
 /* =========================================================
    HOME PAGE SECTION LAYOUT — TIGHT IDE GRID
    ========================================================= */
-.upgread_workspace .home-page {
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-page {
   gap: 28px !important;
   background: var(--upgread-bg-canvas) !important;
 }
 
-.upgread_workspace .home-page > section {
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-page > section {
   gap: 16px !important;
 }
 
-.upgread_workspace .home-surface {
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-surface {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
   padding: var(--upgread-space-5) !important;
 }
 
-.upgread_workspace .home-surface::before,
-.upgread_workspace .home-surface::after,
-.upgread_workspace .hero__noise,
-.upgread_workspace .hero__gradient {
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-surface::before,
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-surface::after,
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__noise,
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero__gradient {
   display: none !important;
 }
 
-.upgread_workspace .home-page > section:nth-of-type(even),
-.upgread_workspace .home-page > section:nth-of-type(odd) {
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-page > section:nth-of-type(even),
+:is(.upgread_workspace, .upgread_workspace--scoped) .home-page > section:nth-of-type(odd) {
   background: none !important;
 }
 
 /* =========================================================
    WORKFLOW CARDS
    ========================================================= */
-.upgread_workspace .workflow-card h3 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card h3 {
   font-size: 12px !important;
   color: var(--upgread-text-primary) !important;
   font-weight: 600 !important;
 }
 
-.upgread_workspace .workflow-card p {
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card p {
   font-size: 11px !important;
   color: var(--upgread-text-secondary) !important;
 }
 
-.upgread_workspace .workflow-card__link {
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card__link {
   font-size: 11px !important;
   font-family: var(--upgread-font-ui) !important;
   color: var(--upgread-accent-blue) !important;
@@ -575,7 +575,7 @@
 /* =========================================================
    TRUST / STATS
    ========================================================= */
-.upgread_workspace .trust-stat__value {
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-stat__value {
   font-size: clamp(1.4rem, 2.5vw, 1.9rem) !important;
   font-weight: 700 !important;
   letter-spacing: -0.02em !important;
@@ -583,19 +583,19 @@
   font-family: var(--upgread-font-ui) !important;
 }
 
-.upgread_workspace .trust-stat__label {
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-stat__label {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   color: var(--upgread-text-muted) !important;
   letter-spacing: 0.06em !important;
 }
 
-.upgread_workspace .trust-stat__meta {
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-stat__meta {
   font-size: 11px !important;
   color: var(--upgread-text-secondary) !important;
 }
 
-.upgread_workspace .trust-link {
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-link {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -605,7 +605,7 @@
   transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .trust-link:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-link:hover {
   border-color: var(--upgread-border-active) !important;
   color: var(--upgread-text-primary) !important;
 }
@@ -613,19 +613,19 @@
 /* =========================================================
    TESTIMONIAL CARDS
    ========================================================= */
-.upgread_workspace .testimonial-card__quote {
+:is(.upgread_workspace, .upgread_workspace--scoped) .testimonial-card__quote {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
   line-height: 1.6 !important;
 }
 
-.upgread_workspace .testimonial-card__meta {
+:is(.upgread_workspace, .upgread_workspace--scoped) .testimonial-card__meta {
   font-size: 11px !important;
   color: var(--upgread-text-muted) !important;
   font-family: var(--upgread-font-ui) !important;
 }
 
-.upgread_workspace .testimonial-card__badge {
+:is(.upgread_workspace, .upgread_workspace--scoped) .testimonial-card__badge {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   background: color-mix(in srgb, var(--upgread-accent-teal) 10%, var(--upgread-bg-elevated)) !important;
@@ -636,25 +636,25 @@
 /* =========================================================
    FAQ PANEL
    ========================================================= */
-.upgread_workspace .faq-panel {
+:is(.upgread_workspace, .upgread_workspace--scoped) .faq-panel {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
   padding: var(--upgread-space-5) !important;
 }
 
-.upgread_workspace .faq-panel h3 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .faq-panel h3 {
   font-size: 13px !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .faq-panel__list dt {
+:is(.upgread_workspace, .upgread_workspace--scoped) .faq-panel__list dt {
   font-size: 12px !important;
   font-weight: 600 !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .faq-panel__list dd {
+:is(.upgread_workspace, .upgread_workspace--scoped) .faq-panel__list dd {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
 }
@@ -662,20 +662,20 @@
 /* =========================================================
    ALL TOOLS PAGE — TOOLS INDEX
    ========================================================= */
-.upgread_workspace .tools-index__toolbar {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
   padding: var(--upgread-space-3) var(--upgread-space-4) !important;
 }
 
-.upgread_workspace .tool-group__header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-group__header {
   padding-bottom: var(--upgread-space-2) !important;
   border-bottom: 1px solid var(--upgread-border-hairline) !important;
   margin-bottom: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .tool-group__header h2 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-group__header h2 {
   font-size: 11px !important;
   font-family: var(--upgread-font-ui) !important;
   font-weight: 600 !important;
@@ -684,7 +684,7 @@
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .tool-group__count {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-group__count {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   background: var(--upgread-bg-elevated) !important;
@@ -694,7 +694,7 @@
   padding: 1px 5px !important;
 }
 
-.upgread_workspace .view-toggle__btn {
+:is(.upgread_workspace, .upgread_workspace--scoped) .view-toggle__btn {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -705,15 +705,15 @@
   transition: border-color var(--upgread-transition), color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .view-toggle__btn[aria-pressed="true"],
-.upgread_workspace .view-toggle__btn.is-active {
+:is(.upgread_workspace, .upgread_workspace--scoped) .view-toggle__btn[aria-pressed="true"],
+:is(.upgread_workspace, .upgread_workspace--scoped) .view-toggle__btn.is-active {
   background: color-mix(in srgb, var(--upgread-accent-blue) 12%, var(--upgread-bg-elevated)) !important;
   border-color: var(--upgread-border-active) !important;
   color: var(--upgread-accent-blue) !important;
 }
 
-.upgread_workspace .tools-index__toolbar input[type="search"],
-.upgread_workspace .tools-index__toolbar .search {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar input[type="search"],
+:is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar .search {
   background: var(--upgread-bg-input) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -726,8 +726,8 @@
   box-shadow: none !important;
 }
 
-.upgread_workspace .tools-index__toolbar input[type="search"]:focus,
-.upgread_workspace .tools-index__toolbar .search:focus {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar input[type="search"]:focus,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar .search:focus {
   border-color: var(--upgread-border-active) !important;
   box-shadow: none !important;
   outline: none !important;
@@ -736,7 +736,7 @@
 /* =========================================================
    TOOL SHELL PAGE — EXECUTION WORKSPACE
    ========================================================= */
-.upgread_workspace .tool-shell-page__hero {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__hero {
   padding: var(--upgread-space-5) var(--upgread-space-6) !important;
   border-radius: var(--upgread-radius-md) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
@@ -744,24 +744,24 @@
   box-shadow: none !important;
 }
 
-.upgread_workspace .tool-page__heading h1 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-page__heading h1 {
   font-size: 14px !important;
   font-weight: 700 !important;
   color: var(--upgread-text-primary) !important;
   letter-spacing: -0.01em !important;
 }
 
-.upgread_workspace .static-page__header h1 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .static-page__header h1 {
   font-size: 15px !important;
 }
 
-.upgread_workspace .tool-page__heading p,
-.upgread_workspace .static-page__header p {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-page__heading p,
+:is(.upgread_workspace, .upgread_workspace--scoped) .static-page__header p {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
 }
 
-.upgread_workspace .tool-shell-page__runtime {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime {
   border: 1px solid var(--upgread-border-hairline) !important;
   background: var(--upgread-bg-surface) !important;
   border-radius: var(--upgread-radius-md) !important;
@@ -770,15 +770,15 @@
   gap: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .tool-shell-page__runtime:hover,
-.upgread_workspace .tool-shell-page__runtime:focus-within {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime:hover,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime:focus-within {
   border-color: var(--upgread-border-active) !important;
   box-shadow: none !important;
 }
 
 /* OVERRIDE LAYER */
 /* Workspace theme override for tool doc/runtime primitive .tool-shell-page__docs */
-.upgread_workspace .tool-shell-page__docs {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
@@ -786,7 +786,7 @@
   padding: var(--upgread-space-5) !important;
 }
 
-.upgread_workspace .section-frame {
+:is(.upgread_workspace, .upgread_workspace--scoped) .section-frame {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -794,33 +794,33 @@
   padding: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .readme-disclosure {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
   padding: var(--upgread-space-2) var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .readme-disclosure[open],
-.upgread_workspace .readme-disclosure.is-transitioning {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure[open],
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure.is-transitioning {
   border-color: var(--upgread-border-active) !important;
   box-shadow: none !important;
 }
 
-.upgread_workspace .readme-disclosure > summary {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure > summary {
   font-size: 12px !important;
   font-weight: 600 !important;
   min-height: 32px !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .readme-disclosure > summary::after {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure > summary::after {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .readme-guidance__action {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-guidance__action {
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
   padding: var(--upgread-space-3) !important;
@@ -828,45 +828,45 @@
   transition: border-color var(--upgread-transition), transform var(--upgread-transition) !important;
 }
 
-.upgread_workspace .readme-guidance__action:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-guidance__action:hover {
   border-color: var(--upgread-border-active) !important;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.upgread_workspace .readme-guidance__action::after {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-guidance__action::after {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .readme-guidance__action:hover::after {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-guidance__action:hover::after {
   color: var(--upgread-accent-blue) !important;
   transform: translateX(2px) !important;
 }
 
-.upgread_workspace .readme-card[data-actionable-card="true"] {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-card[data-actionable-card="true"] {
   border-color: var(--upgread-border-hairline) !important;
   transition: border-color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .readme-card[data-actionable-card="true"]:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-card[data-actionable-card="true"]:hover {
   border-color: var(--upgread-border-active) !important;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.upgread_workspace .readme-card[data-actionable-card="true"]::before {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-card[data-actionable-card="true"]::before {
   font-family: var(--upgread-font-ui) !important;
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .readme-card[data-actionable-card="true"]:hover::before {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-card[data-actionable-card="true"]:hover::before {
   color: var(--upgread-accent-blue) !important;
   transform: translateX(2px) !important;
 }
 
-.upgread_workspace .readme-compressed-note {
+:is(.upgread_workspace, .upgread_workspace--scoped) .readme-compressed-note {
   font-size: 11px !important;
   color: var(--upgread-text-muted) !important;
 }
@@ -874,9 +874,9 @@
 /* =========================================================
    TOOL BUTTONS — IDE BUTTON SYSTEM
    ========================================================= */
-.upgread_workspace .tool-btn,
-.upgread_workspace .hero-btn,
-.upgread_workspace .contact-form__submit {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn,
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn,
+:is(.upgread_workspace, .upgread_workspace--scoped) .contact-form__submit {
   border-radius: var(--upgread-radius-sm) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
@@ -885,36 +885,36 @@
   transition: border-color var(--upgread-transition), background var(--upgread-transition), color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .tool-btn--primary {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--primary {
   background: var(--upgread-accent-blue) !important;
   border: 1px solid var(--upgread-accent-blue) !important;
   color: var(--upgread-text-inverse) !important;
   font-weight: 600 !important;
 }
 
-.upgread_workspace .tool-btn--primary:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--primary:hover {
   background: color-mix(in srgb, var(--upgread-accent-blue) 80%, white) !important;
   border-color: color-mix(in srgb, var(--upgread-accent-blue) 80%, white) !important;
 }
 
-.upgread_workspace .tool-btn--secondary {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--secondary {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-default) !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .tool-btn--secondary:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--secondary:hover {
   border-color: var(--upgread-border-active) !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .tool-btn--ghost {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--ghost {
   background: transparent !important;
   border: 1px solid transparent !important;
   color: var(--upgread-text-secondary) !important;
 }
 
-.upgread_workspace .tool-btn--ghost:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--ghost:hover {
   border-color: var(--upgread-border-hairline) !important;
   color: var(--upgread-text-primary) !important;
 }
@@ -922,7 +922,7 @@
 /* =========================================================
    TOOL TOGGLE / TOOLBAR CONTROLS
    ========================================================= */
-.upgread_workspace .tool-toggle {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-toggle {
   font-size: 12px !important;
   min-height: 28px !important;
   background: var(--upgread-bg-elevated) !important;
@@ -932,7 +932,7 @@
   padding-inline: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .tool-select {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-select {
   background: var(--upgread-bg-input) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -941,7 +941,7 @@
   min-height: 28px !important;
 }
 
-.upgread_workspace .tool-select:focus {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-select:focus {
   border-color: var(--upgread-border-active) !important;
   outline: none !important;
   box-shadow: none !important;
@@ -950,20 +950,20 @@
 /* =========================================================
    PANEL HEADERS
    ========================================================= */
-.upgread_workspace .panel-header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .panel-header {
   padding-bottom: var(--upgread-space-2) !important;
   border-bottom: 1px solid var(--upgread-border-hairline) !important;
 }
 
-.upgread_workspace .panel-header h2,
-.upgread_workspace .panel-header h3 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .panel-header h2,
+:is(.upgread_workspace, .upgread_workspace--scoped) .panel-header h3 {
   font-size: 12px !important;
   font-weight: 600 !important;
   color: var(--upgread-text-primary) !important;
   letter-spacing: 0.01em !important;
 }
 
-.upgread_workspace .panel-header p {
+:is(.upgread_workspace, .upgread_workspace--scoped) .panel-header p {
   font-size: 11px !important;
   color: var(--upgread-text-muted) !important;
 }
@@ -971,10 +971,10 @@
 /* =========================================================
    EDITOR SURFACES — TEXTAREA / CODEMIRROR
    ========================================================= */
-.upgread_workspace .editor-surface,
-.upgread_workspace .tool-local-surface,
-.upgread_workspace textarea,
-.upgread_workspace [contenteditable] {
+:is(.upgread_workspace, .upgread_workspace--scoped) .editor-surface,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface,
+:is(.upgread_workspace, .upgread_workspace--scoped) textarea,
+:is(.upgread_workspace, .upgread_workspace--scoped) [contenteditable] {
   background: var(--upgread-bg-input) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -984,7 +984,7 @@
   line-height: 1.6 !important;
 }
 
-.upgread_workspace .editor-label {
+:is(.upgread_workspace, .upgread_workspace--scoped) .editor-label {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   letter-spacing: 0.06em !important;
@@ -994,8 +994,8 @@
 /* =========================================================
    METRICS BAR — STATUS LINE
    ========================================================= */
-.upgread_workspace .tool-local-metrics,
-.upgread_workspace .json-metrics {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics,
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-metrics {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -1005,16 +1005,16 @@
   gap: var(--upgread-space-4) !important;
 }
 
-.upgread_workspace .tool-local-metrics p,
-.upgread_workspace .json-metrics p {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics p,
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-metrics p {
   background: transparent !important;
   border: none !important;
   color: var(--upgread-text-secondary) !important;
   font-size: 11px !important;
 }
 
-.upgread_workspace .tool-local-metrics p strong,
-.upgread_workspace .tool-local-metrics p span {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics p strong,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics p span {
   color: var(--upgread-accent-blue) !important;
   font-family: var(--upgread-font-ui) !important;
 }
@@ -1022,16 +1022,16 @@
 /* =========================================================
    JSON FORMATTER PAGE
    ========================================================= */
-.upgread_workspace .json-formatter-page {
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-formatter-page {
   gap: var(--upgread-space-3) !important;
   padding: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .json-formatter-header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-formatter-header {
   gap: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .json-processing-badge {
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-processing-badge {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   background: color-mix(in srgb, var(--upgread-accent-teal) 10%, var(--upgread-bg-elevated)) !important;
@@ -1041,7 +1041,7 @@
   padding: 2px 7px !important;
 }
 
-.upgread_workspace .json-toolbar {
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-toolbar {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -1049,48 +1049,48 @@
   gap: var(--upgread-space-1) !important;
 }
 
-.upgread_workspace .json-workspace {
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-workspace {
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
   background: var(--upgread-bg-canvas) !important;
 }
 
-.upgread_workspace .json-panel--output {
+:is(.upgread_workspace, .upgread_workspace--scoped) .json-panel--output {
   border-left: 1px solid var(--upgread-border-hairline) !important;
 }
 
-.upgread_workspace .tool-error {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-error {
   border: 1px solid color-mix(in srgb, var(--upgread-accent-red) 40%, var(--upgread-border-hairline)) !important;
   background: color-mix(in srgb, var(--upgread-accent-red) 7%, var(--upgread-bg-elevated)) !important;
   border-radius: var(--upgread-radius-sm) !important;
   font-size: 12px !important;
 }
 
-.upgread_workspace .toast {
+:is(.upgread_workspace, .upgread_workspace--scoped) .toast {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
   font-size: 11px !important;
 }
 
-.upgread_workspace .toast--success {
+:is(.upgread_workspace, .upgread_workspace--scoped) .toast--success {
   border-color: color-mix(in srgb, var(--upgread-accent-teal) 50%, var(--upgread-border-hairline)) !important;
 }
 
-.upgread_workspace .toast--error {
+:is(.upgread_workspace, .upgread_workspace--scoped) .toast--error {
   border-color: color-mix(in srgb, var(--upgread-accent-red) 50%, var(--upgread-border-hairline)) !important;
 }
 
 /* =========================================================
    FILE MERGE TOOL
    ========================================================= */
-.upgread_workspace .file-merge-tool .panel {
+:is(.upgread_workspace, .upgread_workspace--scoped) .file-merge-tool .panel {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
 }
 
-.upgread_workspace .file-merge-tool .dropzone {
+:is(.upgread_workspace, .upgread_workspace--scoped) .file-merge-tool .dropzone {
   border: 1px dashed var(--upgread-border-default) !important;
   border-radius: var(--upgread-radius-sm) !important;
   font-size: 12px !important;
@@ -1098,13 +1098,13 @@
   transition: border-color var(--upgread-transition), background var(--upgread-transition) !important;
 }
 
-.upgread_workspace .file-merge-tool .dropzone:hover,
-.upgread_workspace .file-merge-tool .dropzone.is-dragging {
+:is(.upgread_workspace, .upgread_workspace--scoped) .file-merge-tool .dropzone:hover,
+:is(.upgread_workspace, .upgread_workspace--scoped) .file-merge-tool .dropzone.is-dragging {
   border-color: var(--upgread-border-active) !important;
   background: color-mix(in srgb, var(--upgread-accent-blue) 5%, var(--upgread-bg-elevated)) !important;
 }
 
-.upgread_workspace .file-merge-tool .file-item {
+:is(.upgread_workspace, .upgread_workspace--scoped) .file-merge-tool .file-item {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -1114,7 +1114,7 @@
   padding: var(--upgread-space-2) var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .file-merge-tool .preview-output {
+:is(.upgread_workspace, .upgread_workspace--scoped) .file-merge-tool .preview-output {
   background: var(--upgread-bg-input) !important;
   border-radius: var(--upgread-radius-sm) !important;
   font-family: var(--upgread-font-ui) !important;
@@ -1126,7 +1126,7 @@
 /* =========================================================
    DOCUMENT CONVERTER
    ========================================================= */
-.upgread_workspace .document-converter-runtime #downloadLink {
+:is(.upgread_workspace, .upgread_workspace--scoped) .document-converter-runtime #downloadLink {
   color: var(--upgread-accent-blue) !important;
   font-family: var(--upgread-font-ui) !important;
   font-size: 11px !important;
@@ -1135,32 +1135,32 @@
 /* =========================================================
    TOOL RUNTIME WIDGET (tool-auto-professional)
    ========================================================= */
-.upgread_workspace .tool-runtime-widget {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget {
   padding: var(--upgread-space-3) !important;
   gap: var(--upgread-space-2) !important;
 }
 
-.upgread_workspace .tool-runtime-widget .tool-local-header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-header {
   padding-bottom: var(--upgread-space-2) !important;
   border-bottom: 1px solid var(--upgread-border-hairline) !important;
   gap: var(--upgread-space-2) !important;
 }
 
-.upgread_workspace .tool-runtime-widget .tool-local-header h1,
-.upgread_workspace .tool-runtime-widget .tool-local-header h2,
-.upgread_workspace .tool-runtime-widget .tool-local-header h3 {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-header h1,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-header h2,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-header h3 {
   font-size: 13px !important;
   font-weight: 600 !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .tool-runtime-widget .tool-local-header p {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-header p {
   font-size: 11px !important;
   color: var(--upgread-text-secondary) !important;
   min-height: auto !important;
 }
 
-.upgread_workspace .tool-runtime-widget .tool-local-actions {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-actions {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -1168,7 +1168,7 @@
   gap: var(--upgread-space-1) !important;
 }
 
-.upgread_workspace .tool-runtime-widget .tool-local-surface {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-surface {
   background: var(--upgread-bg-canvas) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-sm) !important;
@@ -1177,7 +1177,7 @@
   min-height: 280px !important;
 }
 
-.upgread_workspace .tool-runtime-widget .tool-error {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-error {
   padding: var(--upgread-space-2) var(--upgread-space-3) !important;
   font-size: 11px !important;
 }
@@ -1185,7 +1185,7 @@
 /* =========================================================
    STATIC PAGES
    ========================================================= */
-.upgread_workspace .static-page__header {
+:is(.upgread_workspace, .upgread_workspace--scoped) .static-page__header {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
@@ -1193,14 +1193,14 @@
   box-shadow: none !important;
 }
 
-.upgread_workspace .static-page__section {
+:is(.upgread_workspace, .upgread_workspace--scoped) .static-page__section {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
 }
 
-.upgread_workspace .static-page__section p,
-.upgread_workspace .static-page__section li {
+:is(.upgread_workspace, .upgread_workspace--scoped) .static-page__section p,
+:is(.upgread_workspace, .upgread_workspace--scoped) .static-page__section li {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
   line-height: 1.7 !important;
@@ -1209,45 +1209,45 @@
 /* =========================================================
    FOOTER
    ========================================================= */
-.upgread_workspace footer,
-.upgread_workspace .footer {
+:is(.upgread_workspace, .upgread_workspace--scoped) footer,
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer {
   background: var(--upgread-bg-surface) !important;
   border-top: 1px solid var(--upgread-border-hairline) !important;
 }
 
-.upgread_workspace .footer__meta {
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer__meta {
   font-size: 11px !important;
   color: var(--upgread-text-muted) !important;
 }
 
-.upgread_workspace .footer__bottom-strip {
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer__bottom-strip {
   border-top: 1px solid var(--upgread-border-hairline) !important;
   padding-block: var(--upgread-space-3) !important;
 }
 
-.upgread_workspace .footer__nav a,
-.upgread_workspace .footer__shortcuts a {
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer__nav a,
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer__shortcuts a {
   font-size: 11px !important;
   color: var(--upgread-text-secondary) !important;
   transition: color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .footer__nav a:hover,
-.upgread_workspace .footer__shortcuts a:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer__nav a:hover,
+:is(.upgread_workspace, .upgread_workspace--scoped) .footer__shortcuts a:hover {
   color: var(--upgread-text-primary) !important;
 }
 
 /* =========================================================
    COMMAND PALETTE
    ========================================================= */
-.upgread_workspace .command-palette {
+:is(.upgread_workspace, .upgread_workspace--scoped) .command-palette {
   background: var(--upgread-bg-elevated) !important;
   border: 1px solid var(--upgread-border-default) !important;
   border-radius: var(--upgread-radius-md) !important;
   box-shadow: var(--upgread-shadow-lg) !important;
 }
 
-.upgread_workspace .command-palette__input {
+:is(.upgread_workspace, .upgread_workspace--scoped) .command-palette__input {
   background: transparent !important;
   border-bottom: 1px solid var(--upgread-border-hairline) !important;
   color: var(--upgread-text-primary) !important;
@@ -1255,20 +1255,20 @@
   font-family: var(--upgread-font-ui) !important;
 }
 
-.upgread_workspace .command-palette__item {
+:is(.upgread_workspace, .upgread_workspace--scoped) .command-palette__item {
   font-size: 12px !important;
   color: var(--upgread-text-secondary) !important;
   border-radius: var(--upgread-radius-sm) !important;
   transition: background var(--upgread-transition) !important;
 }
 
-.upgread_workspace .command-palette__item:hover,
-.upgread_workspace .command-palette__item.is-selected {
+:is(.upgread_workspace, .upgread_workspace--scoped) .command-palette__item:hover,
+:is(.upgread_workspace, .upgread_workspace--scoped) .command-palette__item.is-selected {
   background: color-mix(in srgb, var(--upgread-accent-blue) 10%, var(--upgread-bg-overlay)) !important;
   color: var(--upgread-text-primary) !important;
 }
 
-.upgread_workspace .command-palette__badge {
+:is(.upgread_workspace, .upgread_workspace--scoped) .command-palette__badge {
   font-family: var(--upgread-font-ui) !important;
   font-size: 10px !important;
   background: var(--upgread-bg-canvas) !important;
@@ -1281,7 +1281,7 @@
 /* =========================================================
    WORKFLOW PATHWAY CARDS
    ========================================================= */
-.upgread_workspace .workflow-pathway-card {
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-pathway-card {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;
   border-radius: var(--upgread-radius-md) !important;
@@ -1289,7 +1289,7 @@
   transition: border-color var(--upgread-transition) !important;
 }
 
-.upgread_workspace .workflow-pathway-card:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-pathway-card:hover {
   border-color: var(--upgread-border-active) !important;
   transform: none !important;
 }
@@ -1297,18 +1297,18 @@
 /* =========================================================
    ACCESSIBILITY — FOCUS STATES
    ========================================================= */
-.upgread_workspace :focus-visible {
+:is(.upgread_workspace, .upgread_workspace--scoped) :focus-visible {
   outline: 1px solid var(--upgread-border-active) !important;
   outline-offset: 1px !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--upgread-accent-blue) 20%, transparent) !important;
 }
 
 /* Remove aggressive focus from cards that override above */
-.upgread_workspace .hero-btn:focus-visible,
-.upgread_workspace .card:focus-visible,
-.upgread_workspace .tool-discovery__chip:focus-visible,
-.upgread_workspace .workflow-card__link:focus-visible,
-.upgread_workspace .trust-link:focus-visible {
+:is(.upgread_workspace, .upgread_workspace--scoped) .hero-btn:focus-visible,
+:is(.upgread_workspace, .upgread_workspace--scoped) .card:focus-visible,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__chip:focus-visible,
+:is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card__link:focus-visible,
+:is(.upgread_workspace, .upgread_workspace--scoped) .trust-link:focus-visible {
   outline: 1px solid var(--upgread-border-active) !important;
   outline-offset: 1px !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--upgread-accent-blue) 20%, transparent) !important;
@@ -1317,28 +1317,28 @@
 /* =========================================================
    SCROLLBAR — CHROMIUM IDE STYLE
    ========================================================= */
-.upgread_workspace ::-webkit-scrollbar {
+:is(.upgread_workspace, .upgread_workspace--scoped) ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.upgread_workspace ::-webkit-scrollbar-track {
+:is(.upgread_workspace, .upgread_workspace--scoped) ::-webkit-scrollbar-track {
   background: var(--upgread-bg-canvas);
 }
 
-.upgread_workspace ::-webkit-scrollbar-thumb {
+:is(.upgread_workspace, .upgread_workspace--scoped) ::-webkit-scrollbar-thumb {
   background: var(--upgread-bg-overlay);
   border-radius: 4px;
 }
 
-.upgread_workspace ::-webkit-scrollbar-thumb:hover {
+:is(.upgread_workspace, .upgread_workspace--scoped) ::-webkit-scrollbar-thumb:hover {
   background: var(--upgread-border-default);
 }
 
 /* =========================================================
    SELECTION
    ========================================================= */
-.upgread_workspace ::selection {
+:is(.upgread_workspace, .upgread_workspace--scoped) ::selection {
   background: color-mix(in srgb, var(--upgread-accent-blue) 28%, transparent);
   color: var(--upgread-text-primary);
 }
@@ -1346,21 +1346,21 @@
 /* =========================================================
    MOMENTUM PANEL
    ========================================================= */
-.upgread_workspace .tool-shell-page__momentum {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__momentum {
   background: color-mix(in srgb, var(--upgread-accent-blue) 7%, var(--upgread-bg-elevated)) !important;
   border: 1px solid color-mix(in srgb, var(--upgread-accent-blue) 30%, var(--upgread-border-hairline)) !important;
   border-radius: var(--upgread-radius-sm) !important;
   box-shadow: none !important;
 }
 
-.upgread_workspace .tool-shell-page__momentum-title {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__momentum-title {
   font-family: var(--upgread-font-ui) !important;
   font-size: 11px !important;
   color: var(--upgread-accent-blue) !important;
   letter-spacing: 0.04em !important;
 }
 
-.upgread_workspace .tool-shell-page__momentum-copy {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__momentum-copy {
   font-size: 11px !important;
   color: var(--upgread-text-secondary) !important;
 }
@@ -1368,15 +1368,15 @@
 /* =========================================================
    SYNTAX TOKENS (file-merge / preview)
    ========================================================= */
-.upgread_workspace .tok-key  { color: #79c0ff !important; }
-.upgread_workspace .tok-str  { color: #a5d6ff !important; }
-.upgread_workspace .tok-num  { color: var(--upgread-accent-orange) !important; }
-.upgread_workspace .tok-lit  { color: var(--upgread-accent-purple) !important; }
+:is(.upgread_workspace, .upgread_workspace--scoped) .tok-key  { color: #79c0ff !important; }
+:is(.upgread_workspace, .upgread_workspace--scoped) .tok-str  { color: #a5d6ff !important; }
+:is(.upgread_workspace, .upgread_workspace--scoped) .tok-num  { color: var(--upgread-accent-orange) !important; }
+:is(.upgread_workspace, .upgread_workspace--scoped) .tok-lit  { color: var(--upgread-accent-purple) !important; }
 
 /* =========================================================
    TOOL LAYOUT (SHELL PAGE)
    ========================================================= */
-.upgread_workspace .tool-shell-page__layout {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__layout {
   grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.7fr) !important;
   gap: var(--upgread-space-4) !important;
 }
@@ -1392,40 +1392,40 @@
 
 /* --- TOOL SHELL LAYOUT --- */
 @media (max-width: 1100px) {
-  .upgread_workspace .tool-shell-page__layout {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__layout {
     grid-template-columns: 1fr !important;
   }
 
-  .upgread_workspace .container,
-  .upgread_workspace main.container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container {
     padding-inline: 10px !important;
   }
 
-  .upgread_workspace .tool-shell-page__runtime {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime {
     padding: var(--upgread-space-3) !important;
   }
 }
 
 /* --- TABLET --- */
 @media (max-width: 900px) {
-  .upgread_workspace .home-page {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .home-page {
     gap: 22px !important;
   }
 
-  .upgread_workspace .hero {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero {
     padding: var(--upgread-space-6) !important;
   }
 
-  .upgread_workspace .hero__title {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__title {
     font-size: clamp(1.25rem, 3.5vw, 1.7rem) !important;
   }
 
-  .upgread_workspace .tool-discovery {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery {
     flex-wrap: wrap !important;
     gap: var(--upgread-space-2) !important;
   }
 
-  .upgread_workspace .tools-index__toolbar {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar {
     flex-wrap: wrap !important;
     gap: var(--upgread-space-2) !important;
   }
@@ -1433,144 +1433,144 @@
 
 /* --- MOBILE 680px --- */
 @media (max-width: 680px) {
-  .upgread_workspace .container,
-  .upgread_workspace main.container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container {
     padding-inline: 8px !important;
     padding-top: 8px !important;
   }
 
-  .upgread_workspace .home-page {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .home-page {
     gap: 16px !important;
   }
 
   /* Hero — compact execution-first layout */
-  .upgread_workspace .hero {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero {
     padding: var(--upgread-space-5) var(--upgread-space-4) !important;
   }
 
-  .upgread_workspace .hero__container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__container {
     display: flex !important;
     flex-direction: column !important;
     gap: var(--upgread-space-4) !important;
   }
 
-  .upgread_workspace .hero__title {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__title {
     font-size: clamp(1.1rem, 5vw, 1.5rem) !important;
     line-height: 1.2 !important;
   }
 
-  .upgread_workspace .hero__subtitle {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__subtitle {
     font-size: 12px !important;
     max-width: none !important;
   }
 
-  .upgread_workspace .hero__badges {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__badges {
     flex-wrap: wrap !important;
     gap: 4px !important;
   }
 
-  .upgread_workspace .hero__actions {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__actions {
     flex-wrap: wrap !important;
     gap: var(--upgread-space-2) !important;
   }
 
   /* Hero preview hides on very small screens — save real estate */
-  .upgread_workspace .hero-preview {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero-preview {
     display: none !important;
   }
 
   /* Topbar — compact */
-  .upgread_workspace .topbar__inner {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .topbar__inner {
     padding-inline: var(--upgread-space-3) !important;
     gap: var(--upgread-space-2) !important;
   }
 
-  .upgread_workspace .topbar__search-wrap {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .topbar__search-wrap {
     flex: 1 1 0 !important;
     min-width: 0 !important;
   }
 
-  .upgread_workspace .topbar__search-shell {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .topbar__search-shell {
     width: 100% !important;
     min-width: 0 !important;
   }
 
-  .upgread_workspace .topbar__search-shortcut {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .topbar__search-shortcut {
     display: none !important;
   }
 
-  .upgread_workspace .brand__tagline {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .brand__tagline {
     display: none !important;
   }
 
   /* Tool grid — single column on small mobile */
-  .upgread_workspace .tool-grid,
-  .upgread_workspace [data-tool-group] .tools-grid {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-grid,
+  :is(.upgread_workspace, .upgread_workspace--scoped) [data-tool-group] .tools-grid {
     grid-template-columns: 1fr !important;
     gap: var(--upgread-space-2) !important;
   }
 
   /* Tool cards tighter on mobile */
-  .upgread_workspace .card,
-  .upgread_workspace .tool-card {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .card,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-card {
     padding: var(--upgread-space-3) !important;
   }
 
-  .upgread_workspace .tool-card__meta {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-card__meta {
     flex-wrap: wrap !important;
     gap: 4px !important;
     font-size: 10px !important;
   }
 
   /* Footer compact */
-  .upgread_workspace .footer__columns {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .footer__columns {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: var(--upgread-space-4) !important;
   }
 
-  .upgread_workspace .footer__bottom-strip {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .footer__bottom-strip {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: var(--upgread-space-2) !important;
   }
 
-  .upgread_workspace .footer__shortcuts {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .footer__shortcuts {
     display: none !important;
   }
 
   /* Runtime widget compact */
-  .upgread_workspace .tool-runtime-widget {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget {
     padding: var(--upgread-space-3) !important;
     gap: var(--upgread-space-2) !important;
   }
 
-  .upgread_workspace .tool-shell-page__runtime {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime {
     padding: var(--upgread-space-3) !important;
     gap: var(--upgread-space-2) !important;
   }
 
-  .upgread_workspace .tool-shell-page__docs {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs {
     padding: var(--upgread-space-3) !important;
   }
 
   /* Toolbar wrapping */
-  .upgread_workspace .json-toolbar,
-  .upgread_workspace .sql-control-ribbon,
-  .upgread_workspace .tool-local-actions {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .json-toolbar,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .sql-control-ribbon,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-actions {
     gap: 5px !important;
     padding: 6px 8px !important;
   }
 
-  .upgread_workspace .json-toolbar-row,
-  .upgread_workspace .sql-toolbar-row {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .json-toolbar-row,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .sql-toolbar-row {
     flex-wrap: wrap !important;
     gap: 5px !important;
   }
 
   /* SEO tabs horizontal scroll */
-  .upgread_workspace .tool-md-tabs,
-  .upgread_workspace .readme-tabs {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-tabs,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .readme-tabs {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     white-space: nowrap !important;
@@ -1578,109 +1578,109 @@
     scrollbar-width: none !important;
   }
 
-  .upgread_workspace .tool-md-tabs::-webkit-scrollbar,
-  .upgread_workspace .readme-tabs::-webkit-scrollbar {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-tabs::-webkit-scrollbar,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .readme-tabs::-webkit-scrollbar {
     display: none !important;
   }
 
-  .upgread_workspace .tool-md-tab,
-  .upgread_workspace .readme-tab {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-tab,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .readme-tab {
     white-space: nowrap !important;
   }
 
   /* Section headers compact */
-  .upgread_workspace .tool-section__header,
-  .upgread_workspace .workflow-section__header {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-section__header,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .workflow-section__header {
     flex-wrap: wrap !important;
     gap: var(--upgread-space-1) !important;
   }
 
   /* Workflow cards single col */
-  .upgread_workspace .workflow-grid {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .workflow-grid {
     grid-template-columns: 1fr !important;
     gap: var(--upgread-space-2) !important;
   }
 
   /* Discovery bar wraps */
-  .upgread_workspace .tool-discovery {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery {
     padding: var(--upgread-space-2) var(--upgread-space-3) !important;
   }
 
-  .upgread_workspace .tool-discovery__chips {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__chips {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     flex-wrap: nowrap !important;
     scrollbar-width: none !important;
   }
 
-  .upgread_workspace .tool-discovery__chips::-webkit-scrollbar {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__chips::-webkit-scrollbar {
     display: none !important;
   }
 
   /* JSON / SQL panels stack */
-  .upgread_workspace .json-workspace {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .json-workspace {
     grid-template-columns: 1fr !important;
   }
 
-  .upgread_workspace .json-panel--output {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .json-panel--output {
     border-left: 0 !important;
     border-top: 1px solid var(--upgread-border-hairline) !important;
   }
 
-  .upgread_workspace .json-metrics,
-  .upgread_workspace .tool-metrics-compact-grid {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .json-metrics,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-metrics-compact-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
 /* --- MOBILE SMALL 480px --- */
 @media (max-width: 480px) {
-  .upgread_workspace .container,
-  .upgread_workspace main.container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container {
     padding-inline: 6px !important;
   }
 
-  .upgread_workspace .hero {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero {
     padding: var(--upgread-space-4) !important;
   }
 
-  .upgread_workspace .hero__title {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero__title {
     font-size: clamp(1rem, 6vw, 1.3rem) !important;
   }
 
-  .upgread_workspace .brand__name {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .brand__name {
     font-size: 11px !important;
   }
 
-  .upgread_workspace .footer__columns {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .footer__columns {
     grid-template-columns: 1fr !important;
     gap: var(--upgread-space-3) !important;
   }
 
-  .upgread_workspace .json-metrics,
-  .upgread_workspace .tool-metrics-compact-grid {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .json-metrics,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-metrics-compact-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .upgread_workspace .tool-toggle {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-toggle {
     font-size: 11px !important;
     padding-inline: var(--upgread-space-2) !important;
   }
 
-  .upgread_workspace .editor-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .editor-surface {
     min-height: 180px !important;
   }
 
-  .upgread_workspace .tool-runtime-widget .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-surface {
     min-height: 160px !important;
   }
 
-  .upgread_workspace .topbar__explore {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .topbar__explore {
     display: none !important;
   }
 
-  .upgread_workspace .trust-section__grid,
-  .upgread_workspace .privacy-grid {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .trust-section__grid,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .privacy-grid {
     grid-template-columns: 1fr !important;
     gap: var(--upgread-space-2) !important;
   }
@@ -1688,30 +1688,30 @@
 
 /* --- DESKTOP HD 1800px+ --- */
 @media (min-width: 1800px) {
-  .upgread_workspace .container,
-  .upgread_workspace main.container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container {
     padding-inline: 28px !important;
   }
 
-  .upgread_workspace .home-page {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .home-page {
     max-width: 1680px !important;
     margin-inline: auto !important;
   }
 
-  .upgread_workspace .tool-shell-page__layout {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__layout {
     grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.65fr) !important;
     gap: var(--upgread-space-6) !important;
   }
 
-  .upgread_workspace .hero {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .hero {
     padding: var(--upgread-space-8) !important;
   }
 
-  .upgread_workspace .editor-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .editor-surface {
     min-height: 520px !important;
   }
 
-  .upgread_workspace .tool-runtime-widget .tool-local-surface {
+  :is(.upgread_workspace, .upgread_workspace--scoped) .tool-runtime-widget .tool-local-surface {
     min-height: 380px !important;
   }
 }
@@ -1720,235 +1720,235 @@
    LIGHT THEME — COMPREHENSIVE SURFACE POLISH
    ========================================================= */
 
-[data-theme="light"] .upgread_workspace .hero {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .hero {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .hero::before {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .hero::before {
   opacity: 0.35 !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-discovery {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .discovery-search-shell {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .discovery-search-shell {
   background: var(--upgread-bg-input) !important;
   border-color: var(--upgread-border-hairline) !important;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-discovery__chip {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-discovery__chip {
   background: var(--upgread-bg-elevated) !important;
   color: var(--upgread-text-secondary) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .card,
-[data-theme="light"] .upgread_workspace .tool-card,
-[data-theme="light"] .upgread_workspace .workflow-card,
-[data-theme="light"] .upgread_workspace .trust-stat,
-[data-theme="light"] .upgread_workspace .privacy-card,
-[data-theme="light"] .upgread_workspace .testimonial-card {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .card,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-card,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .trust-stat,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .privacy-card,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .testimonial-card {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
 }
 
-[data-theme="light"] .upgread_workspace .card:hover,
-[data-theme="light"] .upgread_workspace .tool-card:hover,
-[data-theme="light"] .upgread_workspace .workflow-card:hover {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .card:hover,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-card:hover,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .workflow-card:hover {
   border-color: var(--upgread-border-active) !important;
   background: color-mix(in srgb, var(--upgread-accent-blue) 3%, var(--upgread-bg-surface)) !important;
   box-shadow: 0 2px 8px rgba(9, 105, 218, 0.10) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-shell-page__runtime {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime {
   border-color: var(--upgread-border-default) !important;
   background: var(--upgread-bg-surface) !important;
   box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-shell-page__runtime:hover,
-[data-theme="light"] .upgread_workspace .tool-shell-page__runtime:focus-within {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime:hover,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__runtime:focus-within {
   border-color: var(--upgread-border-active) !important;
   box-shadow: 0 2px 14px rgba(9, 105, 218, 0.10) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-shell-page__docs {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
 }
 
-[data-theme="light"] .upgread_workspace .editor-surface,
-[data-theme="light"] .upgread_workspace .tool-local-surface,
-[data-theme="light"] .upgread_workspace textarea,
-[data-theme="light"] .upgread_workspace [contenteditable] {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .editor-surface,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-surface,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) textarea,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) [contenteditable] {
   background: var(--upgread-bg-input) !important;
   border-color: var(--upgread-border-hairline) !important;
   color: var(--upgread-text-primary) !important;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-local-metrics,
-[data-theme="light"] .upgread_workspace .json-metrics {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .json-metrics {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-local-metrics p strong,
-[data-theme="light"] .upgread_workspace .tool-local-metrics p span {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics p strong,
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-local-metrics p span {
   color: var(--upgread-accent-blue) !important;
 }
 
-[data-theme="light"] .upgread_workspace .json-toolbar {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .json-toolbar {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .json-workspace {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .json-workspace {
   background: var(--upgread-bg-canvas) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .json-panel--output {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .json-panel--output {
   border-left-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-btn {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn {
   color: var(--upgread-text-primary) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-btn--primary {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--primary {
   background: var(--upgread-accent-blue) !important;
   border-color: var(--upgread-accent-blue) !important;
   color: var(--upgread-text-inverse) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-btn--primary:hover {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--primary:hover {
   background: color-mix(in srgb, var(--upgread-accent-blue) 85%, black) !important;
   border-color: color-mix(in srgb, var(--upgread-accent-blue) 85%, black) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-btn--secondary {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-btn--secondary {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-default) !important;
   color: var(--upgread-text-primary) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-toggle {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-toggle {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-hairline) !important;
   color: var(--upgread-text-secondary) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-select {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-select {
   background: var(--upgread-bg-input) !important;
   border-color: var(--upgread-border-hairline) !important;
   color: var(--upgread-text-primary) !important;
 }
 
-[data-theme="light"] .upgread_workspace .panel-header {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .panel-header {
   border-bottom-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .section-frame {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .section-frame {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .readme-disclosure {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .readme-disclosure[open] {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .readme-disclosure[open] {
   border-color: var(--upgread-border-active) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-error {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-error {
   border-color: color-mix(in srgb, var(--upgread-accent-red) 45%, var(--upgread-border-hairline)) !important;
   background: color-mix(in srgb, var(--upgread-accent-red) 6%, var(--upgread-bg-elevated)) !important;
 }
 
-[data-theme="light"] .upgread_workspace .toast {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .toast {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
 }
 
-[data-theme="light"] .upgread_workspace .faq-panel {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .faq-panel {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tools-index__toolbar {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tools-index__toolbar input[type="search"] {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tools-index__toolbar input[type="search"] {
   background: var(--upgread-bg-input) !important;
   border-color: var(--upgread-border-hairline) !important;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 
-[data-theme="light"] .upgread_workspace .home-surface {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .home-surface {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .static-page__header {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .static-page__header {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .static-page__section {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .static-page__section {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .command-palette {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .command-palette {
   background: var(--upgread-bg-elevated) !important;
   border-color: var(--upgread-border-default) !important;
 }
 
-[data-theme="light"] .upgread_workspace .command-palette__input {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .command-palette__input {
   color: var(--upgread-text-primary) !important;
   border-bottom-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace ::-webkit-scrollbar-track {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) ::-webkit-scrollbar-track {
   background: var(--upgread-bg-canvas);
 }
 
-[data-theme="light"] .upgread_workspace ::-webkit-scrollbar-thumb {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) ::-webkit-scrollbar-thumb {
   background: var(--upgread-bg-overlay);
 }
 
-[data-theme="light"] .upgread_workspace ::selection {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) ::selection {
   background: color-mix(in srgb, var(--upgread-accent-blue) 22%, transparent);
 }
 
-[data-theme="light"] .upgread_workspace .dropzone {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .dropzone {
   border-color: var(--upgread-border-default) !important;
   color: var(--upgread-text-muted) !important;
 }
 
-[data-theme="light"] .upgread_workspace .dropzone:hover {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .dropzone:hover {
   border-color: var(--upgread-border-active) !important;
   background: color-mix(in srgb, var(--upgread-accent-blue) 4%, var(--upgread-bg-elevated)) !important;
 }
 
-[data-theme="light"] .upgread_workspace .workflow-pathway-card {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .workflow-pathway-card {
   background: var(--upgread-bg-surface) !important;
   border-color: var(--upgread-border-hairline) !important;
 }
 
-[data-theme="light"] .upgread_workspace .tool-shell-page__momentum {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__momentum {
   background: color-mix(in srgb, var(--upgread-accent-blue) 5%, var(--upgread-bg-elevated)) !important;
   border-color: color-mix(in srgb, var(--upgread-accent-blue) 25%, var(--upgread-border-hairline)) !important;
 }

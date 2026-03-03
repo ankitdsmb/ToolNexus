@@ -1979,7 +1979,7 @@ RESPONSIVE
   min-height: 0;
 }
 
-/* UPGREAD WORKSPACE LAYER — activate via body.upgread_workspace */
+/* UPGREAD WORKSPACE LAYER — activate via body:is(.upgread_workspace, .upgread_workspace--scoped) */
 @import url('./upgread-workspace.css');
 
 

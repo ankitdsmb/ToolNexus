@@ -7,7 +7,15 @@
    TOKENS
    --------------------------------------------------------- */
 
-.upgread_workspace {
+/* MIGRATION TARGET:
+   upgread_workspace will eventually split into:
+   - upgread_workspace--layout
+   - upgread_workspace--runtime
+   - upgread_workspace--doc
+   Do NOT delete original until migration complete.
+*/
+
+:is(.upgread_workspace, .upgread_workspace--scoped) {
   --upgread_bg_0: #0a0d11;
   --upgread_bg_1: #0f1318;
   --upgread_bg_2: #151a21;
@@ -34,8 +42,8 @@
    LIGHT THEME
    --------------------------------------------------------- */
 
-[data-theme="light"] .upgread_workspace,
-:root[data-theme="light"] .upgread_workspace {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped),
+:root[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) {
   --upgread_bg_0: #f2f4f8;
   --upgread_bg_1: #ffffff;
   --upgread_bg_2: #e8ecf2;
@@ -244,10 +252,10 @@
    Structural adjustments layered over shared-primitives
 */
 /* CANONICAL OWNER */
-/* Shell primitive .container inside .upgread_workspace */
+/* Shell primitive .container inside :is(.upgread_workspace, .upgread_workspace--scoped) */
 
-.upgread_workspace main.container,
-.upgread_workspace .container {
+:is(.upgread_workspace, .upgread_workspace--scoped) main.container,
+:is(.upgread_workspace, .upgread_workspace--scoped) .container {
   max-width: 100% !important;
   width: 100%;
   padding: 11px 14px 0;
@@ -263,14 +271,14 @@
    Structural adjustments layered over shared-primitives
 */
 /* CANONICAL OWNER */
-/* Shell primitive .app-shell inside .upgread_workspace */
+/* Shell primitive .app-shell inside :is(.upgread_workspace, .upgread_workspace--scoped) */
 
-.upgread_workspace .app-shell {
+:is(.upgread_workspace, .upgread_workspace--scoped) .app-shell {
   gap: 0;
   background: transparent;
 }
 
-.upgread_workspace .shell-layer--command {
+:is(.upgread_workspace, .upgread_workspace--scoped) .shell-layer--command {
   position: sticky;
   top: 0;
   z-index: 40;
@@ -282,18 +290,18 @@
    Structural adjustments layered over shared-primitives
 */
 /* CANONICAL OWNER */
-/* Shell primitive .shell-layer--workspace inside .upgread_workspace */
+/* Shell primitive .shell-layer--workspace inside :is(.upgread_workspace, .upgread_workspace--scoped) */
 
-.upgread_workspace .shell-layer--workspace {
+:is(.upgread_workspace, .upgread_workspace--scoped) .shell-layer--workspace {
   padding-top: 0;
 }
 
-.upgread_workspace .shell-layer--system {
+:is(.upgread_workspace, .upgread_workspace--scoped) .shell-layer--system {
   border-top: 1px solid var(--upgread_border_1);
   background: color-mix(in srgb, var(--upgread_bg_1) 94%, #000 6%);
 }
 
-[data-theme="light"] .upgread_workspace .shell-layer--system {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .shell-layer--system {
   background: #fff;
   border-top-color: rgba(0,0,0,0.09);
 }
@@ -1002,13 +1010,13 @@
    GENERIC SURFACE
    --------------------------------------------------------- */
 
-.upgread_workspace [data-upgread='surface'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-upgread='surface'] {
   border: 1px solid var(--upgread_border_1);
   border-radius: var(--upgread_r_md);
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
 }
 
-.upgread_workspace [data-upgread='rail-title'] {
+:is(.upgread_workspace, .upgread_workspace--scoped) [data-upgread='rail-title'] {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -1030,8 +1038,8 @@
     max-height: none;
   }
 
-  .upgread_workspace main.container,
-  .upgread_workspace .container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container {
     padding-left: 10px;
     padding-right: 10px;
   }
@@ -1051,8 +1059,8 @@
 }
 
 @media (max-width: 680px) {
-  .upgread_workspace main.container,
-  .upgread_workspace .container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container {
     padding-left: 8px;
     padding-right: 8px;
     padding-top: 8px;
@@ -1095,8 +1103,8 @@
 }
 
 @media (min-width: 1800px) {
-  .upgread_workspace main.container,
-  .upgread_workspace .container {
+  :is(.upgread_workspace, .upgread_workspace--scoped) main.container,
+  :is(.upgread_workspace, .upgread_workspace--scoped) .container {
     padding-left: 24px;
     padding-right: 24px;
   }
