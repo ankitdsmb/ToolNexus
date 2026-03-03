@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-03-03T10:06:20.073Z",
+  "generatedAtUtc": "2026-03-03T13:25:47.955Z",
   "bundleCount": 4,
   "uniqueSelectorCount": 144,
   "selectorOverlapCount": 9,
@@ -185,7 +185,7 @@
       ]
     }
   ],
-  "duplicates": [],
+  "duplicatesByHash": {},
   "selectorOverlaps": [
     {
       "selector": "upgread_workspace",
@@ -252,6 +252,5 @@
         "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
       ]
     }
-  ],
-  "duplicates": []
+  ]
 }

@@ -21,17 +21,25 @@ async function listCssFiles(dir, results = []) {
 
 function normalizeDeclarationBlock(block) {
   const stripped = block.replace(/\/\*[\s\S]*?\*\//g, ' ');
-  const normalized = stripped
-    .replace(/\s+/g, ' ')
-    .replace(/\s*:\s*/g, ':')
-    .replace(/\s*;\s*/g, ';')
-    .trim();
 
-  const properties = normalized
+  const properties = stripped
     .split(';')
     .map((part) => part.trim())
     .filter(Boolean)
-    .map((part) => part.replace(/\s*!important\s*$/i, '!important'))
+    .map((part) => {
+      const separatorIndex = part.indexOf(':');
+      if (separatorIndex === -1) return null;
+      const property = part.slice(0, separatorIndex).trim().toLowerCase();
+      const value = part
+        .slice(separatorIndex + 1)
+        .replace(/\s+/g, ' ')
+        .replace(/\s*!important\s*/gi, ' !important')
+        .trim();
+
+      if (!property || !value) return null;
+      return `${property}:${value}`;
+    })
+    .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
 
   return properties.join(';');
@@ -39,7 +47,7 @@ function normalizeDeclarationBlock(block) {
 
 function hashDeclarationIdentity(selector, mediaContext, normalizedBlock) {
   return crypto
-    .createHash('sha256')
+    .createHash('sha1')
     .update(`${selector}|${mediaContext}|${normalizedBlock}`)
     .digest('hex');
 }
@@ -52,8 +60,7 @@ const declarationOwners = new Map();
 
 for (const file of cssFiles) {
   const css = await fs.readFile(file, 'utf8');
-  const signatures = extractClassRuleSignatures(css);
-  const selectors = [...new Set(signatures.map((signature) => signature.selector))].sort();
+  const selectors = [...extractClassSelectorsFromCss(css)].sort();
   const bundle = path.relative(repoRoot, file).replaceAll('\\', '/');
   bundles.push({ bundle, selectorCount: selectors.length, selectors });
 
@@ -70,7 +77,7 @@ for (const file of cssFiles) {
     const normalizedBlock = normalizeDeclarationBlock(rule.declarationBlock);
     if (!normalizedSelector || !normalizedBlock) continue;
 
-    const mediaContext = rule.mediaContext ? rule.mediaContext.replace(/\s+/g, ' ').trim() : 'global';
+    const mediaContext = (rule.mediaContext || 'global').replace(/\s+/g, ' ').trim();
     const declarationHash = hashDeclarationIdentity(normalizedSelector, mediaContext, normalizedBlock);
     if (bundleDeclarationHashes.has(declarationHash)) continue;
     bundleDeclarationHashes.add(declarationHash);
@@ -79,47 +86,11 @@ for (const file of cssFiles) {
       declarationOwners.set(declarationHash, {
         selector: normalizedSelector,
         mediaContext,
-        normalizedHash: declarationHash,
-        normalizedBlock,
         bundles: new Set()
       });
     }
 
     declarationOwners.get(declarationHash).bundles.add(bundle);
-  }
-
-  for (const signature of signatures) {
-    const identityKey = `${signature.selector}|${signature.mediaContext}|${signature.declarationBlock}`;
-    const hash = crypto.createHash('sha256').update(identityKey).digest('hex');
-
-    if (!declarationIdentityOwners.has(hash)) {
-      declarationIdentityOwners.set(hash, {
-        selector: signature.selector,
-        mediaContext: signature.mediaContext,
-        bundles: new Set()
-      });
-    }
-
-    declarationIdentityOwners.get(hash).bundles.add(bundle);
-  }
-
-  const { rules } = parseCssRules(sanitizedCss);
-  for (const rule of rules) {
-    if (!rule.normalizedDeclarationBlock) continue;
-
-    const identitySource = `${rule.selector}|${rule.mediaContext}|${rule.normalizedDeclarationBlock}`;
-    const hash = crypto.createHash('sha256').update(identitySource).digest('hex');
-
-    if (!identityMap.has(hash)) {
-      identityMap.set(hash, {
-        selector: rule.selector,
-        mediaContext: rule.mediaContext,
-        hash,
-        bundles: new Set()
-      });
-    }
-
-    identityMap.get(hash).bundles.add(bundle);
   }
 }
 
@@ -128,24 +99,35 @@ const selectorOverlaps = [...selectorOwners.entries()]
   .filter(({ owners }) => owners.length > 1)
   .sort((a, b) => b.owners.length - a.owners.length || a.selector.localeCompare(b.selector));
 
-const duplicates = [...declarationOwners.values()]
-  .map((entry) => ({
+const duplicateEntries = [...declarationOwners.entries()]
+  .map(([hash, entry]) => ({
+    hash,
     selector: entry.selector,
     mediaContext: entry.mediaContext,
-    bundles: [...entry.bundles].sort(),
-    normalizedHash: entry.normalizedHash
+    bundles: [...entry.bundles].sort()
   }))
   .filter((entry) => entry.bundles.length > 1)
   .sort((a, b) => b.bundles.length - a.bundles.length || a.selector.localeCompare(b.selector));
+
+const duplicatesByHash = Object.fromEntries(
+  duplicateEntries.map((entry) => [
+    entry.hash,
+    {
+      selector: entry.selector,
+      mediaContext: entry.mediaContext,
+      bundles: entry.bundles
+    }
+  ])
+);
 
 const report = {
   generatedAtUtc: new Date().toISOString(),
   bundleCount: bundles.length,
   uniqueSelectorCount: selectorOwners.size,
   selectorOverlapCount: selectorOverlaps.length,
-  identicalDeclarationDuplicateCount: duplicates.length,
+  identicalDeclarationDuplicateCount: duplicateEntries.length,
   bundles: bundles.sort((a, b) => a.bundle.localeCompare(b.bundle)),
-  duplicates,
+  duplicatesByHash,
   selectorOverlaps
 };
 
