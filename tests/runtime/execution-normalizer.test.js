@@ -97,6 +97,50 @@ describe('execution normalizer runtime safety', () => {
     }
   });
 
+
+  test('preserves window receiver for requestAnimationFrame during init isolation', async () => {
+    const root = document.createElement('div');
+    const context = createToolExecutionContext({
+      slug: 'receiver-binding',
+      root,
+      manifest: { slug: 'receiver-binding' }
+    });
+
+    const originalRequestAnimationFrame = window.requestAnimationFrame;
+
+    window.requestAnimationFrame = function requestAnimationFrameStrict(callback) {
+      if (this !== window) {
+        throw new TypeError('Illegal invocation');
+      }
+
+      callback?.(0);
+      return 1;
+    };
+
+    try {
+      const normalized = normalizeToolExecution({
+        create() {},
+        init() {
+          window.requestAnimationFrame(() => {
+            root.dataset.raf = 'ran';
+          });
+          return { mounted: true };
+        },
+        destroy() {}
+      }, {}, {
+        slug: 'receiver-binding',
+        root,
+        context
+      });
+
+      await normalized.create();
+      await expect(normalized.init()).resolves.toEqual({ mounted: true });
+      expect(root.dataset.raf).toBe('ran');
+    } finally {
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+    }
+  });
+
   test('does not invoke execution-only runTool(action,input) during mount', async () => {
     const root = document.createElement('div');
     const context = createToolExecutionContext({ slug: 'sql-formatter', root, manifest: { slug: 'sql-formatter' } });
