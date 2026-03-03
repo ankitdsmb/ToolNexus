@@ -1,6 +1,14 @@
 import fs from 'node:fs/promises';
-import { PurgeCSS } from 'purgecss';
 import { loadConfig, listFiles, writeReport } from './shared.mjs';
+
+const purgeCssModule = await import('purgecss').catch((error) => {
+  console.error('[integrity] Failed to load required dependency "purgecss".');
+  console.error('[integrity] Install dependencies with `npm ci` and retry.');
+  console.error(`[integrity] ${error?.message ?? error}`);
+  process.exit(1);
+});
+
+const { PurgeCSS } = purgeCssModule;
 
 const config = await loadConfig();
 const purgeConfig = config.purgeCss;
