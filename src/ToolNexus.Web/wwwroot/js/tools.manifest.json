@@ -1,0 +1,68 @@
+{
+  "tools": [
+    {
+      "slug": "base64-decode",
+      "modulePath": "/js/tools/base64-decode.js"
+    },
+    {
+      "slug": "base64-encode",
+      "modulePath": "/js/tools/base64-encode.js"
+    },
+    {
+      "slug": "csv-to-json",
+      "modulePath": "/js/tools/csv-to-json.js"
+    },
+    {
+      "slug": "file-merge",
+      "modulePath": "/js/tools/file-merge/main.js"
+    },
+    {
+      "slug": "html-entities",
+      "modulePath": "/js/tools/html-entities.js"
+    },
+    {
+      "slug": "json-formatter",
+      "modulePath": "/js/tools/json-formatter.js"
+    },
+    {
+      "slug": "json-to-csv",
+      "modulePath": "/js/tools/json-to-csv.js"
+    },
+    {
+      "slug": "json-to-yaml",
+      "modulePath": "/js/tools/json-to-yaml.js"
+    },
+    {
+      "slug": "json-transform-studio",
+      "modulePath": "/js/tools/json-transform-studio.js"
+    },
+    {
+      "slug": "json-validator",
+      "modulePath": "/js/tools/json-validator.js"
+    },
+    {
+      "slug": "sql-formatter",
+      "modulePath": "/js/tools/sql-formatter.js"
+    },
+    {
+      "slug": "text-diff",
+      "modulePath": "/js/tools/text-diff.js"
+    },
+    {
+      "slug": "url-decode",
+      "modulePath": "/js/tools/url-decode.js"
+    },
+    {
+      "slug": "url-encode",
+      "modulePath": "/js/tools/url-encode.js"
+    },
+    {
+      "slug": "uuid-generator",
+      "modulePath": "/js/tools/uuid-generator.js"
+    },
+    {
+      "slug": "yaml-to-json",
+      "modulePath": "/js/tools/yaml-to-json.js"
+    }
+  ]
+}
