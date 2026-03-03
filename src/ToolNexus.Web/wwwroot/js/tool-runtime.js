@@ -27,6 +27,7 @@ import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runt
 import { validateExecutionDensity as defaultExecutionDensityValidator, writeExecutionDensityReport as defaultWriteExecutionDensityReport } from './runtime/execution-density-validator.js';
 import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
 import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from './runtime/orchestrator/ai-runtime-orchestrator.js';
+import { validateRuntimeModulePath } from './runtime/runtime-import-integrity.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -173,7 +174,15 @@ export function createToolRuntime({
   releaseLegacyInitialization = defaultReleaseLegacyInitialization,
   getRoot = getCanonicalToolRoot,
   loadManifest: loadManifestOverride,
-  importModule = (modulePath) => import(modulePath),
+  importModule = async (modulePath) => {
+    const validation = await validateRuntimeModulePath(modulePath);
+
+    if (!validation.valid) {
+      console.warn('[RuntimeImportIntegrity] Validation failed', { modulePath, ...validation });
+    }
+
+    return import(modulePath);
+  },
   healRuntime = async () => false,
   now = () => (globalThis.performance?.now?.() ?? Date.now()),
   createToolStateRegistry = defaultCreateToolStateRegistry,

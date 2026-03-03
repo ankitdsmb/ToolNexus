@@ -1,4 +1,5 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
+import { validateRuntimeModulePath } from './runtime-import-integrity.js';
 
 function toCandidates(module) {
   return [
@@ -72,7 +73,15 @@ export async function bootstrapLegacyTool({
   root,
   manifest,
   modulePath,
-  importModule = (path) => import(path),
+  importModule = async (modulePath) => {
+    const validation = await validateRuntimeModulePath(modulePath);
+
+    if (!validation.valid) {
+      console.warn('[RuntimeImportIntegrity] Validation failed', { modulePath, ...validation });
+    }
+
+    return import(modulePath);
+  },
   logger = createRuntimeMigrationLogger({ channel: 'legacy' })
 } = {}) {
   let workingModule = module;
