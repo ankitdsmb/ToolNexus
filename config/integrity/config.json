@@ -1,0 +1,63 @@
+{
+  "manifestPath": "tools.manifest.json",
+  "webRoot": "src/ToolNexus.Web/wwwroot",
+  "jsRoot": "src/ToolNexus.Web/wwwroot/js",
+  "cssRoot": "src/ToolNexus.Web/wwwroot/css",
+  "razorRoot": "src/ToolNexus.Web/Views",
+  "reportDir": "reports/integrity",
+  "bundleBudget": {
+    "maxTotalBytes": 3000000,
+    "maxTotalGzipBytes": 750000,
+    "maxAssetBytes": 250000,
+    "maxAssetGzipBytes": 80000,
+    "maxRegressedAssets": 3
+  },
+  "bundleBaseline": "config/integrity/bundle-baseline.json",
+  "playwright": {
+    "baseUrl": "http://127.0.0.1:5081",
+    "routes": [
+      "/",
+      "/tools",
+      "/tools/json-formatter",
+      "/tools/json-validator",
+      "/tools/url-encode"
+    ],
+    "reportPath": "reports/integrity/runtime-coverage.json"
+  },
+  "purgeCss": {
+    "content": [
+      "src/ToolNexus.Web/Views/**/*.cshtml",
+      "src/ToolNexus.Web/wwwroot/js/**/*.js"
+    ],
+    "css": [
+      "src/ToolNexus.Web/wwwroot/css/**/*.css"
+    ],
+    "safelist": {
+      "standard": [
+        "is-active",
+        "is-loading",
+        "is-hidden",
+        "is-visible"
+      ],
+      "deep": [
+        "data-tool-shell",
+        "data-tool-context",
+        "data-tool-status",
+        "data-tool-followup",
+        "data-tool-content-host",
+        "data-tool-input",
+        "data-tool-output"
+      ],
+      "greedy": [
+        "^tool-",
+        "^runtime-",
+        "^status-",
+        "^is-",
+        "^has-"
+      ]
+    }
+  },
+  "staticGraph": {
+    "enforceUnreachable": false
+  }
+}

@@ -22,14 +22,24 @@
     "check:ui-immunity": "node scripts/ui-immunity-guard.mjs",
     "check:monaco-assets": "node scripts/check-monaco-assets.mjs",
     "check:plugin-partials": "node scripts/validate-plugin-partials.mjs",
-    "check:runtime-imports": "node scripts/ci/runtime-import-validator.mjs"
+    "check:runtime-imports": "node scripts/ci/runtime-import-validator.mjs",
+    "integrity:graph": "node scripts/integrity/static-graph-validator.mjs",
+    "integrity:manifest": "node scripts/integrity/manifest-validator.mjs",
+    "integrity:css": "node scripts/integrity/css-prune-simulation.mjs",
+    "integrity:bundle": "node scripts/integrity/bundle-size-regression.mjs",
+    "integrity:bundle:baseline": "node scripts/integrity/bundle-size-regression.mjs --write-baseline",
+    "integrity:runtime": "node scripts/integrity/runtime-coverage.mjs",
+    "integrity:ci": "node scripts/integrity/ci-enforce.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@vitest/coverage-v8": "^4.0.18",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "fast-glob": "^3.3.3",
+    "playwright": "^1.55.0",
+    "purgecss": "^7.0.2"
   },
   "dependencies": {
     "monaco-editor": "^0.55.1"
