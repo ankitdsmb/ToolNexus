@@ -21,7 +21,8 @@
     "env:maintenance:quick": "bash ./scripts/maintenance-toolnexus.sh quick",
     "check:ui-immunity": "node scripts/ui-immunity-guard.mjs",
     "check:monaco-assets": "node scripts/check-monaco-assets.mjs",
-    "check:plugin-partials": "node scripts/validate-plugin-partials.mjs"
+    "check:plugin-partials": "node scripts/validate-plugin-partials.mjs",
+    "check:runtime-imports": "node scripts/ci/runtime-import-validator.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
