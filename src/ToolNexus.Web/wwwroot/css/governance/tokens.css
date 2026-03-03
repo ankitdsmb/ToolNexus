@@ -1,0 +1,174 @@
+/*
+ * This is the single source of truth for design tokens.
+ *
+ * Governance note:
+ * - Canonical tokens are prefixed with --tn-.
+ * - Legacy aliases are preserved to prevent runtime regressions.
+ * - Breakpoint normalization maps legacy widths (960/980/1080/1100)
+ *   to canonical breakpoints without changing behavior.
+ */
+
+:root {
+  /* -----------------------------
+   * Canonical color tokens
+   * ----------------------------- */
+  --tn-color-bg-primary: var(--color-bg-primary);
+  --tn-color-bg-secondary: var(--color-bg-secondary);
+  --tn-color-bg-tertiary: var(--color-bg-tertiary);
+  --tn-color-bg-elevated: var(--color-bg-elevated);
+  --tn-color-bg-inverse: var(--color-bg-inverse);
+
+  --tn-color-border-subtle: var(--color-border-subtle);
+  --tn-color-border-default: var(--color-border-default);
+  --tn-color-border-strong: var(--color-border-strong);
+
+  --tn-color-text-primary: var(--color-text-primary);
+  --tn-color-text-secondary: var(--color-text-secondary);
+  --tn-color-text-muted: var(--color-text-muted);
+  --tn-color-text-inverse: var(--color-text-inverse);
+
+  --tn-color-accent: var(--color-accent);
+  --tn-color-accent-strong: var(--color-accent-strong);
+  --tn-color-accent-soft: var(--color-accent-soft);
+
+  --tn-color-success: var(--color-success);
+  --tn-color-success-soft: var(--color-success-soft);
+  --tn-color-danger: var(--color-danger);
+  --tn-color-danger-soft: var(--color-danger-soft);
+  --tn-color-warning: var(--color-warning);
+  --tn-color-warning-soft: var(--color-warning-soft);
+
+  /* -----------------------------
+   * Canonical spacing scale
+   * ----------------------------- */
+  --tn-space-1: 8px;
+  --tn-space-2: 16px;
+  --tn-space-3: 24px;
+  --tn-space-4: 32px;
+  --tn-space-5: 40px;
+  --tn-space-6: 48px;
+  --tn-space-7: 64px;
+
+  /* -----------------------------
+   * Canonical typography scale
+   * ----------------------------- */
+  --tn-font-sans: "Inter", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --tn-font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --tn-text-2xs: 12px;
+  --tn-text-xs: 12px;
+  --tn-text-sm: 14px;
+  --tn-text-md: 16px;
+  --tn-text-lg: 20px;
+  --tn-text-xl: 24px;
+  --tn-text-2xl: clamp(32px, 4vw, 48px);
+
+  --tn-line-tight: 1.15;
+  --tn-line-snug: 1.35;
+  --tn-line-base: 1.6;
+  --tn-line-relaxed: 1.72;
+
+  /* -----------------------------
+   * Canonical border radius
+   * ----------------------------- */
+  --tn-radius-sm: 8px;
+  --tn-radius-md: 10px;
+  --tn-radius-lg: 14px;
+  --tn-radius-xl: 24px;
+  --tn-radius-pill: 999px;
+
+  /* -----------------------------
+   * Canonical elevation
+   * ----------------------------- */
+  --tn-shadow-sm: var(--shadow-sm);
+  --tn-shadow-md: var(--shadow-md);
+  --tn-shadow-lg: var(--shadow-lg);
+  --tn-elevation-0: var(--elevation-level-0);
+  --tn-elevation-1: var(--elevation-level-1);
+  --tn-elevation-2: var(--elevation-level-2);
+  --tn-elevation-3: var(--elevation-level-3);
+
+  /* -----------------------------
+   * Canonical breakpoints + normalization map
+   * ----------------------------- */
+  --tn-breakpoint-sm: 960px;
+  --tn-breakpoint-md: 1080px;
+  --tn-breakpoint-lg: 1280px;
+
+  /* Legacy width normalization map (no visual change) */
+  --tn-breakpoint-map-960: var(--tn-breakpoint-sm);
+  --tn-breakpoint-map-980: var(--tn-breakpoint-sm);
+  --tn-breakpoint-map-1080: var(--tn-breakpoint-md);
+  --tn-breakpoint-map-1100: var(--tn-breakpoint-md);
+
+  /* -----------------------------
+   * Legacy alias compatibility
+   * ----------------------------- */
+  --font-sans: var(--tn-font-sans);
+  --font-mono: var(--tn-font-mono);
+
+  --text-2xs: var(--tn-text-2xs);
+  --text-xs: var(--tn-text-xs);
+  --text-sm: var(--tn-text-sm);
+  --text-md: var(--tn-text-md);
+  --text-lg: var(--tn-text-lg);
+  --text-xl: var(--tn-text-xl);
+  --text-2xl: var(--tn-text-2xl);
+
+  --line-tight: var(--tn-line-tight);
+  --line-snug: var(--tn-line-snug);
+  --line-base: var(--tn-line-base);
+  --line-relaxed: var(--tn-line-relaxed);
+
+  --space-1: var(--tn-space-1);
+  --space-2: var(--tn-space-1);
+  --space-3: var(--tn-space-2);
+  --space-4: var(--tn-space-2);
+  --space-5: var(--tn-space-3);
+  --space-6: var(--tn-space-4);
+  --space-7: var(--tn-space-6);
+  --space-8: var(--tn-space-7);
+
+  --space-xs: var(--tn-space-1);
+  --space-sm: var(--tn-space-2);
+  --space-md: var(--tn-space-3);
+  --space-lg: var(--tn-space-4);
+  --space-xl: var(--tn-space-5);
+  --space-2xl: var(--tn-space-6);
+
+  --radius-sm: var(--tn-radius-sm);
+  --radius-md: var(--tn-radius-md);
+  --radius-lg: var(--tn-radius-lg);
+  --radius-xl: var(--tn-radius-xl);
+  --radius-pill: var(--tn-radius-pill);
+
+  --shadow-sm: var(--tn-shadow-sm);
+  --shadow-md: var(--tn-shadow-md);
+  --shadow-lg: var(--tn-shadow-lg);
+
+  --bg-primary: var(--tn-color-bg-primary);
+  --bg-secondary: var(--tn-color-bg-secondary);
+  --bg-tertiary: var(--tn-color-bg-tertiary);
+  --bg-elevated: var(--tn-color-bg-elevated);
+  --bg-inverse: var(--tn-color-bg-inverse);
+
+  --border-subtle: var(--tn-color-border-subtle);
+  --border-default: var(--tn-color-border-default);
+  --border-strong: var(--tn-color-border-strong);
+
+  --text-primary: var(--tn-color-text-primary);
+  --text-secondary: var(--tn-color-text-secondary);
+  --text-muted: var(--tn-color-text-muted);
+  --text-inverse: var(--tn-color-text-inverse);
+
+  --accent: var(--tn-color-accent);
+  --accent-strong: var(--tn-color-accent-strong);
+  --accent-soft: var(--tn-color-accent-soft);
+
+  --success: var(--tn-color-success);
+  --success-soft: var(--tn-color-success-soft);
+  --danger: var(--tn-color-danger);
+  --danger-soft: var(--tn-color-danger-soft);
+  --warning: var(--tn-color-warning);
+  --warning-soft: var(--tn-color-warning-soft);
+}
