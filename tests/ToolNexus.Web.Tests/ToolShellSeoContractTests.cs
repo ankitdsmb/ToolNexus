@@ -76,13 +76,14 @@ public sealed class ToolShellSeoContractTests
     {
         var viewsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "ToolNexus.Web", "Views", "Tools"));
         var shellSource = File.ReadAllText(Path.Combine(viewsRoot, "ToolShell.cshtml"));
+        var shellPartialSource = File.ReadAllText(Path.Combine(viewsRoot, "ToolShellPartial.cshtml"));
 
         Assert.Equal(1, CountOccurrences(shellSource, "<h1>"));
-        Assert.Contains("id=\"tool-root\"", shellSource);
-        Assert.Contains("data-tool-root=\"true\"", shellSource);
-        Assert.Contains("data-tool-slug=\"@Model.Tool.Slug\"", shellSource);
+        Assert.Contains("id=\"tool-root\"", shellPartialSource);
+        Assert.Contains("data-tool-root=\"true\"", shellPartialSource);
+        Assert.Contains("data-tool-slug=\"@Model.Tool.Slug\"", shellPartialSource);
 
-        var runtimeRootIndex = shellSource.IndexOf("id=\"tool-root\"", StringComparison.Ordinal);
+        var runtimeRootIndex = shellSource.IndexOf("@await Html.PartialAsync(\"ToolShellPartial\"", StringComparison.Ordinal);
         var seoIndex = shellSource.IndexOf("class=\"tool-seo", StringComparison.Ordinal);
         Assert.True(runtimeRootIndex < seoIndex);
 
