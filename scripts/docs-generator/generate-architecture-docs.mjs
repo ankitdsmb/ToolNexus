@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { extractClassSelectorsFromCss } from '../integrity/css-selector-extractor.mjs';
 
 const repoRoot = process.cwd();
 const outputPath = path.join(repoRoot, 'docs', 'architecture-map.md');
@@ -87,7 +88,7 @@ const dynamicRoots = [...dynamicImportsByFile.entries()].filter(([, v]) => v.len
 const upgreadCss = cssFiles.filter((f) => path.basename(f).startsWith('upgread_'));
 const classesPerBundle = new Map();
 for (const file of upgreadCss) {
-  const classes = new Set([...read(file).matchAll(/\.([a-zA-Z0-9_-]+)/g)].map((m) => m[1]));
+  const classes = extractClassSelectorsFromCss(read(file));
   classesPerBundle.set(rel(file), classes);
 }
 

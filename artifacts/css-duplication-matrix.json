@@ -1,0 +1,222 @@
+{
+  "generatedAtUtc": "2026-03-03T08:18:05.443Z",
+  "bundleCount": 3,
+  "uniqueSelectorCount": 144,
+  "duplicateSelectorCount": 6,
+  "bundles": [
+    {
+      "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+      "selectorCount": 24,
+      "selectors": [
+        "card",
+        "discovery-search-shell",
+        "grid",
+        "hero__search",
+        "home-page",
+        "home-surface",
+        "privacy-card",
+        "section-subtitle",
+        "section-title",
+        "social-section",
+        "testimonial-card",
+        "testimonial-grid",
+        "tool-discovery",
+        "tool-section",
+        "tool-section__eyebrow",
+        "trust-section",
+        "trust-section__eyebrow",
+        "trust-stat",
+        "trust-stats",
+        "upgread_home_workspace",
+        "upgread_workspace",
+        "workflow-card",
+        "workflow-grid",
+        "workflow-section"
+      ]
+    },
+    {
+      "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+      "selectorCount": 27,
+      "selectors": [
+        "runtime-doc-disclosure",
+        "tn-editor-skeleton",
+        "tn-runtime-skeleton",
+        "tn-toolbar-skeleton",
+        "tool-btn",
+        "tool-execution-panel",
+        "tool-focus-mode",
+        "tool-local-actions",
+        "tool-local-body",
+        "tool-local-header",
+        "tool-local-metrics",
+        "tool-local-surface",
+        "tool-md-section",
+        "tool-runtime-widget",
+        "tool-seo",
+        "tool-shell-page--fullscreen",
+        "tool-shell-page--workspace",
+        "tool-shell-page__docs",
+        "tool-shell-page__runtime",
+        "tool-shell-page__workspace",
+        "tool-workspace-unified",
+        "upgread_tool-header",
+        "upgread_tool-toolbar",
+        "upgread_tool-widget",
+        "upgread_workspace",
+        "workspace-shell__context-rail",
+        "workspace-shell__runtime-zone"
+      ]
+    },
+    {
+      "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
+      "selectorCount": 100,
+      "selectors": [
+        "app-shell",
+        "container",
+        "section-frame",
+        "shell-layer--command",
+        "shell-layer--system",
+        "shell-layer--workspace",
+        "tool-article-prose",
+        "tool-focus-mode",
+        "tool-md-content",
+        "tool-md-section",
+        "tool-seo",
+        "tool-shell-page",
+        "tool-shell-page__docs",
+        "tool-shell-page__workspace",
+        "upgread_brand",
+        "upgread_brand__name",
+        "upgread_brand__tag",
+        "upgread_cat",
+        "upgread_cat--on",
+        "upgread_catbar",
+        "upgread_cmd",
+        "upgread_cmd--hero",
+        "upgread_cmd__input",
+        "upgread_cmd__kbd",
+        "upgread_cmd__text",
+        "upgread_docs-body",
+        "upgread_docs-guide",
+        "upgread_docs-guide__grid",
+        "upgread_docs-guide__links",
+        "upgread_docs-guide__panel",
+        "upgread_docs-rail",
+        "upgread_docs-tabs",
+        "upgread_dpanel",
+        "upgread_dpanel--active",
+        "upgread_dtab",
+        "upgread_dtab--active",
+        "upgread_footer",
+        "upgread_footer__bar",
+        "upgread_footer__col-title",
+        "upgread_footer__copy",
+        "upgread_footer__inner",
+        "upgread_footer__links-grid",
+        "upgread_footer__list",
+        "upgread_footer__social",
+        "upgread_footer__spotlight",
+        "upgread_footer__spotlight-text",
+        "upgread_footer__tagline",
+        "upgread_footer__trust-chips",
+        "upgread_header",
+        "upgread_header__inner",
+        "upgread_header__nav",
+        "upgread_hero",
+        "upgread_hero__btn",
+        "upgread_hero__btn--ghost",
+        "upgread_hero__btn--primary",
+        "upgread_hero__cta",
+        "upgread_hero__dot",
+        "upgread_hero__eyebrow",
+        "upgread_hero__heading",
+        "upgread_hero__inner",
+        "upgread_hero__stats",
+        "upgread_hero__sub",
+        "upgread_icon-btn",
+        "upgread_index-hero",
+        "upgread_index-hero__eyebrow",
+        "upgread_index-hero__heading",
+        "upgread_index-hero__lead",
+        "upgread_index-hero__meta",
+        "upgread_index-hero__searchbar",
+        "upgread_index-hero__sub",
+        "upgread_index-page",
+        "upgread_index-search",
+        "upgread_masthead",
+        "upgread_masthead__controls",
+        "upgread_masthead__icon",
+        "upgread_masthead__id",
+        "upgread_masthead__sub",
+        "upgread_masthead__title",
+        "upgread_nav-link",
+        "upgread_processing-dot",
+        "upgread_related",
+        "upgread_related__grid",
+        "upgread_related__label",
+        "upgread_rtool-card",
+        "upgread_rtool-card__icon",
+        "upgread_shell-split",
+        "upgread_social-link",
+        "upgread_tcard",
+        "upgread_tcard__cat",
+        "upgread_tcard__desc",
+        "upgread_tcard__foot",
+        "upgread_tcard__icon",
+        "upgread_tcard__name",
+        "upgread_tcard__top",
+        "upgread_tgrid",
+        "upgread_theme-icon--dark",
+        "upgread_theme-icon--light",
+        "upgread_theme-toggle",
+        "upgread_trust-chip",
+        "upgread_workspace"
+      ]
+    }
+  ],
+  "duplicates": [
+    {
+      "selector": "upgread_workspace",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-focus-mode",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-md-section",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-seo",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-shell-page__docs",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-shell-page__workspace",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    }
+  ]
+}
