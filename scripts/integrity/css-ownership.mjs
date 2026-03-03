@@ -52,7 +52,8 @@ const declarationOwners = new Map();
 
 for (const file of cssFiles) {
   const css = await fs.readFile(file, 'utf8');
-  const selectors = [...extractClassSelectorsFromCss(css)].sort();
+  const signatures = extractClassRuleSignatures(css);
+  const selectors = [...new Set(signatures.map((signature) => signature.selector))].sort();
   const bundle = path.relative(repoRoot, file).replaceAll('\\', '/');
   bundles.push({ bundle, selectorCount: selectors.length, selectors });
 
@@ -85,6 +86,21 @@ for (const file of cssFiles) {
     }
 
     declarationOwners.get(declarationHash).bundles.add(bundle);
+  }
+
+  for (const signature of signatures) {
+    const identityKey = `${signature.selector}|${signature.mediaContext}|${signature.declarationBlock}`;
+    const hash = crypto.createHash('sha256').update(identityKey).digest('hex');
+
+    if (!declarationIdentityOwners.has(hash)) {
+      declarationIdentityOwners.set(hash, {
+        selector: signature.selector,
+        mediaContext: signature.mediaContext,
+        bundles: new Set()
+      });
+    }
+
+    declarationIdentityOwners.get(hash).bundles.add(bundle);
   }
 }
 
