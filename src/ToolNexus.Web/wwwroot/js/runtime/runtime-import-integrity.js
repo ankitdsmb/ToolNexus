@@ -1,3 +1,5 @@
+import { recordModuleImport } from './runtime-usage-recorder.js';
+
 let allowlistCache = null;
 let allowlistPromise = null;
 const OBSERVED_IMPORTS = new Set();
@@ -233,5 +235,8 @@ export async function importRuntimeModule(modulePath) {
     window.__toolRuntimeImportLog.push(modulePath);
   }
 
-  return import(modulePath);
+  return import(modulePath).then((module) => {
+    recordModuleImport(modulePath);
+    return module;
+  });
 }
