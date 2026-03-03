@@ -1,5 +1,62 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
 
+function getImportIntegrityMode() {
+  const mode = String(window.ToolNexusConfig?.importIntegrityMode ?? 'warn').trim().toLowerCase();
+  if (mode === 'enforce-dev' || mode === 'enforce-strict') {
+    return mode;
+  }
+
+  return 'warn';
+}
+
+function validateRuntimeSlug(slug, { onStrictViolation } = {}) {
+  const valid = typeof slug === 'string' && /^[a-z0-9][a-z0-9_-]*$/i.test(slug);
+  if (valid) {
+    return true;
+  }
+
+  const message = `[RuntimeImportIntegrity] Invalid slug: ${slug}`;
+  const mode = getImportIntegrityMode();
+  if (mode === 'enforce-dev') {
+    throw new Error(message);
+  }
+
+  if (mode === 'enforce-strict') {
+    console.error(message);
+    onStrictViolation?.(message);
+    return false;
+  }
+
+  console.warn(message);
+  return true;
+}
+
+function validateRuntimeModulePath(modulePath, { onStrictViolation } = {}) {
+  const value = String(modulePath ?? '').trim();
+  const valid = value.length > 0
+    && !/\s/.test(value)
+    && !/^https?:\/\//i.test(value)
+    && !/^javascript:/i.test(value);
+  if (valid) {
+    return true;
+  }
+
+  const message = `[RuntimeImportIntegrity] Invalid modulePath: ${modulePath}`;
+  const mode = getImportIntegrityMode();
+  if (mode === 'enforce-dev') {
+    throw new Error(message);
+  }
+
+  if (mode === 'enforce-strict') {
+    console.error(message);
+    onStrictViolation?.(message);
+    return false;
+  }
+
+  console.warn(message);
+  return true;
+}
+
 function toCandidates(module) {
   return [
     module,
@@ -75,9 +132,17 @@ export async function bootstrapLegacyTool({
   importModule = (path) => import(path),
   logger = createRuntimeMigrationLogger({ channel: 'legacy' })
 } = {}) {
+  if (!validateRuntimeSlug(slug)) {
+    return { mounted: false, mode: 'legacy.import-integrity-blocked' };
+  }
+
   let workingModule = module;
 
   if (!workingModule && modulePath) {
+    if (!validateRuntimeModulePath(modulePath)) {
+      return { mounted: false, mode: 'legacy.import-integrity-blocked' };
+    }
+
     try {
       workingModule = await importModule(modulePath);
     } catch (error) {

@@ -98,8 +98,11 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
   const lifecycleResult = toLifecycleResult({
     mounted: !executionOnly && normalized.metadata.mode !== 'none',
     cleanup: async () => {
-      await normalized.destroy();
-      disposeOrphanMonacoEditors();
+      try {
+        await normalized.destroy?.();
+      } finally {
+        context?.__executeDisposables?.();
+      }
     },
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,
