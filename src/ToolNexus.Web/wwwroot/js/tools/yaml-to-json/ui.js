@@ -103,7 +103,7 @@ export function mountYamlToJsonTool() {
         options.autoTypes = false;
       }
 
-      const parsed = parseYaml(normalizedInput, options);
+      const parsed = await parseYaml(normalizedInput, options);
       const jsonValue = convertYamlToJsonValue(parsed, options);
       latestJson = formatJson(jsonValue, options);
       els.jsonOutput.value = latestJson;

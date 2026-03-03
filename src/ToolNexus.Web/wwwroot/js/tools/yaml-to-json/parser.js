@@ -1,10 +1,14 @@
-import {
-  CORE_SCHEMA,
-  FAILSAFE_SCHEMA,
-  JSON_SCHEMA,
-  load
-} from '../../vendor/js-yaml.mjs';
 import { YamlParseError } from './errors.js';
+
+let yamlModulePromise = null;
+
+function loadYaml() {
+  if (!yamlModulePromise) {
+    yamlModulePromise = import('../../vendor/js-yaml.mjs');
+  }
+
+  return yamlModulePromise;
+}
 
 function convertDateStrings(value) {
   if (Array.isArray(value)) {
@@ -33,15 +37,16 @@ function convertDateStrings(value) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
 }
 
-export function parseYaml(source, options) {
+export async function parseYaml(source, options) {
+  const yaml = await loadYaml();
   const schema = options.strictStrings
-    ? FAILSAFE_SCHEMA
+    ? yaml.FAILSAFE_SCHEMA
     : options.autoTypes
-      ? CORE_SCHEMA
-      : JSON_SCHEMA;
+      ? yaml.CORE_SCHEMA
+      : yaml.JSON_SCHEMA;
 
   try {
-    const parsed = load(source, {
+    const parsed = yaml.load(source, {
       schema,
       json: true,
       filename: 'input.yaml',
