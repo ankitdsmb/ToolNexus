@@ -1,0 +1,86 @@
+{
+  "generatedAtUtc": "2026-03-03T06:56:37Z",
+  "sourcesCompared": {
+    "jsValidator": "scripts/integrity/manifest-validator.mjs",
+    "csharpLoader": "src/ToolNexus.Web/Services/ToolManifestLoader.cs",
+    "csharpManifestModel": "src/ToolNexus.Web/Services/ToolManifest.cs"
+  },
+  "canonicalContract": "docs/manifest-schema.json",
+  "fieldDrift": [
+    {
+      "field": "slug",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "required string; duplicate slug blocked",
+      "csharpLoaderNormalization": "required for persisted manifest acceptance; whitespace trimmed; duplicate slug throws",
+      "driftStatus": "aligned"
+    },
+    {
+      "field": "title",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "not present in ToolManifest; not normalized",
+      "driftStatus": "drift-missing-both"
+    },
+    {
+      "field": "category",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "pass-through assignment; no normalization",
+      "driftStatus": "drift-unenforced"
+    },
+    {
+      "field": "modulePath",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "if present, target file must exist; field itself not required",
+      "csharpLoaderNormalization": "defaults to /js/tools/{slug}.js when empty; normalized to web path",
+      "driftStatus": "partial-alignment"
+    },
+    {
+      "field": "templatePath",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "defaults to /tool-templates/{slug}.html when empty; normalized to web path",
+      "driftStatus": "drift-js-gap"
+    },
+    {
+      "field": "styles",
+      "canonicalExpectation": "required array",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "styles + cssPath merged, de-duplicated, normalized, missing files filtered",
+      "driftStatus": "drift-js-gap"
+    },
+    {
+      "field": "runtimeLanguage",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "not present in ToolManifest loader/model",
+      "driftStatus": "drift-missing-both"
+    },
+    {
+      "field": "executionCapability",
+      "canonicalExpectation": "required string",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "not present in ToolManifest loader/model",
+      "driftStatus": "drift-missing-both"
+    },
+    {
+      "field": "uiMode",
+      "canonicalExpectation": "required enum: auto|custom",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "non-custom values normalized to auto",
+      "driftStatus": "drift-js-gap"
+    },
+    {
+      "field": "complexityTier",
+      "canonicalExpectation": "required enum: 1..5",
+      "jsValidatorExpectation": "not validated",
+      "csharpLoaderNormalization": "clamped to 1..5; <=0 becomes 1",
+      "driftStatus": "drift-js-gap"
+    }
+  ],
+  "notes": [
+    "JS integrity validator currently enforces slug integrity and module-file presence checks, plus slug-module naming conventions.",
+    "C# loader performs normalization/defaulting for modulePath, templatePath, styles, uiMode, and complexityTier, but does not own runtimeLanguage/executionCapability/title.",
+    "This artifact is reporting-only and does not change enforcement in either JS or C# paths."
+  ]
+}
