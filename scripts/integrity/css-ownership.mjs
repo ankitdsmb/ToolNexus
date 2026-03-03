@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { extractClassSelectorsFromCss } from './css-selector-extractor.mjs';
+import crypto from 'node:crypto';
+import { extractClassRuleSignatures } from './css-selector-extractor.mjs';
 
 const repoRoot = process.cwd();
 const cssRoot = path.join(repoRoot, 'src', 'ToolNexus.Web', 'wwwroot', 'css');
@@ -22,9 +23,11 @@ const cssFiles = (await listCssFiles(cssRoot)).filter((file) => path.basename(fi
 
 const bundles = [];
 const selectorOwners = new Map();
+const declarationIdentityOwners = new Map();
 for (const file of cssFiles) {
   const css = await fs.readFile(file, 'utf8');
-  const selectors = [...extractClassSelectorsFromCss(css)].sort();
+  const signatures = extractClassRuleSignatures(css);
+  const selectors = [...new Set(signatures.map((signature) => signature.selector))].sort();
   const bundle = path.relative(repoRoot, file).replaceAll('\\', '/');
   bundles.push({ bundle, selectorCount: selectors.length, selectors });
 
@@ -32,19 +35,46 @@ for (const file of cssFiles) {
     if (!selectorOwners.has(selector)) selectorOwners.set(selector, []);
     selectorOwners.get(selector).push(bundle);
   }
+
+  for (const signature of signatures) {
+    const identityKey = `${signature.selector}|${signature.mediaContext}|${signature.declarationBlock}`;
+    const hash = crypto.createHash('sha256').update(identityKey).digest('hex');
+
+    if (!declarationIdentityOwners.has(hash)) {
+      declarationIdentityOwners.set(hash, {
+        selector: signature.selector,
+        mediaContext: signature.mediaContext,
+        bundles: new Set()
+      });
+    }
+
+    declarationIdentityOwners.get(hash).bundles.add(bundle);
+  }
 }
 
-const duplicates = [...selectorOwners.entries()]
+const selectorOverlaps = [...selectorOwners.entries()]
   .map(([selector, owners]) => ({ selector, owners: owners.sort() }))
   .filter(({ owners }) => owners.length > 1)
   .sort((a, b) => b.owners.length - a.owners.length || a.selector.localeCompare(b.selector));
+
+const duplicates = [...declarationIdentityOwners.entries()]
+  .map(([hash, record]) => ({
+    hash,
+    selector: record.selector,
+    mediaContext: record.mediaContext,
+    bundles: [...record.bundles].sort()
+  }))
+  .filter((record) => record.bundles.length > 1)
+  .sort((a, b) => b.bundles.length - a.bundles.length || a.selector.localeCompare(b.selector));
 
 const report = {
   generatedAtUtc: new Date().toISOString(),
   bundleCount: bundles.length,
   uniqueSelectorCount: selectorOwners.size,
-  duplicateSelectorCount: duplicates.length,
+  selectorOverlapCount: selectorOverlaps.length,
+  identicalDeclarationDuplicateCount: duplicates.length,
   bundles: bundles.sort((a, b) => a.bundle.localeCompare(b.bundle)),
+  selectorOverlaps,
   duplicates
 };
 
