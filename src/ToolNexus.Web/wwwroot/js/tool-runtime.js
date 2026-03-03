@@ -109,6 +109,63 @@ function isStrictModeEnabled() {
   return true;
 }
 
+function getImportIntegrityMode() {
+  const mode = String(window.ToolNexusConfig?.importIntegrityMode ?? 'warn').trim().toLowerCase();
+  if (mode === 'enforce-dev' || mode === 'enforce-strict') {
+    return mode;
+  }
+
+  return 'warn';
+}
+
+function validateRuntimeSlug(slug, { onStrictViolation } = {}) {
+  const valid = typeof slug === 'string' && /^[a-z0-9][a-z0-9_-]*$/i.test(slug);
+  if (valid) {
+    return true;
+  }
+
+  const mode = getImportIntegrityMode();
+  const message = `[RuntimeImportIntegrity] Invalid slug: ${slug}`;
+  if (mode === 'enforce-dev') {
+    throw new Error(message);
+  }
+
+  if (mode === 'enforce-strict') {
+    console.error(message);
+    onStrictViolation?.(message);
+    return false;
+  }
+
+  console.warn(message);
+  return true;
+}
+
+function validateRuntimeModulePath(modulePath, { onStrictViolation } = {}) {
+  const value = String(modulePath ?? '').trim();
+  const valid = value.length > 0
+    && !/\s/.test(value)
+    && !/^https?:\/\//i.test(value)
+    && !/^javascript:/i.test(value);
+  if (valid) {
+    return true;
+  }
+
+  const mode = getImportIntegrityMode();
+  const message = `[RuntimeImportIntegrity] Invalid modulePath: ${modulePath}`;
+  if (mode === 'enforce-dev') {
+    throw new Error(message);
+  }
+
+  if (mode === 'enforce-strict') {
+    console.error(message);
+    onStrictViolation?.(message);
+    return false;
+  }
+
+  console.warn(message);
+  return true;
+}
+
 const TOOL_MOUNT_MODES = Object.freeze({
   FULLSCREEN: 'fullscreen',
   PANEL: 'panel',
@@ -700,6 +757,7 @@ export function createToolRuntime({
       if (!slug) {
         throw new Error('toolId is required for invokeTool');
       }
+      validateRuntimeSlug(slug);
 
       const mounted = await mountInvocationTarget({ toolId: slug, options, defaults: { mountMode: TOOL_MOUNT_MODES.FULLSCREEN } });
       mounted.root.dataset.toolSlug = slug;
@@ -1167,6 +1225,35 @@ export function createToolRuntime({
     const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
     const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
     runtimeIdentity.uiMode = uiMode;
+
+    const reportStrictIntegrityViolation = (errorMessage) => {
+      setLastError('import-integrity', new Error(errorMessage), slug, { modulePath });
+      showRuntimeCrashOverlay(root, {
+        toolSlug: slug,
+        phase: 'runtime_import_integrity',
+        errorMessage,
+        runtimeIdentity: { ...runtimeIdentity },
+        classification: 'runtime_error'
+      });
+      stateRegistry.setFailure(stateKey, errorMessage);
+      emit('mount_failure', {
+        toolSlug: slug,
+        duration: now() - runtimeStartedAt,
+        error: errorMessage,
+        modeUsed: 'fallback',
+        runtimeResolutionMode: runtimeResolution.mode,
+        runtimeResolutionReason: runtimeResolution.reason,
+        metadata: {
+          runtimeIdentity: { ...runtimeIdentity }
+        },
+        errorCategory: classifyRuntimeError({ stage: 'module-import', message: errorMessage, eventName: 'mount_failure' })
+      });
+    };
+
+    if (!validateRuntimeSlug(slug, { onStrictViolation: reportStrictIntegrityViolation })) {
+      return;
+    }
+
     const safeResolveLifecycle = async () => {
       let module = {};
       let lifecycleContract = inspectLifecycleContract(module);
@@ -1177,6 +1264,10 @@ export function createToolRuntime({
 
       const moduleImportStartedAt = now();
       emit('module_import_start', { toolSlug: slug, metadata: { modulePath } });
+
+      if (!validateRuntimeModulePath(modulePath, { onStrictViolation: reportStrictIntegrityViolation })) {
+        return { module, lifecycleContract, importFailed: true, autoSelected: false, strictBlocked: true };
+      }
 
       let importFailed = false;
       try {
@@ -1273,7 +1364,10 @@ export function createToolRuntime({
       return { module, lifecycleContract, importFailed, autoSelected: false };
     };
 
-    const { module: loadedModule, lifecycleContract, importFailed } = await safeResolveLifecycle();
+    const { module: loadedModule, lifecycleContract, importFailed, strictBlocked } = await safeResolveLifecycle();
+    if (strictBlocked) {
+      return;
+    }
 
     const enforceCustomForTier = complexityTier >= 4;
     const templateIsLegacyOrMinimal = validation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
