@@ -102,6 +102,25 @@ for (const file of cssFiles) {
 
     declarationIdentityOwners.get(hash).bundles.add(bundle);
   }
+
+  const { rules } = parseCssRules(sanitizedCss);
+  for (const rule of rules) {
+    if (!rule.normalizedDeclarationBlock) continue;
+
+    const identitySource = `${rule.selector}|${rule.mediaContext}|${rule.normalizedDeclarationBlock}`;
+    const hash = crypto.createHash('sha256').update(identitySource).digest('hex');
+
+    if (!identityMap.has(hash)) {
+      identityMap.set(hash, {
+        selector: rule.selector,
+        mediaContext: rule.mediaContext,
+        hash,
+        bundles: new Set()
+      });
+    }
+
+    identityMap.get(hash).bundles.add(bundle);
+  }
 }
 
 const selectorOverlaps = [...selectorOwners.entries()]
