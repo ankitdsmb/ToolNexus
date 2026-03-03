@@ -7,10 +7,10 @@
 /* Force full-width on inner pieces */
 /* CANONICAL OWNER */
 /* Tool doc/runtime primitives baseline (.tool-shell-page__workspace, .tool-shell-page__docs, .tool-seo) */
-.upgread_workspace .tool-shell-page,
-.upgread_workspace .tool-shell-page__workspace,
-.upgread_workspace .tool-shell-page__docs,
-.upgread_workspace .tool-seo {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__workspace,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-shell-page__docs,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-seo {
   width: 100% !important;
   max-width: none !important;
   margin-inline: 0 !important;
@@ -18,27 +18,27 @@
 
 /* CANONICAL OWNER */
 /* Tool doc/runtime primitive .tool-md-section baseline */
-.upgread_workspace .tool-md-content,
-.upgread_workspace .tool-md-section,
-.upgread_workspace .tool-article-prose,
-.upgread_workspace .section-frame {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-content,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-md-section,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-article-prose,
+:is(.upgread_workspace, .upgread_workspace--scoped) .section-frame {
   width: 100%;
   max-width: none !important;
 }
 
 /* CANONICAL OWNER */
 /* Tool doc/runtime primitive .tool-focus-mode baseline */
-.upgread_workspace .tool-focus-mode {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode {
   background: radial-gradient(ellipse at top, rgba(17,28,45,0.88) 0%, #05070a 56%);
   min-height: 100vh;
 }
 
 /* OVERRIDE LAYER */
 /* Focus-mode shell primitive overrides (.container, .app-shell, .shell-layer--workspace) */
-.upgread_workspace .tool-focus-mode main.container,
-.upgread_workspace .tool-focus-mode .container,
-.upgread_workspace .tool-focus-mode .shell-layer--workspace,
-.upgread_workspace .tool-focus-mode .app-shell {
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode main.container,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .container,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .shell-layer--workspace,
+:is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode .app-shell {
   padding: 0 !important;
   margin: 0 !important;
 }
@@ -51,7 +51,7 @@
    .shell-layer--workspace
    ============================================ */
 
-[data-theme="light"] .upgread_workspace .tool-focus-mode,
-:root[data-theme="light"] .upgread_workspace .tool-focus-mode {
+[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode,
+:root[data-theme="light"] :is(.upgread_workspace, .upgread_workspace--scoped) .tool-focus-mode {
   background: radial-gradient(ellipse at top, #dce6fb 0%, #e9eef7 60%);
 }
