@@ -1,36 +1,26 @@
-# CSS Ownership Map (Declaration Layer)
+# CSS Ownership Map (upgread layers)
 
-## Purpose
-This document declares ownership boundaries for CSS bundles so duplicate selectors can be consolidated safely in future phases **without changing selectors today**.
+## Scope
+Governance-only ownership contract for the `upgread_*` CSS bundles. This map does **not** change selectors, declarations, or stylesheet load order.
 
-## Ownership Domains
+## Bundle ownership domains
 
-| Domain | Current authority | Scope | Notes |
-|---|---|---|---|
-| `ui-system` | Design system | Tokens + layout primitives | Canonical source for reusable spacing, typography, color, and structural primitives. |
-| `execution-dna` | Runtime UX | Runtime execution layer | Execution-specific shell behaviors and runtime visual DNA. |
-| `pages` | Marketing UX | Marketing surfaces | Public-facing page styling and content presentation. |
-| `workspace` | Migration bridge | Override layer (temporary authority) | Temporary override surface during consolidation; should be reduced after layered migration is complete. |
+| Bundle | Ownership domain | Primary responsibility |
+|---|---|---|
+| `upgread_pages.css` | Page-level presentation | Marketing/content page styling and non-runtime page surfaces. |
+| `upgread_shared-primitives.css` | Shell primitives + shared runtime baseline | Canonical primitives for app shell scaffolding and shared tool-shell baseline styles. |
+| `upgread_tool-execution-dna.css` | Tool runtime UI | Execution-mode behavior, runtime interaction surfaces, and tool execution visual DNA. |
+| `upgread_ui-system.css` | Structural layout system | Workspace structural layout composition and layout-system level UI scaffolding. |
 
-## Future `@layer` Structure Proposal (Documentation Only)
+## Explicit ownership declarations
 
-> Do **not** implement yet. This is a target structure for staged migration.
+- **Structural layout owner:** `upgread_ui-system.css`
+- **Tool runtime UI owner:** `upgread_tool-execution-dna.css`
+- **Shell primitives owner:** `upgread_shared-primitives.css`
 
-```css
-@layer tokens;
-@layer base;
-@layer runtime;
-@layer overrides;
-```
+## Governance rules
 
-### Intended mapping
-- `tokens` → foundational design tokens (from `ui-system`).
-- `base` → layout primitives and shared baseline styles (primarily `ui-system`, plus safe shared rules).
-- `runtime` → execution/runtime-specific styles (`execution-dna`).
-- `overrides` → temporary/high-authority migration overrides (`workspace`, limited `pages` exceptions if required).
-
-## Consolidation Guardrails
-- Preserve all existing selectors during declaration phase.
-- Keep runtime anchors and execution flow contracts unchanged.
-- Reclassify duplicate utility ownership before any selector-level merge.
-- Remove temporary `workspace` authority only after parity validation.
+1. Ownership indicates canonical authority for selector intent in each domain.
+2. Cross-bundle selector presence is allowed only when clearly marked as an explicit override layer.
+3. `upgread_pages.css` must remain page-surface scoped and must not become canonical owner for shell/runtime primitives.
+4. This map is documentation/governance only and introduces no runtime behavior changes.
