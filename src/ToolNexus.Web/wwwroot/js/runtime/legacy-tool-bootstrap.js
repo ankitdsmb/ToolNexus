@@ -32,7 +32,7 @@ function validateRuntimeSlug(slug, { onStrictViolation } = {}) {
   return true;
 }
 
-function validateRuntimeModulePath(modulePath, { onStrictViolation } = {}) {
+function validateLegacyRuntimeModulePath(modulePath, { onStrictViolation } = {}) {
   const value = String(modulePath ?? '').trim();
   const valid = value.length > 0
     && !/\s/.test(value)
@@ -131,7 +131,7 @@ export async function bootstrapLegacyTool({
   manifest,
   modulePath,
   importModule = async (modulePath) => {
-    const validation = await validateRuntimeModulePath(modulePath);
+    const validation = await validateLegacyRuntimeModulePath(modulePath);
 
     if (!validation.valid) {
       console.warn('[RuntimeImportIntegrity] Validation failed', { modulePath, ...validation });
@@ -148,7 +148,7 @@ export async function bootstrapLegacyTool({
   let workingModule = module;
 
   if (!workingModule && modulePath) {
-    if (!validateRuntimeModulePath(modulePath)) {
+    if (!validateLegacyRuntimeModulePath(modulePath)) {
       return { mounted: false, mode: 'legacy.import-integrity-blocked' };
     }
 
