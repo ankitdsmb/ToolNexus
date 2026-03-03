@@ -39,6 +39,14 @@
   margin: 0 !important;
 }
 
+/* ============================================
+   CANONICAL OWNER — STRUCTURAL SHELL PRIMITIVES
+   Selectors:
+   .app-shell
+   .container
+   .shell-layer--workspace
+   ============================================ */
+
 [data-theme="light"] .upgread_workspace .tool-focus-mode,
 :root[data-theme="light"] .upgread_workspace .tool-focus-mode {
   background: radial-gradient(ellipse at top, #dce6fb 0%, #e9eef7 60%);
