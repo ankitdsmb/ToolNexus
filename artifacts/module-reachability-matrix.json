@@ -1,0 +1,4741 @@
+{
+  "timestampUtc": "2026-03-03T22:14:06.112Z",
+  "runtimeObservedSource": "artifacts/runtime-import-observed.json",
+  "summary": {
+    "totalModules": 295,
+    "staticReachableCount": 59,
+    "runtimeObservedCount": 0,
+    "protectedButUnusedCount": 236,
+    "trueDeadCandidateCount": 0
+  },
+  "classification": {
+    "staticReachable": [
+      "src/ToolNexus.Web/wwwroot/js/admin-dna.js",
+      "src/ToolNexus.Web/wwwroot/js/command-palette-loader.js",
+      "src/ToolNexus.Web/wwwroot/js/header-state.js",
+      "src/ToolNexus.Web/wwwroot/js/shell-controller.js",
+      "src/ToolNexus.Web/wwwroot/js/spa-navigation-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/theme-manager.js",
+      "src/ToolNexus.Web/wwwroot/js/tool-runtime.js",
+      "src/ToolNexus.Web/wwwroot/js/tool-shell-feel.js",
+      "src/ToolNexus.Web/wwwroot/js/tools-grid.js",
+      "src/ToolNexus.Web/wwwroot/js/ui-state-manager.js",
+      "src/ToolNexus.Web/wwwroot/js/version-manager.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/dependency-loader.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/error-classification-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/execution-density-validator.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-immunity-constants.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-law-validator.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/icon-system.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/legacy-execution-bridge.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/legacy-tool-bootstrap.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/module-contract-validator.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-crash-overlay.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-import-integrity.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-incident-reporter.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-logger.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-migration-logger.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observability.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observer.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-usage-recorder.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/safe-dom-mount.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/safe-init-scheduler.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-auto-runtime.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-capability-matrix.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-container-manager.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-context-analyzer.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-adapter.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-guard.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-context.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-prefetch-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-presentation-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-state-registry.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-template-binder.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js",
+      "src/ToolNexus.Web/wwwroot/js/telemetry/performance-monitor.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-context-profiler.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-intelligence-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-mode-resolver.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/ai-runtime-orchestrator.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/behavior-prediction-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-density-autobalancer.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-flow-intelligence.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-strategy-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-visual-brain.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/runtime-governance-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/tool-genome-analyzer.js"
+    ],
+    "runtimeObserved": [],
+    "protectedButUnused": [
+      "src/ToolNexus.Web/wwwroot/js/command-palette.js",
+      "src/ToolNexus.Web/wwwroot/js/dynamic-widget-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/motion-system.js",
+      "src/ToolNexus.Web/wwwroot/js/tool-page.js",
+      "src/ToolNexus.Web/wwwroot/js/tool-shell-swapper.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/monaco-loader.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/runtime-safe-tool-wrapper.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-intelligence-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/runtime/tool-page-result-normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/case-converter.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/case-converter.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/case-converter.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/document-converter.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/document-converter.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/document-converter.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-config.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-diff.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-diff.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/tool-lifecycle-guard.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.config.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.state.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-encode.utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.dom.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities/decoder.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities/encoder.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities/normalization.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/html-entities/utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/parser.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/csv-engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/exporter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/input-normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/parser.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/exporter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/parser.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/scalars.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/diagnostics.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/normalization.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/schema.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/state.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/tree.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/json-validator/utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/dialects.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/decoder.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/normalization.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/state.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/utils.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/url-decode/validation.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/format.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/helpers.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/state.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/constants.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/engine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/errors.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/exporter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/formatter.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/helpers.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/index.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/normalizer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/parser.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/FileAnalyzer.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/MergeEngine.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/StrategyRegistry.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/WorkerClient.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/CsvMergeStrategy.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/JsonMergeStrategy.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/TextMergeStrategy.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/XmlMergeStrategy.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/YamlMergeStrategy.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/PreviewPanel.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/SettingsPanel.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/StatsPanel.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/UploadPanel.js",
+      "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/worker/mergeWorker.js"
+    ],
+    "trueDeadCandidates": []
+  },
+  "modules": [
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/admin-dna.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/command-palette-loader.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/command-palette.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/dynamic-widget-engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/header-state.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/motion-system.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/shell-controller.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/spa-navigation-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/theme-manager.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tool-page.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tool-runtime.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tool-shell-feel.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tool-shell-swapper.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools-grid.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/ui-state-manager.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/version-manager.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/dependency-loader.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/error-classification-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/execution-density-validator.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-immunity-constants.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-law-validator.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/icon-system.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/legacy-execution-bridge.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/legacy-tool-bootstrap.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/module-contract-validator.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/monaco-loader.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-crash-overlay.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-import-integrity.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-incident-reporter.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-logger.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-migration-logger.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observability.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observer.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-safe-tool-wrapper.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-usage-recorder.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/safe-dom-mount.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/safe-init-scheduler.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-auto-runtime.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-capability-matrix.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-container-manager.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-context-analyzer.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-adapter.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-guard.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-context.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-normalizer.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-intelligence-engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-page-result-normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.3,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-prefetch-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-presentation-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-state-registry.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-template-binder.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/telemetry/performance-monitor.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-config.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/tool-lifecycle-guard.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.config.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.state.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.dom.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-context-profiler.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-intelligence-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-mode-resolver.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/ai-runtime-orchestrator.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/behavior-prediction-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-density-autobalancer.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-flow-intelligence.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-strategy-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-visual-brain.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/runtime-governance-engine.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/tool-genome-analyzer.js",
+      "classification": "staticReachable",
+      "confidence": 1,
+      "flags": {
+        "staticReachable": true,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "modulePath-runtime",
+        "pattern": "import(modulePath)",
+        "confidenceWeight": 0.3
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/decoder.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/encoder.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/normalization.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/parser.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/csv-engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/exporter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/input-normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/parser.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/exporter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/parser.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/scalars.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/diagnostics.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/normalization.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/schema.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/state.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/tree.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/dialects.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/decoder.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/normalization.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/state.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/utils.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/validation.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/format.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/helpers.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/state.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/constants.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/engine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/errors.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/exporter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/formatter.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/helpers.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/index.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/normalizer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/parser.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/FileAnalyzer.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/MergeEngine.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/StrategyRegistry.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/WorkerClient.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/CsvMergeStrategy.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/JsonMergeStrategy.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/TextMergeStrategy.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/XmlMergeStrategy.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/YamlMergeStrategy.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/PreviewPanel.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/SettingsPanel.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/StatsPanel.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/UploadPanel.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    },
+    {
+      "filePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/worker/mergeWorker.js",
+      "classification": "protectedButUnused",
+      "confidence": 0.35,
+      "flags": {
+        "staticReachable": false,
+        "protectedDynamic": true,
+        "runtimeObserved": false
+      },
+      "dynamicRoot": {
+        "type": "slug-runtime",
+        "pattern": "/js/tools/${slug}.js",
+        "confidenceWeight": 0.35
+      }
+    }
+  ]
+}

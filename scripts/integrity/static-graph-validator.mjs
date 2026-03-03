@@ -17,6 +17,8 @@ const ROOT_WEIGHT_BY_TYPE = {
   'lazy-loader': 0.4
 };
 
+const RUNTIME_OBSERVED_PATH = 'artifacts/runtime-import-observed.json';
+
 function resolveImport(fromFile, specifier) {
   if (!specifier.startsWith('.')) return null;
   const abs = path.resolve(path.dirname(fromFile), specifier);
@@ -50,70 +52,47 @@ function getDynamicRootWeight(root) {
   return ROOT_WEIGHT_BY_TYPE[root.type] ?? 0.3;
 }
 
-async function loadRuntimeObservedModules(runtimeCoveragePath, knownNodes) {
+function normalizeRuntimeModulePath(modulePath) {
+  if (typeof modulePath !== 'string' || modulePath.length === 0) {
+    return null;
+  }
+
+  let normalized = modulePath;
   try {
-    const raw = await fs.readFile(runtimeCoveragePath, 'utf8');
-    const coverage = JSON.parse(raw);
-    const observed = new Set();
+    normalized = new URL(modulePath).pathname;
+  } catch {
+    normalized = modulePath;
+  }
 
-    for (const file of coverage?.js?.files ?? []) {
-      if (!file?.url || file.usedBytes <= 0) continue;
+  if (normalized.startsWith('/js/')) {
+    return `src/ToolNexus.Web/wwwroot${normalized}`;
+  }
 
-      let pathname = null;
-      try {
-        pathname = new URL(file.url).pathname;
-      } catch {
-        pathname = file.url;
-      }
+  if (normalized.startsWith('src/ToolNexus.Web/wwwroot/')) {
+    return normalized;
+  }
 
-      const relative = pathname.replace(/^\/+/, '');
-      const repoPath = `src/ToolNexus.Web/wwwroot/${relative}`;
-      if (knownNodes.has(repoPath)) {
-        observed.add(repoPath);
-      }
-    }
+  return null;
+}
 
-    return observed;
+async function loadRuntimeObservedModules() {
+  if (!(await fileExists(RUNTIME_OBSERVED_PATH))) {
+    return new Set();
+  }
+
+  try {
+    const raw = await fs.readFile(RUNTIME_OBSERVED_PATH, 'utf8');
+    const payload = JSON.parse(raw);
+    const loadedModules = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.loadedModules)
+        ? payload.loadedModules
+        : [];
+
+    return new Set(loadedModules.map((modulePath) => normalizeRuntimeModulePath(modulePath)).filter(Boolean));
   } catch {
     return new Set();
   }
-}
-
-async function loadManifestDrivenModules(manifestPath, knownNodes) {
-  const driven = new Set();
-
-  try {
-    const raw = await fs.readFile(manifestPath, 'utf8');
-    const manifest = JSON.parse(raw);
-
-    for (const tool of manifest?.tools ?? []) {
-      if (typeof tool?.modulePath === 'string' && tool.modulePath.length > 0) {
-        const modulePath = `src/ToolNexus.Web/wwwroot/${tool.modulePath.replace(/^\/+/, '')}`;
-        if (knownNodes.has(modulePath)) {
-          driven.add(modulePath);
-        }
-      }
-
-      if (typeof tool?.slug === 'string' && tool.slug.length > 0) {
-        const slugCandidates = [
-          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}.js`,
-          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}.app.js`,
-          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}.dom.js`,
-          `src/ToolNexus.Web/wwwroot/js/tools/${tool.slug}/index.js`
-        ];
-
-        for (const candidate of slugCandidates) {
-          if (knownNodes.has(candidate)) {
-            driven.add(candidate);
-          }
-        }
-      }
-    }
-  } catch {
-    return driven;
-  }
-
-  return driven;
 }
 
 const config = await loadConfig();
@@ -127,8 +106,7 @@ const jsFiles = await listFiles([
 const graph = {};
 const violations = [];
 const nodes = new Set(jsFiles);
-const runtimeObservedModules = await loadRuntimeObservedModules(config.playwright.reportPath, nodes);
-const manifestDrivenModules = await loadManifestDrivenModules(config.manifestPath, nodes);
+const runtimeObservedModules = await loadRuntimeObservedModules();
 
 for (const file of jsFiles) {
   const src = await fs.readFile(file, 'utf8');
@@ -188,53 +166,47 @@ while (stack.length > 0) {
 
 const scoredModules = [...nodes].map((filePath) => {
   const staticReachable = reachable.has(filePath);
-  const runtimeObserved = runtimeObservedModules.has(filePath);
   const dynamicRootMatch = getDynamicRootMatch(filePath);
   const protectedDynamic = Boolean(dynamicRootMatch);
-  const manifestDriven = manifestDrivenModules.has(filePath);
-
-  const eligibilityScore = (!staticReachable && !runtimeObserved && !protectedDynamic && !manifestDriven) ? 1.0 : 0.0;
+  const runtimeObserved = runtimeObservedModules.has(filePath);
+  const confidenceWeight = getDynamicRootWeight(dynamicRootMatch);
 
   if (staticReachable) {
     return {
       filePath,
       staticReachable,
-      runtimeObserved,
       protectedDynamic,
-      manifestDriven,
-      eligibilityScore,
+      runtimeObserved,
       confidence: 1.0,
       confidenceWeight: 1.0,
-      classification: 'reachable'
+      classification: 'reachable',
+      dynamicRoot: dynamicRootMatch
     };
   }
 
   if (protectedDynamic) {
-    const confidenceWeight = getDynamicRootWeight(dynamicRootMatch);
     return {
       filePath,
       staticReachable,
-      runtimeObserved,
       protectedDynamic,
-      manifestDriven,
-      eligibilityScore,
+      runtimeObserved,
       confidence: confidenceWeight,
       confidenceWeight,
       classification: 'protected-dynamic',
-      rootType: dynamicRootMatch.type
+      rootType: dynamicRootMatch.type,
+      dynamicRoot: dynamicRootMatch
     };
   }
 
   return {
     filePath,
     staticReachable,
-    runtimeObserved,
     protectedDynamic,
-    manifestDriven,
-    eligibilityScore,
-    confidence: 0.8,
-    confidenceWeight: 0.8,
-    classification: 'high-confidence-dead'
+    runtimeObserved,
+    confidence: runtimeObserved ? 0.95 : 0.8,
+    confidenceWeight: runtimeObserved ? 0.95 : 0.8,
+    classification: runtimeObserved ? 'runtime-observed' : 'high-confidence-dead',
+    dynamicRoot: null
   };
 });
 
@@ -243,7 +215,11 @@ const unreachable = scoredModules
   .map((module) => module.filePath);
 
 const reclassifiedModules = scoredModules.map((module) => {
-  if (module.classification === 'reachable' || module.classification === 'protected-dynamic') {
+  if (
+    module.classification === 'reachable'
+    || module.classification === 'protected-dynamic'
+    || module.classification === 'runtime-observed'
+  ) {
     return module;
   }
 
@@ -287,8 +263,60 @@ const confidenceDistribution = reclassifiedModules.reduce(
     acc[module.classification] = (acc[module.classification] ?? 0) + 1;
     return acc;
   },
-  { 'high-confidence-dead': 0, 'protected-dynamic': 0, 'medium-risk': 0, reachable: 0 }
+  {
+    'high-confidence-dead': 0,
+    'protected-dynamic': 0,
+    'runtime-observed': 0,
+    'medium-risk': 0,
+    reachable: 0
+  }
 );
+
+const correlationClassification = {
+  staticReachable: [],
+  runtimeObserved: [],
+  protectedButUnused: [],
+  trueDeadCandidates: []
+};
+
+const moduleMatrix = reclassifiedModules.map((module) => {
+  const staticReachable = Boolean(module.staticReachable);
+  const protectedDynamic = Boolean(module.protectedDynamic);
+  const runtimeObserved = Boolean(module.runtimeObserved);
+
+  let matrixClassification = 'trueDeadCandidates';
+  let confidence = module.confidence;
+  if (staticReachable) {
+    matrixClassification = 'staticReachable';
+    confidence = 1.0;
+  } else if (runtimeObserved) {
+    matrixClassification = 'runtimeObserved';
+    confidence = Math.max(0.95, module.confidence ?? 0.95);
+  } else if (protectedDynamic) {
+    matrixClassification = 'protectedButUnused';
+    confidence = module.confidence ?? 0.6;
+  }
+
+  correlationClassification[matrixClassification].push(module.filePath);
+
+  return {
+    filePath: module.filePath,
+    classification: matrixClassification,
+    confidence,
+    flags: {
+      staticReachable,
+      protectedDynamic,
+      runtimeObserved
+    },
+    dynamicRoot: module.dynamicRoot
+      ? {
+        type: module.dynamicRoot.type,
+        pattern: module.dynamicRoot.pattern,
+        confidenceWeight: getDynamicRootWeight(module.dynamicRoot)
+      }
+      : null
+  };
+});
 
 const governanceReport = {
   protectedRootsCount: dynamicRoots.roots.length,
@@ -309,36 +337,25 @@ const jsGovernanceReport = {
 
 await fs.writeFile('artifacts/js-governance-report.json', `${JSON.stringify(jsGovernanceReport, null, 2)}\n`, 'utf8');
 
-const pruningProposal = {
+const moduleReachabilityMatrix = {
   timestampUtc: new Date().toISOString(),
-  proposalType: 'candidate-only',
-  constraints: {
-    noModuleRemoval: true,
-    noRuntimeMutation: true,
-    noLifecycleEdits: true,
-    noDynamicRootChanges: true
+  runtimeObservedSource: RUNTIME_OBSERVED_PATH,
+  summary: {
+    totalModules: moduleMatrix.length,
+    staticReachableCount: correlationClassification.staticReachable.length,
+    runtimeObservedCount: correlationClassification.runtimeObserved.length,
+    protectedButUnusedCount: correlationClassification.protectedButUnused.length,
+    trueDeadCandidateCount: correlationClassification.trueDeadCandidates.length
   },
-  eligibilityCriteria: {
-    staticReachable: false,
-    runtimeObserved: false,
-    protectedDynamic: false,
-    manifestDriven: false
-  },
-  candidates: reclassifiedModules
-    .filter((module) => module.eligibilityScore === 1.0)
-    .map((module) => ({
-      module: module.filePath,
-      staticReachable: module.staticReachable,
-      runtimeObserved: module.runtimeObserved,
-      protectedDynamic: module.protectedDynamic,
-      manifestDriven: module.manifestDriven,
-      eligibilityScore: module.eligibilityScore,
-      classification: module.classification,
-      disposition: 'candidate-only'
-    }))
+  classification: correlationClassification,
+  modules: moduleMatrix
 };
 
-await fs.writeFile('artifacts/pruning-proposal.json', `${JSON.stringify(pruningProposal, null, 2)}\n`, 'utf8');
+await fs.writeFile(
+  'artifacts/module-reachability-matrix.json',
+  `${JSON.stringify(moduleReachabilityMatrix, null, 2)}\n`,
+  'utf8'
+);
 
 if (violations.length > 0) {
   console.error('[integrity] static graph validation failed. See reports/integrity/static-graph.json');
