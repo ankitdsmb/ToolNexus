@@ -15,8 +15,10 @@ using ToolNexus.Web.Options;
 using ToolNexus.Web.Security;
 using ToolNexus.Web.Services;
 using ToolNexus.Web.Middleware;
+using ToolNexus.Web.Monitoring;
 using ToolNexus.Web.Runtime;
 
+var startupStopwatch = System.Diagnostics.Stopwatch.StartNew();
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Logging.ToolNexus.json", optional: true, reloadOnChange: true);
 
@@ -61,6 +63,9 @@ builder.Services.AddSingleton<IToolManifestLoader, ToolManifestLoader>();
 builder.Services.AddSingleton<IToolRegistryService, ToolRegistryService>();
 builder.Services.AddSingleton<IToolViewResolver, ToolViewResolver>();
 builder.Services.AddSingleton<ClientLogEndpointContract>();
+builder.Services.AddSingleton<IMetricsCollector, MetricsCollector>();
+builder.Services.AddSingleton<IRuntimeHealthProbe, RuntimeHealthProbe>();
+builder.Services.AddSingleton<IStructuredRequestLogger, StructuredRequestLogger>();
 builder.Services.AddScoped<IAdminToolsViewModelService, AdminToolsViewModelService>();
 
 var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
@@ -126,6 +131,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+var metricsCollector = app.Services.GetRequiredService<IMetricsCollector>();
+metricsCollector.ObserveStartupPhaseDuration("app_bootstrap", startupStopwatch.Elapsed.TotalMilliseconds);
 
 /* =========================================================
    ERROR HANDLING
@@ -303,6 +310,31 @@ app.MapGet("/health/runtime", (DatabaseInitializationState dbInitState) =>
     });
 });
 
+app.MapGet("/metrics", (IMetricsCollector collector, IStructuredRequestLogger requestLogger, HttpContext context) =>
+{
+    requestLogger.Info(context, "Serving Prometheus metrics endpoint.");
+    return Results.Text(collector.ExportPrometheus(), "text/plain; version=0.0.4");
+});
+
+app.MapGet("/health/extended", (IRuntimeHealthProbe runtimeHealthProbe, IStructuredRequestLogger requestLogger, HttpContext context) =>
+{
+    var snapshot = runtimeHealthProbe.GetSnapshot();
+    requestLogger.Info(
+        context,
+        "Extended health checked. ManifestLoaded={ManifestLoaded} RuntimeIntegrityState={RuntimeIntegrityState} MutationModeStatus={MutationModeStatus}",
+        snapshot.ManifestLoaded,
+        snapshot.RuntimeIntegrityState,
+        snapshot.MutationModeStatus);
+
+    return Results.Ok(new
+    {
+        manifestLoaded = snapshot.ManifestLoaded,
+        manifestCount = snapshot.ManifestCount,
+        runtimeIntegrityState = snapshot.RuntimeIntegrityState,
+        mutationModeStatus = snapshot.MutationModeStatus
+    });
+});
+
 app.MapGet("/health/background", (BackgroundWorkerHealthState health, DatabaseInitializationState dbInitState, AuditGuardrailsMetrics auditMetrics, IConcurrencyObservability concurrencyObservability) =>
 {
     var concurrency = concurrencyObservability.GetHealthSnapshot();
@@ -347,6 +379,13 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Services.GetRequiredService<ClientLogEndpointContract>().ResolveRoutableEndpointOrNull();
+
+var manifestLoadStopwatch = System.Diagnostics.Stopwatch.StartNew();
+app.Services.GetRequiredService<IToolRegistryService>().GetAll();
+manifestLoadStopwatch.Stop();
+metricsCollector.ObserveManifestLoadDuration(manifestLoadStopwatch.Elapsed.TotalMilliseconds);
+metricsCollector.ObserveStartupPhaseDuration("manifest_warmup", manifestLoadStopwatch.Elapsed.TotalMilliseconds);
+metricsCollector.ObserveStartupPhaseDuration("startup_total", startupStopwatch.Elapsed.TotalMilliseconds);
 
 app.Run();
 
