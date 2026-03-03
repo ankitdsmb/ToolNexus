@@ -319,6 +319,53 @@
   min-height: calc(100vh - 220px);
 }
 
+
+/* Class-driven immersive fullscreen mode (no runtime anchor changes) */
+.upgread_workspace .tool-focus-mode.tool-shell-page--workspace,
+.upgread_workspace .tool-focus-mode .tool-shell-page--workspace {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.upgread_workspace .tool-focus-mode .tool-shell-page__docs,
+.upgread_workspace .tool-focus-mode .workspace-shell__context-rail,
+.upgread_workspace .tool-focus-mode .tool-seo {
+  display: none !important;
+}
+
+.upgread_workspace .tool-focus-mode .tool-shell-page__workspace,
+.upgread_workspace .tool-focus-mode .tool-shell-page__runtime,
+.upgread_workspace .tool-focus-mode .tool-runtime-widget,
+.upgread_workspace .tool-focus-mode .upgread_tool-widget {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+}
+
+.upgread_workspace .tool-focus-mode .tool-runtime-widget,
+.upgread_workspace .tool-focus-mode .upgread_tool-widget,
+.upgread_workspace .tool-focus-mode [data-tool-shell='true'] {
+  padding: 0 !important;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+}
+
+.upgread_workspace .tool-focus-mode [data-tool-content-host='true'],
+.upgread_workspace .tool-focus-mode [data-tool-input='true'],
+.upgread_workspace .tool-focus-mode [data-tool-output='true'] {
+  border-radius: 0;
+  min-height: calc(100vh - 96px);
+}
+
+.upgread_workspace .tool-focus-mode [data-tool-context='true'],
+.upgread_workspace .tool-focus-mode [data-tool-status='true'],
+.upgread_workspace .tool-focus-mode [data-tool-followup='true'] {
+  margin: 0;
+  border-left: 0;
+  border-right: 0;
+}
+
 [data-theme="light"] .upgread_workspace .runtime-doc-disclosure,
 [data-theme="light"] .upgread_workspace .tool-md-section {
   border-top-color: rgba(0,0,0,0.07);
