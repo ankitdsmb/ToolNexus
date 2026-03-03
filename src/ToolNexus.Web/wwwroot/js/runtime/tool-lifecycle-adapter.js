@@ -28,6 +28,27 @@ function toCandidates(module) {
   ].filter(Boolean);
 }
 
+function disposeOrphanMonacoEditors() {
+  const registry = window.__toolnexus_monaco_registry;
+  const editors = registry?.editors;
+  if (!(editors instanceof Set) || editors.size === 0) {
+    return;
+  }
+
+  const orphanEditors = Array.from(editors);
+  console.warn('[ToolIsolation] Disposing orphan Monaco editors', orphanEditors.length);
+
+  for (const editor of orphanEditors) {
+    try {
+      editor.dispose();
+    } catch {
+      // ignore orphan editor disposal failures
+    }
+  }
+
+  editors.clear();
+}
+
 export function inspectLifecycleContract(module) {
   const candidates = toCandidates(module);
 
@@ -76,7 +97,10 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
 
   const lifecycleResult = toLifecycleResult({
     mounted: !executionOnly && normalized.metadata.mode !== 'none',
-    cleanup: normalized.destroy,
+    cleanup: async () => {
+      await normalized.destroy();
+      disposeOrphanMonacoEditors();
+    },
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,
     autoDestroyGenerated: normalized.metadata.autoDestroyGenerated,

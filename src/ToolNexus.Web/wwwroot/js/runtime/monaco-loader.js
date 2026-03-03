@@ -264,6 +264,31 @@ function activateMonacoEnvironment() {
   logRuntimeMonaco('Monaco worker mapping active');
 }
 
+function initializeMonacoEditorRegistry(monaco) {
+  if (!window.__toolnexus_monaco_registry) {
+    window.__toolnexus_monaco_registry = {
+      editors: new Set()
+    };
+  }
+
+  if (!monaco.__toolnexus_patched) {
+    const originalCreate = monaco.editor.create;
+
+    monaco.editor.create = function (...args) {
+      const editor = originalCreate.apply(this, args);
+      window.__toolnexus_monaco_registry.editors.add(editor);
+
+      editor.onDidDispose(() => {
+        window.__toolnexus_monaco_registry.editors.delete(editor);
+      });
+
+      return editor;
+    };
+
+    monaco.__toolnexus_patched = true;
+  }
+}
+
 export async function loadMonaco() {
   const correlationId = createMonacoLoadCorrelationId();
   const existingState = readMonacoLoadState();
@@ -335,6 +360,8 @@ export async function loadMonaco() {
       emitMonacoAssetInvalidWarning();
       throw new Error('[runtime] Monaco namespace unavailable after loader resolution');
     }
+
+    initializeMonacoEditorRegistry(monaco);
 
     window[MONACO_SINGLETON_KEY] = monaco ?? window.monaco;
     writeMonacoLoadState({
