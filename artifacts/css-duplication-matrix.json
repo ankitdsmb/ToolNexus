@@ -1,9 +1,9 @@
 {
-  "generatedAtUtc": "2026-03-03T21:51:26.147Z",
-  "bundleCount": 4,
-  "uniqueSelectorCount": 145,
-  "selectorOverlapCount": 10,
-  "identicalDeclarationDuplicateCount": 0,
+  "generatedAtUtc": "2026-03-03T21:58:15.386Z",
+  "bundleCount": 5,
+  "uniqueSelectorCount": 280,
+  "selectorOverlapCount": 32,
+  "identicalDeclarationDuplicateCount": 1,
   "ownershipGuard": {
     "ownershipMapPath": "artifacts/css-layer-map.json",
     "overrideTagPattern": "(OVERRIDE\\s+LAYER|OWNERSHIP_OVERRIDE)",
@@ -193,13 +193,191 @@
         "upgread_workspace",
         "upgread_workspace--scoped"
       ]
+    },
+    {
+      "bundle": "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+      "selectorCount": 162,
+      "selectors": [
+        "app-shell",
+        "brand__dot",
+        "brand__name",
+        "brand__tagline",
+        "card",
+        "card__action",
+        "card__badge",
+        "card__cta",
+        "card__description",
+        "card__icon",
+        "card__title-row",
+        "chip",
+        "command-palette",
+        "command-palette__badge",
+        "command-palette__input",
+        "command-palette__item",
+        "contact-form__submit",
+        "container",
+        "discovery-search-shell",
+        "document-converter-runtime",
+        "dropzone",
+        "editor-label",
+        "editor-surface",
+        "faq-panel",
+        "faq-panel__list",
+        "file-item",
+        "file-merge-tool",
+        "footer",
+        "footer__bottom-strip",
+        "footer__columns",
+        "footer__meta",
+        "footer__nav",
+        "footer__shortcuts",
+        "hero",
+        "hero-badge",
+        "hero-btn",
+        "hero-btn--primary",
+        "hero-btn--secondary",
+        "hero-preview",
+        "hero-preview__code",
+        "hero-preview__head",
+        "hero__actions",
+        "hero__badges",
+        "hero__container",
+        "hero__cursor",
+        "hero__eyebrow",
+        "hero__gradient",
+        "hero__noise",
+        "hero__subtitle",
+        "hero__title",
+        "hero__typewriter",
+        "hero__typewriter-value",
+        "home-page",
+        "home-surface",
+        "is-active",
+        "is-dragging",
+        "is-selected",
+        "is-transitioning",
+        "json-formatter-eyebrow",
+        "json-formatter-header",
+        "json-formatter-page",
+        "json-metrics",
+        "json-panel--output",
+        "json-processing-badge",
+        "json-toolbar",
+        "json-toolbar-row",
+        "json-workspace",
+        "panel",
+        "panel-header",
+        "preview-output",
+        "privacy-card",
+        "privacy-grid",
+        "readme-card",
+        "readme-compressed-note",
+        "readme-disclosure",
+        "readme-guidance__action",
+        "readme-tab",
+        "readme-tabs",
+        "search",
+        "section-frame",
+        "section-subtitle",
+        "section-title",
+        "social-section__header",
+        "sql-control-ribbon",
+        "sql-toolbar-row",
+        "static-page__header",
+        "static-page__section",
+        "testimonial-card",
+        "testimonial-card__badge",
+        "testimonial-card__meta",
+        "testimonial-card__quote",
+        "theme-toggle",
+        "toast",
+        "toast--error",
+        "toast--success",
+        "tok-key",
+        "tok-lit",
+        "tok-num",
+        "tok-str",
+        "tool-btn",
+        "tool-btn--ghost",
+        "tool-btn--primary",
+        "tool-btn--secondary",
+        "tool-card",
+        "tool-card__badge",
+        "tool-card__description",
+        "tool-card__meta",
+        "tool-card__tag",
+        "tool-discovery",
+        "tool-discovery__chip",
+        "tool-discovery__chips",
+        "tool-discovery__label",
+        "tool-error",
+        "tool-grid",
+        "tool-group__count",
+        "tool-group__header",
+        "tool-local-actions",
+        "tool-local-header",
+        "tool-local-metrics",
+        "tool-local-surface",
+        "tool-md-tab",
+        "tool-md-tabs",
+        "tool-metrics-compact-grid",
+        "tool-page__heading",
+        "tool-runtime-widget",
+        "tool-section__eyebrow",
+        "tool-section__header",
+        "tool-select",
+        "tool-shell-page__docs",
+        "tool-shell-page__hero",
+        "tool-shell-page__layout",
+        "tool-shell-page__momentum",
+        "tool-shell-page__momentum-copy",
+        "tool-shell-page__momentum-title",
+        "tool-shell-page__runtime",
+        "tool-smart-context",
+        "tool-toggle",
+        "tools-grid",
+        "tools-index__toolbar",
+        "topbar__explore",
+        "topbar__inner",
+        "topbar__search-placeholder",
+        "topbar__search-shell",
+        "topbar__search-shortcut",
+        "topbar__search-wrap",
+        "trust-link",
+        "trust-section__eyebrow",
+        "trust-section__grid",
+        "trust-section__header",
+        "trust-stat",
+        "trust-stat__label",
+        "trust-stat__meta",
+        "trust-stat__value",
+        "upgread_topbar",
+        "upgread_workspace",
+        "upgread_workspace--scoped",
+        "view-toggle__btn",
+        "workflow-card",
+        "workflow-card__link",
+        "workflow-grid",
+        "workflow-pathway-card",
+        "workflow-section__header"
+      ]
     }
   ],
-  "duplicatesByHash": {},
+  "duplicatesByHash": {
+    "6f0f87949529f9ffae1b27f00902b0922fd09658": {
+      "selector": ":is(.upgread_workspace",
+      "mediaContext": "global",
+      "bundles": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    }
+  },
   "selectorOverlaps": [
     {
       "selector": "upgread_workspace",
       "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
@@ -209,6 +387,7 @@
     {
       "selector": "upgread_workspace--scoped",
       "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
@@ -218,6 +397,7 @@
     {
       "selector": "app-shell",
       "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
       ]
@@ -225,8 +405,73 @@
     {
       "selector": "container",
       "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-shell-page__docs",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "card",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "discovery-search-shell",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "home-page",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "home-surface",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "privacy-card",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "section-frame",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css"
+      ]
+    },
+    {
+      "selector": "section-subtitle",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "section-title",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
       ]
     },
     {
@@ -237,9 +482,58 @@
       ]
     },
     {
+      "selector": "testimonial-card",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "tool-btn",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-discovery",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
       "selector": "tool-focus-mode",
       "owners": [
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-local-actions",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-local-header",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-local-metrics",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-local-surface",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
       ]
     },
@@ -251,6 +545,20 @@
       ]
     },
     {
+      "selector": "tool-runtime-widget",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-section__eyebrow",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
       "selector": "tool-seo",
       "owners": [
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
@@ -258,9 +566,9 @@
       ]
     },
     {
-      "selector": "tool-shell-page__docs",
+      "selector": "tool-shell-page__runtime",
       "owners": [
-        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
       ]
     },
@@ -269,6 +577,34 @@
       "owners": [
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "trust-section__eyebrow",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "trust-stat",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "workflow-card",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
+      ]
+    },
+    {
+      "selector": "workflow-grid",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css"
       ]
     }
   ]
