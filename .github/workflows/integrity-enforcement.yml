@@ -50,6 +50,16 @@ jobs:
           name: integrity-reports
           path: reports/integrity/*.json
 
+      - name: Upload JS governance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: js-governance
+          path: |
+            artifacts/js-governance-baseline.json
+            artifacts/dynamic-import-governance-report.json
+            reports/integrity/static-graph.json
+
       - name: Upload dependency audit artifact
         if: always()
         uses: actions/upload-artifact@v4
