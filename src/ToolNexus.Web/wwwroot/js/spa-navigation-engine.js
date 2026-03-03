@@ -44,6 +44,105 @@
         runtimeBootstrapGeneration = swapGeneration;
         window.bootstrapToolRuntime();
     }
+=======
+    var heapTrendSamples = [];
+
+    function isDevelopmentRuntime() {
+        try {
+            var config = window.ToolNexusConfig || {};
+            var environment = String(config.environment || config.env || '').trim().toLowerCase();
+            return environment === 'development' || environment === 'dev' || environment === 'test' || environment === 'testing';
+        } catch (_error) {
+            return false;
+        }
+    }
+
+    function ensureNavigationMetrics() {
+        if (!window.__spaNavigationMetrics || typeof window.__spaNavigationMetrics !== 'object') {
+            window.__spaNavigationMetrics = {
+                navigationCount: 0,
+                lastNavigationTs: 0
+            };
+        }
+
+        if (typeof window.__spaNavigationMetrics.navigationCount !== 'number') {
+            window.__spaNavigationMetrics.navigationCount = 0;
+        }
+
+        if (typeof window.__spaNavigationMetrics.lastNavigationTs !== 'number') {
+            window.__spaNavigationMetrics.lastNavigationTs = 0;
+        }
+
+        return window.__spaNavigationMetrics;
+    }
+
+    function recordNavigationMetrics() {
+        try {
+            var metrics = ensureNavigationMetrics();
+            metrics.navigationCount += 1;
+            metrics.lastNavigationTs = Date.now();
+        } catch (_error) {
+            // telemetry-only: never throw
+        }
+    }
+
+    function verifyToolShellCount() {
+        try {
+            var toolShellCount = document.querySelectorAll('[data-tool-shell]').length;
+            if (toolShellCount > 1) {
+                console.warn('[ToolNexus SPA] Multiple [data-tool-shell] elements detected after navigation swap.', {
+                    count: toolShellCount,
+                    href: window.location.href
+                });
+            }
+        } catch (_error) {
+            // guard-only: never throw
+        }
+    }
+
+    function recordHeapTrend() {
+        if (!isDevelopmentRuntime()) {
+            return;
+        }
+
+        try {
+            if (!window.performance || !window.performance.memory || typeof window.performance.memory.usedJSHeapSize !== 'number') {
+                return;
+            }
+
+            heapTrendSamples.push(window.performance.memory.usedJSHeapSize);
+            if (heapTrendSamples.length > 6) {
+                heapTrendSamples.shift();
+            }
+
+            if (heapTrendSamples.length < 4) {
+                return;
+            }
+
+            var recent = heapTrendSamples.slice(-4);
+            var isIncreasing = true;
+            for (var i = 1; i < recent.length; i += 1) {
+                if (recent[i] <= recent[i - 1]) {
+                    isIncreasing = false;
+                    break;
+                }
+            }
+
+            if (isIncreasing) {
+                console.warn('[ToolNexus SPA] JS heap usage is consistently increasing across SPA navigations.', {
+                    samples: recent.slice()
+                });
+            }
+        } catch (_error) {
+            // telemetry-only: never throw
+        }
+    }
+  
+    var SIMPLE_TOOLS = [
+        'base64-encode',
+        'case-converter',
+        'json-minifier'
+    ];
 
     function getAppRoot(doc) {
         return doc.getElementById('app-page-root');
@@ -90,6 +189,26 @@
         return true;
     }
 
+    function shouldUseSpaNavigation(href) {
+        var destination;
+        try {
+            destination = new URL(href, window.location.href);
+        } catch (_error) {
+            return false;
+        }
+
+        if (!destination.pathname.startsWith('/tools/')) {
+            return true;
+        }
+
+        var segments = destination.pathname.split('/').filter(function (segment) {
+            return segment.length > 0;
+        });
+        var slug = segments.length > 1 ? segments[1] : '';
+
+        return SIMPLE_TOOLS.indexOf(slug) !== -1;
+    }
+
     async function loadAndSwap(url, pushHistory) {
         if (inFlightNavigation && inFlightNavigation.url === url) {
             return inFlightNavigation.promise;
@@ -123,6 +242,10 @@
             warnOnDuplicateToolShells();
             bootstrapRuntimeOnceForSwap(Date.now());
 
+            recordNavigationMetrics();
+            verifyToolShellCount();
+            recordHeapTrend();
+
             if (pushHistory) {
                 window.history.pushState({ spa: true }, '', url);
             }
@@ -149,6 +272,10 @@
             return;
         }
 
+        if (!shouldUseSpaNavigation(anchor.href)) {
+            return;
+        }
+
         event.preventDefault();
 
         loadAndSwap(anchor.href, true).catch(function () {
@@ -157,6 +284,11 @@
     }
 
     function handlePopState() {
+        if (!shouldUseSpaNavigation(window.location.href)) {
+            window.location.reload();
+            return;
+        }
+
         loadAndSwap(window.location.href, false).catch(function () {
             window.location.reload();
         });
@@ -167,6 +299,8 @@
             if (initialized) {
                 return;
             }
+
+            ensureNavigationMetrics();
 
             initialized = true;
             document.addEventListener('click', handleDocumentClick);
