@@ -245,6 +245,14 @@ const report = {
   graph,
   unreachable,
   confidenceScores: reclassifiedModules,
+  pruningEligibility: reclassifiedModules.map((module) => ({
+    module: module.filePath,
+    staticReachable: module.staticReachable,
+    runtimeObserved: module.runtimeObserved,
+    protectedDynamic: module.protectedDynamic,
+    manifestDriven: module.manifestDriven,
+    eligibilityScore: module.eligibilityScore
+  })),
   violations
 };
 

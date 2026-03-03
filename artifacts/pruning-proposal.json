@@ -1,0 +1,17 @@
+{
+  "timestampUtc": "2026-03-03T22:14:05.312Z",
+  "proposalType": "candidate-only",
+  "constraints": {
+    "noModuleRemoval": true,
+    "noRuntimeMutation": true,
+    "noLifecycleEdits": true,
+    "noDynamicRootChanges": true
+  },
+  "eligibilityCriteria": {
+    "staticReachable": false,
+    "runtimeObserved": false,
+    "protectedDynamic": false,
+    "manifestDriven": false
+  },
+  "candidates": []
+}
