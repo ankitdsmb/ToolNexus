@@ -238,8 +238,10 @@
 
         window.ToolNexus = window.ToolNexus || {};
         window.ToolNexus.correlationId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.TraceIdentifier));
+        window.ToolNexusTelemetryEnabled = window.ToolNexusTelemetryEnabled === true;
     </script>
 
+    <script type="module" src="~/js/telemetry/performance-monitor.js" asp-append-version="true"></script>
     <script type="module" src="~/js/tool-runtime.js" asp-append-version="true"></script>
     <script type="module" src="~/js/tool-shell-feel.js" asp-append-version="true"></script>
 }
