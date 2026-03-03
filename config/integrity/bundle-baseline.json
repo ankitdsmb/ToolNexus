@@ -1,0 +1,1395 @@
+{
+  "generatedAt": "2026-03-03T05:54:21.151Z",
+  "totalBytes": 2255820,
+  "totalGzipBytes": 537852,
+  "assets": {
+    "src/ToolNexus.Web/wwwroot/js/admin-dna.js": {
+      "bytes": 2464,
+      "gzipBytes": 896
+    },
+    "src/ToolNexus.Web/wwwroot/js/command-palette-loader.js": {
+      "bytes": 1812,
+      "gzipBytes": 653
+    },
+    "src/ToolNexus.Web/wwwroot/js/command-palette.js": {
+      "bytes": 13227,
+      "gzipBytes": 3978
+    },
+    "src/ToolNexus.Web/wwwroot/js/dynamic-widget-engine.js": {
+      "bytes": 2169,
+      "gzipBytes": 883
+    },
+    "src/ToolNexus.Web/wwwroot/js/header-state.js": {
+      "bytes": 271,
+      "gzipBytes": 192
+    },
+    "src/ToolNexus.Web/wwwroot/js/motion-system.js": {
+      "bytes": 3699,
+      "gzipBytes": 1343
+    },
+    "src/ToolNexus.Web/wwwroot/js/theme-manager.js": {
+      "bytes": 1676,
+      "gzipBytes": 596
+    },
+    "src/ToolNexus.Web/wwwroot/js/tool-page.js": {
+      "bytes": 39999,
+      "gzipBytes": 10159
+    },
+    "src/ToolNexus.Web/wwwroot/js/tool-runtime.js": {
+      "bytes": 70116,
+      "gzipBytes": 14522
+    },
+    "src/ToolNexus.Web/wwwroot/js/tool-shell-feel.js": {
+      "bytes": 8570,
+      "gzipBytes": 2395
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools-grid.js": {
+      "bytes": 5560,
+      "gzipBytes": 1614
+    },
+    "src/ToolNexus.Web/wwwroot/js/ui-state-manager.js": {
+      "bytes": 2408,
+      "gzipBytes": 887
+    },
+    "src/ToolNexus.Web/wwwroot/js/version-manager.js": {
+      "bytes": 614,
+      "gzipBytes": 295
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/dependency-loader.js": {
+      "bytes": 5886,
+      "gzipBytes": 1611
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/error-classification-engine.js": {
+      "bytes": 1651,
+      "gzipBytes": 592
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/execution-density-validator.js": {
+      "bytes": 13763,
+      "gzipBytes": 3744
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-immunity-constants.js": {
+      "bytes": 1642,
+      "gzipBytes": 571
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/execution-ui-law-validator.js": {
+      "bytes": 7583,
+      "gzipBytes": 2359
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/icon-system.js": {
+      "bytes": 3710,
+      "gzipBytes": 1024
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/legacy-execution-bridge.js": {
+      "bytes": 4212,
+      "gzipBytes": 1124
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/legacy-tool-bootstrap.js": {
+      "bytes": 6050,
+      "gzipBytes": 1626
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/module-contract-validator.js": {
+      "bytes": 468,
+      "gzipBytes": 273
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/monaco-loader.js": {
+      "bytes": 13033,
+      "gzipBytes": 3350
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-crash-overlay.js": {
+      "bytes": 4316,
+      "gzipBytes": 1643
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-import-integrity.js": {
+      "bytes": 3128,
+      "gzipBytes": 787
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-incident-reporter.js": {
+      "bytes": 6893,
+      "gzipBytes": 2018
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-logger.js": {
+      "bytes": 6037,
+      "gzipBytes": 1999
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-migration-logger.js": {
+      "bytes": 1681,
+      "gzipBytes": 651
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observability.js": {
+      "bytes": 9455,
+      "gzipBytes": 2361
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observer.js": {
+      "bytes": 1753,
+      "gzipBytes": 674
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/runtime-safe-tool-wrapper.js": {
+      "bytes": 2751,
+      "gzipBytes": 839
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/safe-dom-mount.js": {
+      "bytes": 695,
+      "gzipBytes": 331
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/safe-init-scheduler.js": {
+      "bytes": 870,
+      "gzipBytes": 384
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-auto-runtime.js": {
+      "bytes": 24370,
+      "gzipBytes": 6339
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-capability-matrix.js": {
+      "bytes": 1684,
+      "gzipBytes": 614
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-container-manager.js": {
+      "bytes": 4622,
+      "gzipBytes": 1306
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-context-analyzer.js": {
+      "bytes": 3747,
+      "gzipBytes": 1269
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-adapter.js": {
+      "bytes": 1425,
+      "gzipBytes": 582
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-guard.js": {
+      "bytes": 1275,
+      "gzipBytes": 509
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract-validator.js": {
+      "bytes": 3685,
+      "gzipBytes": 1122
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-dom-contract.js": {
+      "bytes": 1458,
+      "gzipBytes": 492
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-context.js": {
+      "bytes": 3130,
+      "gzipBytes": 942
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-normalizer.js": {
+      "bytes": 17734,
+      "gzipBytes": 4333
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-intelligence-engine.js": {
+      "bytes": 6426,
+      "gzipBytes": 2137
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-lifecycle-adapter.js": {
+      "bytes": 6147,
+      "gzipBytes": 1944
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-page-result-normalizer.js": {
+      "bytes": 923,
+      "gzipBytes": 371
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-presentation-engine.js": {
+      "bytes": 10649,
+      "gzipBytes": 2555
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-state-registry.js": {
+      "bytes": 1769,
+      "gzipBytes": 619
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-template-binder.js": {
+      "bytes": 1038,
+      "gzipBytes": 476
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-template-loader.js": {
+      "bytes": 5913,
+      "gzipBytes": 1800
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js": {
+      "bytes": 35597,
+      "gzipBytes": 8510
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.api.js": {
+      "bytes": 195,
+      "gzipBytes": 161
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.app.js": {
+      "bytes": 91,
+      "gzipBytes": 99
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.dom.js": {
+      "bytes": 67,
+      "gzipBytes": 85
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js": {
+      "bytes": 14753,
+      "gzipBytes": 4114
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.api.js": {
+      "bytes": 1705,
+      "gzipBytes": 658
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js": {
+      "bytes": 10149,
+      "gzipBytes": 2728
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.dom.js": {
+      "bytes": 1218,
+      "gzipBytes": 351
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js": {
+      "bytes": 1797,
+      "gzipBytes": 715
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/case-converter.api.js": {
+      "bytes": 196,
+      "gzipBytes": 158
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/case-converter.app.js": {
+      "bytes": 92,
+      "gzipBytes": 97
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/case-converter.dom.js": {
+      "bytes": 68,
+      "gzipBytes": 85
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js": {
+      "bytes": 15281,
+      "gzipBytes": 4055
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.api.js": {
+      "bytes": 4391,
+      "gzipBytes": 1328
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js": {
+      "bytes": 5838,
+      "gzipBytes": 1879
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.dom.js": {
+      "bytes": 3208,
+      "gzipBytes": 947
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js": {
+      "bytes": 1693,
+      "gzipBytes": 622
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.api.js": {
+      "bytes": 4821,
+      "gzipBytes": 1747
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js": {
+      "bytes": 6216,
+      "gzipBytes": 1818
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.dom.js": {
+      "bytes": 1238,
+      "gzipBytes": 340
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js": {
+      "bytes": 1796,
+      "gzipBytes": 642
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.api.js": {
+      "bytes": 192,
+      "gzipBytes": 157
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.app.js": {
+      "bytes": 88,
+      "gzipBytes": 97
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.dom.js": {
+      "bytes": 64,
+      "gzipBytes": 82
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js": {
+      "bytes": 26716,
+      "gzipBytes": 6776
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/document-converter.api.js": {
+      "bytes": 1369,
+      "gzipBytes": 608
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/document-converter.app.js": {
+      "bytes": 3444,
+      "gzipBytes": 1140
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/document-converter.dom.js": {
+      "bytes": 495,
+      "gzipBytes": 206
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js": {
+      "bytes": 1253,
+      "gzipBytes": 513
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge.api.js": {
+      "bytes": 192,
+      "gzipBytes": 158
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge.app.js": {
+      "bytes": 88,
+      "gzipBytes": 97
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge.dom.js": {
+      "bytes": 64,
+      "gzipBytes": 82
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge.js": {
+      "bytes": 38,
+      "gzipBytes": 58
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities.api.js": {
+      "bytes": 195,
+      "gzipBytes": 159
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities.app.js": {
+      "bytes": 91,
+      "gzipBytes": 99
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities.dom.js": {
+      "bytes": 67,
+      "gzipBytes": 85
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js": {
+      "bytes": 1891,
+      "gzipBytes": 722
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.api.js": {
+      "bytes": 8777,
+      "gzipBytes": 2764
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js": {
+      "bytes": 4485,
+      "gzipBytes": 1391
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.dom.js": {
+      "bytes": 1593,
+      "gzipBytes": 572
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js": {
+      "bytes": 1806,
+      "gzipBytes": 687
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.api.js": {
+      "bytes": 7311,
+      "gzipBytes": 2331
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js": {
+      "bytes": 4124,
+      "gzipBytes": 1253
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.dom.js": {
+      "bytes": 2463,
+      "gzipBytes": 823
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js": {
+      "bytes": 1751,
+      "gzipBytes": 635
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-config.js": {
+      "bytes": 1027,
+      "gzipBytes": 497
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-engine.js": {
+      "bytes": 2590,
+      "gzipBytes": 938
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-errors.js": {
+      "bytes": 904,
+      "gzipBytes": 435
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-normalizer.js": {
+      "bytes": 459,
+      "gzipBytes": 281
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js": {
+      "bytes": 10017,
+      "gzipBytes": 2711
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-utils.js": {
+      "bytes": 1181,
+      "gzipBytes": 540
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.api.js": {
+      "bytes": 193,
+      "gzipBytes": 158
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.app.js": {
+      "bytes": 89,
+      "gzipBytes": 97
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.dom.js": {
+      "bytes": 65,
+      "gzipBytes": 83
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js": {
+      "bytes": 2990,
+      "gzipBytes": 1064
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js": {
+      "bytes": 998,
+      "gzipBytes": 423
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js": {
+      "bytes": 6675,
+      "gzipBytes": 1921
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.dom.js": {
+      "bytes": 2008,
+      "gzipBytes": 783
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js": {
+      "bytes": 1817,
+      "gzipBytes": 737
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.api.js": {
+      "bytes": 192,
+      "gzipBytes": 159
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.app.js": {
+      "bytes": 88,
+      "gzipBytes": 98
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.dom.js": {
+      "bytes": 64,
+      "gzipBytes": 82
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js": {
+      "bytes": 3334,
+      "gzipBytes": 1151
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.api.js": {
+      "bytes": 5206,
+      "gzipBytes": 1786
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js": {
+      "bytes": 4591,
+      "gzipBytes": 1549
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.dom.js": {
+      "bytes": 4028,
+      "gzipBytes": 1162
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js": {
+      "bytes": 2855,
+      "gzipBytes": 1037
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js": {
+      "bytes": 1922,
+      "gzipBytes": 719
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js": {
+      "bytes": 5800,
+      "gzipBytes": 1662
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.dom.js": {
+      "bytes": 1104,
+      "gzipBytes": 318
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js": {
+      "bytes": 1725,
+      "gzipBytes": 652
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.api.js": {
+      "bytes": 197,
+      "gzipBytes": 163
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.app.js": {
+      "bytes": 93,
+      "gzipBytes": 101
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.dom.js": {
+      "bytes": 69,
+      "gzipBytes": 87
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.js": {
+      "bytes": 4609,
+      "gzipBytes": 1549
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.api.js": {
+      "bytes": 6573,
+      "gzipBytes": 1944
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.app.js": {
+      "bytes": 1892,
+      "gzipBytes": 727
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.dom.js": {
+      "bytes": 1554,
+      "gzipBytes": 597
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js": {
+      "bytes": 1431,
+      "gzipBytes": 572
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator.api.js": {
+      "bytes": 196,
+      "gzipBytes": 160
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator.app.js": {
+      "bytes": 92,
+      "gzipBytes": 100
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator.dom.js": {
+      "bytes": 68,
+      "gzipBytes": 86
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator.js": {
+      "bytes": 1982,
+      "gzipBytes": 789
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js": {
+      "bytes": 3234,
+      "gzipBytes": 877
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.api.js": {
+      "bytes": 454,
+      "gzipBytes": 255
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js": {
+      "bytes": 2201,
+      "gzipBytes": 739
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.dom.js": {
+      "bytes": 360,
+      "gzipBytes": 185
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js": {
+      "bytes": 1578,
+      "gzipBytes": 575
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.api.js": {
+      "bytes": 4319,
+      "gzipBytes": 1385
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js": {
+      "bytes": 2945,
+      "gzipBytes": 913
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.dom.js": {
+      "bytes": 844,
+      "gzipBytes": 360
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js": {
+      "bytes": 2073,
+      "gzipBytes": 781
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js": {
+      "bytes": 863,
+      "gzipBytes": 433
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js": {
+      "bytes": 3336,
+      "gzipBytes": 1086
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.dom.js": {
+      "bytes": 913,
+      "gzipBytes": 349
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js": {
+      "bytes": 1645,
+      "gzipBytes": 637
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-diff.api.js": {
+      "bytes": 5715,
+      "gzipBytes": 1712
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js": {
+      "bytes": 5702,
+      "gzipBytes": 1792
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-diff.dom.js": {
+      "bytes": 4462,
+      "gzipBytes": 1173
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js": {
+      "bytes": 1584,
+      "gzipBytes": 691
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.api.js": {
+      "bytes": 207,
+      "gzipBytes": 168
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.app.js": {
+      "bytes": 103,
+      "gzipBytes": 107
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.dom.js": {
+      "bytes": 79,
+      "gzipBytes": 95
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.js": {
+      "bytes": 3745,
+      "gzipBytes": 1373
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/tool-lifecycle-guard.js": {
+      "bytes": 813,
+      "gzipBytes": 396
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js": {
+      "bytes": 7943,
+      "gzipBytes": 2110
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode.api.js": {
+      "bytes": 192,
+      "gzipBytes": 158
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode.app.js": {
+      "bytes": 88,
+      "gzipBytes": 97
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode.dom.js": {
+      "bytes": 64,
+      "gzipBytes": 82
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js": {
+      "bytes": 1783,
+      "gzipBytes": 679
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.api.js": {
+      "bytes": 192,
+      "gzipBytes": 158
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js": {
+      "bytes": 7398,
+      "gzipBytes": 1935
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.config.js": {
+      "bytes": 553,
+      "gzipBytes": 285
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.constants.js": {
+      "bytes": 376,
+      "gzipBytes": 238
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.dom.js": {
+      "bytes": 64,
+      "gzipBytes": 82
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js": {
+      "bytes": 2115,
+      "gzipBytes": 747
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.errors.js": {
+      "bytes": 704,
+      "gzipBytes": 372
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js": {
+      "bytes": 1725,
+      "gzipBytes": 652
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.normalizer.js": {
+      "bytes": 403,
+      "gzipBytes": 210
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.state.js": {
+      "bytes": 97,
+      "gzipBytes": 104
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-encode.utils.js": {
+      "bytes": 411,
+      "gzipBytes": 217
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.api.js": {
+      "bytes": 196,
+      "gzipBytes": 161
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.app.js": {
+      "bytes": 92,
+      "gzipBytes": 100
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.dom.js": {
+      "bytes": 68,
+      "gzipBytes": 86
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js": {
+      "bytes": 1638,
+      "gzipBytes": 640
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.api.js": {
+      "bytes": 5558,
+      "gzipBytes": 1815
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js": {
+      "bytes": 8011,
+      "gzipBytes": 2198
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.dom.js": {
+      "bytes": 4283,
+      "gzipBytes": 1268
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js": {
+      "bytes": 1814,
+      "gzipBytes": 707
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.api.js": {
+      "bytes": 5677,
+      "gzipBytes": 1858
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js": {
+      "bytes": 5923,
+      "gzipBytes": 1845
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.dom.js": {
+      "bytes": 4290,
+      "gzipBytes": 1198
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js": {
+      "bytes": 2021,
+      "gzipBytes": 777
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js": {
+      "bytes": 1136,
+      "gzipBytes": 486
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js": {
+      "bytes": 4250,
+      "gzipBytes": 1340
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.dom.js": {
+      "bytes": 869,
+      "gzipBytes": 280
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js": {
+      "bytes": 1694,
+      "gzipBytes": 640
+    },
+    "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js": {
+      "bytes": 1025737,
+      "gzipBytes": 197431
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-context-profiler.js": {
+      "bytes": 2217,
+      "gzipBytes": 815
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-intelligence-engine.js": {
+      "bytes": 1234,
+      "gzipBytes": 504
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/intelligence/execution-mode-resolver.js": {
+      "bytes": 1275,
+      "gzipBytes": 498
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/ai-runtime-orchestrator.js": {
+      "bytes": 4701,
+      "gzipBytes": 1125
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/behavior-prediction-engine.js": {
+      "bytes": 977,
+      "gzipBytes": 391
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-density-autobalancer.js": {
+      "bytes": 6510,
+      "gzipBytes": 1898
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-flow-intelligence.js": {
+      "bytes": 8177,
+      "gzipBytes": 2186
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-strategy-engine.js": {
+      "bytes": 1629,
+      "gzipBytes": 593
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/execution-visual-brain.js": {
+      "bytes": 4136,
+      "gzipBytes": 1275
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/runtime-governance-engine.js": {
+      "bytes": 809,
+      "gzipBytes": 343
+    },
+    "src/ToolNexus.Web/wwwroot/js/runtime/orchestrator/tool-genome-analyzer.js": {
+      "bytes": 2157,
+      "gzipBytes": 735
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js": {
+      "bytes": 4245,
+      "gzipBytes": 1307
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities/decoder.js": {
+      "bytes": 847,
+      "gzipBytes": 411
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities/encoder.js": {
+      "bytes": 931,
+      "gzipBytes": 475
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities/errors.js": {
+      "bytes": 563,
+      "gzipBytes": 276
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities/normalization.js": {
+      "bytes": 411,
+      "gzipBytes": 236
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js": {
+      "bytes": 6806,
+      "gzipBytes": 2033
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/html-entities/utils.js": {
+      "bytes": 951,
+      "gzipBytes": 484
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/constants.js": {
+      "bytes": 363,
+      "gzipBytes": 268
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/errors.js": {
+      "bytes": 944,
+      "gzipBytes": 474
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/formatter.js": {
+      "bytes": 711,
+      "gzipBytes": 369
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js": {
+      "bytes": 6289,
+      "gzipBytes": 1794
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/parser.js": {
+      "bytes": 634,
+      "gzipBytes": 312
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/ui.js": {
+      "bytes": 4604,
+      "gzipBytes": 1532
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/utils.js": {
+      "bytes": 821,
+      "gzipBytes": 366
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/csv-engine.js": {
+      "bytes": 1169,
+      "gzipBytes": 508
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/errors.js": {
+      "bytes": 585,
+      "gzipBytes": 327
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/exporter.js": {
+      "bytes": 423,
+      "gzipBytes": 274
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/index.js": {
+      "bytes": 69,
+      "gzipBytes": 73
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/input-normalizer.js": {
+      "bytes": 303,
+      "gzipBytes": 181
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/normalizer.js": {
+      "bytes": 2593,
+      "gzipBytes": 934
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/parser.js": {
+      "bytes": 2017,
+      "gzipBytes": 871
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js": {
+      "bytes": 8606,
+      "gzipBytes": 2528
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/constants.js": {
+      "bytes": 228,
+      "gzipBytes": 176
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/engine.js": {
+      "bytes": 2791,
+      "gzipBytes": 789
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/errors.js": {
+      "bytes": 547,
+      "gzipBytes": 304
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/exporter.js": {
+      "bytes": 393,
+      "gzipBytes": 263
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/formatter.js": {
+      "bytes": 621,
+      "gzipBytes": 331
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/index.js": {
+      "bytes": 71,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js": {
+      "bytes": 1065,
+      "gzipBytes": 505
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/parser.js": {
+      "bytes": 1036,
+      "gzipBytes": 504
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/scalars.js": {
+      "bytes": 1870,
+      "gzipBytes": 761
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js": {
+      "bytes": 5245,
+      "gzipBytes": 1477
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/utils.js": {
+      "bytes": 1559,
+      "gzipBytes": 610
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/constants.js": {
+      "bytes": 263,
+      "gzipBytes": 184
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/diagnostics.js": {
+      "bytes": 784,
+      "gzipBytes": 398
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/engine.js": {
+      "bytes": 1719,
+      "gzipBytes": 677
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/index.js": {
+      "bytes": 1101,
+      "gzipBytes": 434
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/normalization.js": {
+      "bytes": 166,
+      "gzipBytes": 138
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/schema.js": {
+      "bytes": 1552,
+      "gzipBytes": 554
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/state.js": {
+      "bytes": 242,
+      "gzipBytes": 159
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/tree.js": {
+      "bytes": 729,
+      "gzipBytes": 380
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js": {
+      "bytes": 11021,
+      "gzipBytes": 2739
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/json-validator/utils.js": {
+      "bytes": 1001,
+      "gzipBytes": 444
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/constants.js": {
+      "bytes": 512,
+      "gzipBytes": 343
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/dialects.js": {
+      "bytes": 1237,
+      "gzipBytes": 563
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/errors.js": {
+      "bytes": 491,
+      "gzipBytes": 278
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/formatter.js": {
+      "bytes": 4185,
+      "gzipBytes": 1294
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js": {
+      "bytes": 4822,
+      "gzipBytes": 1512
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/normalizer.js": {
+      "bytes": 93,
+      "gzipBytes": 106
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js": {
+      "bytes": 4242,
+      "gzipBytes": 915
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/ui.js": {
+      "bytes": 3316,
+      "gzipBytes": 874
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/utils.js": {
+      "bytes": 689,
+      "gzipBytes": 353
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/constants.js": {
+      "bytes": 354,
+      "gzipBytes": 242
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/decoder.js": {
+      "bytes": 1813,
+      "gzipBytes": 690
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/errors.js": {
+      "bytes": 906,
+      "gzipBytes": 458
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/normalization.js": {
+      "bytes": 442,
+      "gzipBytes": 237
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/state.js": {
+      "bytes": 114,
+      "gzipBytes": 117
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js": {
+      "bytes": 6141,
+      "gzipBytes": 1635
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/utils.js": {
+      "bytes": 1334,
+      "gzipBytes": 568
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/url-decode/validation.js": {
+      "bytes": 305,
+      "gzipBytes": 190
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/engine.js": {
+      "bytes": 2828,
+      "gzipBytes": 959
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/errors.js": {
+      "bytes": 407,
+      "gzipBytes": 247
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/format.js": {
+      "bytes": 587,
+      "gzipBytes": 253
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/helpers.js": {
+      "bytes": 912,
+      "gzipBytes": 483
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/index.js": {
+      "bytes": 643,
+      "gzipBytes": 400
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/state.js": {
+      "bytes": 377,
+      "gzipBytes": 250
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js": {
+      "bytes": 6887,
+      "gzipBytes": 2114
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/constants.js": {
+      "bytes": 310,
+      "gzipBytes": 224
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/engine.js": {
+      "bytes": 317,
+      "gzipBytes": 207
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/errors.js": {
+      "bytes": 661,
+      "gzipBytes": 356
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/exporter.js": {
+      "bytes": 399,
+      "gzipBytes": 263
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/formatter.js": {
+      "bytes": 539,
+      "gzipBytes": 276
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/helpers.js": {
+      "bytes": 1602,
+      "gzipBytes": 654
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/index.js": {
+      "bytes": 71,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/normalizer.js": {
+      "bytes": 142,
+      "gzipBytes": 128
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/parser.js": {
+      "bytes": 1514,
+      "gzipBytes": 701
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js": {
+      "bytes": 6098,
+      "gzipBytes": 1716
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/FileAnalyzer.js": {
+      "bytes": 2483,
+      "gzipBytes": 872
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/MergeEngine.js": {
+      "bytes": 249,
+      "gzipBytes": 163
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/StrategyRegistry.js": {
+      "bytes": 250,
+      "gzipBytes": 164
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/WorkerClient.js": {
+      "bytes": 765,
+      "gzipBytes": 367
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/CsvMergeStrategy.js": {
+      "bytes": 194,
+      "gzipBytes": 150
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/JsonMergeStrategy.js": {
+      "bytes": 197,
+      "gzipBytes": 152
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/TextMergeStrategy.js": {
+      "bytes": 197,
+      "gzipBytes": 150
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/XmlMergeStrategy.js": {
+      "bytes": 194,
+      "gzipBytes": 151
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/YamlMergeStrategy.js": {
+      "bytes": 197,
+      "gzipBytes": 152
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/PreviewPanel.js": {
+      "bytes": 747,
+      "gzipBytes": 386
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/SettingsPanel.js": {
+      "bytes": 544,
+      "gzipBytes": 252
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/StatsPanel.js": {
+      "bytes": 272,
+      "gzipBytes": 183
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/UploadPanel.js": {
+      "bytes": 2467,
+      "gzipBytes": 823
+    },
+    "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/worker/mergeWorker.js": {
+      "bytes": 5545,
+      "gzipBytes": 2004
+    },
+    "src/ToolNexus.Web/wwwroot/css/admin-shell.css": {
+      "bytes": 2717,
+      "gzipBytes": 783
+    },
+    "src/ToolNexus.Web/wwwroot/css/base.css": {
+      "bytes": 2732,
+      "gzipBytes": 979
+    },
+    "src/ToolNexus.Web/wwwroot/css/command-palette.css": {
+      "bytes": 3922,
+      "gzipBytes": 1105
+    },
+    "src/ToolNexus.Web/wwwroot/css/design-tokens.css": {
+      "bytes": 3061,
+      "gzipBytes": 984
+    },
+    "src/ToolNexus.Web/wwwroot/css/home-system.css": {
+      "bytes": 11004,
+      "gzipBytes": 2432
+    },
+    "src/ToolNexus.Web/wwwroot/css/product-transform.css": {
+      "bytes": 3756,
+      "gzipBytes": 1188
+    },
+    "src/ToolNexus.Web/wwwroot/css/site.css": {
+      "bytes": 59504,
+      "gzipBytes": 10115
+    },
+    "src/ToolNexus.Web/wwwroot/css/theme.css": {
+      "bytes": 3485,
+      "gzipBytes": 899
+    },
+    "src/ToolNexus.Web/wwwroot/css/tool-auto-professional.css": {
+      "bytes": 5288,
+      "gzipBytes": 1144
+    },
+    "src/ToolNexus.Web/wwwroot/css/ui-system.css": {
+      "bytes": 50417,
+      "gzipBytes": 8083
+    },
+    "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css": {
+      "bytes": 66169,
+      "gzipBytes": 7231
+    },
+    "src/ToolNexus.Web/wwwroot/css/upgread_pages.css": {
+      "bytes": 1843,
+      "gzipBytes": 490
+    },
+    "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css": {
+      "bytes": 12239,
+      "gzipBytes": 2258
+    },
+    "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css": {
+      "bytes": 24365,
+      "gzipBytes": 4349
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/base64-decode.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/base64-encode.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/case-converter.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/css-minifier.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/csv-to-json.css": {
+      "bytes": 1613,
+      "gzipBytes": 475
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/csv-viewer.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/document-converter.css": {
+      "bytes": 416,
+      "gzipBytes": 235
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/file-merge.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/html-entities.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/html-formatter.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/html-to-markdown.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/js-minifier.css": {
+      "bytes": 1273,
+      "gzipBytes": 533
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-formatter.css": {
+      "bytes": 5488,
+      "gzipBytes": 1186
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-to-csv.css": {
+      "bytes": 2788,
+      "gzipBytes": 809
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-to-xml.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-to-yaml.css": {
+      "bytes": 2275,
+      "gzipBytes": 635
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-toolkit-pro.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-transform-studio.css": {
+      "bytes": 2256,
+      "gzipBytes": 619
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/json-validator.css": {
+      "bytes": 4027,
+      "gzipBytes": 977
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/markdown-to-html.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/regex-tester.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/sql-formatter.css": {
+      "bytes": 2255,
+      "gzipBytes": 725
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/text-diff.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/text-intelligence-analyzer.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/url-decode.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/url-encode.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/uuid-generator.css": {
+      "bytes": 54,
+      "gzipBytes": 74
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/xml-formatter.css": {
+      "bytes": 1184,
+      "gzipBytes": 443
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/xml-to-json.css": {
+      "bytes": 1341,
+      "gzipBytes": 598
+    },
+    "src/ToolNexus.Web/wwwroot/css/pages/yaml-to-json.css": {
+      "bytes": 3041,
+      "gzipBytes": 754
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/base64-encode.css": {
+      "bytes": 2786,
+      "gzipBytes": 827
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/csv-to-json.css": {
+      "bytes": 2492,
+      "gzipBytes": 787
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/document-converter.css": {
+      "bytes": 416,
+      "gzipBytes": 235
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/file-merge.css": {
+      "bytes": 1330,
+      "gzipBytes": 576
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/html-entities.css": {
+      "bytes": 2626,
+      "gzipBytes": 817
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/json-formatter.css": {
+      "bytes": 4420,
+      "gzipBytes": 946
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/text-diff.css": {
+      "bytes": 2582,
+      "gzipBytes": 807
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/url-decode.css": {
+      "bytes": 2799,
+      "gzipBytes": 821
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/url-encode.css": {
+      "bytes": 3039,
+      "gzipBytes": 866
+    },
+    "src/ToolNexus.Web/wwwroot/css/tools/uuid-generator.css": {
+      "bytes": 2100,
+      "gzipBytes": 566
+    },
+    "src/ToolNexus.Web/wwwroot/css/system/execution-flow-intelligence.css": {
+      "bytes": 1829,
+      "gzipBytes": 396
+    },
+    "src/ToolNexus.Web/wwwroot/css/system/execution-visual-brain.css": {
+      "bytes": 1926,
+      "gzipBytes": 419
+    },
+    "src/ToolNexus.Web/wwwroot/css/system/tool-execution-dna.css": {
+      "bytes": 17400,
+      "gzipBytes": 3108
+    }
+  }
+}
