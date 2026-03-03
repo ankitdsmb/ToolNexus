@@ -224,5 +224,14 @@ export async function validateRuntimeSlugEnhancer(slug) {
 
 export async function importRuntimeModule(modulePath) {
   observeRuntimeImport(modulePath);
+
+  if (typeof window !== 'undefined' && window.__enableRuntimeTelemetry) {
+    if (!Array.isArray(window.__toolRuntimeImportLog)) {
+      window.__toolRuntimeImportLog = [];
+    }
+
+    window.__toolRuntimeImportLog.push(modulePath);
+  }
+
   return import(modulePath);
 }
