@@ -103,7 +103,9 @@
 
         <div class="shell-layer shell-layer--workspace">
             <main class="container" role="main" id="main-content">
-                @RenderBody()
+                <div id="app-page-root">
+                    @RenderBody()
+                </div>
             </main>
         </div>
 
@@ -135,6 +137,7 @@
 
     @await RenderSectionAsync("Scripts", required: false)
     <script type="module" src="~/js/shell-controller.js" asp-append-version="true"></script>
+    <script src="~/js/spa-navigation-engine.js" defer></script>
 
 </body>
 </html>
