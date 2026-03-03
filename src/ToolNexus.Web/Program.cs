@@ -16,9 +16,17 @@ using ToolNexus.Web.Security;
 using ToolNexus.Web.Services;
 using ToolNexus.Web.Middleware;
 using ToolNexus.Web.Runtime;
+using ToolNexus.Infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Logging.ToolNexus.json", optional: true, reloadOnChange: true);
+
+var allowRuntimeMutation = builder.Configuration.GetValue<bool?>("Hosting:AllowRuntimeMutation")
+    ?? builder.Environment.IsDevelopment();
+builder.Services.Configure<HostingMutationOptions>(options =>
+{
+    options.AllowRuntimeMutation = allowRuntimeMutation;
+});
 
 /* =========================================================
    RESPONSE COMPRESSION
