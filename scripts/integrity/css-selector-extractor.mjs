@@ -50,56 +50,96 @@ export function extractClassSelectorsFromCss(cssText) {
   return classes;
 }
 
-export function extractClassRuleSignatures(cssText) {
+export function extractSelectorDeclarationsFromCss(cssText) {
   const sanitized = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
-  const signatures = [];
-  parseCssBlock(sanitized, 0, 'GLOBAL', signatures);
-  return signatures;
-}
+  const declarations = [];
+  const contextStack = [];
 
-function parseCssBlock(cssText, startIndex, mediaContext, signatures) {
-  let i = startIndex;
+  let prelude = '';
+  let currentDeclaration = '';
+  let currentRuleSelectors = null;
+  let inString = false;
+  let stringQuote = '';
+  let escaped = false;
 
-  while (i < cssText.length) {
-    i = skipWhitespace(cssText, i);
-    if (i >= cssText.length) break;
+  for (let i = 0; i < sanitized.length; i += 1) {
+    const char = sanitized[i];
 
-    if (cssText[i] === '}') return i + 1;
+    if (inString) {
+      if (currentRuleSelectors) currentDeclaration += char;
+      else prelude += char;
 
-    if (cssText[i] === '@') {
-      if (cssText.startsWith('@media', i)) {
-        const mediaPreludeEnd = findNext(cssText, i, '{');
-        if (mediaPreludeEnd === -1) return cssText.length;
-        const mediaPrelude = cssText.slice(i + '@media'.length, mediaPreludeEnd).trim();
-        const nextMediaContext = normalizeMediaContext(mediaPrelude);
-        i = parseCssBlock(cssText, mediaPreludeEnd + 1, nextMediaContext, signatures);
-        continue;
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === stringQuote) {
+        inString = false;
+        stringQuote = '';
       }
-
-      const atRuleEnd = findAtRuleEnd(cssText, i);
-      if (atRuleEnd === -1) return cssText.length;
-      i = atRuleEnd;
       continue;
     }
 
-    const selectorStart = i;
-    const selectorEnd = findNext(cssText, i, '{');
-    if (selectorEnd === -1) return cssText.length;
-    const selectorHeader = cssText.slice(selectorStart, selectorEnd).trim();
-
-    const blockEnd = findMatchingBrace(cssText, selectorEnd);
-    if (blockEnd === -1) return cssText.length;
-    const declarationBlock = cssText.slice(selectorEnd + 1, blockEnd).trim();
-    const normalizedDeclarationBlock = normalizeDeclarationBlock(declarationBlock);
-
-    if (selectorHeader && !selectorHeader.startsWith('@') && normalizedDeclarationBlock) {
-      collectClassRuleSignatures(selectorHeader, normalizedDeclarationBlock, mediaContext, signatures);
+    if (char === '"' || char === "'") {
+      inString = true;
+      stringQuote = char;
+      if (currentRuleSelectors) currentDeclaration += char;
+      else prelude += char;
+      continue;
     }
 
-    i = blockEnd + 1;
+    if (char === '{') {
+      const header = prelude.trim();
+      prelude = '';
+
+      if (!header) {
+        contextStack.push({ type: 'unknown' });
+        continue;
+      }
+
+      if (header.startsWith('@')) {
+        if (header.toLowerCase().startsWith('@media')) {
+          contextStack.push({ type: 'media', value: header.replace(/^@media\s*/i, '').trim() });
+        } else {
+          contextStack.push({ type: 'at-rule' });
+        }
+        continue;
+      }
+
+      currentRuleSelectors = header
+        .split(',')
+        .map((selector) => selector.trim())
+        .filter(Boolean);
+      currentDeclaration = '';
+      contextStack.push({ type: 'rule' });
+      continue;
+    }
+
+    if (char === '}') {
+      const closed = contextStack.pop();
+      if (closed?.type === 'rule' && currentRuleSelectors) {
+        const mediaContext = contextStack
+          .filter((entry) => entry.type === 'media' && entry.value)
+          .map((entry) => entry.value)
+          .join(' and ');
+
+        for (const selector of currentRuleSelectors) {
+          declarations.push({
+            selector,
+            declarationBlock: currentDeclaration,
+            mediaContext
+          });
+        }
+        currentRuleSelectors = null;
+        currentDeclaration = '';
+      }
+      prelude = '';
+      continue;
+    }
+
+    if (currentRuleSelectors) currentDeclaration += char;
+    else prelude += char;
   }
 
-  return i;
+  return declarations;
 }
 
 function collectClassesFromSelectorHeader(header, classes) {
