@@ -1,9 +1,10 @@
+import { importRuntimeModule } from './runtime/runtime-import-integrity.js';
 const TRIGGER_SELECTOR = '[data-command-palette-trigger]';
 let loaderPromise = null;
 
 function loadPaletteModule() {
   if (!loaderPromise) {
-    loaderPromise = import('./command-palette.js');
+    loaderPromise = importRuntimeModule('./command-palette.js');
   }
 
   return loaderPromise;

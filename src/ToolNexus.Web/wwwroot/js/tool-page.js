@@ -7,6 +7,7 @@ import {
   TOOL_PAGE_RUNTIME_FALLBACK_MESSAGE
 } from './runtime/tool-page-result-normalizer.js';
 import { createToolIntelligenceEngine } from './runtime/tool-intelligence-engine.js';
+import { importRuntimeModule } from './runtime/runtime-import-integrity.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 const logger = createRuntimeLogger({ source: 'tool-page' });
@@ -16,6 +17,7 @@ if (!page) {
   logger.debug('Not on tool page, skipping initialization.');
   return;
 }
+
 
 const slug = page.dataset.slug ?? '';
 const apiBase = window.ToolNexusConfig?.apiBaseUrl ?? '';
@@ -171,7 +173,7 @@ async function loadToolModule() {
   if (!slug) return;
 
   try {
-    await import(`./tools/${slug}.js`);
+    await importRuntimeModule(`./tools/${slug}.js`);
   } catch (error) {
     // Not every server-backed tool has a dedicated client enhancer module.
     logger.debug(`No dedicated tool module loaded for "${slug}".`, { error: error?.message ?? String(error) });

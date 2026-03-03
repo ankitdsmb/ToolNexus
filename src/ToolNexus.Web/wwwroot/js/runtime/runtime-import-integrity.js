@@ -1,5 +1,137 @@
 let allowlistCache = null;
 let allowlistPromise = null;
+const OBSERVED_IMPORTS = new Set();
+const OBSERVED_IMPORTS_KEY = '__TOOLNEXUS_RUNTIME_IMPORTS__';
+const OBSERVED_IMPORTS_ARTIFACT_PATH = '/artifacts/runtime-import-observed.json';
+let flushRegistered = false;
+
+function resolveGlobalScope() {
+  if (typeof window !== 'undefined') {
+    return window;
+  }
+
+  return globalThis;
+}
+
+function isDebugEnabled() {
+  const scope = resolveGlobalScope();
+  const config = scope?.ToolNexusConfig ?? {};
+  return Boolean(scope?.DEBUG ?? scope?.__DEBUG__ ?? config.DEBUG ?? config.debug);
+}
+
+function isProductionRuntime() {
+  const scope = resolveGlobalScope();
+  const config = scope?.ToolNexusConfig ?? {};
+  const env = String(config.environment ?? config.env ?? scope?.process?.env?.NODE_ENV ?? '').trim().toLowerCase();
+  return env === 'production' || env === 'prod';
+}
+
+function isImportTelemetryEnabled() {
+  return !isProductionRuntime() || isDebugEnabled();
+}
+
+function normalizeObservedPath(modulePath) {
+  if (typeof modulePath !== 'string' || modulePath.length === 0) {
+    return null;
+  }
+
+  try {
+    return new URL(modulePath, import.meta.url).pathname;
+  } catch {
+    return modulePath;
+  }
+}
+
+function ensureObservedImportStore() {
+  const scope = resolveGlobalScope();
+  if (!Array.isArray(scope[OBSERVED_IMPORTS_KEY])) {
+    scope[OBSERVED_IMPORTS_KEY] = [];
+  }
+
+  return scope[OBSERVED_IMPORTS_KEY];
+}
+
+function updateObservedImportStore() {
+  const store = ensureObservedImportStore();
+  store.length = 0;
+  store.push(...Array.from(OBSERVED_IMPORTS));
+}
+
+export function observeRuntimeImport(modulePath) {
+  if (!isImportTelemetryEnabled()) {
+    return;
+  }
+
+  const normalizedPath = normalizeObservedPath(modulePath);
+  if (!normalizedPath) {
+    return;
+  }
+
+  OBSERVED_IMPORTS.add(normalizedPath);
+  updateObservedImportStore();
+}
+
+async function writeObservedImportsArtifact(payload) {
+  const isNode = typeof process !== 'undefined' && Boolean(process.versions?.node);
+  if (isNode) {
+    try {
+      const fs = await import('node:fs/promises');
+      await fs.mkdir('/artifacts', { recursive: true });
+      await fs.writeFile(OBSERVED_IMPORTS_ARTIFACT_PATH, JSON.stringify(payload, null, 2), 'utf-8');
+      return;
+    } catch {
+      return;
+    }
+  }
+
+  try {
+    const body = JSON.stringify(payload, null, 2);
+    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      const blob = new Blob([body], { type: 'application/json' });
+      navigator.sendBeacon(OBSERVED_IMPORTS_ARTIFACT_PATH, blob);
+      return;
+    }
+
+    await fetch(OBSERVED_IMPORTS_ARTIFACT_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true
+    });
+  } catch {
+    // telemetry-only: never throw
+  }
+}
+
+export async function flushObservedRuntimeImports() {
+  if (!isImportTelemetryEnabled()) {
+    return;
+  }
+
+  const payload = {
+    loadedModules: Array.from(OBSERVED_IMPORTS),
+    timestamp: new Date().toISOString()
+  };
+
+  await writeObservedImportsArtifact(payload);
+}
+
+function registerObservedImportFlush() {
+  if (flushRegistered || !isImportTelemetryEnabled()) {
+    return;
+  }
+
+  flushRegistered = true;
+  const scope = resolveGlobalScope();
+  if (typeof scope?.addEventListener === 'function') {
+    scope.addEventListener('pagehide', () => { void flushObservedRuntimeImports(); });
+    scope.addEventListener('beforeunload', () => { void flushObservedRuntimeImports(); });
+  }
+
+  scope.flushToolNexusRuntimeImportTelemetry = () => flushObservedRuntimeImports();
+}
+
+registerObservedImportFlush();
 
 async function loadRuntimeImportAllowlist() {
   if (allowlistCache) {
@@ -88,4 +220,9 @@ export async function validateRuntimeSlugEnhancer(slug) {
   }
 
   return { valid: true };
+}
+
+export async function importRuntimeModule(modulePath) {
+  observeRuntimeImport(modulePath);
+  return import(modulePath);
 }

@@ -1,5 +1,5 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
-import { validateRuntimeModulePath } from './runtime-import-integrity.js';
+import { importRuntimeModule, validateRuntimeModulePath } from './runtime-import-integrity.js';
 
 function getImportIntegrityMode() {
   const mode = String(window.ToolNexusConfig?.importIntegrityMode ?? 'warn').trim().toLowerCase();
@@ -137,7 +137,7 @@ export async function bootstrapLegacyTool({
       console.warn('[RuntimeImportIntegrity] Validation failed', { modulePath, ...validation });
     }
 
-    return import(modulePath);
+    return importRuntimeModule(modulePath);
   },
   logger = createRuntimeMigrationLogger({ channel: 'legacy' })
 } = {}) {
