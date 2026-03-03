@@ -55,6 +55,9 @@ jobs:
       - name: Frontend platform guard
         run: npm run check:platform
 
+      - name: Plugin partial guard
+        run: npm run check:plugin-partials
+
       - name: Frontend tests with coverage
         run: npm run test:js -- --runInBand
 

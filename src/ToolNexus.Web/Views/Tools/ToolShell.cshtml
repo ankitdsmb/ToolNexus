@@ -6,17 +6,7 @@
     ViewData["JsonLd"] = Model.Seo.JsonLd;
     ViewData["Keywords"] = Model.Seo.Keywords;
 
-    var contextPlugins = new[]
-    {
-        "Overview",
-        "Features",
-        "QuickStart",
-        "Guidance",
-        "Examples",
-        "UseCases",
-        "Faq",
-        "RelatedTools"
-    };
+    var contextPlugins = ToolNexus.Web.Runtime.ToolContextPlugins.All;
 
     var contextPluginLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -172,7 +162,7 @@
                 {
                     <h3>@contextPluginLabels[plugin]</h3>
                     <div class="tool-md-content">
-                        @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
+                        @await Html.PartialAsync(ToolNexus.Web.Runtime.ToolContextPlugins.ToPartialPath(plugin), Model)
                     </div>
                 }
                 else
@@ -180,7 +170,7 @@
                     <details class="runtime-doc-disclosure">
                         <summary>@contextPluginLabels[plugin]</summary>
                         <div class="runtime-doc-disclosure__body tool-md-content">
-                            @await Html.PartialAsync($"~/Views/Tools/Plugins/_{plugin}Plugin.cshtml", Model)
+                            @await Html.PartialAsync(ToolNexus.Web.Runtime.ToolContextPlugins.ToPartialPath(plugin), Model)
                         </div>
                     </details>
                 }
