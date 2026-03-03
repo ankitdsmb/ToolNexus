@@ -131,6 +131,15 @@ var app = builder.Build();
    ERROR HANDLING
    ========================================================= */
 
+if (app.Environment.IsDevelopment())
+{
+    var missingPluginPartials = ToolContextPlugins.GetMissingPluginPartials(app.Environment.ContentRootPath);
+    if (missingPluginPartials.Count > 0)
+    {
+        throw new InvalidOperationException($"Missing tool plugin partials: {string.Join(", ", missingPluginPartials.Select(ToolContextPlugins.ToPartialPath))}");
+    }
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
