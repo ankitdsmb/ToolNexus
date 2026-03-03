@@ -40,11 +40,11 @@
     "jest-environment-jsdom": "^30.0.5",
     "vitest": "^4.0.18",
     "fast-glob": "^3.3.3",
-    "playwright": "^1.55.0",
-    "purgecss": "^7.0.2"
+    "playwright": "^1.55.0"
   },
   "dependencies": {
-    "monaco-editor": "^0.55.1"
+    "monaco-editor": "^0.55.1",
+    "purgecss": "^7.0.2"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.52.3",
