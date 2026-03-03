@@ -1286,7 +1286,7 @@ export function createToolRuntime({
           'init'
         ], slug);
 
-        const kernelModule = await importRuntimeModule('./tools/tool-platform-kernel.js');
+        const kernelModule = await importRuntimeModule('/js/tools/tool-platform-kernel.js');
         validateModuleContract(kernelModule, [
           'normalizeToolRoot',
           'getToolPlatformKernel'
