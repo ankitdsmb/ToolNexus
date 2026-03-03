@@ -9,7 +9,7 @@
     "check:design-system": "node scripts/design-system-guard.mjs",
     "check:tool-ecosystem": "node scripts/tool-ecosystem-validate.mjs",
     "check:seo-a11y": "node scripts/seo-a11y-guard.mjs",
-    "check:release": "node scripts/release-readiness-check.mjs",
+    "check:release": "npm run release:verify",
     "test:playwright": "playwright test",
     "test:playwright:contracts": "playwright test tests/playwright/contracts",
     "test:playwright:runtime": "playwright test tests/playwright/runtime",
