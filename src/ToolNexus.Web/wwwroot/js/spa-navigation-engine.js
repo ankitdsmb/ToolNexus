@@ -7,6 +7,98 @@
 
     var initialized = false;
     var inFlightNavigation = null;
+    var heapTrendSamples = [];
+
+    function isDevelopmentRuntime() {
+        try {
+            var config = window.ToolNexusConfig || {};
+            var environment = String(config.environment || config.env || '').trim().toLowerCase();
+            return environment === 'development' || environment === 'dev' || environment === 'test' || environment === 'testing';
+        } catch (_error) {
+            return false;
+        }
+    }
+
+    function ensureNavigationMetrics() {
+        if (!window.__spaNavigationMetrics || typeof window.__spaNavigationMetrics !== 'object') {
+            window.__spaNavigationMetrics = {
+                navigationCount: 0,
+                lastNavigationTs: 0
+            };
+        }
+
+        if (typeof window.__spaNavigationMetrics.navigationCount !== 'number') {
+            window.__spaNavigationMetrics.navigationCount = 0;
+        }
+
+        if (typeof window.__spaNavigationMetrics.lastNavigationTs !== 'number') {
+            window.__spaNavigationMetrics.lastNavigationTs = 0;
+        }
+
+        return window.__spaNavigationMetrics;
+    }
+
+    function recordNavigationMetrics() {
+        try {
+            var metrics = ensureNavigationMetrics();
+            metrics.navigationCount += 1;
+            metrics.lastNavigationTs = Date.now();
+        } catch (_error) {
+            // telemetry-only: never throw
+        }
+    }
+
+    function verifyToolShellCount() {
+        try {
+            var toolShellCount = document.querySelectorAll('[data-tool-shell]').length;
+            if (toolShellCount > 1) {
+                console.warn('[ToolNexus SPA] Multiple [data-tool-shell] elements detected after navigation swap.', {
+                    count: toolShellCount,
+                    href: window.location.href
+                });
+            }
+        } catch (_error) {
+            // guard-only: never throw
+        }
+    }
+
+    function recordHeapTrend() {
+        if (!isDevelopmentRuntime()) {
+            return;
+        }
+
+        try {
+            if (!window.performance || !window.performance.memory || typeof window.performance.memory.usedJSHeapSize !== 'number') {
+                return;
+            }
+
+            heapTrendSamples.push(window.performance.memory.usedJSHeapSize);
+            if (heapTrendSamples.length > 6) {
+                heapTrendSamples.shift();
+            }
+
+            if (heapTrendSamples.length < 4) {
+                return;
+            }
+
+            var recent = heapTrendSamples.slice(-4);
+            var isIncreasing = true;
+            for (var i = 1; i < recent.length; i += 1) {
+                if (recent[i] <= recent[i - 1]) {
+                    isIncreasing = false;
+                    break;
+                }
+            }
+
+            if (isIncreasing) {
+                console.warn('[ToolNexus SPA] JS heap usage is consistently increasing across SPA navigations.', {
+                    samples: recent.slice()
+                });
+            }
+        } catch (_error) {
+            // telemetry-only: never throw
+        }
+    }
 
     function getAppRoot(doc) {
         return doc.getElementById('app-page-root');
@@ -83,6 +175,10 @@
             currentRoot.innerHTML = incomingRoot.innerHTML;
             document.title = parsed.title || document.title;
 
+            recordNavigationMetrics();
+            verifyToolShellCount();
+            recordHeapTrend();
+
             if (pushHistory) {
                 window.history.pushState({ spa: true }, '', url);
             }
@@ -127,6 +223,8 @@
             if (initialized) {
                 return;
             }
+
+            ensureNavigationMetrics();
 
             initialized = true;
             document.addEventListener('click', handleDocumentClick);
