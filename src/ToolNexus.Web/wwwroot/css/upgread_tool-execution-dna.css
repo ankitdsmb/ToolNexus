@@ -33,14 +33,14 @@
   align-items: start;
 }
 
-/* OVERRIDE LAYER */
+/* OVERRIDE LAYER — EXECUTION DNA */
 /* Execution workspace constraints for .tool-shell-page__workspace */
 .upgread_workspace .tool-shell-page__workspace,
 .upgread_workspace .workspace-shell__runtime-zone {
   min-width: 0;
 }
 
-/* OVERRIDE LAYER */
+/* OVERRIDE LAYER — EXECUTION DNA */
 /* Execution docs rail constraints for .tool-shell-page__docs */
 .upgread_workspace .tool-shell-page__docs,
 .upgread_workspace .workspace-shell__context-rail {
