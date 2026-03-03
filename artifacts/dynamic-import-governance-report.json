@@ -1,0 +1,15 @@
+{
+  "protectedRootsCount": 4,
+  "protectedPatterns": [
+    "/js/tools/${slug}.js",
+    "import(modulePath)",
+    "import(modulePath)",
+    "./command-palette.js"
+  ],
+  "adjustedUnreachableCount": 235,
+  "confidenceDistribution": {
+    "high": 0,
+    "protected": 235,
+    "reachable": 55
+  }
+}

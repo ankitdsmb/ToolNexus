@@ -1,15 +1,38 @@
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import { loadConfig, listFiles, writeReport, fileExists } from './shared.mjs';
 
 const IMPORT_RE = /(?:import|export)\s+(?:[^'";]+?\s+from\s+)?["']([^"']+)["']/g;
 const DYN_RE = /import\(\s*["']([^"']+)["']\s*\)/g;
 
+const dynamicRoots = JSON.parse(
+  fsSync.readFileSync('./docs/dynamic-import-roots.json', 'utf8')
+);
+
 function resolveImport(fromFile, specifier) {
   if (!specifier.startsWith('.')) return null;
   const abs = path.resolve(path.dirname(fromFile), specifier);
   const candidates = [abs, `${abs}.js`, `${abs}.mjs`, path.join(abs, 'index.js')];
   return candidates;
+}
+
+function isProtectedDynamicRoot(filePath) {
+  return dynamicRoots.roots.some((root) => {
+    if (root.type === 'slug-runtime') {
+      return filePath.includes('/js/tools/');
+    }
+    if (root.type === 'modulePath-runtime') {
+      return true;
+    }
+    if (root.type === 'legacy-bootstrap') {
+      return true;
+    }
+    if (root.type === 'lazy-loader') {
+      return filePath.endsWith('command-palette.js');
+    }
+    return false;
+  });
 }
 
 const config = await loadConfig();
@@ -80,7 +103,22 @@ while (stack.length > 0) {
   }
 }
 
-const unreachable = [...nodes].filter((n) => !reachable.has(n));
+const scoredModules = [...nodes].map((filePath) => {
+  if (reachable.has(filePath)) {
+    return { filePath, confidence: 0, classification: 'reachable' };
+  }
+
+  if (isProtectedDynamicRoot(filePath)) {
+    return { filePath, confidence: 0.2, classification: 'protected' };
+  }
+
+  return { filePath, confidence: 0.8, classification: 'high' };
+});
+
+const unreachable = scoredModules
+  .filter((module) => module.classification !== 'reachable')
+  .map((module) => module.filePath);
+
 const enforceUnreachable = config.staticGraph?.enforceUnreachable ?? false;
 if (enforceUnreachable && unreachable.length > 0) {
   violations.push({ type: 'unreachable_modules', count: unreachable.length, sample: unreachable.slice(0, 50) });
@@ -98,10 +136,29 @@ const report = {
   entrypoints: [...entrypoints],
   graph,
   unreachable,
+  confidenceScores: scoredModules,
   violations
 };
 
 await writeReport(`${config.reportDir}/static-graph.json`, report);
+
+const confidenceDistribution = scoredModules.reduce(
+  (acc, module) => {
+    acc[module.classification] += 1;
+    return acc;
+  },
+  { high: 0, protected: 0, reachable: 0 }
+);
+
+const governanceReport = {
+  protectedRootsCount: dynamicRoots.roots.length,
+  protectedPatterns: dynamicRoots.roots.map((root) => root.pattern),
+  adjustedUnreachableCount: scoredModules.filter((module) => module.classification !== 'reachable').length,
+  confidenceDistribution
+};
+
+await fs.mkdir('artifacts', { recursive: true });
+await fs.writeFile('artifacts/dynamic-import-governance-report.json', `${JSON.stringify(governanceReport, null, 2)}\n`, 'utf8');
 
 if (violations.length > 0) {
   console.error('[integrity] static graph validation failed. See reports/integrity/static-graph.json');
