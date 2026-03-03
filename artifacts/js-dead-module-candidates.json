@@ -1,0 +1,2129 @@
+{
+  "generatedAtUtc": "2026-03-03T17:15:23.131Z",
+  "summary": {
+    "totalModules": 290,
+    "entrypoints": 10,
+    "reachable": 55,
+    "candidates": 235
+  },
+  "candidates": [
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/dynamic-widget-engine.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T06:22:29.657Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/motion-system.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T06:22:29.657Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/runtime/monaco-loader.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T17:13:36.002Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-safe-tool-wrapper.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T06:22:29.657Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tool-page.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-intelligence-engine.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T06:22:29.657Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tool-page.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/runtime/tool-page-result-normalizer.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T06:22:29.657Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tool-page.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tool-page.js",
+      "confidenceScore": 0.8,
+      "rootType": null,
+      "lastModifiedUtc": "2026-03-03T17:13:36.002Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/command-palette.js",
+      "confidenceScore": 0.2,
+      "rootType": "lazy-loader",
+      "lastModifiedUtc": "2026-03-03T06:22:29.657Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T17:13:36.002Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/document-converter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/document-converter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/FileAnalyzer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/MergeEngine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/StrategyRegistry.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/core/WorkerClient.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/CsvMergeStrategy.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/JsonMergeStrategy.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/TextMergeStrategy.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/XmlMergeStrategy.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/strategies/YamlMergeStrategy.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/PreviewPanel.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/SettingsPanel.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/StatsPanel.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/ui/UploadPanel.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/file-merge/main.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/file-merge/src/worker/mergeWorker.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/decoder.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/encoder.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/normalization.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-entities/utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/encoder.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/decoder.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.661Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-config.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-engine.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-normalizer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T17:13:36.002Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T17:13:36.002Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.dom.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/parser.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/parser.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T17:13:36.002Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/parser.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/csv-engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/parser.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/normalizer.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/exporter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/input-normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/parser.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/parser.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/parser.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/exporter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/parser.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/scalars.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/engine.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/parser.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml/normalizer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/diagnostics.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/engine.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/normalization.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/schema.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/state.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/tree.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/tree.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/diagnostics.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/keyboard-event-manager.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/dialects.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.api.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/index.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/tokenizer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter/formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/tool-lifecycle-guard.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/tool-platform-kernel.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/css-minifier.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/regex-tester.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-toolkit-pro.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-transform-studio.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/sql-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/text-intelligence-analyzer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/text-diff.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-yaml.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-to-xml.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/document-converter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-to-markdown.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-formatter.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/markdown-to-html.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/json-validator.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/js-minifier.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/html-entities.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/decoder.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/validation.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/normalization.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/decoder.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/state.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/normalization.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/ui.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/validation.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-decode/validation.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-decode/decoder.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.665Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.config.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.config.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.state.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/url-encode.utils.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/url-encode.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/format.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/index.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/helpers.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/state.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/state.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/uuid-generator.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/xml-to-json.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.dom.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.app.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/constants.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/helpers.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/engine.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/errors.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/parser.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/exporter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/formatter.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/helpers.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/engine.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/index.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": []
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/normalizer.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/parser.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json.api.js",
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js"
+      ]
+    },
+    {
+      "modulePath": "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/ui.js",
+      "confidenceScore": 0.2,
+      "rootType": "slug-runtime",
+      "lastModifiedUtc": "2026-03-03T06:22:29.669Z",
+      "importReferences": [
+        "src/ToolNexus.Web/wwwroot/js/tools/yaml-to-json/index.js"
+      ]
+    }
+  ]
+}
