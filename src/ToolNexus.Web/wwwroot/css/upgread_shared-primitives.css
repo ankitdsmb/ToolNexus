@@ -1,6 +1,8 @@
 /* Canonical shared primitives — move-only consolidation */
 
 /* Force full-width on inner pieces */
+/* CANONICAL OWNER */
+/* Tool doc/runtime primitives baseline (.tool-shell-page__workspace, .tool-shell-page__docs, .tool-seo) */
 .upgread_workspace .tool-shell-page,
 .upgread_workspace .tool-shell-page__workspace,
 .upgread_workspace .tool-shell-page__docs,
@@ -10,6 +12,8 @@
   margin-inline: 0 !important;
 }
 
+/* CANONICAL OWNER */
+/* Tool doc/runtime primitive .tool-md-section baseline */
 .upgread_workspace .tool-md-content,
 .upgread_workspace .tool-md-section,
 .upgread_workspace .tool-article-prose,
@@ -18,11 +22,15 @@
   max-width: none !important;
 }
 
+/* CANONICAL OWNER */
+/* Tool doc/runtime primitive .tool-focus-mode baseline */
 .upgread_workspace .tool-focus-mode {
   background: radial-gradient(ellipse at top, rgba(17,28,45,0.88) 0%, #05070a 56%);
   min-height: 100vh;
 }
 
+/* OVERRIDE LAYER */
+/* Focus-mode shell primitive overrides (.container, .app-shell, .shell-layer--workspace) */
 .upgread_workspace .tool-focus-mode main.container,
 .upgread_workspace .tool-focus-mode .container,
 .upgread_workspace .tool-focus-mode .shell-layer--workspace,

@@ -240,6 +240,9 @@
    CONTAINER
    --------------------------------------------------------- */
 
+/* CANONICAL OWNER */
+/* Shell primitive .container inside .upgread_workspace */
+
 .upgread_workspace main.container,
 .upgread_workspace .container {
   max-width: 100% !important;
@@ -253,6 +256,9 @@
    SHELL LAYERS
    --------------------------------------------------------- */
 
+/* CANONICAL OWNER */
+/* Shell primitive .app-shell inside .upgread_workspace */
+
 .upgread_workspace .app-shell {
   gap: 0;
   background: transparent;
@@ -265,6 +271,9 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
+
+/* CANONICAL OWNER */
+/* Shell primitive .shell-layer--workspace inside .upgread_workspace */
 
 .upgread_workspace .shell-layer--workspace {
   padding-top: 0;

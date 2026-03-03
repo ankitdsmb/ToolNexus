@@ -33,11 +33,15 @@
   align-items: start;
 }
 
+/* OVERRIDE LAYER */
+/* Execution workspace constraints for .tool-shell-page__workspace */
 .upgread_workspace .tool-shell-page__workspace,
 .upgread_workspace .workspace-shell__runtime-zone {
   min-width: 0;
 }
 
+/* OVERRIDE LAYER */
+/* Execution docs rail constraints for .tool-shell-page__docs */
 .upgread_workspace .tool-shell-page__docs,
 .upgread_workspace .workspace-shell__context-rail {
   min-width: 0;
@@ -281,6 +285,8 @@
    DOCS RAIL LEGACY SELECTORS
    ===================================================== */
 
+/* OVERRIDE LAYER */
+/* Execution chrome for .tool-seo and .tool-shell-page__docs */
 .upgread_workspace .tool-seo,
 .upgread_workspace .tool-shell-page__docs {
   border: 1px solid var(--upgread_border_1);
@@ -295,6 +301,8 @@
 }
 
 .upgread_workspace .runtime-doc-disclosure,
+/* OVERRIDE LAYER */
+/* Execution docs cards for .tool-md-section */
 .upgread_workspace .tool-md-section {
   border-top: 1px solid rgba(255,255,255,0.05);
   padding-top: 8px;
@@ -326,6 +334,8 @@
 
 
 /* Class-driven immersive fullscreen mode (no runtime anchor changes) */
+/* OVERRIDE LAYER */
+/* Focus-mode execution behavior for .tool-focus-mode and tool shell children */
 .upgread_workspace .tool-focus-mode.tool-shell-page--workspace,
 .upgread_workspace .tool-focus-mode .tool-shell-page--workspace {
   grid-template-columns: minmax(0, 1fr);
