@@ -240,6 +240,9 @@
    CONTAINER
    --------------------------------------------------------- */
 
+/* OVERRIDE LAYER — UI SYSTEM
+   Structural adjustments layered over shared-primitives
+*/
 /* CANONICAL OWNER */
 /* Shell primitive .container inside .upgread_workspace */
 
@@ -256,6 +259,9 @@
    SHELL LAYERS
    --------------------------------------------------------- */
 
+/* OVERRIDE LAYER — UI SYSTEM
+   Structural adjustments layered over shared-primitives
+*/
 /* CANONICAL OWNER */
 /* Shell primitive .app-shell inside .upgread_workspace */
 
@@ -272,6 +278,9 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* OVERRIDE LAYER — UI SYSTEM
+   Structural adjustments layered over shared-primitives
+*/
 /* CANONICAL OWNER */
 /* Shell primitive .shell-layer--workspace inside .upgread_workspace */
 
