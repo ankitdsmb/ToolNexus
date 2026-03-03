@@ -1,0 +1,23 @@
+{
+  "declaredPlugins": [
+    "~/Views/Tools/Plugins/_ExamplesPlugin.cshtml",
+    "~/Views/Tools/Plugins/_FaqPlugin.cshtml",
+    "~/Views/Tools/Plugins/_FeaturesPlugin.cshtml",
+    "~/Views/Tools/Plugins/_GuidancePlugin.cshtml",
+    "~/Views/Tools/Plugins/_OverviewPlugin.cshtml",
+    "~/Views/Tools/Plugins/_QuickStartPlugin.cshtml",
+    "~/Views/Tools/Plugins/_RelatedToolsPlugin.cshtml",
+    "~/Views/Tools/Plugins/_UseCasesPlugin.cshtml"
+  ],
+  "actualPartialFiles": [
+    "~/Views/Tools/Plugins/_ExamplesPlugin.cshtml",
+    "~/Views/Tools/Plugins/_FaqPlugin.cshtml",
+    "~/Views/Tools/Plugins/_FeaturesPlugin.cshtml",
+    "~/Views/Tools/Plugins/_GuidancePlugin.cshtml",
+    "~/Views/Tools/Plugins/_OverviewPlugin.cshtml",
+    "~/Views/Tools/Plugins/_QuickStartPlugin.cshtml",
+    "~/Views/Tools/Plugins/_RelatedToolsPlugin.cshtml",
+    "~/Views/Tools/Plugins/_UseCasesPlugin.cshtml"
+  ],
+  "mismatchCount": 0
+}

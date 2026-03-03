@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.IO.Compression;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -148,10 +149,25 @@ metricsCollector.ObserveStartupPhaseDuration("app_bootstrap", startupStopwatch.E
 
 if (app.Environment.IsDevelopment())
 {
-    var missingPluginPartials = ToolContextPlugins.GetMissingPluginPartials(app.Environment.ContentRootPath);
-    if (missingPluginPartials.Count > 0)
+    var pluginGovernanceSnapshot = ToolContextPlugins.BuildGovernanceSnapshot(app.Environment.ContentRootPath);
+    var pluginGovernanceArtifactDirectory = Path.Combine(app.Environment.ContentRootPath, "artifacts");
+    Directory.CreateDirectory(pluginGovernanceArtifactDirectory);
+    var pluginGovernanceArtifactPath = Path.Combine(pluginGovernanceArtifactDirectory, "plugin-partial-governance.json");
+    var pluginGovernanceArtifact = new
     {
-        throw new InvalidOperationException($"Missing tool plugin partials: {string.Join(", ", missingPluginPartials.Select(ToolContextPlugins.ToPartialPath))}");
+        declaredPlugins = pluginGovernanceSnapshot.DeclaredPlugins,
+        actualPartialFiles = pluginGovernanceSnapshot.ActualPartialFiles,
+        mismatchCount = pluginGovernanceSnapshot.MismatchCount
+    };
+
+    File.WriteAllText(
+        pluginGovernanceArtifactPath,
+        JsonSerializer.Serialize(pluginGovernanceArtifact, new JsonSerializerOptions { WriteIndented = true }));
+
+    if (pluginGovernanceSnapshot.MismatchCount > 0)
+    {
+        throw new InvalidOperationException(
+            $"Tool plugin partial governance mismatch detected. Undeclared partials: [{string.Join(", ", pluginGovernanceSnapshot.UndeclaredPartials)}]. Missing partials: [{string.Join(", ", pluginGovernanceSnapshot.MissingPartials)}].");
     }
 }
 
