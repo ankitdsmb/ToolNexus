@@ -164,11 +164,15 @@ function beginInitIsolationTracking(context) {
 
   const originals = {
     setTimeout: scope.setTimeout,
+    clearTimeout: scope.clearTimeout,
     setInterval: scope.setInterval,
+    clearInterval: scope.clearInterval,
     requestAnimationFrame: scope.requestAnimationFrame,
+    cancelAnimationFrame: scope.cancelAnimationFrame,
     MutationObserver: scope.MutationObserver,
     ResizeObserver: scope.ResizeObserver,
-    IntersectionObserver: scope.IntersectionObserver
+    IntersectionObserver: scope.IntersectionObserver,
+    PerformanceObserver: scope.PerformanceObserver
   };
 
   const wrapObserver = (OriginalObserver) => {
@@ -189,31 +193,56 @@ function beginInitIsolationTracking(context) {
 
   if (typeof originals.setTimeout === 'function') {
     scope.setTimeout = (...args) => {
-      const id = originals.setTimeout(...args);
+      const id = Reflect.apply(originals.setTimeout, scope, args);
       tracked.timeoutIds.add(id);
       return id;
     };
   }
 
+  if (typeof originals.clearTimeout === 'function') {
+    scope.clearTimeout = (...args) => {
+      const [id] = args;
+      tracked.timeoutIds.delete(id);
+      return Reflect.apply(originals.clearTimeout, scope, args);
+    };
+  }
+
   if (typeof originals.setInterval === 'function') {
     scope.setInterval = (...args) => {
-      const id = originals.setInterval(...args);
+      const id = Reflect.apply(originals.setInterval, scope, args);
       tracked.intervalIds.add(id);
       return id;
     };
   }
 
+  if (typeof originals.clearInterval === 'function') {
+    scope.clearInterval = (...args) => {
+      const [id] = args;
+      tracked.intervalIds.delete(id);
+      return Reflect.apply(originals.clearInterval, scope, args);
+    };
+  }
+
   if (typeof originals.requestAnimationFrame === 'function') {
     scope.requestAnimationFrame = (...args) => {
-      const id = originals.requestAnimationFrame(...args);
+      const id = Reflect.apply(originals.requestAnimationFrame, scope, args);
       tracked.rafIds.add(id);
       return id;
+    };
+  }
+
+  if (typeof originals.cancelAnimationFrame === 'function') {
+    scope.cancelAnimationFrame = (...args) => {
+      const [id] = args;
+      tracked.rafIds.delete(id);
+      return Reflect.apply(originals.cancelAnimationFrame, scope, args);
     };
   }
 
   scope.MutationObserver = wrapObserver(originals.MutationObserver);
   scope.ResizeObserver = wrapObserver(originals.ResizeObserver);
   scope.IntersectionObserver = wrapObserver(originals.IntersectionObserver);
+  scope.PerformanceObserver = wrapObserver(originals.PerformanceObserver);
 
   if (context && typeof context === 'object') {
     context.toolIsolationTracking = tracked;
@@ -228,11 +257,15 @@ function beginInitIsolationTracking(context) {
 
     restored = true;
     scope.setTimeout = originals.setTimeout;
+    scope.clearTimeout = originals.clearTimeout;
     scope.setInterval = originals.setInterval;
+    scope.clearInterval = originals.clearInterval;
     scope.requestAnimationFrame = originals.requestAnimationFrame;
+    scope.cancelAnimationFrame = originals.cancelAnimationFrame;
     scope.MutationObserver = originals.MutationObserver;
     scope.ResizeObserver = originals.ResizeObserver;
     scope.IntersectionObserver = originals.IntersectionObserver;
+    scope.PerformanceObserver = originals.PerformanceObserver;
   };
 }
 
