@@ -1,0 +1,40 @@
+{
+  "buildId": "2026-03-03T20:58:41.660Z",
+  "allowedModules": [
+    "/js/tools/base64-decode.js",
+    "/js/tools/base64-encode.js",
+    "/js/tools/csv-to-json.js",
+    "/js/tools/file-merge/main.js",
+    "/js/tools/html-entities.js",
+    "/js/tools/json-formatter.js",
+    "/js/tools/json-to-csv.js",
+    "/js/tools/json-to-yaml.js",
+    "/js/tools/json-transform-studio.js",
+    "/js/tools/json-validator.js",
+    "/js/tools/sql-formatter.js",
+    "/js/tools/text-diff.js",
+    "/js/tools/url-decode.js",
+    "/js/tools/url-encode.js",
+    "/js/tools/uuid-generator.js",
+    "/js/tools/yaml-to-json.js"
+  ],
+  "allowedSlugEnhancers": [
+    "base64-decode",
+    "base64-encode",
+    "csv-to-json",
+    "file-merge",
+    "html-entities",
+    "json-formatter",
+    "json-to-csv",
+    "json-to-yaml",
+    "json-transform-studio",
+    "json-validator",
+    "sql-formatter",
+    "text-diff",
+    "url-decode",
+    "url-encode",
+    "uuid-generator",
+    "yaml-to-json"
+  ],
+  "checksum": "f31f60be7efd5659953f133ee8fc9655da5ecc8362a75271029ef221f9957da6"
+}
