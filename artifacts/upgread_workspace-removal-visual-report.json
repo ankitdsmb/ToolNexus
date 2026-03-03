@@ -1,0 +1,167 @@
+{
+  "generatedAtUtc": "2026-03-03T18:06:50.828962Z",
+  "objective": "visual-safety-regression-validation",
+  "visualRegression": {
+    "suite": "tests/playwright/screenshots",
+    "status": "blocked",
+    "diffThresholdPercent": 1,
+    "buildShouldFail": true,
+    "reason": "Playwright Chromium failed to launch due to missing system library libatk-1.0.so.0, so baseline comparison and diff percentage could not be computed."
+  },
+  "phaseResults": {
+    "phase1_css_analysis": {
+      "riskLevel": "medium",
+      "cssFileCount": 60,
+      "upgreadBundles": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ],
+      "selectorUsageMap": {
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css": 28,
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css": 24,
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css": 82,
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css": 140
+      },
+      "duplicatedSelectorsAcrossUpgreadBundles": 7,
+      "duplicateSample": [
+        {
+          "selector": ":is(.upgread_workspace",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+          ]
+        },
+        {
+          "selector": ".upgread_workspace--scoped) .tool-shell-page__workspace",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+          ]
+        },
+        {
+          "selector": ".upgread_workspace--scoped) .tool-shell-page__docs",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+          ]
+        },
+        {
+          "selector": ".upgread_workspace--scoped) .tool-seo",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+          ]
+        },
+        {
+          "selector": ".upgread_workspace--scoped) .tool-md-section",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+          ]
+        },
+        {
+          "selector": ":root[data-theme=\"light\"] :is(.upgread_workspace",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+          ]
+        },
+        {
+          "selector": "[data-theme=\"light\"] :is(.upgread_workspace",
+          "files": [
+            "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+            "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+          ]
+        }
+      ],
+      "consolidationPlan": [
+        "Extract shared selectors duplicated in 2+ upgread bundles into upgread_shared-primitives.css.",
+        "Keep bundle-specific layout selectors in page-specific upgread bundles.",
+        "Introduce import order contract: shared-primitives -> ui-system -> tool-execution-dna -> pages."
+      ]
+    },
+    "phase2_js_graph_analysis": {
+      "riskLevel": "medium",
+      "moduleCount": 290,
+      "entrypointCount": 10,
+      "reachableCount": 55,
+      "unreachableCount": 235,
+      "dynamicDependenciesCount": 0,
+      "unsafeDynamicDependenciesSample": [],
+      "safeCleanupCandidates": []
+    },
+    "phase3_razor_dependency_audit": {
+      "riskLevel": "low",
+      "partialAsyncDynamicResolver": "ToolContextPlugins.ToPartialPath(plugin)",
+      "pluginPartialDependencyMap": {
+        "declaredPlugins": [
+          "Overview",
+          "Features",
+          "QuickStart",
+          "Guidance",
+          "Examples",
+          "UseCases",
+          "Faq",
+          "RelatedTools"
+        ],
+        "resolvedPartialPaths": [
+          "~/Views/Tools/Plugins/_OverviewPlugin.cshtml",
+          "~/Views/Tools/Plugins/_FeaturesPlugin.cshtml",
+          "~/Views/Tools/Plugins/_QuickStartPlugin.cshtml",
+          "~/Views/Tools/Plugins/_GuidancePlugin.cshtml",
+          "~/Views/Tools/Plugins/_ExamplesPlugin.cshtml",
+          "~/Views/Tools/Plugins/_UseCasesPlugin.cshtml",
+          "~/Views/Tools/Plugins/_FaqPlugin.cshtml",
+          "~/Views/Tools/Plugins/_RelatedToolsPlugin.cshtml"
+        ],
+        "actualPartialPaths": [
+          "~/Views/Tools/Plugins/_ExamplesPlugin.cshtml",
+          "~/Views/Tools/Plugins/_FaqPlugin.cshtml",
+          "~/Views/Tools/Plugins/_FeaturesPlugin.cshtml",
+          "~/Views/Tools/Plugins/_GuidancePlugin.cshtml",
+          "~/Views/Tools/Plugins/_OverviewPlugin.cshtml",
+          "~/Views/Tools/Plugins/_QuickStartPlugin.cshtml",
+          "~/Views/Tools/Plugins/_RelatedToolsPlugin.cshtml",
+          "~/Views/Tools/Plugins/_UseCasesPlugin.cshtml"
+        ]
+      },
+      "trueOrphanPartials": [],
+      "missingDeclaredPartials": []
+    },
+    "phase4_runtime_safety_validation": {
+      "riskLevel": "low",
+      "checks": [
+        {
+          "command": "npm run check:tool-ecosystem",
+          "status": "pass"
+        },
+        {
+          "command": "npm run check:ui-immunity",
+          "status": "pass"
+        },
+        {
+          "command": "node ./node_modules/vitest/vitest.mjs run tests/runtime",
+          "status": "pass"
+        }
+      ],
+      "runtimeSafetyConfirmation": "Runtime guardrails and runtime test suite passed after dependency remediation for optional rollup package."
+    }
+  },
+  "safeCleanupCandidates": {
+    "css": "Shared duplicated selectors in upgread_* bundles (see duplicateSample).",
+    "js": [],
+    "razor": "None identified in Views/Tools/Plugins."
+  },
+  "unsafeDynamicDependencies": [],
+  "suggestedMergeOrder": [
+    "Phase 4 validation gates",
+    "Phase 1 CSS consolidation (non-functional)",
+    "Phase 2 JS static cleanup candidates only",
+    "Phase 3 Razor orphan cleanup if still zero dynamic references"
+  ],
+  "runtimeSafetyConfirmation": true
+}
