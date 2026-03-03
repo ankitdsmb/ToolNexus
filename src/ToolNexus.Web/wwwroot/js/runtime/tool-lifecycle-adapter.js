@@ -76,7 +76,13 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
 
   const lifecycleResult = toLifecycleResult({
     mounted: !executionOnly && normalized.metadata.mode !== 'none',
-    cleanup: normalized.destroy,
+    cleanup: async () => {
+      try {
+        await normalized.destroy?.();
+      } finally {
+        context?.__executeDisposables?.();
+      }
+    },
     mode: normalizedMode,
     normalized: normalized.metadata.normalized,
     autoDestroyGenerated: normalized.metadata.autoDestroyGenerated,

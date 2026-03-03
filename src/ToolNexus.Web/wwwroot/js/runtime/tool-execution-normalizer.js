@@ -166,6 +166,29 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
   const hasDestroy = typeof target?.destroy === 'function';
   let instance = null;
   const __runtimeLifecycleAudit = [];
+  const disposables = [];
+
+  function registerDisposable(fn) {
+    if (typeof fn === 'function') {
+      disposables.push(fn);
+    }
+  }
+
+  function executeDisposables() {
+    for (let i = disposables.length - 1; i >= 0; i -= 1) {
+      try {
+        disposables[i]();
+      } catch (error) {
+        console.warn('[ToolIsolation] Disposable execution failed', error);
+      }
+    }
+    disposables.length = 0;
+  }
+
+  if (context && typeof context === 'object') {
+    context.registerDisposable = registerDisposable;
+    context.__executeDisposables = executeDisposables;
+  }
 
   function recordStage(stage, status, metadata = {}) {
     const entry = {
@@ -244,10 +267,11 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
           toolRoot: root,
           manifest,
           executionContext: context,
-          runtimeIdentity: context?.runtimeIdentity ?? context?.manifest?.runtimeIdentity ?? { runtimeType: 'unknown', resolutionMode: 'unknown' }
+          runtimeIdentity: context?.runtimeIdentity ?? context?.manifest?.runtimeIdentity ?? { runtimeType: 'unknown', resolutionMode: 'unknown' },
+          registerDisposable
         };
 
-        const missingContextKeys = ['root', 'toolRoot', 'manifest', 'executionContext', 'runtimeIdentity']
+        const missingContextKeys = ['root', 'toolRoot', 'manifest', 'executionContext', 'runtimeIdentity', 'registerDisposable']
           .filter((key) => !(key in (safeLifecycleContext ?? {})));
 
         if (missingContextKeys.length > 0) {
@@ -344,9 +368,13 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
 
   async function destroy() {
     recordStage('destroy', 'start');
-    if (typeof target?.destroy === 'function') {
-      logger.debug('Invoking normalized destroy lifecycle.', { slug, mode });
-      await target.destroy(instance ?? context, root, context?.manifest, context);
+    try {
+      if (typeof target?.destroy === 'function') {
+        logger.debug('Invoking normalized destroy lifecycle.', { slug, mode });
+        await target.destroy(instance ?? context, root, context?.manifest, context);
+      }
+    } finally {
+      context?.__executeDisposables?.();
     }
 
     await context?.destroy?.();
@@ -372,7 +400,8 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
       toolRoot: root,
       manifest: context?.manifest,
       executionContext: context,
-      runtimeIdentity: context?.runtimeIdentity ?? context?.manifest?.runtimeIdentity ?? { runtimeType: 'unknown', resolutionMode: 'unknown' }
+      runtimeIdentity: context?.runtimeIdentity ?? context?.manifest?.runtimeIdentity ?? { runtimeType: 'unknown', resolutionMode: 'unknown' },
+      registerDisposable
     };
 
     auditLifecycleCall(slug, 'init', safeLifecycleContext, mode);
