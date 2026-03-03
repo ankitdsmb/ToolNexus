@@ -44,7 +44,6 @@
         runtimeBootstrapGeneration = swapGeneration;
         window.bootstrapToolRuntime();
     }
-=======
     var heapTrendSamples = [];
 
     function isDevelopmentRuntime() {
