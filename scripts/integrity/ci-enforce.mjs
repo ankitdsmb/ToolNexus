@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 const checks = [
   { name: 'manifest-validator', cmd: 'node', args: ['scripts/integrity/manifest-validator.mjs'] },
   { name: 'static-graph-validator', cmd: 'node', args: ['scripts/integrity/static-graph-validator.mjs'] },
+  { name: 'js-governance-drift', cmd: 'node', args: ['scripts/integrity/js-governance-drift.mjs'] },
   { name: 'css-prune-simulation', cmd: 'node', args: ['scripts/integrity/css-prune-simulation.mjs'] },
   { name: 'bundle-size-regression', cmd: 'node', args: ['scripts/integrity/bundle-size-regression.mjs'] }
 ];

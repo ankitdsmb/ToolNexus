@@ -46,6 +46,11 @@ jobs:
       - name: Dependency integrity gate
         run: npm run integrity:deps
 
+      - name: JS static graph governance baseline check
+        run: |
+          npm run integrity:graph
+          npm run integrity:js-governance
+
       - name: Cache Playwright browser binaries
         uses: actions/cache@v4
         with:
