@@ -1,0 +1,29 @@
+{
+  "description": "Explicit registry of runtime dynamic import roots. Governance-only. No runtime behavior impact.",
+  "roots": [
+    {
+      "type": "slug-runtime",
+      "pattern": "/js/tools/${slug}.js",
+      "source": "tool-page.js",
+      "confidenceImpact": "protected"
+    },
+    {
+      "type": "modulePath-runtime",
+      "pattern": "import(modulePath)",
+      "source": "tool-runtime.js",
+      "confidenceImpact": "protected"
+    },
+    {
+      "type": "legacy-bootstrap",
+      "pattern": "import(modulePath)",
+      "source": "legacy-tool-bootstrap.js",
+      "confidenceImpact": "protected"
+    },
+    {
+      "type": "lazy-loader",
+      "pattern": "./command-palette.js",
+      "source": "command-palette-loader.js",
+      "confidenceImpact": "protected"
+    }
+  ]
+}
