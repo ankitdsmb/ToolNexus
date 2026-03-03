@@ -7,6 +7,44 @@
 
     var initialized = false;
     var inFlightNavigation = null;
+    var runtimeBootstrapGeneration = 0;
+
+    function logError(message, error) {
+        console.error('[ToolNexusSpa] ' + message, error);
+    }
+
+    function warnOnDuplicateToolShells() {
+        var toolShellCount = document.querySelectorAll('[data-tool-shell]').length;
+        if (toolShellCount > 1) {
+            console.warn('[ToolNexusSpa] Multiple [data-tool-shell] elements detected (' + toolShellCount + ').');
+        }
+    }
+
+    function runRuntimeCleanup() {
+        if (typeof window.ToolNexusRuntimeCleanup !== 'function') {
+            return;
+        }
+
+        try {
+            window.ToolNexusRuntimeCleanup();
+        } catch (error) {
+            logError('Runtime cleanup failed before DOM swap.', error);
+        }
+    }
+
+    function bootstrapRuntimeOnceForSwap(swapGeneration) {
+        if (typeof window.bootstrapToolRuntime !== 'function') {
+            return;
+        }
+
+        if (runtimeBootstrapGeneration === swapGeneration) {
+            return;
+        }
+
+        runtimeBootstrapGeneration = swapGeneration;
+        window.bootstrapToolRuntime();
+    }
+=======
     var heapTrendSamples = [];
 
     function isDevelopmentRuntime() {
@@ -198,8 +236,11 @@
                 throw new Error('Missing #app-page-root during SPA navigation swap.');
             }
 
+            runRuntimeCleanup();
             currentRoot.innerHTML = incomingRoot.innerHTML;
             document.title = parsed.title || document.title;
+            warnOnDuplicateToolShells();
+            bootstrapRuntimeOnceForSwap(Date.now());
 
             recordNavigationMetrics();
             verifyToolShellCount();
