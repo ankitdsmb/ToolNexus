@@ -73,11 +73,15 @@
 }
 
 /* Override legacy surface colors */
+/* OVERRIDE LAYER */
+/* Workspace theme override for shell primitive .app-shell */
 .upgread_workspace .app-shell {
   background: var(--upgread-bg-canvas) !important;
   min-height: 100vh;
 }
 
+/* OVERRIDE LAYER */
+/* Workspace theme override for shell primitive .container */
 .upgread_workspace .container {
   padding-block: var(--upgread-space-6) var(--upgread-space-7) !important;
 }
@@ -772,6 +776,8 @@
   box-shadow: none !important;
 }
 
+/* OVERRIDE LAYER */
+/* Workspace theme override for tool doc/runtime primitive .tool-shell-page__docs */
 .upgread_workspace .tool-shell-page__docs {
   background: var(--upgread-bg-surface) !important;
   border: 1px solid var(--upgread-border-hairline) !important;

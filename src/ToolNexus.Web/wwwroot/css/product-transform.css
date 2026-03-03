@@ -49,6 +49,8 @@
 .testimonial-card,
 .static-page__section,
 .tool-shell-page__hero,
+/* OVERRIDE LAYER */
+/* Product transform docs panel tuning for .tool-shell-page__docs */
 .tool-shell-page__docs {
   border-color: color-mix(in srgb, var(--border-default) 78%, #60a5fa);
 }
