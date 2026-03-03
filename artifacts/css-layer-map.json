@@ -1,0 +1,46 @@
+{
+  "layers": [
+    {
+      "file": "upgread_pages.css",
+      "owns": [
+        "home-page",
+        "home-surface",
+        "tool-section",
+        "workflow-section",
+        "trust-section",
+        "social-section"
+      ]
+    },
+    {
+      "file": "upgread_shared-primitives.css",
+      "owns": [
+        "tool-shell-page",
+        "tool-md-content",
+        "tool-article-prose",
+        "section-frame"
+      ]
+    },
+    {
+      "file": "upgread_tool-execution-dna.css",
+      "owns": [
+        "tool-shell-page__runtime",
+        "tool-runtime-widget",
+        "tool-execution-panel",
+        "runtime-doc-disclosure",
+        "tool-workspace-unified",
+        "workspace-shell__runtime-zone"
+      ]
+    },
+    {
+      "file": "upgread_ui-system.css",
+      "owns": [
+        "upgread_header",
+        "upgread_header__inner",
+        "upgread_brand",
+        "upgread_cmd",
+        "upgread_nav-link",
+        "upgread_shell-split"
+      ]
+    }
+  ]
+}

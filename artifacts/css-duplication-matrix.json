@@ -1,13 +1,19 @@
 {
-  "generatedAtUtc": "2026-03-03T13:25:47.955Z",
+  "generatedAtUtc": "2026-03-03T21:51:26.147Z",
   "bundleCount": 4,
-  "uniqueSelectorCount": 144,
-  "selectorOverlapCount": 9,
+  "uniqueSelectorCount": 145,
+  "selectorOverlapCount": 10,
   "identicalDeclarationDuplicateCount": 0,
+  "ownershipGuard": {
+    "ownershipMapPath": "artifacts/css-layer-map.json",
+    "overrideTagPattern": "(OVERRIDE\\s+LAYER|OWNERSHIP_OVERRIDE)",
+    "violationCount": 0,
+    "violations": []
+  },
   "bundles": [
     {
       "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
-      "selectorCount": 24,
+      "selectorCount": 25,
       "selectors": [
         "card",
         "discovery-search-shell",
@@ -30,6 +36,7 @@
         "trust-stats",
         "upgread_home_workspace",
         "upgread_workspace",
+        "upgread_workspace--scoped",
         "workflow-card",
         "workflow-grid",
         "workflow-section"
@@ -37,7 +44,7 @@
     },
     {
       "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
-      "selectorCount": 13,
+      "selectorCount": 14,
       "selectors": [
         "app-shell",
         "container",
@@ -51,12 +58,13 @@
         "tool-shell-page",
         "tool-shell-page__docs",
         "tool-shell-page__workspace",
-        "upgread_workspace"
+        "upgread_workspace",
+        "upgread_workspace--scoped"
       ]
     },
     {
       "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
-      "selectorCount": 27,
+      "selectorCount": 28,
       "selectors": [
         "runtime-doc-disclosure",
         "tn-editor-skeleton",
@@ -83,13 +91,14 @@
         "upgread_tool-toolbar",
         "upgread_tool-widget",
         "upgread_workspace",
+        "upgread_workspace--scoped",
         "workspace-shell__context-rail",
         "workspace-shell__runtime-zone"
       ]
     },
     {
       "bundle": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
-      "selectorCount": 91,
+      "selectorCount": 92,
       "selectors": [
         "app-shell",
         "container",
@@ -181,7 +190,8 @@
         "upgread_theme-icon--light",
         "upgread_theme-toggle",
         "upgread_trust-chip",
-        "upgread_workspace"
+        "upgread_workspace",
+        "upgread_workspace--scoped"
       ]
     }
   ],
@@ -189,6 +199,15 @@
   "selectorOverlaps": [
     {
       "selector": "upgread_workspace",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "upgread_workspace--scoped",
       "owners": [
         "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
         "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
