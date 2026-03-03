@@ -162,6 +162,11 @@ public sealed class ToolsController(
             RuntimeComplexityTier = descriptor?.ComplexityTier ?? 1
         };
 
+        if (Request.Query.TryGetValue("partial", out var partial) && string.Equals(partial, "1", StringComparison.Ordinal))
+        {
+            return PartialView("ToolShellPartial", viewModel);
+        }
+
         return View("ToolShell", viewModel);
     }
 
