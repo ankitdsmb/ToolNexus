@@ -46,6 +46,39 @@ describe('lifecycle adapter compatibility', () => {
     expect(typeof result.cleanup).toBe('function');
   });
 
+
+
+  test('context destroy safely disposes editor references once', async () => {
+    const root = document.createElement('div');
+    const context = createToolExecutionContext({ slug: 'monaco-tool', root, manifest: { slug: 'monaco-tool' } });
+    const dispose = vi.fn();
+
+    context.editor = { dispose };
+    context.monacoEditor = { dispose };
+    context.editorContainer = document.createElement('div');
+    context.monacoContainer = document.createElement('div');
+    context.refs.set('editor', { dispose });
+    context.refs.set('editorContainer', document.createElement('div'));
+
+    await context.destroy();
+    await context.destroy();
+
+    expect(dispose).toHaveBeenCalledTimes(3);
+    expect(context.editor).toBeNull();
+    expect(context.monacoEditor).toBeNull();
+    expect(context.editorContainer).toBeNull();
+    expect(context.monacoContainer).toBeNull();
+  });
+
+  test('context destroy swallows editor disposal errors', async () => {
+    const root = document.createElement('div');
+    const context = createToolExecutionContext({ slug: 'monaco-tool', root, manifest: { slug: 'monaco-tool' } });
+
+    context.editor = { dispose: () => { throw new Error('already disposed'); } };
+
+    await expect(context.destroy()).resolves.toBeUndefined();
+  });
+
   test('legacy auto init keeps normalized lifecycle result contract', async () => {
     const root = document.createElement('div');
     const context = createToolExecutionContext({ slug: 'legacy-tool', root, manifest: { slug: 'legacy-tool' } });
