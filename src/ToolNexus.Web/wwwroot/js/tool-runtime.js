@@ -141,32 +141,6 @@ function validateRuntimeSlug(slug, { onStrictViolation } = {}) {
   return true;
 }
 
-function validateRuntimeModulePath(modulePath, { onStrictViolation } = {}) {
-  const value = String(modulePath ?? '').trim();
-  const valid = value.length > 0
-    && !/\s/.test(value)
-    && !/^https?:\/\//i.test(value)
-    && !/^javascript:/i.test(value);
-  if (valid) {
-    return true;
-  }
-
-  const mode = getImportIntegrityMode();
-  const message = `[RuntimeImportIntegrity] Invalid modulePath: ${modulePath}`;
-  if (mode === 'enforce-dev') {
-    throw new Error(message);
-  }
-
-  if (mode === 'enforce-strict') {
-    console.error(message);
-    onStrictViolation?.(message);
-    return false;
-  }
-
-  console.warn(message);
-  return true;
-}
-
 const TOOL_MOUNT_MODES = Object.freeze({
   FULLSCREEN: 'fullscreen',
   PANEL: 'panel',
