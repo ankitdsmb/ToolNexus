@@ -1,0 +1,406 @@
+{
+  "generatedAtUtc": "2026-03-03T06:27:37.259Z",
+  "scanner": "toolnexus-security-scan",
+  "scope": {
+    "filesScanned": 914,
+    "roots": [
+      "src",
+      "scripts"
+    ]
+  },
+  "summary": {
+    "totalFindings": 48,
+    "bySeverity": {
+      "Critical": 7,
+      "High": 6,
+      "Medium": 30,
+      "Low": 5
+    }
+  },
+  "findings": [
+    {
+      "severity": "High",
+      "ruleId": "admin-route-missing-authorize",
+      "file": "src/ToolNexus.Api/Controllers/Admin/DebugController.cs",
+      "line": 8,
+      "detail": "Potential admin controller without class-level [Authorize] attribute.",
+      "evidence": "DebugController"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Api/Controllers/Admin/RuntimeIncidentsController.cs",
+      "line": 16,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[HttpPost]"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Api/Controllers/Admin/RuntimeIncidentsController.cs",
+      "line": 43,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[HttpPost]"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Api/Controllers/Admin/RuntimeIncidentsController.cs",
+      "line": 80,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[HttpPost]"
+    },
+    {
+      "severity": "High",
+      "ruleId": "admin-route-missing-authorize",
+      "file": "src/ToolNexus.Api/Controllers/Admin/RuntimeIncidentsController.cs",
+      "line": 12,
+      "detail": "Potential admin controller without class-level [Authorize] attribute.",
+      "evidence": "RuntimeIncidentsController"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 72,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, rootNode.ToJsonString(JsonOptions) + Environment.NewLine, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 94,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, JsonSerializer.Serialize(payload, JsonOptions) + Environment.NewLine, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 118,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, content, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 155,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, content, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 168,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, content, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 200,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, content, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 242,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, content, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.ConsoleRunner/Scaffolding/ToolScaffoldingGenerator.cs",
+      "line": 270,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(path, content, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Infrastructure/Content/StartupOrchestratorHostedService.cs",
+      "line": 70,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.AppendAllTextAsync(filePath, $\"{DateTimeOffset.UtcNow:O} {message}{Environment.NewLine}\", cancellationToken))"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Web/Areas/Admin/Controllers/Api/RuntimeIncidentsController.cs",
+      "line": 14,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[HttpPost]"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Web/Areas/Admin/Controllers/Api/RuntimeIncidentsController.cs",
+      "line": 73,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[HttpPost]"
+    },
+    {
+      "severity": "High",
+      "ruleId": "admin-route-missing-authorize",
+      "file": "src/ToolNexus.Web/Areas/Admin/Controllers/Api/RuntimeIncidentsController.cs",
+      "line": 10,
+      "detail": "Potential admin controller without class-level [Authorize] attribute.",
+      "evidence": "RuntimeIncidentsController"
+    },
+    {
+      "severity": "High",
+      "ruleId": "admin-route-missing-authorize",
+      "file": "src/ToolNexus.Web/Areas/Admin/Controllers/RuntimeDiagnosticsController.cs",
+      "line": 5,
+      "detail": "Potential admin controller without class-level [Authorize] attribute.",
+      "evidence": "RuntimeDiagnosticsController"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Web/Controllers/AuthController.cs",
+      "line": 28,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[AllowAnonymous]"
+    },
+    {
+      "severity": "Critical",
+      "ruleId": "anonymous-post-endpoint",
+      "file": "src/ToolNexus.Web/Controllers/AuthController.cs",
+      "line": 62,
+      "detail": "HTTP POST endpoint appears to allow anonymous access.",
+      "evidence": "[HttpPost]"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/Services/ToolManifestLoader.cs",
+      "line": 309,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(manifestPath, json + Environment.NewLine))"
+    },
+    {
+      "severity": "High",
+      "ruleId": "manifest-autogen-runtime",
+      "file": "src/ToolNexus.Web/Services/ToolManifestLoader.cs",
+      "line": 309,
+      "detail": "Possible runtime manifest write detected.",
+      "evidence": "File.WriteAllText(manifestPath, json + Environment.NewLine))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/Services/ToolManifestLoader.cs",
+      "line": 356,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(templatePath, BuildGenericTemplate(manifest.Slug) + Environment.NewLine, Encoding.UTF8))"
+    },
+    {
+      "severity": "High",
+      "ruleId": "manifest-autogen-runtime",
+      "file": "src/ToolNexus.Web/Services/ToolManifestLoader.cs",
+      "line": 356,
+      "detail": "Possible runtime manifest write detected.",
+      "evidence": "File.WriteAllText(templatePath, BuildGenericTemplate(manifest.Slug) + Environment.NewLine, Encoding.UTF8))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/Services/ToolManifestLoader.cs",
+      "line": 370,
+      "detail": "Dynamic C# file write path detected.",
+      "evidence": "File.WriteAllText(templatePath, template + Environment.NewLine, Encoding.UTF8))"
+    },
+    {
+      "severity": "Low",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/js/command-palette-loader.js",
+      "line": 6,
+      "detail": "Dynamic import call with static literal (review for lazy-loaded attack surface).",
+      "evidence": "import('./command-palette.js')"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/legacy-tool-bootstrap.js",
+      "line": 140,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(modulePath)"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-page.js",
+      "line": 174,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(`./tools/${slug}.js`)"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-runtime.js",
+      "line": 241,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(modulePath)"
+    },
+    {
+      "severity": "Low",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-runtime.js",
+      "line": 1289,
+      "detail": "Dynamic import call with static literal (review for lazy-loaded attack surface).",
+      "evidence": "import('./tools/tool-platform-kernel.js')"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js",
+      "line": 31695,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFileSync(log_path, \"Options: \\n\" + options_str + \"\\n\\nInput files:\\n\\n\" + files_str(files) + \"\\n\"))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js",
+      "line": 32287,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFileSync(program.output, result.code))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js",
+      "line": 32289,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFileSync(program.output + \".map\", result.map))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js",
+      "line": 32295,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFileSync(program.nameCache, JSON.stringify(options.nameCache)))"
+    },
+    {
+      "severity": "Low",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/assets/ts.worker-CMbG-7ft.js",
+      "line": 57,
+      "detail": "Dynamic import call with static literal (review for lazy-loaded attack surface).",
+      "evidence": "import('{0}')"
+    },
+    {
+      "severity": "Low",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/assets/ts.worker-CMbG-7ft.js",
+      "line": 57,
+      "detail": "Dynamic import call with static literal (review for lazy-loaded attack surface).",
+      "evidence": "import(\"{0}\")"
+    },
+    {
+      "severity": "Low",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/assets/ts.worker-CMbG-7ft.js",
+      "line": 382,
+      "detail": "Dynamic import call with static literal (review for lazy-loaded attack surface).",
+      "evidence": "import(\"${Te}\")"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/assets/ts.worker-CMbG-7ft.js",
+      "line": 428,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(${r}${e}${r})"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/assets/ts.worker-CMbG-7ft.js",
+      "line": 431,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(\"})"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/editor.api-CalNCsUg.js",
+      "line": 465,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(ttPolicy?.createScriptURL(${JSON.stringify(e)"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/loader.js",
+      "line": 668,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFile(s, Buffer.concat([_, g]), (v) => {)"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "scripts/ci/runtime-import-validator.mjs",
+      "line": 178,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(${match[1]}${rawSpecifier}${match[1]})"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "scripts/ci/runtime-import-validator.mjs",
+      "line": 185,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(modulePath)"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "scripts/ci/runtime-import-validator.mjs",
+      "line": 191,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(\\`./tools/\\${slug}.js\\`)"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "scripts/integrity/bundle-size-regression.mjs",
+      "line": 78,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFile(config.bundleBaseline, JSON.stringify({ generatedAt: new Date().toISOString(), totalBytes, totalGzipBytes, assets: metrics }, null, 2) + '\\n'))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "scripts/integrity/shared.mjs",
+      "line": 26,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFile(absolute, JSON.stringify(payload, null, 2) + '\\n', 'utf8'))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-file-write",
+      "file": "scripts/security-scan/run-security-scan.mjs",
+      "line": 197,
+      "detail": "Dynamic JS file write path detected.",
+      "evidence": "fs.writeFile(outputPath, `${JSON.stringify(report, null, 2)}\\n`, 'utf8'))"
+    },
+    {
+      "severity": "Medium",
+      "ruleId": "dynamic-import-usage",
+      "file": "scripts/security-scan/run-security-scan.mjs",
+      "line": 171,
+      "detail": "Dynamic import call with non-literal expression.",
+      "evidence": "import(${expr.slice(0, 160)"
+    }
+  ]
+}
