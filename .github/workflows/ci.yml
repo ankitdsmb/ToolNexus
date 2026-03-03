@@ -43,6 +43,9 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
+      - name: Dependency integrity gate
+        run: npm run integrity:deps
+
       - name: Cache Playwright browser binaries
         uses: actions/cache@v4
         with:
@@ -81,6 +84,16 @@ jobs:
       - name: npm test
         run: npm test
 
+      - name: Release readiness verification
+        run: npm run release:verify
+
+      - name: Upload release readiness artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-readiness
+          path: artifacts/release-readiness.json
+
       - name: Playwright smoke
         env:
           TOOLNEXUS_DB_CONNECTION: Host=localhost;Port=5432;Database=toolnexus;Username=toolnexus;Password=toolnexus
@@ -107,3 +120,10 @@ jobs:
 
       - name: Build production Docker image
         run: docker build -f dockerfile -t toolnexus-api:ci .
+
+      - name: Upload dependency audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: artifacts/dependency-report.json

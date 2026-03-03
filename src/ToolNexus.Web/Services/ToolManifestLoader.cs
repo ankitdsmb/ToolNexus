@@ -3,10 +3,15 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using ToolNexus.Infrastructure.Options;
 
 namespace ToolNexus.Web.Services;
 
-public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebHostEnvironment hostEnvironment) : IToolManifestLoader
+public sealed class ToolManifestLoader(
+    ILogger<ToolManifestLoader> logger,
+    IWebHostEnvironment hostEnvironment,
+    IOptions<HostingMutationOptions> hostingMutationOptions) : IToolManifestLoader
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -27,6 +32,7 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
     private readonly string viewDirectory = Path.Combine(hostEnvironment.ContentRootPath, "Views", "Tools");
     private readonly string templateDirectory = Path.Combine(string.IsNullOrWhiteSpace(hostEnvironment.WebRootPath) ? Path.Combine(hostEnvironment.ContentRootPath, "wwwroot") : hostEnvironment.WebRootPath, "tool-templates");
     private readonly string? platformManifestPath = ResolvePlatformManifestPath(hostEnvironment.ContentRootPath);
+    private readonly bool allowRuntimeMutation = hostingMutationOptions.Value.AllowRuntimeMutation;
 
     public IReadOnlyCollection<ToolManifest> LoadAll()
     {
@@ -42,12 +48,44 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
                 return cachedManifests;
             }
 
-            Directory.CreateDirectory(manifestDirectory);
-            Directory.CreateDirectory(templateDirectory);
+            RunBootPhase();
 
             var manifests = new List<ToolManifest>();
             var seenSlugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            RunContentSyncPhase(manifests, seenSlugs);
+            RunTemplateSyncPhase(manifests);
+            RunTelemetryWorkerPhase(manifests.Count);
+
+            cachedManifests = manifests.OrderBy(x => x.Slug, StringComparer.OrdinalIgnoreCase).ToArray();
+            return cachedManifests;
+        }
+    }
+
+    private void RunBootPhase()
+    {
+        if (allowRuntimeMutation)
+        {
+            Directory.CreateDirectory(manifestDirectory);
+            Directory.CreateDirectory(templateDirectory);
+            return;
+        }
+
+        if (!Directory.Exists(manifestDirectory))
+        {
+            logger.LogWarning("Runtime mutation is disabled (Hosting:AllowRuntimeMutation=false); skipping startup directory creation for '{ManifestDirectory}'.", manifestDirectory);
+        }
+
+        if (!Directory.Exists(templateDirectory))
+        {
+            logger.LogWarning("Runtime mutation is disabled (Hosting:AllowRuntimeMutation=false); skipping startup directory creation for '{TemplateDirectory}'.", templateDirectory);
+        }
+    }
+
+    private void RunContentSyncPhase(ICollection<ToolManifest> manifests, ISet<string> seenSlugs)
+    {
+        if (Directory.Exists(manifestDirectory))
+        {
             foreach (var filePath in Directory.EnumerateFiles(manifestDirectory, "*.json").OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
             {
                 ToolManifest? manifest;
@@ -80,43 +118,53 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
                     throw new InvalidOperationException($"Duplicate tool manifest slug detected: '{normalized.Slug}'.");
                 }
 
-                EnsureTemplate(normalized);
                 manifests.Add(normalized);
             }
-
-            foreach (var discovered in DiscoverToolViews())
-            {
-                if (seenSlugs.Contains(discovered.Slug))
-                {
-                    continue;
-                }
-
-                var generated = BuildGeneratedManifest(discovered);
-                PersistManifest(generated);
-                EnsureTemplate(generated);
-                manifests.Add(generated);
-                seenSlugs.Add(generated.Slug);
-                logger.LogInformation("Generated missing manifest for tool slug '{ToolSlug}'.", generated.Slug);
-            }
-
-            foreach (var discovered in DiscoverPlatformManifestTools())
-            {
-                if (seenSlugs.Contains(discovered.Slug))
-                {
-                    continue;
-                }
-
-                var generated = BuildGeneratedManifest(discovered);
-                PersistManifest(generated);
-                EnsureTemplate(generated);
-                manifests.Add(generated);
-                seenSlugs.Add(generated.Slug);
-                logger.LogInformation("Generated missing platform manifest for tool slug '{ToolSlug}'.", generated.Slug);
-            }
-
-            cachedManifests = manifests.OrderBy(x => x.Slug, StringComparer.OrdinalIgnoreCase).ToArray();
-            return cachedManifests;
         }
+
+        foreach (var discovered in DiscoverToolViews())
+        {
+            if (seenSlugs.Contains(discovered.Slug))
+            {
+                continue;
+            }
+
+            var generated = BuildGeneratedManifest(discovered);
+            PersistManifest(generated);
+            manifests.Add(generated);
+            seenSlugs.Add(generated.Slug);
+            logger.LogInformation("Generated missing manifest for tool slug '{ToolSlug}'.", generated.Slug);
+        }
+
+        foreach (var discovered in DiscoverPlatformManifestTools())
+        {
+            if (seenSlugs.Contains(discovered.Slug))
+            {
+                continue;
+            }
+
+            var generated = BuildGeneratedManifest(discovered);
+            PersistManifest(generated);
+            manifests.Add(generated);
+            seenSlugs.Add(generated.Slug);
+            logger.LogInformation("Generated missing platform manifest for tool slug '{ToolSlug}'.", generated.Slug);
+        }
+    }
+
+    private void RunTemplateSyncPhase(IEnumerable<ToolManifest> manifests)
+    {
+        foreach (var manifest in manifests)
+        {
+            EnsureTemplate(manifest);
+        }
+    }
+
+    private void RunTelemetryWorkerPhase(int manifestCount)
+    {
+        logger.LogInformation(
+            "Tool manifest startup pipeline completed. RuntimeMutationAllowed={AllowRuntimeMutation}; LoadedManifestCount={ManifestCount}.",
+            allowRuntimeMutation,
+            manifestCount);
     }
 
     private ToolManifest NormalizeManifest(ToolManifest manifest)
@@ -304,6 +352,12 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
 
     private void PersistManifest(ToolManifest manifest)
     {
+        if (!allowRuntimeMutation)
+        {
+            logger.LogWarning("Runtime mutation attempted in read-only mode. Manifest persistence skipped for slug '{ToolSlug}'.", manifest.Slug);
+            return;
+        }
+
         var manifestPath = Path.Combine(manifestDirectory, $"{manifest.Slug}.json");
         var json = JsonSerializer.Serialize(manifest, SerializerOptions);
         File.WriteAllText(manifestPath, json + Environment.NewLine);
@@ -348,6 +402,12 @@ public sealed class ToolManifestLoader(ILogger<ToolManifestLoader> logger, IWebH
         var templatePath = Path.Combine(templateDirectory, $"{manifest.Slug}.html");
         if (File.Exists(templatePath))
         {
+            return;
+        }
+
+        if (!allowRuntimeMutation)
+        {
+            logger.LogWarning("Runtime mutation attempted in read-only mode. Template generation skipped for slug '{ToolSlug}'.", manifest.Slug);
             return;
         }
 

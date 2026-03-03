@@ -1,0 +1,21 @@
+{
+  "severityFailAt": "high",
+  "majorVersionDriftThreshold": 1,
+  "allowedLicenses": [
+    "MIT",
+    "ISC",
+    "BSD",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Apache-2.0",
+    "CC0-1.0",
+    "Python-2.0",
+    "0BSD",
+    "Unlicense"
+  ],
+  "disallowedDependencyPatterns": [
+    "^left-pad$",
+    "^event-stream$",
+    "^node-ipc$"
+  ]
+}
