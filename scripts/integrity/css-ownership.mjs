@@ -99,7 +99,7 @@ async function readLayerOwnershipMap() {
   }
 }
 
-const cssFiles = (await listCssFiles(cssRoot)).filter((file) => path.basename(file).startsWith('upgread_'));
+const cssFiles = (await listCssFiles(cssRoot)).filter((file) => /^upgread[-_].+\.css$/i.test(path.basename(file)));
 const ownedSelectorToBundle = await readLayerOwnershipMap();
 
 const bundles = [];
