@@ -64,6 +64,32 @@ public sealed class ToolsControllerRegressionHarnessTests
     }
 
     [Fact]
+    public async Task Segment_WithPartialQuery_ReturnsToolShellPartialView()
+    {
+        var descriptor = CreateDescriptor("json-formatter");
+        var controller = CreateController(new StubToolCatalogService(descriptor), new StubToolContentService(CreateContent(descriptor.Slug)));
+        controller.HttpContext.Request.QueryString = new QueryString("?partial=1");
+
+        var result = await controller.Segment(descriptor.Slug, CancellationToken.None);
+
+        var partial = Assert.IsType<PartialViewResult>(result);
+        Assert.Equal("ToolShellPartial", partial.ViewName);
+        Assert.IsType<ToolPageViewModel>(partial.Model);
+    }
+
+    [Fact]
+    public async Task Segment_WithoutPartialQuery_ReturnsFullToolShellView()
+    {
+        var descriptor = CreateDescriptor("json-formatter");
+        var controller = CreateController(new StubToolCatalogService(descriptor), new StubToolContentService(CreateContent(descriptor.Slug)));
+
+        var result = await controller.Segment(descriptor.Slug, CancellationToken.None);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("ToolShell", view.ViewName);
+    }
+
+    [Fact]
     public async Task Segment_UnknownSlug_ReturnsNotFound()
     {
         var controller = CreateController(new StubToolCatalogService(null), new StubToolContentService(null));
