@@ -30,6 +30,20 @@ const MONACO_SINGLETON_KEY = '__toolnexus_monaco';
 const MONACO_SINGLETON_PROMISE_KEY = '__toolnexus_monaco_promise';
 const MONACO_SINGLETON_STATE_KEY = '__toolnexus_monaco_state';
 
+
+function appendRuntimePerfLog(entry) {
+  if (window.__enableRuntimePerfTelemetry !== true) {
+    return;
+  }
+
+  if (!Array.isArray(window.__toolRuntimePerfLog)) {
+    window.__toolRuntimePerfLog = [];
+  }
+
+  window.__toolRuntimePerfLog.push(entry);
+}
+
+
 function emitMonacoAssetInvalidWarning() {
   console.warn(`[runtime] ${MONACO_ASSET_INVALID_EVENT}`);
 }
@@ -415,9 +429,25 @@ export async function initializeMonacoRuntime(options = {}) {
     }, timeoutMs);
   });
 
+  const initStartedAt = performance.now();
+
   try {
     const monaco = await Promise.race([loadMonaco(), timeoutPromise]);
     const ready = Boolean(monaco?.editor && typeof monaco.editor.create === 'function');
+
+    if (ready) {
+      const root = document.getElementById('tool-root');
+      const toolSlug = (root?.dataset?.toolSlug || '').trim() || 'unknown';
+      appendRuntimePerfLog({
+        toolSlug,
+        bootstrapTimeMs: 0,
+        mountTimeMs: 0,
+        initTimeMs: performance.now() - initStartedAt,
+        totalRuntimeMs: 0,
+        timestamp: Date.now(),
+        source: 'monaco'
+      });
+    }
 
     return {
       monaco: ready ? monaco : null,

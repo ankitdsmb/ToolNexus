@@ -1,0 +1,338 @@
+{
+  "generatedAt": "2026-03-03T19:23:18.121Z",
+  "totalSelectorCount": 4728,
+  "uniqueSelectorCount": 3318,
+  "maxSelectorDepth": 51,
+  "importantUsageCount": 942,
+  "duplicateSelectorCount": 150,
+  "bundleLevelSelectorDistribution": [
+    {
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/editor/editor.main.css",
+      "selectorCount": 1503
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/site.css",
+      "selectorCount": 733
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+      "selectorCount": 723
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/ui-system.css",
+      "selectorCount": 369
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+      "selectorCount": 208
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
+      "selectorCount": 177
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/home-system.css",
+      "selectorCount": 124
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/system/tool-execution-dna.css",
+      "selectorCount": 122
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+      "selectorCount": 54
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/base.css",
+      "selectorCount": 48
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-formatter.css",
+      "selectorCount": 43
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/product-transform.css",
+      "selectorCount": 39
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-validator.css",
+      "selectorCount": 36
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tool-auto-professional.css",
+      "selectorCount": 36
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/admin-shell.css",
+      "selectorCount": 35
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/json-formatter.css",
+      "selectorCount": 35
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+      "selectorCount": 34
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-to-csv.css",
+      "selectorCount": 28
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/base64-encode.css",
+      "selectorCount": 28
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/text-diff.css",
+      "selectorCount": 28
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/url-encode.css",
+      "selectorCount": 28
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/yaml-to-json.css",
+      "selectorCount": 26
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/sql-formatter.css",
+      "selectorCount": 25
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/html-entities.css",
+      "selectorCount": 25
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/url-decode.css",
+      "selectorCount": 25
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/csv-to-json.css",
+      "selectorCount": 23
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/command-palette.css",
+      "selectorCount": 22
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-to-yaml.css",
+      "selectorCount": 22
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/uuid-generator.css",
+      "selectorCount": 18
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-transform-studio.css",
+      "selectorCount": 16
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/file-merge.css",
+      "selectorCount": 16
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/system/execution-flow-intelligence.css",
+      "selectorCount": 12
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/js-minifier.css",
+      "selectorCount": 11
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/xml-formatter.css",
+      "selectorCount": 11
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/xml-to-json.css",
+      "selectorCount": 11
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/csv-to-json.css",
+      "selectorCount": 10
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/system/execution-visual-brain.css",
+      "selectorCount": 9
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/document-converter.css",
+      "selectorCount": 5
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/document-converter.css",
+      "selectorCount": 5
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/theme.css",
+      "selectorCount": 3
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/design-tokens.css",
+      "selectorCount": 1
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/governance/tokens.css",
+      "selectorCount": 1
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/governance/layers.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/base64-decode.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/base64-encode.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/case-converter.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/css-minifier.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/csv-viewer.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/file-merge.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/html-entities.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/html-formatter.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/html-to-markdown.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-to-xml.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-toolkit-pro.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/markdown-to-html.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/regex-tester.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/text-diff.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/text-intelligence-analyzer.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/url-decode.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/url-encode.css",
+      "selectorCount": 0
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/uuid-generator.css",
+      "selectorCount": 0
+    }
+  ],
+  "largest20CssFilesBySize": [
+    {
+      "file": "src/ToolNexus.Web/wwwroot/lib/monaco/vs/editor/editor.main.css",
+      "size": 308989
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread-workspace.css",
+      "size": 78024
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/site.css",
+      "size": 59537
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/ui-system.css",
+      "size": 50417
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css",
+      "size": 24719
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/system/tool-execution-dna.css",
+      "size": 17400
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+      "size": 16074
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/home-system.css",
+      "size": 11004
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/governance/tokens.css",
+      "size": 5713
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-formatter.css",
+      "size": 5488
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tool-auto-professional.css",
+      "size": 5288
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/json-formatter.css",
+      "size": 4420
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/json-validator.css",
+      "size": 4027
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/command-palette.css",
+      "size": 3922
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/product-transform.css",
+      "size": 3846
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/theme.css",
+      "size": 3485
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/design-tokens.css",
+      "size": 3061
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/pages/yaml-to-json.css",
+      "size": 3041
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/url-encode.css",
+      "size": 3039
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/css/tools/url-decode.css",
+      "size": 2799
+    }
+  ],
+  "totalCssPayloadSize": 659546,
+  "overlapCountAcrossUpgreadBundles": 22
+}

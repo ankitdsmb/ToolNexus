@@ -1,0 +1,118 @@
+{
+  "generatedAt": "2026-03-03T19:22:50.188Z",
+  "totalModuleCount": 294,
+  "entryPointsCount": 93,
+  "dynamicModuleCount": 0,
+  "staticallyReachableModules": 294,
+  "largest20FilesBySize": [
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js",
+      "size": 1025737
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/js-yaml.mjs",
+      "size": 107533
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-runtime.js",
+      "size": 71309
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-page.js",
+      "size": 40090
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js",
+      "size": 35597
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/csv-viewer.js",
+      "size": 26716
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/tool-auto-runtime.js",
+      "size": 24370
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/tool-execution-normalizer.js",
+      "size": 19819
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/case-converter.js",
+      "size": 15281
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/base64-decode.js",
+      "size": 14753
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/execution-density-validator.js",
+      "size": 13763
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/monaco-loader.js",
+      "size": 13735
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/command-palette.js",
+      "size": 13227
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/json-validator/ui.js",
+      "size": 11021
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/tool-presentation-engine.js",
+      "size": 10649
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/base64-encode.app.js",
+      "size": 10149
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/js-minifier-ui.js",
+      "size": 10017
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/runtime-observability.js",
+      "size": 9455
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/html-formatter.api.js",
+      "size": 8777
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tools/json-to-csv/ui.js",
+      "size": 8606
+    }
+  ],
+  "modulesOver30KB": [
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/runtime/tool-unified-control-runtime.js",
+      "size": 35597
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-page.js",
+      "size": 40090
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/tool-runtime.js",
+      "size": 71309
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/js-yaml.mjs",
+      "size": 107533
+    },
+    {
+      "file": "src/ToolNexus.Web/wwwroot/js/vendor/terser.bundle.min.js",
+      "size": 1025737
+    }
+  ],
+  "staticVsDynamicRatio": {
+    "staticTargets": 201,
+    "dynamicTargets": 0,
+    "ratio": null
+  },
+  "totalEstimatedJsPayloadSize": 2061741,
+  "dynamicRootDistribution": []
+}
