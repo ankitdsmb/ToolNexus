@@ -1,3 +1,55 @@
+import { runtimeObserver } from './runtime-observer.js';
+
+const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
+
+let activeRegistry = null;
+let cleanupInFlight = null;
+
+function resolveToolRoot() {
+  return document.getElementById('tool-root');
+}
+
+async function runActiveToolDestroy() {
+  const root = resolveToolRoot();
+  const destroy = root?.[RUNTIME_CLEANUP_KEY];
+  if (typeof destroy !== 'function') {
+    return;
+  }
+
+  // Prevent duplicate destroy execution from concurrent calls.
+  delete root[RUNTIME_CLEANUP_KEY];
+
+  try {
+    await destroy();
+  } catch {
+    // cleanup is best-effort and must remain silent
+  }
+}
+
+function installGlobalCleanupHook() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.ToolNexusRuntimeCleanup = async function ToolNexusRuntimeCleanup() {
+    if (cleanupInFlight) {
+      return cleanupInFlight;
+    }
+
+    cleanupInFlight = (async () => {
+      await runActiveToolDestroy();
+      runtimeObserver?.clear?.();
+      activeRegistry?.reset?.();
+    })();
+
+    try {
+      await cleanupInFlight;
+    } finally {
+      cleanupInFlight = null;
+    }
+  };
+}
+
 export function createToolStateRegistry() {
   const records = new Map();
 
@@ -6,7 +58,7 @@ export function createToolStateRegistry() {
     return `${slug}:${rootKey}`;
   }
 
-  return {
+  const registry = {
     register({ slug, root, compatibilityMode = 'modern' }) {
       const key = createKey(slug, root);
       if (records.has(key)) {
@@ -48,6 +100,9 @@ export function createToolStateRegistry() {
     clear(key) {
       records.delete(key);
     },
+    reset() {
+      records.clear();
+    },
     get(key) {
       return records.get(key) ?? null;
     },
@@ -64,4 +119,9 @@ export function createToolStateRegistry() {
       };
     }
   };
+
+  activeRegistry = registry;
+  installGlobalCleanupHook();
+
+  return registry;
 }
