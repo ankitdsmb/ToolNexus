@@ -10,6 +10,13 @@ const dynamicRoots = JSON.parse(
   fsSync.readFileSync('./docs/dynamic-import-roots.json', 'utf8')
 );
 
+const ROOT_WEIGHT_BY_TYPE = {
+  'slug-runtime': 0.35,
+  'modulePath-runtime': 0.3,
+  'legacy-bootstrap': 0.25,
+  'lazy-loader': 0.4
+};
+
 function resolveImport(fromFile, specifier) {
   if (!specifier.startsWith('.')) return null;
   const abs = path.resolve(path.dirname(fromFile), specifier);
@@ -17,8 +24,8 @@ function resolveImport(fromFile, specifier) {
   return candidates;
 }
 
-function isProtectedDynamicRoot(filePath) {
-  return dynamicRoots.roots.some((root) => {
+function getDynamicRootMatch(filePath) {
+  return dynamicRoots.roots.find((root) => {
     if (root.type === 'slug-runtime') {
       return filePath.includes('/js/tools/');
     }
@@ -33,6 +40,14 @@ function isProtectedDynamicRoot(filePath) {
     }
     return false;
   });
+}
+
+function getDynamicRootWeight(root) {
+  if (!root) return null;
+  if (typeof root.confidenceWeight === 'number') {
+    return root.confidenceWeight;
+  }
+  return ROOT_WEIGHT_BY_TYPE[root.type] ?? 0.3;
 }
 
 const config = await loadConfig();
@@ -105,19 +120,36 @@ while (stack.length > 0) {
 
 const scoredModules = [...nodes].map((filePath) => {
   if (reachable.has(filePath)) {
-    return { filePath, confidence: 0, classification: 'reachable' };
+    return { filePath, confidence: 1.0, confidenceWeight: 1.0, classification: 'reachable' };
   }
 
-  if (isProtectedDynamicRoot(filePath)) {
-    return { filePath, confidence: 0.2, classification: 'protected' };
+  const dynamicRootMatch = getDynamicRootMatch(filePath);
+  if (dynamicRootMatch) {
+    const confidenceWeight = getDynamicRootWeight(dynamicRootMatch);
+    return {
+      filePath,
+      confidence: confidenceWeight,
+      confidenceWeight,
+      classification: 'protected-dynamic',
+      rootType: dynamicRootMatch.type
+    };
   }
 
-  return { filePath, confidence: 0.8, classification: 'high' };
+  return { filePath, confidence: 0.8, confidenceWeight: 0.8, classification: 'high-confidence-dead' };
 });
 
 const unreachable = scoredModules
   .filter((module) => module.classification !== 'reachable')
   .map((module) => module.filePath);
+
+const reclassifiedModules = scoredModules.map((module) => {
+  if (module.classification === 'reachable' || module.classification === 'protected-dynamic') {
+    return module;
+  }
+
+  const classification = module.confidence >= 0.8 ? 'high-confidence-dead' : 'medium-risk';
+  return { ...module, classification };
+});
 
 const enforceUnreachable = config.staticGraph?.enforceUnreachable ?? false;
 if (enforceUnreachable && unreachable.length > 0) {
@@ -136,29 +168,38 @@ const report = {
   entrypoints: [...entrypoints],
   graph,
   unreachable,
-  confidenceScores: scoredModules,
+  confidenceScores: reclassifiedModules,
   violations
 };
 
 await writeReport(`${config.reportDir}/static-graph.json`, report);
 
-const confidenceDistribution = scoredModules.reduce(
+const confidenceDistribution = reclassifiedModules.reduce(
   (acc, module) => {
-    acc[module.classification] += 1;
+    acc[module.classification] = (acc[module.classification] ?? 0) + 1;
     return acc;
   },
-  { high: 0, protected: 0, reachable: 0 }
+  { 'high-confidence-dead': 0, 'protected-dynamic': 0, 'medium-risk': 0, reachable: 0 }
 );
 
 const governanceReport = {
   protectedRootsCount: dynamicRoots.roots.length,
   protectedPatterns: dynamicRoots.roots.map((root) => root.pattern),
-  adjustedUnreachableCount: scoredModules.filter((module) => module.classification !== 'reachable').length,
+  adjustedUnreachableCount: reclassifiedModules.filter((module) => module.classification !== 'reachable').length,
   confidenceDistribution
 };
 
 await fs.mkdir('artifacts', { recursive: true });
 await fs.writeFile('artifacts/dynamic-import-governance-report.json', `${JSON.stringify(governanceReport, null, 2)}\n`, 'utf8');
+
+const jsGovernanceReport = {
+  reachableCount: confidenceDistribution.reachable,
+  protectedDynamicCount: confidenceDistribution['protected-dynamic'],
+  mediumRiskCount: confidenceDistribution['medium-risk'],
+  highConfidenceDeadCount: confidenceDistribution['high-confidence-dead']
+};
+
+await fs.writeFile('artifacts/js-governance-report.json', `${JSON.stringify(jsGovernanceReport, null, 2)}\n`, 'utf8');
 
 if (violations.length > 0) {
   console.error('[integrity] static graph validation failed. See reports/integrity/static-graph.json');
