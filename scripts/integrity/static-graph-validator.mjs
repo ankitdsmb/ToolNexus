@@ -17,6 +17,8 @@ const ROOT_WEIGHT_BY_TYPE = {
   'lazy-loader': 0.4
 };
 
+const RUNTIME_OBSERVED_PATH = 'artifacts/runtime-import-observed.json';
+
 function resolveImport(fromFile, specifier) {
   if (!specifier.startsWith('.')) return null;
   const abs = path.resolve(path.dirname(fromFile), specifier);
@@ -50,6 +52,49 @@ function getDynamicRootWeight(root) {
   return ROOT_WEIGHT_BY_TYPE[root.type] ?? 0.3;
 }
 
+function normalizeRuntimeModulePath(modulePath) {
+  if (typeof modulePath !== 'string' || modulePath.length === 0) {
+    return null;
+  }
+
+  let normalized = modulePath;
+  try {
+    normalized = new URL(modulePath).pathname;
+  } catch {
+    normalized = modulePath;
+  }
+
+  if (normalized.startsWith('/js/')) {
+    return `src/ToolNexus.Web/wwwroot${normalized}`;
+  }
+
+  if (normalized.startsWith('src/ToolNexus.Web/wwwroot/')) {
+    return normalized;
+  }
+
+  return null;
+}
+
+async function loadRuntimeObservedModules() {
+  if (!(await fileExists(RUNTIME_OBSERVED_PATH))) {
+    return new Set();
+  }
+
+  try {
+    const raw = await fs.readFile(RUNTIME_OBSERVED_PATH, 'utf8');
+    const payload = JSON.parse(raw);
+    const loadedModules = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.loadedModules)
+        ? payload.loadedModules
+        : [];
+
+    return new Set(loadedModules.map((modulePath) => normalizeRuntimeModulePath(modulePath)).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
 const config = await loadConfig();
 const jsFiles = await listFiles([
   `${config.jsRoot}/**/*.js`,
@@ -61,6 +106,7 @@ const jsFiles = await listFiles([
 const graph = {};
 const violations = [];
 const nodes = new Set(jsFiles);
+const runtimeObservedModules = await loadRuntimeObservedModules();
 
 for (const file of jsFiles) {
   const src = await fs.readFile(file, 'utf8');
@@ -119,23 +165,49 @@ while (stack.length > 0) {
 }
 
 const scoredModules = [...nodes].map((filePath) => {
-  if (reachable.has(filePath)) {
-    return { filePath, confidence: 1.0, confidenceWeight: 1.0, classification: 'reachable' };
-  }
-
+  const staticReachable = reachable.has(filePath);
   const dynamicRootMatch = getDynamicRootMatch(filePath);
-  if (dynamicRootMatch) {
-    const confidenceWeight = getDynamicRootWeight(dynamicRootMatch);
+  const protectedDynamic = Boolean(dynamicRootMatch);
+  const runtimeObserved = runtimeObservedModules.has(filePath);
+  const confidenceWeight = getDynamicRootWeight(dynamicRootMatch);
+
+  if (staticReachable) {
     return {
       filePath,
-      confidence: confidenceWeight,
-      confidenceWeight,
-      classification: 'protected-dynamic',
-      rootType: dynamicRootMatch.type
+      staticReachable,
+      protectedDynamic,
+      runtimeObserved,
+      confidence: 1.0,
+      confidenceWeight: 1.0,
+      classification: 'reachable',
+      dynamicRoot: dynamicRootMatch
     };
   }
 
-  return { filePath, confidence: 0.8, confidenceWeight: 0.8, classification: 'high-confidence-dead' };
+  if (protectedDynamic) {
+    return {
+      filePath,
+      staticReachable,
+      protectedDynamic,
+      runtimeObserved,
+      confidence: confidenceWeight,
+      confidenceWeight,
+      classification: 'protected-dynamic',
+      rootType: dynamicRootMatch.type,
+      dynamicRoot: dynamicRootMatch
+    };
+  }
+
+  return {
+    filePath,
+    staticReachable,
+    protectedDynamic,
+    runtimeObserved,
+    confidence: runtimeObserved ? 0.95 : 0.8,
+    confidenceWeight: runtimeObserved ? 0.95 : 0.8,
+    classification: runtimeObserved ? 'runtime-observed' : 'high-confidence-dead',
+    dynamicRoot: null
+  };
 });
 
 const unreachable = scoredModules
@@ -143,7 +215,11 @@ const unreachable = scoredModules
   .map((module) => module.filePath);
 
 const reclassifiedModules = scoredModules.map((module) => {
-  if (module.classification === 'reachable' || module.classification === 'protected-dynamic') {
+  if (
+    module.classification === 'reachable'
+    || module.classification === 'protected-dynamic'
+    || module.classification === 'runtime-observed'
+  ) {
     return module;
   }
 
@@ -179,8 +255,60 @@ const confidenceDistribution = reclassifiedModules.reduce(
     acc[module.classification] = (acc[module.classification] ?? 0) + 1;
     return acc;
   },
-  { 'high-confidence-dead': 0, 'protected-dynamic': 0, 'medium-risk': 0, reachable: 0 }
+  {
+    'high-confidence-dead': 0,
+    'protected-dynamic': 0,
+    'runtime-observed': 0,
+    'medium-risk': 0,
+    reachable: 0
+  }
 );
+
+const correlationClassification = {
+  staticReachable: [],
+  runtimeObserved: [],
+  protectedButUnused: [],
+  trueDeadCandidates: []
+};
+
+const moduleMatrix = reclassifiedModules.map((module) => {
+  const staticReachable = Boolean(module.staticReachable);
+  const protectedDynamic = Boolean(module.protectedDynamic);
+  const runtimeObserved = Boolean(module.runtimeObserved);
+
+  let matrixClassification = 'trueDeadCandidates';
+  let confidence = module.confidence;
+  if (staticReachable) {
+    matrixClassification = 'staticReachable';
+    confidence = 1.0;
+  } else if (runtimeObserved) {
+    matrixClassification = 'runtimeObserved';
+    confidence = Math.max(0.95, module.confidence ?? 0.95);
+  } else if (protectedDynamic) {
+    matrixClassification = 'protectedButUnused';
+    confidence = module.confidence ?? 0.6;
+  }
+
+  correlationClassification[matrixClassification].push(module.filePath);
+
+  return {
+    filePath: module.filePath,
+    classification: matrixClassification,
+    confidence,
+    flags: {
+      staticReachable,
+      protectedDynamic,
+      runtimeObserved
+    },
+    dynamicRoot: module.dynamicRoot
+      ? {
+        type: module.dynamicRoot.type,
+        pattern: module.dynamicRoot.pattern,
+        confidenceWeight: getDynamicRootWeight(module.dynamicRoot)
+      }
+      : null
+  };
+});
 
 const governanceReport = {
   protectedRootsCount: dynamicRoots.roots.length,
@@ -200,6 +328,26 @@ const jsGovernanceReport = {
 };
 
 await fs.writeFile('artifacts/js-governance-report.json', `${JSON.stringify(jsGovernanceReport, null, 2)}\n`, 'utf8');
+
+const moduleReachabilityMatrix = {
+  timestampUtc: new Date().toISOString(),
+  runtimeObservedSource: RUNTIME_OBSERVED_PATH,
+  summary: {
+    totalModules: moduleMatrix.length,
+    staticReachableCount: correlationClassification.staticReachable.length,
+    runtimeObservedCount: correlationClassification.runtimeObserved.length,
+    protectedButUnusedCount: correlationClassification.protectedButUnused.length,
+    trueDeadCandidateCount: correlationClassification.trueDeadCandidates.length
+  },
+  classification: correlationClassification,
+  modules: moduleMatrix
+};
+
+await fs.writeFile(
+  'artifacts/module-reachability-matrix.json',
+  `${JSON.stringify(moduleReachabilityMatrix, null, 2)}\n`,
+  'utf8'
+);
 
 if (violations.length > 0) {
   console.error('[integrity] static graph validation failed. See reports/integrity/static-graph.json');
