@@ -175,6 +175,19 @@ function beginInitIsolationTracking(context) {
     PerformanceObserver: scope.PerformanceObserver
   };
 
+  const boundOriginals = {
+    setTimeout: typeof originals.setTimeout === 'function' ? originals.setTimeout.bind(scope) : originals.setTimeout,
+    clearTimeout: typeof originals.clearTimeout === 'function' ? originals.clearTimeout.bind(scope) : originals.clearTimeout,
+    setInterval: typeof originals.setInterval === 'function' ? originals.setInterval.bind(scope) : originals.setInterval,
+    clearInterval: typeof originals.clearInterval === 'function' ? originals.clearInterval.bind(scope) : originals.clearInterval,
+    requestAnimationFrame: typeof originals.requestAnimationFrame === 'function'
+      ? originals.requestAnimationFrame.bind(scope)
+      : originals.requestAnimationFrame,
+    cancelAnimationFrame: typeof originals.cancelAnimationFrame === 'function'
+      ? originals.cancelAnimationFrame.bind(scope)
+      : originals.cancelAnimationFrame
+  };
+
   const wrapObserver = (OriginalObserver) => {
     if (typeof OriginalObserver !== 'function') {
       return OriginalObserver;
@@ -191,51 +204,51 @@ function beginInitIsolationTracking(context) {
     return WrappedObserver;
   };
 
-  if (typeof originals.setTimeout === 'function') {
+  if (typeof boundOriginals.setTimeout === 'function') {
     scope.setTimeout = (...args) => {
-      const id = Reflect.apply(originals.setTimeout, scope, args);
+      const id = boundOriginals.setTimeout(...args);
       tracked.timeoutIds.add(id);
       return id;
     };
   }
 
-  if (typeof originals.clearTimeout === 'function') {
+  if (typeof boundOriginals.clearTimeout === 'function') {
     scope.clearTimeout = (...args) => {
       const [id] = args;
       tracked.timeoutIds.delete(id);
-      return Reflect.apply(originals.clearTimeout, scope, args);
+      return boundOriginals.clearTimeout(...args);
     };
   }
 
-  if (typeof originals.setInterval === 'function') {
+  if (typeof boundOriginals.setInterval === 'function') {
     scope.setInterval = (...args) => {
-      const id = Reflect.apply(originals.setInterval, scope, args);
+      const id = boundOriginals.setInterval(...args);
       tracked.intervalIds.add(id);
       return id;
     };
   }
 
-  if (typeof originals.clearInterval === 'function') {
+  if (typeof boundOriginals.clearInterval === 'function') {
     scope.clearInterval = (...args) => {
       const [id] = args;
       tracked.intervalIds.delete(id);
-      return Reflect.apply(originals.clearInterval, scope, args);
+      return boundOriginals.clearInterval(...args);
     };
   }
 
-  if (typeof originals.requestAnimationFrame === 'function') {
+  if (typeof boundOriginals.requestAnimationFrame === 'function') {
     scope.requestAnimationFrame = (...args) => {
-      const id = Reflect.apply(originals.requestAnimationFrame, scope, args);
+      const id = boundOriginals.requestAnimationFrame(...args);
       tracked.rafIds.add(id);
       return id;
     };
   }
 
-  if (typeof originals.cancelAnimationFrame === 'function') {
+  if (typeof boundOriginals.cancelAnimationFrame === 'function') {
     scope.cancelAnimationFrame = (...args) => {
       const [id] = args;
       tracked.rafIds.delete(id);
-      return Reflect.apply(originals.cancelAnimationFrame, scope, args);
+      return boundOriginals.cancelAnimationFrame(...args);
     };
   }
 
