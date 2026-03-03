@@ -7,6 +7,11 @@
 
     var initialized = false;
     var inFlightNavigation = null;
+    var SIMPLE_TOOLS = [
+        'base64-encode',
+        'case-converter',
+        'json-minifier'
+    ];
 
     function getAppRoot(doc) {
         return doc.getElementById('app-page-root');
@@ -51,6 +56,26 @@
         }
 
         return true;
+    }
+
+    function shouldUseSpaNavigation(href) {
+        var destination;
+        try {
+            destination = new URL(href, window.location.href);
+        } catch (_error) {
+            return false;
+        }
+
+        if (!destination.pathname.startsWith('/tools/')) {
+            return true;
+        }
+
+        var segments = destination.pathname.split('/').filter(function (segment) {
+            return segment.length > 0;
+        });
+        var slug = segments.length > 1 ? segments[1] : '';
+
+        return SIMPLE_TOOLS.indexOf(slug) !== -1;
     }
 
     async function loadAndSwap(url, pushHistory) {
@@ -109,6 +134,10 @@
             return;
         }
 
+        if (!shouldUseSpaNavigation(anchor.href)) {
+            return;
+        }
+
         event.preventDefault();
 
         loadAndSwap(anchor.href, true).catch(function () {
@@ -117,6 +146,11 @@
     }
 
     function handlePopState() {
+        if (!shouldUseSpaNavigation(window.location.href)) {
+            window.location.reload();
+            return;
+        }
+
         loadAndSwap(window.location.href, false).catch(function () {
             window.location.reload();
         });
