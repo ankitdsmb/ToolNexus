@@ -53,6 +53,10 @@ function isDevIsolationModeEnabled() {
   return window.ToolNexusConfig?.devIsolationMode === true;
 }
 
+function getPerformanceBudgetMs() {
+  return window.ToolNexusConfig?.performanceBudgetMs ?? 120;
+}
+
 export function inspectLifecycleContract(module) {
   const candidates = toCandidates(module);
 
@@ -74,14 +78,42 @@ export function inspectLifecycleContract(module) {
 
 async function mountNormalizedLifecycle({ module, slug, root, manifest, context, capabilities }) {
   const normalized = normalizeToolExecution(module, capabilities, { slug, root, context });
+  const devMode = isDevIsolationModeEnabled();
+  const budget = getPerformanceBudgetMs();
   await normalized.create();
 
   try {
-    if (isDevIsolationModeEnabled() && context && typeof context === 'object') {
+    if (devMode && context && typeof context === 'object') {
       context.__preInitWindowKeys = new Set(Object.getOwnPropertyNames(window));
     }
 
-    await normalized.init();
+    let longTaskObserver;
+    if (devMode && typeof PerformanceObserver === 'function') {
+      try {
+        longTaskObserver = new PerformanceObserver((entriesList) => {
+          for (const entry of entriesList.getEntries()) {
+            if (entry?.duration > 50) {
+              console.warn('[ToolPerformance] Long task detected during init', entry.duration);
+            }
+          }
+        });
+        longTaskObserver.observe({ entryTypes: ['longtask'] });
+      } catch {
+        // ignore performance observer setup errors
+      }
+    }
+
+    const initStart = performance.now();
+    try {
+      await normalized.init();
+    } finally {
+      longTaskObserver?.disconnect();
+    }
+    const initDuration = performance.now() - initStart;
+
+    if (devMode && initDuration > budget) {
+      console.warn('[ToolPerformance] Init exceeded budget', { slug, duration: initDuration, budget });
+    }
   } catch (error) {
     try {
       await normalized.destroy();
@@ -106,9 +138,14 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
   const lifecycleResult = toLifecycleResult({
     mounted: !executionOnly && normalized.metadata.mode !== 'none',
     cleanup: async () => {
+      const destroyStart = performance.now();
       try {
         await normalized.destroy?.();
       } finally {
+        const destroyDuration = performance.now() - destroyStart;
+        if (devMode && destroyDuration > budget) {
+          console.warn('[ToolPerformance] Destroy exceeded budget', { slug, duration: destroyDuration, budget });
+        }
         context?.__executeDisposables?.();
       }
     },
