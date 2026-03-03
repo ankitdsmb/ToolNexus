@@ -24,7 +24,7 @@ public sealed class MiniLmInferenceEngine : IDisposable
         var memoryBeforeBytes = GC.GetTotalMemory(forceFullCollection: false);
         var modelFileInfo = new FileInfo(modelPath);
 
-        var sessionOptions = new SessionOptions
+        var sessionOptions = new Microsoft.ML.OnnxRuntime.SessionOptions
         {
             GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_EXTENDED
         };
