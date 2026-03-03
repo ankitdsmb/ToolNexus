@@ -144,6 +144,143 @@ function createLifecycleSignatureError(slug, details = {}) {
   return error;
 }
 
+function beginInitIsolationTracking(context) {
+  const scope = typeof window === 'object' ? window : globalThis;
+  const tracked = {
+    timeoutIds: new Set(),
+    intervalIds: new Set(),
+    rafIds: new Set(),
+    observerInstances: new Set()
+  };
+
+  const originals = {
+    setTimeout: scope.setTimeout,
+    setInterval: scope.setInterval,
+    requestAnimationFrame: scope.requestAnimationFrame,
+    MutationObserver: scope.MutationObserver,
+    ResizeObserver: scope.ResizeObserver,
+    IntersectionObserver: scope.IntersectionObserver
+  };
+
+  const wrapObserver = (OriginalObserver) => {
+    if (typeof OriginalObserver !== 'function') {
+      return OriginalObserver;
+    }
+
+    function WrappedObserver(...args) {
+      const instance = new OriginalObserver(...args);
+      tracked.observerInstances.add(instance);
+      return instance;
+    }
+
+    WrappedObserver.prototype = OriginalObserver.prototype;
+    Object.setPrototypeOf(WrappedObserver, OriginalObserver);
+    return WrappedObserver;
+  };
+
+  if (typeof originals.setTimeout === 'function') {
+    scope.setTimeout = (...args) => {
+      const id = originals.setTimeout(...args);
+      tracked.timeoutIds.add(id);
+      return id;
+    };
+  }
+
+  if (typeof originals.setInterval === 'function') {
+    scope.setInterval = (...args) => {
+      const id = originals.setInterval(...args);
+      tracked.intervalIds.add(id);
+      return id;
+    };
+  }
+
+  if (typeof originals.requestAnimationFrame === 'function') {
+    scope.requestAnimationFrame = (...args) => {
+      const id = originals.requestAnimationFrame(...args);
+      tracked.rafIds.add(id);
+      return id;
+    };
+  }
+
+  scope.MutationObserver = wrapObserver(originals.MutationObserver);
+  scope.ResizeObserver = wrapObserver(originals.ResizeObserver);
+  scope.IntersectionObserver = wrapObserver(originals.IntersectionObserver);
+
+  if (context && typeof context === 'object') {
+    context.toolIsolationTracking = tracked;
+  }
+
+  let restored = false;
+
+  return () => {
+    if (restored) {
+      return;
+    }
+
+    restored = true;
+    scope.setTimeout = originals.setTimeout;
+    scope.setInterval = originals.setInterval;
+    scope.requestAnimationFrame = originals.requestAnimationFrame;
+    scope.MutationObserver = originals.MutationObserver;
+    scope.ResizeObserver = originals.ResizeObserver;
+    scope.IntersectionObserver = originals.IntersectionObserver;
+  };
+}
+
+function cleanupTrackedInitResources(context) {
+  const tracked = context?.toolIsolationTracking;
+  if (!tracked) {
+    return;
+  }
+
+  let clearedOrDisconnectedCount = 0;
+
+  for (const timeoutId of tracked.timeoutIds ?? []) {
+    try {
+      clearTimeout(timeoutId);
+      clearedOrDisconnectedCount += 1;
+    } catch {
+      // ignore timeout cleanup failures
+    }
+  }
+
+  for (const intervalId of tracked.intervalIds ?? []) {
+    try {
+      clearInterval(intervalId);
+      clearedOrDisconnectedCount += 1;
+    } catch {
+      // ignore interval cleanup failures
+    }
+  }
+
+  for (const rafId of tracked.rafIds ?? []) {
+    try {
+      cancelAnimationFrame(rafId);
+      clearedOrDisconnectedCount += 1;
+    } catch {
+      // ignore RAF cleanup failures
+    }
+  }
+
+  for (const observer of tracked.observerInstances ?? []) {
+    try {
+      observer?.disconnect?.();
+      clearedOrDisconnectedCount += 1;
+    } catch {
+      // ignore observer cleanup failures
+    }
+  }
+
+  if (clearedOrDisconnectedCount > 0) {
+    console.warn('[ToolIsolation] Cleared orphan timers', clearedOrDisconnectedCount);
+  }
+
+  tracked.timeoutIds?.clear?.();
+  tracked.intervalIds?.clear?.();
+  tracked.rafIds?.clear?.();
+  tracked.observerInstances?.clear?.();
+}
+
 function validateLifecycleInitSignature(initFn, slug) {
   if (typeof initFn !== 'function') {
     return 'STRICT';
@@ -248,9 +385,12 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
       await safeInitScheduler();
     }
 
-    if (typeof target?.init === 'function') {
-      logger.debug('Invoking normalized init lifecycle.', { slug, mode });
-      return withDomTracking(root, context, async () => {
+    const restoreInitIsolation = beginInitIsolationTracking(context);
+
+    try {
+      if (typeof target?.init === 'function') {
+        logger.debug('Invoking normalized init lifecycle.', { slug, mode });
+        return withDomTracking(root, context, async () => {
         if (shouldGuardLifecycleDiagnostics()) {
           console.debug('[Runtime] lifecycle init context', context);
         }
@@ -352,18 +492,21 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
         });
         throw adaptiveError;
       });
+      }
+
+      if (typeof target?.runTool === 'function' && mode !== 'legacy.runTool.execution-only') {
+        logger.debug('Invoking normalized runTool lifecycle.', { slug, mode });
+        const runToolResult = withDomTracking(root, context, () => target.runTool(root, context?.manifest, context));
+        recordStage('init', 'success', { signatureMode: 'runTool' });
+        return runToolResult;
+      }
+
+      recordStage('init', 'success', { signatureMode: 'none' });
+
+      return undefined;
+    } finally {
+      restoreInitIsolation();
     }
-
-    if (typeof target?.runTool === 'function' && mode !== 'legacy.runTool.execution-only') {
-      logger.debug('Invoking normalized runTool lifecycle.', { slug, mode });
-      const runToolResult = withDomTracking(root, context, () => target.runTool(root, context?.manifest, context));
-      recordStage('init', 'success', { signatureMode: 'runTool' });
-      return runToolResult;
-    }
-
-    recordStage('init', 'success', { signatureMode: 'none' });
-
-    return undefined;
   }
 
   async function destroy() {
@@ -375,6 +518,7 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
       }
     } finally {
       context?.__executeDisposables?.();
+      cleanupTrackedInitResources(context);
     }
 
     await context?.destroy?.();
