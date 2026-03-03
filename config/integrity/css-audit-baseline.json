@@ -1,0 +1,21 @@
+{
+  "totalImportant": 842,
+  "duplicateSelectorCount": 385,
+  "uniqueBreakpoints": [
+    "1024px",
+    "1080px",
+    "1100px",
+    "1800px",
+    "420px",
+    "480px",
+    "680px",
+    "720px",
+    "760px",
+    "768px",
+    "900px",
+    "920px",
+    "960px",
+    "980px",
+    "992px"
+  ]
+}
