@@ -49,6 +49,10 @@ function disposeOrphanMonacoEditors() {
   editors.clear();
 }
 
+function isDevIsolationModeEnabled() {
+  return window.ToolNexusConfig?.devIsolationMode === true;
+}
+
 export function inspectLifecycleContract(module) {
   const candidates = toCandidates(module);
 
@@ -73,6 +77,10 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
   await normalized.create();
 
   try {
+    if (isDevIsolationModeEnabled() && context && typeof context === 'object') {
+      context.__preInitWindowKeys = new Set(Object.getOwnPropertyNames(window));
+    }
+
     await normalized.init();
   } catch (error) {
     try {

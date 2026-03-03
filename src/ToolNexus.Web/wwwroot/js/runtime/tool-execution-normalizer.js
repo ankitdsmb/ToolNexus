@@ -3,10 +3,19 @@ import { createRuntimeLogger } from './runtime-logger.js';
 
 const logger = createRuntimeLogger({ source: 'tool-execution-normalizer' });
 const LIFECYCLE_SIGNATURE_ERROR_CODE = 'LIFECYCLE_SIGNATURE_INVALID';
+const GLOBAL_MUTATION_ALLOWLIST = new Set([
+  '__toolnexus_monaco_registry',
+  '__toolnexus_monaco_instances',
+  '__toolnexus_allowlist_cache'
+]);
 let hasLoggedInitContextInjected = false;
 
 function shouldGuardLifecycleDiagnostics() {
   return Boolean(import.meta?.env?.DEV || window.ToolNexusLogging?.runtimeDebugEnabled === true);
+}
+
+function isDevIsolationModeEnabled() {
+  return window.ToolNexusConfig?.devIsolationMode === true;
 }
 
 function isValidLifecycleResultShape(result) {
@@ -522,6 +531,25 @@ export function normalizeToolExecution(toolModule, capability = {}, { slug = '',
     }
 
     await context?.destroy?.();
+
+    if (isDevIsolationModeEnabled()) {
+      const preInitWindowKeys = context?.__preInitWindowKeys;
+      if (preInitWindowKeys instanceof Set) {
+        const postDestroyKeys = new Set(Object.getOwnPropertyNames(window));
+        const addedKeys = [];
+
+        for (const key of postDestroyKeys) {
+          if (!preInitWindowKeys.has(key) && !GLOBAL_MUTATION_ALLOWLIST.has(key)) {
+            addedKeys.push(key);
+          }
+        }
+
+        if (addedKeys.length > 0) {
+          console.warn('[ToolIsolation] Global window pollution detected', { addedKeys });
+        }
+      }
+    }
+
     recordStage('destroy', 'success');
   }
 
