@@ -110,6 +110,9 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
       longTaskObserver?.disconnect();
     }
     const initDuration = performance.now() - initStart;
+    if (window.__enableRuntimePerfTelemetry === true && context && typeof context === 'object') {
+      context.__toolInitTimeMs = initDuration;
+    }
 
     if (devMode && initDuration > budget) {
       console.warn('[ToolPerformance] Init exceeded budget', { slug, duration: initDuration, budget });

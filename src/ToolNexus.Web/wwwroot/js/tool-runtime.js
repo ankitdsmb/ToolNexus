@@ -149,6 +149,27 @@ const TOOL_MOUNT_MODES = Object.freeze({
   COMMAND: 'command'
 });
 
+function isRuntimePerfTelemetryEnabled() {
+  return window.__enableRuntimePerfTelemetry === true;
+}
+
+function ensureRuntimePerfLog() {
+  if (!Array.isArray(window.__toolRuntimePerfLog)) {
+    window.__toolRuntimePerfLog = [];
+  }
+
+  return window.__toolRuntimePerfLog;
+}
+
+function appendRuntimePerfLog(entry) {
+  if (!isRuntimePerfTelemetryEnabled()) {
+    return;
+  }
+
+  const log = ensureRuntimePerfLog();
+  log.push(entry);
+}
+
 function scheduleNonCriticalTask(task) {
   if (typeof task !== 'function') {
     return;
@@ -246,6 +267,7 @@ export function createToolRuntime({
     moduleImportTimeMs: 0,
     runtimeBootTimeMs: 0
   };
+  const runtimePerfSessions = new Map();
 
   const unsubscribeLifecycleRetryDiagnostics = () => {};
 
@@ -1428,8 +1450,16 @@ export function createToolRuntime({
         const contractRootSnapshot = freezeDomContractRoots(root);
         let result;
         try {
+          const lifecycleStartedAt = isRuntimePerfTelemetryEnabled() ? now() : 0;
           emit('lifecycle_stage_trace', { toolSlug: slug, metadata: { stage: 'lifecycle_create_init_start' } });
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
+          if (lifecycleStartedAt) {
+            const session = runtimePerfSessions.get(slug);
+            if (session) {
+              session.mountTimeMs = now() - lifecycleStartedAt;
+              session.initTimeMs = Number(executionContext?.__toolInitTimeMs ?? 0);
+            }
+          }
           emit('lifecycle_stage_trace', {
             toolSlug: slug,
             metadata: {
@@ -1756,6 +1786,26 @@ export function createToolRuntime({
 
     emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
     runtimeMetrics.runtimeBootTimeMs = now() - runtimeStartedAt;
+    if (isRuntimePerfTelemetryEnabled()) {
+      const session = runtimePerfSessions.get(slug) ?? {
+        toolSlug: slug,
+        bootstrapStartAt: runtimeStartedAt,
+        bootstrapTimeMs: 0,
+        mountTimeMs: 0,
+        initTimeMs: 0
+      };
+      session.bootstrapTimeMs = now() - session.bootstrapStartAt;
+      session.totalRuntimeMs = now() - runtimeStartedAt;
+      appendRuntimePerfLog({
+        toolSlug: slug,
+        bootstrapTimeMs: session.bootstrapTimeMs,
+        mountTimeMs: session.mountTimeMs,
+        initTimeMs: session.initTimeMs,
+        totalRuntimeMs: session.totalRuntimeMs,
+        timestamp: Date.now()
+      });
+      runtimePerfSessions.delete(slug);
+    }
     logger.info(`Bootstrap completed for "${slug}".`);
   }
 
@@ -1790,6 +1840,16 @@ export function createToolRuntime({
 
       logger.info(`Bootstrapping tool runtime for "${slug}".`);
       root.dataset.mountMode = TOOL_MOUNT_MODES.FULLSCREEN;
+
+      if (isRuntimePerfTelemetryEnabled()) {
+        runtimePerfSessions.set(slug, {
+          toolSlug: slug,
+          bootstrapStartAt: now(),
+          bootstrapTimeMs: 0,
+          mountTimeMs: 0,
+          initTimeMs: 0
+        });
+      }
 
       try {
         await safeMountTool({ root, slug });
