@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Dependency integrity gate
+        run: npm run integrity:deps
+
       - name: Static integrity gates
         run: npm run integrity:ci
 
@@ -46,6 +49,13 @@ jobs:
         with:
           name: integrity-reports
           path: reports/integrity/*.json
+
+      - name: Upload dependency audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: artifacts/dependency-report.json
 
       - name: Stop ToolNexus web server
         if: always()

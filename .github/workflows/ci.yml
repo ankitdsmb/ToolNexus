@@ -43,6 +43,9 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
+      - name: Dependency integrity gate
+        run: npm run integrity:deps
+
       - name: Cache Playwright browser binaries
         uses: actions/cache@v4
         with:
@@ -107,3 +110,10 @@ jobs:
 
       - name: Build production Docker image
         run: docker build -f dockerfile -t toolnexus-api:ci .
+
+      - name: Upload dependency audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: artifacts/dependency-report.json
