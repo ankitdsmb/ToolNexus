@@ -1,7 +1,10 @@
+import { prefetchToolModule } from './runtime/tool-prefetch-engine.js';
+
 const TOOL_ROUTE_PATTERN = /^\/tools\/([^/?#]+)/i;
 
 const controllerState = {
   initialized: false,
+  hoverPrefetchInstalled: false,
   activeRequestId: 0,
   activeSlug: null,
   inFlightSlug: null
@@ -194,10 +197,34 @@ function installPopStateHandler() {
   });
 }
 
+function installHoverPrefetchDelegation() {
+  if (controllerState.hoverPrefetchInstalled) {
+    return;
+  }
+
+  controllerState.hoverPrefetchInstalled = true;
+
+  document.addEventListener('mouseover', (event) => {
+    const card = event.target.closest?.('[data-tool-slug]');
+    if (!card) {
+      return;
+    }
+
+    const slug = card.getAttribute('data-tool-slug');
+    if (!slug) {
+      return;
+    }
+
+    prefetchToolModule(slug);
+  });
+}
+
 function initShellController() {
   if (controllerState.initialized) {
     return;
   }
+
+  installHoverPrefetchDelegation();
 
   if (!document.querySelector('#tool-root[data-tool-root="true"]')) {
     return;
@@ -215,5 +242,6 @@ function initShellController() {
   installNavigationInterceptor();
   installPopStateHandler();
 }
+
 
 initShellController();
