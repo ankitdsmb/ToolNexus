@@ -1,0 +1,5 @@
+/* CSS Cascade Layers governance foundation */
+@layer tokens, base, components, layout, overrides;
+
+/* Wrap token source into the tokens layer */
+@import url("./tokens.css") layer(tokens);
