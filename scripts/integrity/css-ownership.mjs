@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { extractClassSelectorsFromCss } from './css-selector-extractor.mjs';
+import { extractClassSelectorsFromCss, extractSelectorDeclarationsFromCss } from './css-selector-extractor.mjs';
 
 const repoRoot = process.cwd();
 const cssRoot = path.join(repoRoot, 'src', 'ToolNexus.Web', 'wwwroot', 'css');
@@ -19,175 +19,88 @@ async function listCssFiles(dir, results = []) {
   return results;
 }
 
-function stripComments(value) {
-  return value.replace(/\/\*[\s\S]*?\*\//g, '');
-}
-
-function collapseWhitespace(value) {
-  return value.replace(/\s+/g, ' ').trim();
-}
-
-function normalizeMediaContext(header) {
-  return collapseWhitespace(header.toLowerCase()) || 'GLOBAL';
-}
-
-function splitSelectors(header) {
-  return header
-    .split(',')
-    .map((selector) => collapseWhitespace(selector))
-    .filter(Boolean);
-}
-
-function splitDeclarations(block) {
-  const declarations = [];
-  let current = '';
-  let inString = false;
-  let quote = '';
-  let escaped = false;
-  let parenDepth = 0;
-
-  for (const char of block) {
-    if (inString) {
-      current += char;
-      if (escaped) {
-        escaped = false;
-      } else if (char === '\\') {
-        escaped = true;
-      } else if (char === quote) {
-        inString = false;
-        quote = '';
-      }
-      continue;
-    }
-
-    if (char === '"' || char === "'") {
-      inString = true;
-      quote = char;
-      current += char;
-      continue;
-    }
-
-    if (char === '(') {
-      parenDepth += 1;
-      current += char;
-      continue;
-    }
-
-    if (char === ')') {
-      parenDepth = Math.max(0, parenDepth - 1);
-      current += char;
-      continue;
-    }
-
-    if (char === ';' && parenDepth === 0) {
-      declarations.push(current);
-      current = '';
-      continue;
-    }
-
-    current += char;
-  }
-
-  if (current.trim()) declarations.push(current);
-  return declarations;
-}
-
 function normalizeDeclarationBlock(block) {
-  const sanitized = stripComments(block);
-  const normalizedDeclarations = splitDeclarations(sanitized)
-    .map((entry) => entry.trim())
+  const stripped = block.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const normalized = stripped
+    .replace(/\s+/g, ' ')
+    .replace(/\s*:\s*/g, ':')
+    .replace(/\s*;\s*/g, ';')
+    .trim();
+
+  const properties = normalized
+    .split(';')
+    .map((part) => part.trim())
     .filter(Boolean)
-    .map((entry) => {
-      const separatorIndex = entry.indexOf(':');
-      if (separatorIndex < 0) return null;
-      const property = collapseWhitespace(entry.slice(0, separatorIndex).toLowerCase());
-      const value = collapseWhitespace(entry.slice(separatorIndex + 1));
-      if (!property || !value) return null;
-      return `${property}:${value}`;
-    })
-    .filter(Boolean)
+    .map((part) => part.replace(/\s*!important\s*$/i, '!important'))
     .sort((a, b) => a.localeCompare(b));
 
-  return normalizedDeclarations.join(';');
+  return properties.join(';');
 }
 
-function parseCssRules(cssText, currentMediaContext = 'GLOBAL', startIndex = 0) {
-  const rules = [];
-  let i = startIndex;
-
-  while (i < cssText.length) {
-    while (i < cssText.length && /\s/.test(cssText[i])) i += 1;
-    if (i >= cssText.length) break;
-    if (cssText[i] === '}') {
-      return { rules, nextIndex: i + 1 };
-    }
-
-    const headerStart = i;
-    while (i < cssText.length && cssText[i] !== '{' && cssText[i] !== '}') i += 1;
-    if (i >= cssText.length || cssText[i] === '}') {
-      if (i < cssText.length && cssText[i] === '}') return { rules, nextIndex: i + 1 };
-      break;
-    }
-
-    const header = collapseWhitespace(cssText.slice(headerStart, i));
-    i += 1; // skip {
-
-    if (!header) {
-      const nested = parseCssRules(cssText, currentMediaContext, i);
-      i = nested.nextIndex;
-      continue;
-    }
-
-    if (header.startsWith('@media')) {
-      const nestedMediaContext = normalizeMediaContext(header);
-      const nested = parseCssRules(cssText, nestedMediaContext, i);
-      rules.push(...nested.rules);
-      i = nested.nextIndex;
-      continue;
-    }
-
-    if (header.startsWith('@')) {
-      const nested = parseCssRules(cssText, currentMediaContext, i);
-      rules.push(...nested.rules);
-      i = nested.nextIndex;
-      continue;
-    }
-
-    const declarationStart = i;
-    while (i < cssText.length && cssText[i] !== '}') i += 1;
-    const declarationBlock = cssText.slice(declarationStart, i);
-    const normalizedDeclarationBlock = normalizeDeclarationBlock(declarationBlock);
-
-    for (const selector of splitSelectors(header)) {
-      rules.push({
-        selector,
-        mediaContext: currentMediaContext,
-        normalizedDeclarationBlock
-      });
-    }
-
-    if (i < cssText.length && cssText[i] === '}') i += 1;
-  }
-
-  return { rules, nextIndex: i };
+function hashDeclarationIdentity(selector, mediaContext, normalizedBlock) {
+  return crypto
+    .createHash('sha256')
+    .update(`${selector}|${mediaContext}|${normalizedBlock}`)
+    .digest('hex');
 }
 
 const cssFiles = (await listCssFiles(cssRoot)).filter((file) => path.basename(file).startsWith('upgread_'));
 
 const bundles = [];
 const selectorOwners = new Map();
-const identityMap = new Map();
+const declarationOwners = new Map();
 
 for (const file of cssFiles) {
   const css = await fs.readFile(file, 'utf8');
-  const sanitizedCss = stripComments(css);
-  const selectors = [...extractClassSelectorsFromCss(sanitizedCss)].sort();
+  const signatures = extractClassRuleSignatures(css);
+  const selectors = [...new Set(signatures.map((signature) => signature.selector))].sort();
   const bundle = path.relative(repoRoot, file).replaceAll('\\', '/');
   bundles.push({ bundle, selectorCount: selectors.length, selectors });
 
   for (const selector of selectors) {
-    if (!selectorOwners.has(selector)) selectorOwners.set(selector, []);
-    selectorOwners.get(selector).push(bundle);
+    if (!selectorOwners.has(selector)) selectorOwners.set(selector, new Set());
+    selectorOwners.get(selector).add(bundle);
+  }
+
+  const declarationRules = extractSelectorDeclarationsFromCss(css);
+  const bundleDeclarationHashes = new Set();
+
+  for (const rule of declarationRules) {
+    const normalizedSelector = rule.selector.replace(/\s+/g, ' ').trim();
+    const normalizedBlock = normalizeDeclarationBlock(rule.declarationBlock);
+    if (!normalizedSelector || !normalizedBlock) continue;
+
+    const mediaContext = rule.mediaContext ? rule.mediaContext.replace(/\s+/g, ' ').trim() : 'global';
+    const declarationHash = hashDeclarationIdentity(normalizedSelector, mediaContext, normalizedBlock);
+    if (bundleDeclarationHashes.has(declarationHash)) continue;
+    bundleDeclarationHashes.add(declarationHash);
+
+    if (!declarationOwners.has(declarationHash)) {
+      declarationOwners.set(declarationHash, {
+        selector: normalizedSelector,
+        mediaContext,
+        normalizedHash: declarationHash,
+        normalizedBlock,
+        bundles: new Set()
+      });
+    }
+
+    declarationOwners.get(declarationHash).bundles.add(bundle);
+  }
+
+  for (const signature of signatures) {
+    const identityKey = `${signature.selector}|${signature.mediaContext}|${signature.declarationBlock}`;
+    const hash = crypto.createHash('sha256').update(identityKey).digest('hex');
+
+    if (!declarationIdentityOwners.has(hash)) {
+      declarationIdentityOwners.set(hash, {
+        selector: signature.selector,
+        mediaContext: signature.mediaContext,
+        bundles: new Set()
+      });
+    }
+
+    declarationIdentityOwners.get(hash).bundles.add(bundle);
   }
 
   const { rules } = parseCssRules(sanitizedCss);
@@ -210,26 +123,30 @@ for (const file of cssFiles) {
   }
 }
 
-const selectorOverlapCount = [...selectorOwners.values()].filter((owners) => owners.length > 1).length;
+const selectorOverlaps = [...selectorOwners.entries()]
+  .map(([selector, owners]) => ({ selector, owners: [...owners].sort() }))
+  .filter(({ owners }) => owners.length > 1)
+  .sort((a, b) => b.owners.length - a.owners.length || a.selector.localeCompare(b.selector));
 
-const duplicates = [...identityMap.values()]
-  .map((item) => ({
-    selector: item.selector,
-    mediaContext: item.mediaContext,
-    hash: item.hash,
-    bundles: [...item.bundles].sort()
+const duplicates = [...declarationOwners.values()]
+  .map((entry) => ({
+    selector: entry.selector,
+    mediaContext: entry.mediaContext,
+    bundles: [...entry.bundles].sort(),
+    normalizedHash: entry.normalizedHash
   }))
-  .filter((item) => item.bundles.length > 1)
+  .filter((entry) => entry.bundles.length > 1)
   .sort((a, b) => b.bundles.length - a.bundles.length || a.selector.localeCompare(b.selector));
 
 const report = {
   generatedAtUtc: new Date().toISOString(),
   bundleCount: bundles.length,
   uniqueSelectorCount: selectorOwners.size,
-  selectorOverlapCount,
+  selectorOverlapCount: selectorOverlaps.length,
   identicalDeclarationDuplicateCount: duplicates.length,
   bundles: bundles.sort((a, b) => a.bundle.localeCompare(b.bundle)),
-  duplicates
+  duplicates,
+  selectorOverlaps
 };
 
 const outputPath = path.join(repoRoot, 'artifacts', 'css-duplication-matrix.json');

@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-03-03T10:17:47.234Z",
+  "generatedAtUtc": "2026-03-03T10:06:20.073Z",
   "bundleCount": 4,
   "uniqueSelectorCount": 144,
   "selectorOverlapCount": 9,
@@ -182,6 +182,74 @@
         "upgread_theme-toggle",
         "upgread_trust-chip",
         "upgread_workspace"
+      ]
+    }
+  ],
+  "duplicates": [],
+  "selectorOverlaps": [
+    {
+      "selector": "upgread_workspace",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_pages.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "app-shell",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "container",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "shell-layer--workspace",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_ui-system.css"
+      ]
+    },
+    {
+      "selector": "tool-focus-mode",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-md-section",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-seo",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-shell-page__docs",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
+      ]
+    },
+    {
+      "selector": "tool-shell-page__workspace",
+      "owners": [
+        "src/ToolNexus.Web/wwwroot/css/upgread_shared-primitives.css",
+        "src/ToolNexus.Web/wwwroot/css/upgread_tool-execution-dna.css"
       ]
     }
   ],
