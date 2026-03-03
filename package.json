@@ -45,5 +45,9 @@
   },
   "dependencies": {
     "monaco-editor": "^0.55.1"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.52.3",
+    "@rollup/wasm-node": "^4.52.3"
   }
 }
