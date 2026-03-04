@@ -1,0 +1,39 @@
+:where(.tool-workspace) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 300px);
+  gap: 14px;
+  align-items: start;
+}
+
+:where(.tool-workspace-header, .execution-toolbar, .execution-workspace-stack, .workspace-mobile-statusbar) { grid-column: 1; }
+:where(.workspace-knowledge-rail) { grid-column: 2; grid-row: 1 / span 5; }
+
+:where(.execution-workspace-stack) {
+  display: grid;
+  gap: 12px;
+}
+
+:where(.execution-status-shell) {
+  display: grid;
+  gap: 8px;
+}
+
+:where(.execution-surface) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+:where(.execution-surface[data-layout='stacked']) { grid-template-columns: 1fr; }
+
+@media (max-width: 980px) {
+  :where(.tool-workspace) { grid-template-columns: 1fr; }
+  :where(.workspace-knowledge-rail) { grid-column: 1; grid-row: auto; }
+}
+
+@media (max-width: 760px) {
+  :where(.execution-surface) { grid-template-columns: 1fr; }
+  :where(.workspace-input[data-mobile-hidden='true'], .workspace-output-panel[data-mobile-hidden='true'], .workspace-knowledge-rail[data-mobile-hidden='true']) {
+    display: none;
+  }
+}

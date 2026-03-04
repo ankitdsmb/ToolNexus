@@ -37,12 +37,16 @@
                 <div data-tool-status="true"
                      data-runtime-status-primary="true"
                      class="tool-execution-status runtime-metrics-row tn-runtime-skeleton"
-                     role="status"
-                     aria-live="polite">
+                     role="status">
                     <span class="tn-skeleton-chip"></span>
                     <span>Ready · Initializing execution intelligence…</span>
                 </div>
                 <section class="execution-timeline" data-execution-timeline="true" aria-label="Execution timeline"></section>
+            </section>
+
+            <section class="workspace-mobile-statusbar" data-mobile-statusbar="true" aria-label="Tool runtime status">
+                <strong class="workspace-mobile-statusbar__title">@Model.Tool.Title</strong>
+                <span class="workspace-mobile-statusbar__chip" data-mobile-status-chip="true">idle</span>
             </section>
 
             <footer data-tool-followup="true"

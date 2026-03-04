@@ -944,6 +944,13 @@ export function createUnifiedToolControl({
         } else {
           ensureIcon(status, 'runtime');
         }
+
+        shell.dispatchEvent(new CustomEvent('toolnexus:lifecycle', {
+          detail: {
+            phase: normalized,
+            startedAt: Date.now()
+          }
+        }));
         return;
       }
 

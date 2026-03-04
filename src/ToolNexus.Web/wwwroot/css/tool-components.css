@@ -1,0 +1,86 @@
+:where(.tool-workspace-header) {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+:where(.execution-toolbar, .result-actions, .workspace-mobile-tabs, .workspace-mobile-actionbar, .workspace-mobile-statusbar) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+:where(.execution-toolbar__left, .execution-toolbar__right, .result-actions__group) {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+:where(.execution-timeline) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+:where(.execution-timeline__step) {
+  white-space: nowrap;
+  font-size: .75rem;
+  opacity: .65;
+}
+:where(.execution-timeline__step.is-active) { opacity: 1; font-weight: 600; }
+
+:where(.workspace-input, .workspace-output-panel, .workspace-knowledge-rail) {
+  min-height: 280px;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+:where(.workspace-output-panel) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+:where(.result-actions__title) {
+  margin: 0;
+  font-size: .85rem;
+}
+
+:where(.result-actions) {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+:where(.workspace-knowledge-rail ul) { margin: 0; padding-left: 18px; }
+:where(.workspace-mobile-tabs, .workspace-mobile-actionbar, .workspace-mobile-statusbar) { display: none; }
+
+:where(.workspace-mobile-statusbar__chip) {
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: capitalize;
+  font-size: .75rem;
+}
+
+@media (max-width: 760px) {
+  :where(.workspace-mobile-tabs, .workspace-mobile-actionbar, .workspace-mobile-statusbar) {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  :where(.workspace-mobile-actionbar) {
+    position: sticky;
+    bottom: 6px;
+    z-index: 4;
+  }
+}
