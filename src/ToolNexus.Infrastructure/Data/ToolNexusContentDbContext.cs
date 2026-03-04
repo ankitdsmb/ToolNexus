@@ -45,6 +45,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<GenerationValidationReportEntity> GenerationValidationReports => Set<GenerationValidationReportEntity>();
     public DbSet<GenerationSandboxReportEntity> GenerationSandboxReports => Set<GenerationSandboxReportEntity>();
     public DbSet<GenerationDecisionEntity> GenerationDecisions => Set<GenerationDecisionEntity>();
+    public DbSet<AiGeneratedToolEntity> AiGeneratedTools => Set<AiGeneratedToolEntity>();
     public DbSet<AiToolPackageEntity> AiToolPackages => Set<AiToolPackageEntity>();
     public DbSet<IntelligenceNodeEntity> IntelligenceNodes => Set<IntelligenceNodeEntity>();
     public DbSet<IntelligenceEdgeEntity> IntelligenceEdges => Set<IntelligenceEdgeEntity>();
@@ -889,6 +890,17 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => x.CorrelationId).HasDatabaseName("idx_generation_decisions_correlation_id");
             entity.HasIndex(x => x.TenantId).HasDatabaseName("idx_generation_decisions_tenant_id");
             entity.HasIndex(x => x.CreatedAtUtc).HasDatabaseName("idx_generation_decisions_created_at").IsDescending();
+        });
+
+        modelBuilder.Entity<AiGeneratedToolEntity>(entity =>
+        {
+            entity.ToTable("ai_generated_tools");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Prompt).HasColumnName("prompt");
+            entity.Property(x => x.Schema).HasColumnName("schema");
+            entity.Property(x => x.Manifest).HasColumnName("manifest");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(32);
         });
 
 
