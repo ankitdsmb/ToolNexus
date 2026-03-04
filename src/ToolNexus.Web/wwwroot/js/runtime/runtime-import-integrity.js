@@ -197,7 +197,15 @@ export async function validateRuntimeModulePath(modulePath) {
     return { valid: true, reason: 'allowlist_unavailable' };
   }
 
-  if (!allowlist.allowedModules.includes(modulePath)) {
+  const isAllowlisted = allowlist.allowedModules.some((allowedModule) => {
+    if (allowedModule === modulePath) {
+      return true;
+    }
+
+    return allowedModule.endsWith('/') && modulePath.startsWith(allowedModule);
+  });
+
+  if (!isAllowlisted) {
     console.warn('[RuntimeImportIntegrity] Invalid modulePath', { modulePath, reason: 'not_allowlisted' });
     return { valid: false, reason: 'not_allowlisted' };
   }
