@@ -29,6 +29,19 @@ function inferActionIcon(node) {
   return node.classList.contains('tool-btn--primary') ? 'play' : null;
 }
 
+function setClassIfNeeded(element, className, enabled) {
+  if (!element) {
+    return;
+  }
+
+  const hasClass = element.classList.contains(className);
+  if (enabled && !hasClass) {
+    element.classList.add(className);
+  } else if (!enabled && hasClass) {
+    element.classList.remove(className);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const page = document.querySelector('.tool-shell-page');
   if (!page) {
@@ -150,16 +163,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    status.classList.toggle('is-loading-visible', false);
-    output.classList.toggle('is-processing-visible', false);
+    setClassIfNeeded(status, 'is-loading-visible', false);
+    setClassIfNeeded(output, 'is-processing-visible', false);
 
     if (!isLoading) {
       return;
     }
 
     loadingIndicatorTimer = window.setTimeout(() => {
-      status.classList.add('is-loading-visible');
-      output.classList.add('is-processing-visible');
+      setClassIfNeeded(status, 'is-loading-visible', true);
+      setClassIfNeeded(output, 'is-processing-visible', true);
     }, 140);
   };
 
@@ -169,12 +182,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    status.classList.remove('is-running', 'is-validating', 'is-streaming');
+    setClassIfNeeded(status, 'is-running', false);
+    setClassIfNeeded(status, 'is-validating', false);
+    setClassIfNeeded(status, 'is-streaming', false);
 
     const state = (status.dataset.executionState || status.dataset.runtimeState || '').toLowerCase();
     const isLoading = state === 'running' || state === 'validating' || state === 'streaming';
     if (isLoading) {
-      status.classList.add(`is-${state}`);
+      setClassIfNeeded(status, `is-${state}`, true);
     }
 
     if (state === 'success') {
@@ -194,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const output = runtime.querySelector('.tn-unified-tool-control__output');
     if (output) {
-      output.classList.toggle('is-processing', isLoading);
+      setClassIfNeeded(output, 'is-processing', isLoading);
     }
 
     scheduleLoadingIndicator(status, output, isLoading);
@@ -210,25 +225,76 @@ document.addEventListener('DOMContentLoaded', () => {
       || /updated|completed|success|ready/i.test(resultStatus.textContent || '');
 
     if (isSuccessful) {
-      page.classList.add('has-runtime-success');
+      setClassIfNeeded(page, 'has-runtime-success', true);
       return;
     }
 
-    page.classList.remove('has-runtime-success');
+    setClassIfNeeded(page, 'has-runtime-success', false);
   };
 
-  const observer = new MutationObserver(() => {
+  let isSyncingUI = false;
+  let rafScheduled = false;
+  const maxMutationsPerFrame = 200;
+  const scheduleUiSync = () => {
+    if (rafScheduled || isSyncingUI) {
+      return;
+    }
+
+    rafScheduled = true;
     window.requestAnimationFrame(() => {
-      updateActionIcons();
-      syncStatusTone();
-      monitorExecutionSuccess();
+      rafScheduled = false;
+      if (isSyncingUI) {
+        return;
+      }
+
+      isSyncingUI = true;
+      try {
+        updateActionIcons();
+        syncStatusTone();
+        monitorExecutionSuccess();
+      } finally {
+        isSyncingUI = false;
+      }
     });
+  };
+
+  const isInsideMonacoEditor = (target) => {
+    if (!target) {
+      return false;
+    }
+
+    const element = target instanceof Element ? target : target.parentElement;
+    return Boolean(element?.closest('.monaco-editor'));
+  };
+
+  const observer = new MutationObserver((mutations) => {
+    if (!mutations.length) {
+      return;
+    }
+
+    if (mutations.length > maxMutationsPerFrame) {
+      console.warn('[tool-shell-feel] Skipping UI sync due to high mutation volume.', mutations.length);
+      return;
+    }
+
+    const hasRelevantMutation = mutations.some((mutation) => !isInsideMonacoEditor(mutation.target));
+    if (!hasRelevantMutation) {
+      return;
+    }
+
+    scheduleUiSync();
   });
 
   runtime.addEventListener('click', (event) => {
     acknowledgeAction(event.target);
   }, true);
-  observer.observe(runtime, { childList: true, subtree: true, attributes: true, characterData: true });
+  observer.observe(runtime, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    characterData: false,
+    attributeFilter: ['data-execution-state', 'data-status', 'class']
+  });
 
   updateActionIcons();
   syncStatusTone();
