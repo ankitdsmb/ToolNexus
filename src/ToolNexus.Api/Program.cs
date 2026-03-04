@@ -108,7 +108,7 @@ builder.Services.AddScoped<DeveloperReputationService>();
 builder.Services.AddScoped<ToolRatingService>();
 builder.Services.AddScoped<ToolSchemaGenerator>();
 builder.Services.AddScoped<ToolManifestGenerator>();
-builder.Services.AddScoped<AiToolGeneratorService>();
+builder.Services.AddScoped<ToolNexus.Api.Services.AIGenerator.AiToolGeneratorService>();
 
 var app = builder.Build();
 
