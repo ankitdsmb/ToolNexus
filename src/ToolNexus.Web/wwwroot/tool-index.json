@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "runtimeAbi": "2.0",
+  "tools": {
+    "css-minifier": {
+      "module": "/js/tools/css-minifier.js",
+      "abi": "2.0",
+      "permissions": ["dom"],
+      "tier": "A"
+    }
+  }
+}

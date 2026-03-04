@@ -28,6 +28,9 @@ import { validateExecutionDensity as defaultExecutionDensityValidator, writeExec
 import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
 import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from './runtime/orchestrator/ai-runtime-orchestrator.js';
 import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtime-import-integrity.js';
+import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
+import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
+import { createToolStateMachine as defaultCreateToolStateMachine } from './runtime/tool-state-machine.js';
 import { manifestPhase } from './runtime-phases/manifest-phase.js';
 import { domPhase } from './runtime-phases/dom-phase.js';
 import { modulePhase } from './runtime-phases/module-phase.js';
@@ -251,7 +254,12 @@ export function createToolRuntime({
   validateExecutionDensity = defaultExecutionDensityValidator,
   writeExecutionDensityReport = defaultWriteExecutionDensityReport,
   applyExecutionIntelligence = defaultApplyExecutionIntelligence,
-  applyAiRuntimeOrchestrator = defaultApplyAiRuntimeOrchestrator
+  applyAiRuntimeOrchestrator = defaultApplyAiRuntimeOrchestrator,
+  loadToolIndex = defaultLoadToolIndex,
+  resolveToolFromIndex = defaultResolveToolFromIndex,
+  resolveToolModuleFromIndex = defaultResolveToolModuleFromIndex,
+  loadToolModule = defaultLoadToolModule,
+  createToolStateMachine = defaultCreateToolStateMachine
 } = {}) {
   const logger = createRuntimeMigrationLogger({ channel: 'runtime' });
   const manifestLogger = createRuntimeMigrationLogger({ channel: 'manifest' });
@@ -886,6 +894,14 @@ export function createToolRuntime({
     runtimeMetrics.bootstrapCount += 1;
     emit('bootstrap_start', { toolSlug: slug });
 
+    await loadToolIndex();
+    const lifecycleState = createToolStateMachine(slug);
+    const transitionLifecycleState = (nextState) => {
+      if (lifecycleState.canTransitionTo(nextState)) {
+        lifecycleState.transition(nextState);
+      }
+    };
+
     const registration = stateRegistry.register({ slug, root, compatibilityMode: 'normalizing' });
     const stateKey = registration.key;
     if (root?.[TOOL_RUNTIME_MOUNTED_KEY] && root?.[TOOL_RUNTIME_MOUNTED_SLUG_KEY] === slug) {
@@ -1257,7 +1273,14 @@ export function createToolRuntime({
 
     const uiMode = normalizeUiMode(manifest.uiMode ?? window.ToolNexusConfig?.runtimeUiMode);
     const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
-    const modulePath = manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
+    const indexedToolDescriptor = resolveToolFromIndex(slug);
+    const indexedModulePath = resolveToolModuleFromIndex(slug);
+    const modulePath = indexedModulePath || manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
+    if (indexedToolDescriptor && typeof manifest === 'object' && manifest) {
+      manifest.runtimeAbi = manifest.runtimeAbi ?? indexedToolDescriptor.abi ?? null;
+      manifest.permissions = manifest.permissions ?? indexedToolDescriptor.permissions ?? [];
+      manifest.tier = manifest.tier ?? indexedToolDescriptor.tier ?? null;
+    }
     runtimeIdentity.uiMode = uiMode;
 
     const reportStrictIntegrityViolation = (errorMessage) => {
@@ -1320,7 +1343,11 @@ export function createToolRuntime({
 
       let importFailed = false;
       try {
-        module = await importModule(modulePath);
+        const canUseIndexedLoader = Boolean(indexedToolDescriptor && indexedModulePath && indexedModulePath === modulePath);
+        module = canUseIndexedLoader
+          ? await loadToolModule(slug)
+          : await importModule(modulePath);
+        transitionLifecycleState('Loaded');
         validateModuleContract(module, [
           'create',
           'init'
@@ -1533,6 +1560,7 @@ export function createToolRuntime({
         try {
           const lifecycleStartedAt = isRuntimePerfTelemetryEnabled() ? now() : 0;
           emit('lifecycle_stage_trace', { toolSlug: slug, metadata: { stage: 'lifecycle_create_init_start' } });
+          transitionLifecycleState('Activated');
           result = await lifecycleAdapter({ module, slug, root, manifest, context: executionContext, capabilities });
           if (lifecycleStartedAt) {
             const session = runtimePerfSessions.get(slug);
@@ -1804,14 +1832,17 @@ export function createToolRuntime({
           }
         });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
+        transitionLifecycleState('Idle');
         stateRegistry.setPhase(stateKey, 'mounted');
         runtimeMetrics.toolsMountedSuccessfully += 1;
         const currentState = stateRegistry.get(stateKey);
         assertPostMount({ root, context: executionContext, slug, state: currentState, lifecycleResult: result });
         root[RUNTIME_CLEANUP_KEY] = async () => {
+          transitionLifecycleState('Suspended');
           try {
             await executionContext.destroy();
           } finally {
+            transitionLifecycleState('Evicted');
             root[TOOL_RUNTIME_MOUNTED_KEY] = false;
             delete root[TOOL_RUNTIME_MOUNTED_SLUG_KEY];
             stateRegistry.clear(stateKey);
