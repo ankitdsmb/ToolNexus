@@ -10,7 +10,17 @@ const SELECTORS = Object.freeze({
   outputHeading: '#toolOutputHeading',
   outputStatus: '#resultStatus',
   toolbar: '.tool-toolbar__actions',
-  outputPanel: '#outputField'
+  outputPanel: '#outputField',
+  websiteUrlInput: '#websiteUrlInput',
+  scanUrlBtn: '#scanUrlBtn',
+  report: '#cssUsageReport',
+  totalCssStat: '#totalCssStat',
+  usedCssStat: '#usedCssStat',
+  unusedCssStat: '#unusedCssStat',
+  optimizationStat: '#optimizationStat',
+  usedCssBar: '#usedCssBar',
+  unusedCssBar: '#unusedCssBar',
+  insights: '#cssInsights'
 });
 
 export function getCssMinifierDom(root) {
@@ -77,6 +87,16 @@ export function getCssMinifierDom(root) {
     shortcutHint: root.querySelector(SELECTORS.shortcutHint),
     outputHeading: root.querySelector(SELECTORS.outputHeading),
     outputStatus: root.querySelector(SELECTORS.outputStatus),
+    websiteUrlInput: root.querySelector(SELECTORS.websiteUrlInput),
+    scanUrlBtn: root.querySelector(SELECTORS.scanUrlBtn),
+    report: root.querySelector(SELECTORS.report),
+    totalCssStat: root.querySelector(SELECTORS.totalCssStat),
+    usedCssStat: root.querySelector(SELECTORS.usedCssStat),
+    unusedCssStat: root.querySelector(SELECTORS.unusedCssStat),
+    optimizationStat: root.querySelector(SELECTORS.optimizationStat),
+    usedCssBar: root.querySelector(SELECTORS.usedCssBar),
+    unusedCssBar: root.querySelector(SELECTORS.unusedCssBar),
+    insights: root.querySelector(SELECTORS.insights),
     clearButton,
     options,
     metrics,

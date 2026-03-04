@@ -193,14 +193,14 @@
     },
     {
       "slug": "css-minifier",
-      "title": "CSS Minifier",
+      "title": "Unused CSS Finder & Website CSS Optimizer",
       "category": "minify",
       "actions": [
         "minify",
         "format"
       ],
-      "seoTitle": "CSS Minifier Online | ToolNexus",
-      "seoDescription": "Minify CSS for production builds.",
+      "seoTitle": "Website CSS Performance Analyzer | Unused CSS Finder & Optimizer | ToolNexus",
+      "seoDescription": "Scan any website and instantly find unused CSS, duplicate rules, and optimization opportunities to reduce CSS size and improve Core Web Vitals.",
       "exampleInput": "body { color: #fff; }"
     },
     {

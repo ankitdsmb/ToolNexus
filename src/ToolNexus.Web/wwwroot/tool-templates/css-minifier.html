@@ -1,21 +1,59 @@
 <div class="tool-runtime-widget execution-style-utility">
- <header class="tool-local-header">
+ <header class="tool-local-header css-analyzer-intro">
+  <p class="tool-local-intro">Scan any website and instantly find unused CSS that slows down your site.</p>
+  <div class="css-analyzer-inputs">
+   <input type="url" id="websiteUrlInput" class="tool-input" placeholder="https://example.com" aria-label="Website URL for CSS scan" />
+   <button type="button" id="scanUrlBtn" class="tool-btn tool-btn--outline">Analyze Website URL</button>
+  </div>
  </header>
  <section class="tool-local-actions">
- 
   <button type="button" data-tool-primary-action hidden aria-hidden="true" tabindex="-1">Run</button>
  </section>
  <section class="tool-local-body">
   <section class="tool-local-surface">
-   <textarea class="tool-editor" id="inputEditor"></textarea>
+   <h3>Paste CSS</h3>
+   <textarea class="tool-editor" id="inputEditor" placeholder="Paste your CSS here"></textarea>
   </section>
   <section class="tool-local-surface">
-   <textarea class="tool-editor" id="outputField"></textarea>
+   <h3>Optimized CSS Output</h3>
+   <textarea class="tool-editor" id="outputField" placeholder="Optimized CSS appears here"></textarea>
   </section>
+ </section>
+ <section class="tool-local-metrics css-analysis-report" id="cssUsageReport">
+  <h3>CSS Usage Report</h3>
+  <div class="css-analysis-report__stats">
+   <span id="totalCssStat">Total CSS: 0 KB</span>
+   <span id="usedCssStat">Used CSS: 0 KB</span>
+   <span id="unusedCssStat">Unused CSS: 0 KB</span>
+   <span id="optimizationStat">Optimization potential: 0%</span>
+  </div>
+  <div class="css-analysis-report__bars">
+   <label>Used CSS <progress id="usedCssBar" max="100" value="0"></progress></label>
+   <label>Unused CSS <progress id="unusedCssBar" max="100" value="0"></progress></label>
+  </div>
+  <div class="css-analysis-report__insights" id="cssInsights">
+   <p>Potential speed improvement: Not analyzed yet</p>
+   <p>Estimated page speed gain: --</p>
+   <p>Framework detected: Unknown</p>
+   <p>Lighthouse impact: LCP/FCP pending analysis</p>
+  </div>
  </section>
  <section class="tool-local-metrics">
-  <section hidden="" id="errorBox">
-  </section>
+  <section hidden="" id="errorBox"></section>
+ </section>
+ <section class="tool-local-surface css-analyzer-content">
+  <h3>Why Removing Unused CSS Matters</h3>
+  <p>Unused CSS can slow rendering, increase payload size, and hurt Core Web Vitals. Use this analyzer to find CSS waste, reduce CSS file size, and improve Lighthouse score.</p>
+  <h3>How This Tool Works</h3>
+  <ol>
+   <li>Enter your website URL or paste CSS.</li>
+   <li>Run analysis to detect unused and duplicate CSS.</li>
+   <li>Review optimization report and page speed impact.</li>
+   <li>Download optimized CSS and apply cleanup suggestions.</li>
+  </ol>
+  <h3>FAQ</h3>
+  <p><strong>Is it safe to remove unused CSS?</strong> Usually yes after testing key pages and states.</p>
+  <p><strong>Does this work with Bootstrap and Tailwind?</strong> Yes, framework CSS waste is highlighted in the report.</p>
+  <p><strong>Will this improve page speed?</strong> Reducing unused CSS often improves LCP and FCP.</p>
  </section>
 </div>
-
