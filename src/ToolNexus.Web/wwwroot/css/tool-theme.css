@@ -1,0 +1,29 @@
+:where(.tool-workspace-runtime) {
+  --workspace-border: color-mix(in srgb, var(--border-subtle, #334155) 85%, transparent);
+  --workspace-bg: color-mix(in srgb, var(--panel-bg, #0f172a) 92%, #020617 8%);
+}
+
+:where(.tool-workspace-header, .execution-toolbar, .result-actions, .execution-timeline, .workspace-input, .workspace-output-panel, .workspace-knowledge-rail, .workspace-mobile-tabs, .workspace-mobile-actionbar, .workspace-mobile-statusbar) {
+  border: 1px solid var(--workspace-border);
+  background: var(--workspace-bg);
+}
+
+:where(.workspace-mobile-statusbar__chip) {
+  background: color-mix(in srgb, var(--accent, #22d3ee) 15%, transparent);
+  border: 1px solid var(--workspace-border);
+}
+
+:where(.workspace-mobile-statusbar__chip[data-phase='success']) {
+  background: color-mix(in srgb, #16a34a 20%, transparent);
+}
+
+:where(.workspace-mobile-statusbar__chip[data-phase='error'], .workspace-mobile-statusbar__chip[data-phase='failed']) {
+  background: color-mix(in srgb, #dc2626 24%, transparent);
+}
+
+:where(.tool-workspace-runtime.tool-shell-page--fullscreen) {
+  position: fixed;
+  inset: 12px;
+  z-index: 50;
+  overflow: auto;
+}

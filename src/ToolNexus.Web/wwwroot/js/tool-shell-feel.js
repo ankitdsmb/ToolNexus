@@ -69,14 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const toastRegion = document.createElement('section');
-  toastRegion.className = 'tn-runtime-toast-region';
-  toastRegion.setAttribute('aria-live', 'polite');
-  toastRegion.setAttribute('aria-label', 'Runtime notifications');
-  runtime.append(toastRegion);
+  const toastRegion = runtime.querySelector('.tn-runtime-toast-region');
 
   const showToast = (message, tone = 'success') => {
     if (!message) {
+      return;
+    }
+
+    if (!toastRegion) {
       return;
     }
 
@@ -112,10 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!intent) {
       return;
     }
-
-    action.classList.remove('is-acknowledged');
-    window.requestAnimationFrame(() => action.classList.add('is-acknowledged'));
-    window.setTimeout(() => action.classList.remove('is-acknowledged'), 120);
 
     if (intent === 'copy') {
       showToast('Copied to clipboard.', 'success');
@@ -221,19 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     page.classList.remove('has-runtime-success');
   };
 
-  const pulsePrimaryAction = (event) => {
-    const button = event.target.closest('.tn-unified-tool-control__run, .tool-btn--primary, .tn-exec-btn--primary');
-    if (!button || button.disabled) {
-      return;
-    }
-
-    button.classList.remove('is-primed');
-    window.requestAnimationFrame(() => {
-      button.classList.add('is-primed');
-      window.setTimeout(() => button.classList.remove('is-primed'), 420);
-    });
-  };
-
   const observer = new MutationObserver(() => {
     window.requestAnimationFrame(() => {
       updateActionIcons();
@@ -243,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   runtime.addEventListener('click', (event) => {
-    pulsePrimaryAction(event);
     acknowledgeAction(event.target);
   }, true);
   observer.observe(runtime, { childList: true, subtree: true, attributes: true, characterData: true });
