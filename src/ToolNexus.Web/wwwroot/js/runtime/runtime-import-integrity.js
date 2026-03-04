@@ -159,9 +159,11 @@ async function loadRuntimeImportAllowlist() {
         return allowlistCache;
       })
       .catch(() => {
-        console.warn('[RuntimeImportIntegrity] Allowlist unavailable', {
-          source: '/js/runtime-import-allowlist.json'
-        });
+        if (!isProductionRuntime()) {
+          console.warn('[RuntimeImportIntegrity] Allowlist unavailable', {
+            source: '/js/runtime-import-allowlist.json'
+          });
+        }
         return null;
       });
   }
@@ -185,15 +187,32 @@ export async function validateRuntimeModulePath(modulePath) {
     return { valid: false, reason: 'invalid_suffix' };
   }
 
-  const blockedTokens = ['..', '//', 'http', 'https', ':'];
-  const matchedToken = blockedTokens.find((token) => modulePath.includes(token));
-  if (matchedToken) {
-    console.warn('[RuntimeImportIntegrity] Invalid modulePath', { modulePath, reason: 'blocked_token', token: matchedToken });
-    return { valid: false, reason: 'blocked_token' };
+  if (modulePath.includes('..')) {
+    console.warn('[RuntimeImportIntegrity] Invalid modulePath', { modulePath, reason: 'blocked_parent_traversal' });
+    return { valid: false, reason: 'blocked_parent_traversal' };
+  }
+
+  if (modulePath.includes('://')) {
+    console.warn('[RuntimeImportIntegrity] Invalid modulePath', { modulePath, reason: 'blocked_protocol' });
+    return { valid: false, reason: 'blocked_protocol' };
+  }
+
+  if (modulePath.includes('//')) {
+    console.warn('[RuntimeImportIntegrity] Invalid modulePath', { modulePath, reason: 'blocked_double_slash' });
+    return { valid: false, reason: 'blocked_double_slash' };
+  }
+
+  if (modulePath.includes(':')) {
+    console.warn('[RuntimeImportIntegrity] Invalid modulePath', { modulePath, reason: 'blocked_colon' });
+    return { valid: false, reason: 'blocked_colon' };
   }
 
   const allowlist = await loadRuntimeImportAllowlist();
   if (!allowlist) {
+    if (isProductionRuntime()) {
+      return { valid: false, reason: 'allowlist_unavailable' };
+    }
+
     return { valid: true, reason: 'allowlist_unavailable' };
   }
 
@@ -221,6 +240,10 @@ export async function validateRuntimeSlugEnhancer(slug) {
 
   const allowlist = await loadRuntimeImportAllowlist();
   if (!allowlist) {
+    if (isProductionRuntime()) {
+      return { valid: false, reason: 'allowlist_unavailable' };
+    }
+
     return { valid: true, reason: 'allowlist_unavailable' };
   }
 

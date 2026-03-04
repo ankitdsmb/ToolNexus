@@ -1270,8 +1270,22 @@ export function createToolRuntime({
       const moduleImportStartedAt = now();
       emit('module_import_start', { toolSlug: slug, metadata: { modulePath } });
 
-      if (!validateRuntimeModulePath(modulePath, { onStrictViolation: reportStrictIntegrityViolation })) {
-        return { module, lifecycleContract, importFailed: true, autoSelected: false, strictBlocked: true };
+      const modulePathValidation = await validateRuntimeModulePath(modulePath);
+      if (!modulePathValidation.valid) {
+        const message = `[RuntimeImportIntegrity] Invalid modulePath: ${modulePath} (${modulePathValidation.reason ?? 'unknown_reason'})`;
+        const mode = getImportIntegrityMode();
+
+        if (mode === 'enforce-dev') {
+          throw new Error(message);
+        }
+
+        if (mode === 'enforce-strict') {
+          console.error(message);
+          reportStrictIntegrityViolation(message);
+          return { module, lifecycleContract, importFailed: true, autoSelected: false, strictBlocked: true };
+        }
+
+        console.warn(message);
       }
 
       let importFailed = false;
