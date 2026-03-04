@@ -5,7 +5,7 @@
 
 @* Runtime contract: DO NOT CHANGE anchor attributes *@
 <section id="tool-root"
-         class="tool-shell-page__runtime upgread_tool_runtime"
+         class="tool-shell-page__runtime tool-workspace-runtime upgread_tool_runtime"
          data-upgread="surface"
          data-tool-shell="true"
          data-tool-root="true"
@@ -14,80 +14,71 @@
          aria-label="Interactive runtime"
          data-execution-flow="input-action-result-reference">
 
-    <header data-tool-context="true"
-            data-tool-header="true"
-            class="tn-tool-header"
-            aria-label="Tool execution context">
-        <span class="tool-context-pill tool-context-pill--authority">
-            <span class="tn-skeleton-chip"></span>Authority: Unified Runtime
-        </span>
-        <span class="tool-context-pill">
-            <span class="tn-skeleton-chip"></span>Runtime: Auto Resolve
-        </span>
-        <span class="tool-context-pill">
-            <span class="tn-skeleton-chip"></span>Policy: Conformance Guarded
-        </span>
-        <span class="tool-context-pill">
-            <span class="tn-skeleton-chip"></span>Lifecycle: Ready
-        </span>
-    </header>
+    <div class="tool-workspace" data-workspace="true" data-layout="split">
+        <header class="tool-workspace-header"
+                data-tool-context="true"
+                data-tool-header="true"
+                aria-label="Tool execution context">
+            <div>
+                <h2 class="tool-workspace-header__title">@Model.Tool.Title</h2>
+                <p class="tool-workspace-header__description">@Model.Seo.Description</p>
+            </div>
+            <div class="tool-workspace-header__meta tn-tool-header">
+                <span class="tool-context-pill tool-context-pill--authority">Authority: Unified Runtime</span>
+                <span class="tool-context-pill">Runtime: Auto Resolve</span>
+                <span class="tool-context-pill">Lifecycle: Ready</span>
+            </div>
+        </header>
 
-    <div data-tool-status="true"
-         data-runtime-status-primary="true"
-         class="tool-execution-status runtime-metrics-row tn-runtime-skeleton"
-         role="status"
-         aria-live="polite">
-        <span class="tn-skeleton-chip"></span>
-        <span>Ready · Initializing execution intelligence…</span>
+        <section class="execution-toolbar" data-execution-toolbar="true" aria-label="Execution toolbar"></section>
+
+        <div class="execution-workspace-stack">
+            <section class="execution-status-shell">
+                <div data-tool-status="true"
+                     data-runtime-status-primary="true"
+                     class="tool-execution-status runtime-metrics-row tn-runtime-skeleton"
+                     role="status"
+                     aria-live="polite">
+                    <span class="tn-skeleton-chip"></span>
+                    <span>Ready · Initializing execution intelligence…</span>
+                </div>
+                <section class="execution-timeline" data-execution-timeline="true" aria-label="Execution timeline"></section>
+            </section>
+
+            <footer data-tool-followup="true"
+                    data-tool-actions="true"
+                    class="tool-execution-panel tn-toolbar-skeleton"
+                    data-command-dock="true"
+                    aria-label="Follow-up actions"></footer>
+
+            <section data-tool-content-host="true"
+                     class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode upgread_tool_content_host"
+                     data-upgread="surface"
+                     aria-label="Tool content host"
+                     data-execution-surface="unified">
+
+                <section class="execution-surface" data-execution-surface-host="true">
+                    <section class="workspace-input" data-tool-input="true" aria-label="Tool input extension slot"></section>
+
+                    <section class="workspace-output-panel" aria-label="Tool output workspace">
+                        <section class="result-actions" data-result-actions="true" aria-label="Result actions"></section>
+                        <section class="workspace-output" data-tool-output="true" aria-label="Tool output extension slot"></section>
+                    </section>
+                </section>
+
+                <section data-runtime-template-handoff="true"
+                         data-runtime-template-mount-target="content-host"
+                         class="tool-runtime-template-handoff"
+                         aria-label="Tool runtime template handoff">
+                </section>
+            </section>
+        </div>
+
+        <aside class="workspace-knowledge-rail" data-related-tools-rail="true" aria-label="Knowledge and related tools rail"></aside>
+
+        <nav class="workspace-mobile-tabs" data-mobile-tabs="true" aria-label="Mobile workspace tabs"></nav>
+        <div class="workspace-mobile-actionbar" data-mobile-actionbar="true" aria-label="Mobile quick actions"></div>
     </div>
-
-    <footer data-tool-followup="true"
-            data-tool-actions="true"
-            class="tool-execution-panel tn-toolbar-skeleton"
-            data-command-dock="true"
-            aria-label="Follow-up actions">
-
-        <div class="tool-execution-panel__primary-actions"
-             aria-label="Primary execution actions">
-            <button type="button" disabled class="tool-btn tool-btn--primary">
-                <span class="tn-skeleton-chip"></span>Run command
-            </button>
-        </div>
-
-        <div class="tool-execution-panel__secondary-actions"
-             aria-label="Secondary execution actions">
-            <button type="button" class="tool-btn tool-btn--ghost" data-tool-fullscreen-toggle="true" aria-pressed="false">
-                Expand workspace
-            </button>
-            <button type="button" disabled class="tool-btn tool-btn--ghost">
-                <span class="tn-skeleton-chip"></span>Command dock loading
-            </button>
-        </div>
-    </footer>
-
-    @* FULL WIDTH runtime host — template mounts here *@
-    <section data-tool-content-host="true"
-             class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode upgread_tool_content_host"
-             data-upgread="surface"
-             aria-label="Tool content host"
-             data-execution-surface="unified">
-
-        @* Runtime template handoff (SAFE — required by upgraded template flow) *@
-        <section data-runtime-template-handoff="true"
-                 data-runtime-template-mount-target="content-host"
-                 class="tool-runtime-template-handoff"
-                 aria-label="Tool runtime template handoff">
-        </section>
-
-        @* Canonical extension anchors — DO NOT CHANGE *@
-        <section data-tool-input="true"
-                 aria-label="Tool input extension slot"
-                 class="tn-editor-skeleton"></section>
-
-        <section data-tool-output="true"
-                 aria-label="Tool output extension slot"
-                 class="tn-editor-skeleton"></section>
-    </section>
 
     <section class="tn-runtime-toast-region"
              aria-live="polite"
