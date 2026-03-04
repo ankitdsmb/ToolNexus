@@ -32,6 +32,7 @@ import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtim
 import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
 import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
 import { resolveToolModuleFromPack } from './runtime/tool-pack/tool-pack-resolver.js';
+import { getToolDefinition as defaultGetToolDefinition, loadToolRegistry as defaultLoadToolRegistry } from './runtime/registry/tool-registry-loader.js';
 import { createToolStateMachine as defaultCreateToolStateMachine } from './runtime/tool-state-machine.js';
 import { createSchemaToolModule } from './runtime/schema-engine/schema-tool-engine.js';
 import { manifestPhase } from './runtime-phases/manifest-phase.js';
@@ -288,6 +289,8 @@ export function createToolRuntime({
   loadToolIndex = defaultLoadToolIndex,
   resolveToolFromIndex = defaultResolveToolFromIndex,
   resolveToolModuleFromIndex = defaultResolveToolModuleFromIndex,
+  loadToolRegistry = defaultLoadToolRegistry,
+  getToolDefinition = defaultGetToolDefinition,
   loadToolModule = defaultLoadToolModule,
   createToolStateMachine = defaultCreateToolStateMachine
 } = {}) {
@@ -1006,6 +1009,14 @@ export function createToolRuntime({
       complexityTier: window.ToolNexusConfig?.runtimeComplexityTier ?? 1
     };
 
+    await loadToolRegistry();
+    const registryToolDefinition = getToolDefinition(slug);
+    if (registryToolDefinition && typeof fallbackManifest === 'object') {
+      fallbackManifest.type = registryToolDefinition.type ?? fallbackManifest.type;
+      fallbackManifest.pack = registryToolDefinition.pack ?? fallbackManifest.pack;
+      fallbackManifest.modulePath = registryToolDefinition.modulePath ?? fallbackManifest.modulePath;
+    }
+
     const safeLoadManifest = async () => {
       const manifestStartedAt = now();
       try {
@@ -1434,9 +1445,10 @@ export function createToolRuntime({
 
     const uiMode = normalizeUiMode(manifest.uiMode ?? window.ToolNexusConfig?.runtimeUiMode);
     const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
+    const registryToolDescriptor = getToolDefinition(slug);
     const indexedToolDescriptor = resolveToolFromIndex(slug);
     const indexedModulePath = resolveToolModuleFromIndex(slug);
-    const toolPackName = indexedToolDescriptor?.pack ?? manifest?.pack ?? null;
+    const toolPackName = indexedToolDescriptor?.pack ?? registryToolDescriptor?.pack ?? manifest?.pack ?? null;
     let resolvedPackDescriptor = null;
     if (toolPackName) {
       try {
@@ -1450,6 +1462,7 @@ export function createToolRuntime({
       }
     }
     const modulePath = indexedModulePath
+      || registryToolDescriptor?.modulePath
       || manifest.modulePath
       || resolvedPackDescriptor?.modulePath
       || window.ToolNexusConfig?.runtimeModulePath;
@@ -1458,6 +1471,12 @@ export function createToolRuntime({
       manifest.permissions = manifest.permissions ?? indexedToolDescriptor.permissions ?? [];
       manifest.tier = manifest.tier ?? indexedToolDescriptor.tier ?? null;
       manifest.pack = manifest.pack ?? indexedToolDescriptor.pack ?? null;
+    }
+
+    if (registryToolDescriptor && typeof manifest === 'object' && manifest) {
+      manifest.type = manifest.type ?? registryToolDescriptor.type ?? null;
+      manifest.pack = manifest.pack ?? registryToolDescriptor.pack ?? null;
+      manifest.modulePath = manifest.modulePath ?? registryToolDescriptor.modulePath ?? null;
     }
 
     if (typeof manifest === 'object' && manifest && !manifest.modulePath && resolvedPackDescriptor?.modulePath) {
