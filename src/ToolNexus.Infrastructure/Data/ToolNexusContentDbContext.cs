@@ -58,6 +58,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<CssScanResult> CssScanResults => Set<CssScanResult>();
     public DbSet<CssSelectorMetric> CssSelectorMetrics => Set<CssSelectorMetric>();
     public DbSet<CssArtifact> CssArtifacts => Set<CssArtifact>();
+    public DbSet<ToolSubmissionEntity> ToolSubmissions => Set<ToolSubmissionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -327,6 +328,25 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
                 .WithMany(x => x.Artifacts)
                 .HasForeignKey(x => x.ResultId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ToolSubmissionEntity>(entity =>
+        {
+            entity.ToTable("tool_submissions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(120);
+            entity.Property(x => x.AuthorId).HasColumnName("author_id").HasMaxLength(200);
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(16);
+            entity.Property(x => x.SubmittedAt).HasColumnName("submitted_at").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Manifest).HasColumnName("manifest").HasColumnType("jsonb");
+            entity.Property(x => x.Schema).HasColumnName("schema").HasColumnType("jsonb");
+            entity.Property(x => x.RuntimeModule).HasColumnName("runtime_module");
+            entity.Property(x => x.Template).HasColumnName("template");
+            entity.HasIndex(x => x.Slug).IsUnique();
+            entity.HasIndex(x => x.Status);
+            entity.Property(x => x.Status).HasDefaultValue(ToolSubmissionStatus.Pending);
+            entity.Property(x => x.SubmittedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<AiToolPackageEntity>(entity =>

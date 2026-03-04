@@ -13,6 +13,7 @@ using OpenTelemetry.Resources;
 using StackExchange.Redis;
 using System.Threading.RateLimiting;
 using ToolNexus.Api.Authentication;
+using ToolNexus.Api.Controllers.Marketplace;
 using ToolNexus.Api.Filters;
 using ToolNexus.Api.Options;
 using ToolNexus.Application.Services;
@@ -52,6 +53,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSecurity(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
+        services.AddScoped<ToolSubmissionValidator>();
+        services.AddScoped<ToolSubmissionService>();
         services.AddSingleton<ILogRedactionPolicy, LogRedactionPolicy>();
         services.AddScoped<RedactingLoggingExceptionFilter>();
 
