@@ -1,12 +1,10 @@
-using System.Text.Json;
 using Microsoft.Playwright;
 
 namespace ToolNexus.Web.Services;
 
 public sealed class CssCoverageService
 {
-    private const float TimeoutMilliseconds = 10_000;
-    private const int MaxPagesPerScan = 5;
+    private const float TimeoutMilliseconds = 15_000;
 
     public async Task<CssCoverageResult> Analyze(string url, CancellationToken cancellationToken = default)
     {
@@ -27,39 +25,45 @@ public sealed class CssCoverageService
         context.SetDefaultTimeout(TimeoutMilliseconds);
 
         var page = await context.NewPageAsync();
+        var cdpSession = await page.Context.NewCDPSessionAsync(page);
 
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            await cdpSession.SendAsync("DOM.enable");
+            await cdpSession.SendAsync("CSS.enable");
+            await cdpSession.SendAsync("CSS.startRuleUsageTracking");
+
             await page.GotoAsync(url, new PageGotoOptions
             {
                 Timeout = TimeoutMilliseconds,
-                WaitUntil = WaitUntilState.Commit
+                WaitUntil = WaitUntilState.NetworkIdle
             });
 
-            await cdpSession.SendAsync("CSS.startRuleUsageTracking");
+            var result = await cdpSession.SendAsync("CSS.stopRuleUsageTracking");
+            var rules = result.Value.GetProperty("ruleUsage");
 
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions
+            var used = 0;
+            var unused = 0;
+
+            foreach (var rule in rules.EnumerateArray())
             {
-                Timeout = TimeoutMilliseconds
-            });
-
-            var coverageEntries = await page.Coverage.StopCSSCoverageAsync();
-            var limitedEntries = coverageEntries.Take(MaxPagesPerScan).ToArray();
-
-            var totalCss = limitedEntries.Sum(entry => entry.Text.Length);
-            var usedCss = limitedEntries.Sum(entry => CalculateUsedCharacters(entry.Ranges));
-            var unusedCss = Math.Max(0, totalCss - usedCss);
-            var cssContent = string.Join('\n', limitedEntries.Select(entry => entry.Text));
+                if (rule.TryGetProperty("used", out var isUsed) && isUsed.GetBoolean())
+                {
+                    used++;
+                }
+                else
+                {
+                    unused++;
+                }
+            }
 
             return new CssCoverageResult
             {
-                TotalCss = totalCss,
-                UsedCss = usedCss,
-                UnusedCss = unusedCss,
-                CssContent = cssContent,
-                PagesScanned = Math.Min(1, MaxPagesPerScan)
+                UsedRules = used,
+                UnusedRules = unused,
+                TotalRules = used + unused
             };
         }
         finally
@@ -68,39 +72,13 @@ public sealed class CssCoverageService
         }
     }
 
-    private static (int TotalCss, int UsedCss) CalculateRuleUsage(JsonElement? response)
-    {
-        if (response is null || !response.Value.TryGetProperty("ruleUsage", out var ruleUsage) || ruleUsage.ValueKind != JsonValueKind.Array)
-        {
-            return (0, 0);
-        }
-
-        var totalCss = 0;
-        var usedCss = 0;
-
-        foreach (var rule in ruleUsage.EnumerateArray())
-        {
-            totalCss++;
-
-            if (rule.TryGetProperty("used", out var usedProperty) && usedProperty.ValueKind == JsonValueKind.True)
-            {
-                usedCss++;
-            }
-        }
-
-        return (totalCss, usedCss);
-    }
 }
 
 public sealed class CssCoverageResult
 {
-    public int TotalCss { get; set; }
+    public int UsedRules { get; init; }
 
-    public int UsedCss { get; set; }
+    public int UnusedRules { get; init; }
 
-    public int UnusedCss { get; init; }
-
-    public int PagesScanned { get; init; }
-
-    public string CssContent { get; init; } = string.Empty;
+    public int TotalRules { get; init; }
 }
