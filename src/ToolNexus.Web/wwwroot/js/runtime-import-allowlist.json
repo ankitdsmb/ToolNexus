@@ -1,6 +1,7 @@
 {
   "buildId": "2026-03-03T20:58:41.660Z",
   "allowedModules": [
+    "/js/tools/",
     "/js/tools/base64-decode.js",
     "/js/tools/base64-encode.js",
     "/js/tools/csv-to-json.js",
