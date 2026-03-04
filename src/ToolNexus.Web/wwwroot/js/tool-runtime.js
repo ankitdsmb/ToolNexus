@@ -36,6 +36,8 @@ import { domPhase } from './runtime-phases/dom-phase.js';
 import { modulePhase } from './runtime-phases/module-phase.js';
 import { mountPhase } from './runtime-phases/mount-phase.js';
 import { recoveryPhase } from './runtime-phases/recovery-phase.js';
+import { emitRuntimeEvent } from './runtime/telemetry/runtime-event-logger.js';
+import { TR_BOOTSTRAP_START, TR_EXECUTION_COMPLETE, TR_EXECUTION_START, TR_MANIFEST_LOADED, TR_MODULE_IMPORTED, TR_RUNTIME_ERROR, TR_TEMPLATE_MOUNTED } from './runtime/telemetry/runtime-event-types.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -940,6 +942,7 @@ export function createToolRuntime({
     const runtimeStartedAt = now();
     runtimeMetrics.bootstrapCount += 1;
     emit('bootstrap_start', { toolSlug: slug });
+    emitRuntimeEvent(TR_BOOTSTRAP_START, { slug });
 
     await loadToolIndex();
     const lifecycleState = createToolStateMachine(slug);
@@ -986,6 +989,12 @@ export function createToolRuntime({
           hasManifest: true
         };
       } catch (error) {
+        emitRuntimeEvent(TR_RUNTIME_ERROR, {
+          slug,
+          source: 'tool-runtime',
+          stage: 'manifest-load',
+          errorMessage: error?.message ?? String(error)
+        });
         runtimeMetrics.manifestLoadTimeMs = now() - manifestStartedAt;
         setLastError('manifest', error, slug);
         emit('manifest_failure', { toolSlug: slug, error: error?.message ?? String(error) });
@@ -1000,6 +1009,11 @@ export function createToolRuntime({
       resolveManifest: safeLoadManifest
     });
     const { manifest, hasManifest } = phaseContext;
+    emitRuntimeEvent(TR_MANIFEST_LOADED, {
+      slug,
+      hasManifest,
+      source: phaseContext?.source ?? 'unknown'
+    });
 
     const executionContext = createToolExecutionContext({
       slug,
@@ -1127,6 +1141,7 @@ export function createToolRuntime({
         logger.info('[RuntimeOwnership] shell anchors preserved', { slug, immutableAnchors: true });
         logger.info('[RuntimeOwnership] no mutation performed', { slug, mutation: 'none' });
         emit('template_load_complete', { toolSlug: slug, duration: now() - templateStartedAt });
+        emitRuntimeEvent(TR_TEMPLATE_MOUNTED, { slug, templatePath: manifest?.templatePath ?? null });
         return true;
       } catch (error) {
         setLastError('template', error, slug, { templatePath: manifest.templatePath });
@@ -1439,7 +1454,15 @@ export function createToolRuntime({
           duration: now() - moduleImportStartedAt,
           metadata: { modulePath }
         });
+        emitRuntimeEvent(TR_MODULE_IMPORTED, { slug, modulePath, source: 'tool-runtime' });
       } catch (error) {
+        emitRuntimeEvent(TR_RUNTIME_ERROR, {
+          slug,
+          source: 'tool-runtime',
+          stage: 'module-import',
+          modulePath,
+          errorMessage: error?.message ?? String(error)
+        });
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
         importFailed = true;
         const contractInvalid = isModuleContractError(error);
@@ -1629,6 +1652,7 @@ export function createToolRuntime({
     const safeMount = async () => {
       const mountStartedAt = now();
       emit('mount_start', { toolSlug: slug });
+      emitRuntimeEvent(TR_EXECUTION_START, { slug });
       emit('lifecycle_stage_trace', { toolSlug: slug, metadata: { stage: 'mount_start' } });
 
       let legacyBridgeUsed = false;
@@ -1912,6 +1936,7 @@ export function createToolRuntime({
             ...runtimeIdentityTags
           }
         });
+        emitRuntimeEvent(TR_EXECUTION_COMPLETE, { slug, modeUsed: legacyBridgeUsed ? 'legacy' : 'modern' });
         runtimeMetrics.mountTimeMs = now() - mountStartedAt;
         transitionLifecycleState('Idle');
         stateRegistry.setPhase(stateKey, 'mounted');
@@ -1932,6 +1957,12 @@ export function createToolRuntime({
         };
         logger.info(`Tool runtime mounted successfully for "${slug}".`);
       } catch (error) {
+        emitRuntimeEvent(TR_RUNTIME_ERROR, {
+          slug,
+          source: 'tool-runtime',
+          stage: 'mount',
+          errorMessage: error?.message ?? String(error)
+        });
         root[TOOL_RUNTIME_MOUNTED_KEY] = false;
         delete root[TOOL_RUNTIME_MOUNTED_SLUG_KEY];
         const lifecycleContract = inspectLifecycleContract(module);
@@ -2015,6 +2046,7 @@ export function createToolRuntime({
         phase: 'bootstrap',
         errorMessage: error?.message ?? String(error)
       });
+      emitRuntimeEvent(TR_RUNTIME_ERROR, { source: 'tool-runtime', stage: 'bootstrap', errorMessage: error?.message ?? String(error) });
       return;
     }
     registerDebugValidation(getRoot);

@@ -2,6 +2,8 @@ import { importRuntimeModule, validateRuntimeModulePath } from './runtime-import
 import { loadToolIndex, resolveTool } from './tool-index-service.js';
 import { runtimeModuleLoaderScheduler } from './module-loader-scheduler.js';
 import { validateToolCertification } from './tool-certification-policy.js';
+import { emitRuntimeEvent } from './telemetry/runtime-event-logger.js';
+import { TR_MODULE_IMPORTED, TR_RUNTIME_ERROR } from './telemetry/runtime-event-types.js';
 
 const moduleCache = new Map();
 const loadPromises = new Map();
@@ -57,11 +59,20 @@ export async function loadToolModule(toolId, options = {}) {
       }
 
       const module = await importRuntimeModule(descriptor.module);
+      emitRuntimeEvent(TR_MODULE_IMPORTED, { slug, modulePath: descriptor.module, source: 'tool-module-loader' });
       moduleCache.set(slug, module);
       return module;
     },
     { priority: Number.isFinite(options.priority) ? options.priority : descriptor.warmupPriority }
-  ).finally(() => {
+  ).catch((error) => {
+    emitRuntimeEvent(TR_RUNTIME_ERROR, {
+      slug,
+      source: 'tool-module-loader',
+      stage: 'module-import',
+      errorMessage: error?.message ?? String(error)
+    });
+    throw error;
+  }).finally(() => {
     loadPromises.delete(slug);
   });
 
