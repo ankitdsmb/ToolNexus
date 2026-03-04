@@ -315,10 +315,56 @@ export function createToolRuntime({
     moduleImportTimeMs: 0,
     runtimeBootTimeMs: 0
   };
+  const runtimePhases = {
+    manifest: false,
+    dom: false,
+    module: false,
+    mount: false,
+    recovery: false
+  };
+  const runtimeHealth = {
+    runtimeLoaded: true,
+    phasesExecuted: runtimePhases,
+    manifestLoaded: false,
+    moduleImported: false,
+    toolMounted: false
+  };
   const runtimePerfSessions = new Map();
   const runtimePolicyThrottleRegistry = new Map();
 
   const unsubscribeLifecycleRetryDiagnostics = () => {};
+
+  function syncRuntimeDiagnosticsGlobals() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.TOOLNEXUS_RUNTIME_PHASES = {
+      manifest: runtimePhases.manifest,
+      dom: runtimePhases.dom,
+      module: runtimePhases.module,
+      mount: runtimePhases.mount,
+      recovery: runtimePhases.recovery
+    };
+  }
+
+  function markRuntimePhase(phaseName) {
+    if (!(phaseName in runtimePhases)) {
+      return;
+    }
+
+    runtimePhases[phaseName] = true;
+    syncRuntimeDiagnosticsGlobals();
+  }
+
+  function runtimeLog(message, details) {
+    if (details === undefined) {
+      console.info(message);
+      return;
+    }
+
+    console.info(message, details);
+  }
 
   function setLastError(stage, error, slug, metadata = {}) {
     lastError = {
@@ -833,6 +879,16 @@ export function createToolRuntime({
       return;
     }
 
+    syncRuntimeDiagnosticsGlobals();
+    window.__TOOLNEXUS_RUNTIME_HEALTH = () => ({
+      runtimeLoaded: runtimeHealth.runtimeLoaded,
+      phasesExecuted: { ...runtimePhases },
+      manifestLoaded: runtimeHealth.manifestLoaded,
+      moduleImported: runtimeHealth.moduleImported,
+      toolMounted: runtimeHealth.toolMounted,
+      lastError
+    });
+
     const toolNexus = (window.ToolNexus ??= {});
     const runtimeApi = (toolNexus.runtime ??= {});
     runtimeApi.getDiagnostics = () => ({
@@ -1036,6 +1092,7 @@ export function createToolRuntime({
         });
         runtimeMetrics.manifestLoadTimeMs = now() - manifestStartedAt;
         setLastError('manifest', error, slug);
+        console.error('[ToolRuntime] Manifest not found', { slug, error: error?.message ?? String(error) });
         emit('manifest_failure', { toolSlug: slug, error: error?.message ?? String(error) });
         manifestLogger.warn(`Manifest unavailable for "${slug}". Falling back to legacy runtime.`, error);
         return { manifest: fallbackManifest, source: 'fallback', hasManifest: false };
@@ -1047,7 +1104,10 @@ export function createToolRuntime({
       slug,
       resolveManifest: safeLoadManifest
     });
+    markRuntimePhase('manifest');
     const { manifest, hasManifest } = phaseContext;
+    runtimeHealth.manifestLoaded = hasManifest === true;
+    runtimeLog('[ToolRuntime] Manifest loaded', { slug, hasManifest: runtimeHealth.manifestLoaded });
     emitRuntimeEvent(TR_MANIFEST_LOADED, {
       slug,
       hasManifest,
@@ -1229,6 +1289,7 @@ export function createToolRuntime({
 
     const domPreflight = preflightRuntimeDom(root);
     if (!domPreflight.valid) {
+      console.error('[ToolRuntime] DOM contract failed', { slug, reason: domPreflight.reason });
       emitFailure('dom_contract_failure', {
         toolSlug: slug,
         phase: 'dom',
@@ -1398,6 +1459,7 @@ export function createToolRuntime({
       const message = `tool-runtime: DOM contract invalid for "${slug}"`;
       const errors = ['[DOM CONTRACT ERROR]', ...validation.missingNodes.map((nodeName) => `Missing node: ${nodeName}`)];
       logger.error(message, errors);
+      console.error('[ToolRuntime] DOM contract failed', { slug, errors });
       emit('dom_contract_failure', { toolSlug: slug, metadata: { errors } });
       showRuntimeCrashOverlay(root, {
         toolSlug: slug,
@@ -1636,7 +1698,7 @@ export function createToolRuntime({
             runtimeResolutionReason: importReason
           }
         });
-        console.error('[ToolNexus Runtime] Module import rejected', {
+        console.error('[ToolRuntime] Module import failed', {
           toolId: slug,
           modulePath,
           phase: 'module',
@@ -1699,25 +1761,39 @@ export function createToolRuntime({
     };
 
     phaseContext = await domPhase(phaseContext);
+    markRuntimePhase('dom');
+    runtimeLog('[ToolRuntime] DOM contract validated', { slug });
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
     }
 
     phaseContext = await modulePhase(phaseContext);
+    markRuntimePhase('module');
+    runtimeHealth.moduleImported = Boolean(
+      (phaseContext.modulePath || phaseContext.schemaSelected)
+      && phaseContext.importFailed !== true
+    );
+    runtimeLog('[ToolRuntime] Module imported', { slug, moduleImported: runtimeHealth.moduleImported });
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
     }
 
     phaseContext = await mountPhase(phaseContext);
+    markRuntimePhase('mount');
+    runtimeHealth.toolMounted = Boolean(phaseContext?.lifecycle?.mounted);
+    runtimeLog('[ToolRuntime] Lifecycle mounted', { slug, mounted: runtimeHealth.toolMounted });
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
     }
 
     phaseContext = await recoveryPhase(phaseContext);
+    markRuntimePhase('recovery');
 
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
     }
+
+    runtimeLog('[ToolRuntime] Tool ready', { slug });
 
     const { module: loadedModule, lifecycleContract, importFailed, validation: domValidation, schemaSelected = false } = phaseContext;
 
@@ -2172,6 +2248,18 @@ export function createToolRuntime({
   }
 
   async function bootstrapToolRuntime() {
+    runtimeLog('[ToolRuntime] Bootstrap starting');
+    runtimeHealth.runtimeLoaded = true;
+    runtimeHealth.manifestLoaded = false;
+    runtimeHealth.moduleImported = false;
+    runtimeHealth.toolMounted = false;
+    runtimePhases.manifest = false;
+    runtimePhases.dom = false;
+    runtimePhases.module = false;
+    runtimePhases.mount = false;
+    runtimePhases.recovery = false;
+    syncRuntimeDiagnosticsGlobals();
+
     let root;
     try {
       root = getRoot();
@@ -2212,6 +2300,7 @@ export function createToolRuntime({
       }
 
       logger.info(`Bootstrapping tool runtime for "${slug}".`);
+      runtimeLog('[ToolRuntime] Bootstrap starting', { slug });
       root.dataset.mountMode = TOOL_MOUNT_MODES.FULLSCREEN;
 
       if (isRuntimePerfTelemetryEnabled()) {
