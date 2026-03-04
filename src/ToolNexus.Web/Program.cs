@@ -76,6 +76,8 @@ builder.Services.AddSingleton<IMetricsCollector, MetricsCollector>();
 builder.Services.AddSingleton<IRuntimeHealthProbe, RuntimeHealthProbe>();
 builder.Services.AddSingleton<IStructuredRequestLogger, StructuredRequestLogger>();
 builder.Services.AddScoped<IAdminToolsViewModelService, AdminToolsViewModelService>();
+builder.Services.AddScoped<CssReportStorageService>();
+builder.Services.AddScoped<CssComparisonService>();
 
 var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
 if (!string.IsNullOrWhiteSpace(keyRingPath))
