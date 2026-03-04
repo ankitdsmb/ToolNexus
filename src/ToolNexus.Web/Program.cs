@@ -75,6 +75,7 @@ builder.Services.AddSingleton<ClientLogEndpointContract>();
 builder.Services.AddSingleton<IMetricsCollector, MetricsCollector>();
 builder.Services.AddSingleton<IRuntimeHealthProbe, RuntimeHealthProbe>();
 builder.Services.AddSingleton<IStructuredRequestLogger, StructuredRequestLogger>();
+builder.Services.AddSingleton<PlaywrightRuntimeVerifier>();
 builder.Services.AddScoped<IAdminToolsViewModelService, AdminToolsViewModelService>();
 builder.Services.AddScoped<CssReportStorageService>();
 builder.Services.AddScoped<CssComparisonService>();
@@ -339,13 +340,16 @@ app.MapGet("/api/admin/debug/tools-count", async (ToolNexus.Infrastructure.Data.
     return Results.Ok(result);
 });
 
-app.MapGet("/health/runtime", (DatabaseInitializationState dbInitState) =>
+app.MapGet("/health/runtime", (DatabaseInitializationState dbInitState, PlaywrightRuntimeVerifier playwrightRuntimeVerifier) =>
 {
     var dbConnected = dbInitState.IsReady;
     return Results.Ok(new
     {
         db_connected = dbConnected,
-        execution_ready = dbConnected
+        execution_ready = dbConnected && playwrightRuntimeVerifier.ChromiumExecutableAvailable,
+        playwright_chromium_available = playwrightRuntimeVerifier.ChromiumExecutableAvailable,
+        playwright_chromium_path = playwrightRuntimeVerifier.ChromiumExecutablePath,
+        playwright_error = playwrightRuntimeVerifier.LastError
     });
 });
 
@@ -418,6 +422,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Services.GetRequiredService<ClientLogEndpointContract>().ResolveRoutableEndpointOrNull();
+
+var playwrightRuntimeVerifier = app.Services.GetRequiredService<PlaywrightRuntimeVerifier>();
+await playwrightRuntimeVerifier.VerifyChromiumExecutableAsync();
 
 var manifestLoadStopwatch = System.Diagnostics.Stopwatch.StartNew();
 app.Services.GetRequiredService<IToolRegistryService>().GetAll();

@@ -58,7 +58,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright Chromium runtime
-        run: npx playwright install --with-deps chromium
+        run: npm run playwright:install:chromium
 
       - name: Frontend platform guard
         run: npm run check:platform
