@@ -1639,26 +1639,7 @@ export function createToolRuntime({
       return { module, lifecycleContract, importFailed, autoSelected: false, schemaSelected: false };
     };
 
-    const bootstrapPhases = [
-      domPhase,
-      modulePhase,
-      mountPhase,
-      recoveryPhase
-    ];
-
-    const runBootstrapPhases = async (initialContext) => {
-      let context = initialContext;
-      for (const phase of bootstrapPhases) {
-        context = await phase(context);
-        if (context?.aborted || context?.strictBlocked) {
-          break;
-        }
-      }
-
-      return context;
-    };
-
-    phaseContext = await runBootstrapPhases({
+    phaseContext = {
       ...phaseContext,
       runtimeMode: runtimeResolution.mode,
       module: {},
@@ -1673,7 +1654,24 @@ export function createToolRuntime({
 
         return {};
       }
-    });
+    };
+
+    phaseContext = await domPhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await modulePhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await mountPhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await recoveryPhase(phaseContext);
 
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
