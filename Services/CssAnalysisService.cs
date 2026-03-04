@@ -1,39 +1,38 @@
-namespace ToolNexus.Services;
+namespace ToolNexus.Web.Services;
 
 public sealed class CssAnalysisService
 {
-    public CssAnalysisResult Analyze(CssCoverageResult coverage)
+    public CssAnalysisResult Process(CssCoverageResult coverage)
     {
         ArgumentNullException.ThrowIfNull(coverage);
 
-        var totalCssKb = coverage.totalCssKb;
-        var usedCssKb = coverage.usedCssKb;
-        var unusedCssKb = Math.Max(0, totalCssKb - usedCssKb);
+        var totalCss = coverage.TotalCss;
+        var usedCss = coverage.UsedCss;
+        var unusedCss = Math.Max(0, coverage.UnusedCss);
 
-        var efficiencyScore = totalCssKb <= 0
+        var efficiencyScore = totalCss <= 0
             ? 0
-            : (usedCssKb / totalCssKb) * 100;
+            : Math.Round((double)usedCss / totalCss * 100, 2, MidpointRounding.AwayFromZero);
 
-        var frameworkDetected = DetectFramework(coverage.cssContent);
+        var frameworkDetected = DetectFramework(coverage.CssContent);
 
         return new CssAnalysisResult
         {
-            totalCssKb = totalCssKb,
-            usedCssKb = usedCssKb,
-            unusedCssKb = unusedCssKb,
-            efficiencyScore = efficiencyScore,
-            frameworkDetected = frameworkDetected,
-            estimatedSpeedImpact = unusedCssKb
+            TotalCss = totalCss,
+            UsedCss = usedCss,
+            UnusedCss = unusedCss,
+            EfficiencyScore = efficiencyScore,
+            FrameworkDetected = frameworkDetected,
+            EstimatedSpeedImpact = unusedCss,
+            PagesScanned = coverage.PagesScanned
         };
     }
-
-    private static string frameworkDetectedNone = "None";
 
     private static string DetectFramework(string? css)
     {
         if (string.IsNullOrWhiteSpace(css))
         {
-            return frameworkDetectedNone;
+            return "None";
         }
 
         if (css.Contains(".container", StringComparison.OrdinalIgnoreCase)
@@ -52,6 +51,17 @@ public sealed class CssAnalysisService
             return "Foundation";
         }
 
-        return frameworkDetectedNone;
+        return "None";
     }
+}
+
+public sealed class CssAnalysisResult
+{
+    public int TotalCss { get; init; }
+    public int UsedCss { get; init; }
+    public int UnusedCss { get; init; }
+    public double EfficiencyScore { get; init; }
+    public string FrameworkDetected { get; init; } = "None";
+    public int EstimatedSpeedImpact { get; init; }
+    public int PagesScanned { get; init; }
 }

@@ -7,6 +7,7 @@ namespace ToolNexus.Web.Services;
 public sealed class CriticalCssService
 {
     private const int MaxCssBytes = 50 * 1024;
+    private static readonly TimeSpan MaxScanDuration = TimeSpan.FromSeconds(10);
 
     public async Task<string> Generate(string url)
     {
@@ -38,7 +39,21 @@ public sealed class CriticalCssService
             var outputTask = process.StandardOutput.ReadToEndAsync();
             var errorTask = process.StandardError.ReadToEndAsync();
 
-            await process.WaitForExitAsync();
+            using var timeoutCts = new CancellationTokenSource(MaxScanDuration);
+
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+
+                throw new TimeoutException("Critical CSS generation exceeded 10 seconds.");
+            }
 
             var output = await outputTask;
             var error = await errorTask;
@@ -98,7 +113,9 @@ public sealed class CriticalCssService
 
             try {
                 const page = await browser.newPage();
-                await page.goto(target, { waitUntil: 'domcontentloaded' });
+                page.setDefaultTimeout(10000);
+                page.setDefaultNavigationTimeout(10000);
+                await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 10000 });
 
                 await page.coverage.startCSSCoverage({ resetOnNavigation: false });
                 await page.waitForTimeout(2000);
