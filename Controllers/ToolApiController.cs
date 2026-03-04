@@ -1,5 +1,8 @@
+using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using ToolNexus.Web.Security;
 using ToolNexus.Web.Services;
 
 namespace ToolNexus.Web.Controllers;
@@ -12,14 +15,29 @@ public sealed class ToolApiController(
     CssComparisonService cssComparisonService,
     CriticalCssService criticalCssService,
     CssScanCacheService cssScanCacheService,
-    IServiceProvider serviceProvider) : ControllerBase
+    CssOptimizerService cssOptimizerService,
+    UrlSecurityValidator urlSecurityValidator) : ControllerBase
 {
+    private static readonly ConcurrentDictionary<string, List<DateTime>> RequestLog = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly TimeSpan RateWindow = TimeSpan.FromHours(1);
+    private const int MaxRequestsPerWindow = 5;
+
     [HttpPost("css/analyze")]
     public async Task<IActionResult> AnalyzeCss([FromBody] CssAnalyzeRequest request, CancellationToken cancellationToken)
     {
-        if (!TryValidateHttpUrl(request?.Url, out var normalizedUrl))
+        if (IsRateLimited(GetClientIp()))
         {
-            return BadRequest(new { error = "A valid http/https URL is required." });
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Rate limit exceeded. Maximum 5 scans per hour." });
+        }
+
+        string normalizedUrl;
+        try
+        {
+            normalizedUrl = urlSecurityValidator.ValidateAndNormalize(request?.Url);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
 
         var cachedResult = await cssScanCacheService.GetCachedResult(normalizedUrl, cancellationToken);
@@ -48,51 +66,43 @@ public sealed class ToolApiController(
     [HttpPost("css/download")]
     public async Task<IActionResult> DownloadOptimizedCss([FromBody] CssAnalyzeRequest request, CancellationToken cancellationToken)
     {
-        if (!TryValidateHttpUrl(request?.Url, out var normalizedUrl))
+        if (IsRateLimited(GetClientIp()))
         {
-            return BadRequest(new { error = "A valid http/https URL is required." });
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Rate limit exceeded. Maximum 5 scans per hour." });
         }
 
-        var optimizerType = Type.GetType("ToolNexus.Web.Services.CssOptimizerService, ToolNexus.Web", throwOnError: false);
-        if (optimizerType is null)
+        string normalizedUrl;
+        try
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService is not available." });
+            normalizedUrl = urlSecurityValidator.ValidateAndNormalize(request?.Url);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
 
-        var optimizer = serviceProvider.GetService(optimizerType);
-        if (optimizer is null)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService is not configured." });
-        }
+        var optimizedCss = await cssOptimizerService.Optimize(normalizedUrl, cancellationToken);
+        var cssBytes = Encoding.UTF8.GetBytes(optimizedCss);
 
-        var optimizeMethod = optimizerType.GetMethod("Optimize", new[] { typeof(string), typeof(CancellationToken) });
-        if (optimizeMethod is null)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService.Optimize was not found." });
-        }
-
-        var optimizedCssTask = optimizeMethod.Invoke(optimizer, new object[] { normalizedUrl, cancellationToken }) as Task<string>;
-        if (optimizedCssTask is null)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService.Optimize returned an invalid result." });
-        }
-
-        var optimizedCss = await optimizedCssTask;
-        var cssBytes = System.Text.Encoding.UTF8.GetBytes(optimizedCss);
-
-        return File(cssBytes, "application/css", "optimized.css");
+        Response.Headers.ContentDisposition = "attachment; filename=optimized.css";
+        return File(cssBytes, "text/css", "optimized.css");
     }
 
     [HttpPost("critical-css")]
     public async Task<IActionResult> CriticalCss([FromBody] CriticalCssRequest request)
     {
-        if (!TryValidateHttpUrl(request?.Url, out var normalizedUrl))
+        string normalizedUrl;
+        try
         {
-            return BadRequest(new { error = "A valid http/https URL is required." });
+            normalizedUrl = urlSecurityValidator.ValidateAndNormalize(request?.Url);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
 
         var css = await criticalCssService.Generate(normalizedUrl);
-        var cssBytes = System.Text.Encoding.UTF8.GetBytes(css);
+        var cssBytes = Encoding.UTF8.GetBytes(css);
 
         return File(cssBytes, "text/css", "critical.css");
     }
@@ -100,35 +110,53 @@ public sealed class ToolApiController(
     [HttpPost("css-compare")]
     public async Task<IActionResult> CssCompare([FromBody] CssCompareRequest request, CancellationToken cancellationToken)
     {
-        if (!TryValidateHttpUrl(request?.UrlA, out var urlA)
-            || !TryValidateHttpUrl(request.UrlB, out var urlB))
+        if (IsRateLimited(GetClientIp()))
         {
-            return BadRequest(new { error = "Two valid http/https URLs are required." });
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Rate limit exceeded. Maximum 5 scans per hour." });
         }
 
-        const int maxPagesPerScan = 5;
-        if (2 > maxPagesPerScan)
+        string urlA;
+        string urlB;
+        try
         {
-            return BadRequest(new { error = "Maximum pages per scan exceeded." });
+            urlA = urlSecurityValidator.ValidateAndNormalize(request?.UrlA);
+            urlB = urlSecurityValidator.ValidateAndNormalize(request?.UrlB);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
 
         var comparisonResult = await cssComparisonService.CompareAsync(urlA, urlB, cancellationToken);
         return Ok(comparisonResult);
     }
 
-    private static bool TryValidateHttpUrl(string? url, out string normalizedUrl)
+    private static bool IsRateLimited(string ip)
     {
-        normalizedUrl = string.Empty;
+        var now = DateTime.UtcNow;
+        var entries = RequestLog.GetOrAdd(ip, _ => []);
 
-        if (string.IsNullOrWhiteSpace(url)
-            || !Uri.TryCreate(url, UriKind.Absolute, out var parsed)
-            || (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps))
+        lock (entries)
         {
+            entries.RemoveAll(ts => ts <= now - RateWindow);
+            if (entries.Count >= MaxRequestsPerWindow)
+            {
+                return true;
+            }
+
+            entries.Add(now);
             return false;
         }
+    }
 
-        normalizedUrl = parsed.ToString();
-        return true;
+    private string GetClientIp()
+    {
+        if (HttpContext.Connection.RemoteIpAddress is null)
+        {
+            return "unknown";
+        }
+
+        return HttpContext.Connection.RemoteIpAddress.ToString();
     }
 
     public sealed record CssAnalyzeRequest(string Url);
