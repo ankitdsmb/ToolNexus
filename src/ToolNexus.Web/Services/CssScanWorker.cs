@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Net;
 using AngleSharp.Html.Parser;
 using Microsoft.EntityFrameworkCore;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
-using ToolNexus.Web.Monitoring;
+using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Services;
 
@@ -103,22 +104,20 @@ public sealed class CssScanWorker(
             var optimizer = scope.ServiceProvider.GetRequiredService<CssOptimizerService>();
             var frameworkDetector = scope.ServiceProvider.GetRequiredService<CssFrameworkDetector>();
             var artifactStorage = scope.ServiceProvider.GetRequiredService<CssArtifactStorageService>();
-            var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+            var privateNetworkValidator = scope.ServiceProvider.GetRequiredService<IPrivateNetworkValidator>();
 
             var job = await db.CssScanJobs.SingleAsync(x => x.Id == jobId, cancellationToken);
             var metadata = GetMetadata(job.JobMetadataJson);
             var attempt = metadata.Attempt + 1;
 
-            using var scanTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            scanTimeoutCts.CancelAfter(ScanTimeout);
-            var scanToken = scanTimeoutCts.Token;
+            var jobMetadata = DeserializeMetadata(job.JobMetadataJson);
+            var baseUri = new Uri(job.Url);
+            var pinnedAddress = await ResolveInitialPinnedAddressAsync(baseUri, jobMetadata, privateNetworkValidator, cancellationToken);
 
-            logger.LogInformation("scan_started EventName={EventName} JobId={JobId} Url={Url} Attempt={Attempt}", "scan_started", jobId, job.Url, attempt);
-
-            var crawl = await crawler.CrawlAsync(job.Url, maxPages: MaxPagesPerScan, cancellationToken: scanToken);
-            var coverageResult = await coverage.Analyze(job.Url, scanToken);
-            var cssPayload = await AggregateCssAsync(job.Url, crawl.Pages, httpClientFactory.CreateClient(), scanToken);
-            var selectorResult = await selectorCoverage.AnalyzeAsync(job.Url, cssPayload, scanToken);
+            var crawl = await crawler.CrawlAsync(job.Url, maxPages: MaxPagesPerScan, cancellationToken: cancellationToken);
+            var coverageResult = await coverage.Analyze(job.Url, cancellationToken);
+            var cssPayload = await AggregateCssAsync(job.Url, crawl.Pages, pinnedAddress, privateNetworkValidator, cancellationToken);
+            var selectorResult = await selectorCoverage.AnalyzeAsync(job.Url, cssPayload, cancellationToken);
             var allSelectors = selectorCoverage.ExtractSelectors(cssPayload);
             var usedSelectors = allSelectors.Except(selectorResult.UnusedSelectorList).ToHashSet(StringComparer.Ordinal);
             var optimized = optimizer.GenerateOptimizedCss(cssPayload, usedSelectors);
@@ -238,16 +237,22 @@ public sealed class CssScanWorker(
         }
     }
 
-    private static async Task<string> AggregateCssAsync(string baseUrl, IEnumerable<string> pages, HttpClient client, CancellationToken cancellationToken)
+    private static async Task<string> AggregateCssAsync(
+        string baseUrl,
+        IEnumerable<string> pages,
+        IPAddress pinnedAddress,
+        IPrivateNetworkValidator privateNetworkValidator,
+        CancellationToken cancellationToken)
     {
         var parser = new HtmlParser();
         var collectedCss = new StringBuilder();
         var baseUri = new Uri(baseUrl);
+        var fetcher = new PinnedHttpFetcher(privateNetworkValidator);
 
         foreach (var pagePath in pages.Take(MaxPagesPerScan))
         {
             var pageUri = Uri.TryCreate(baseUri, pagePath, out var resolvedPage) ? resolvedPage : baseUri;
-            var html = await client.GetStringAsync(pageUri, cancellationToken);
+            var html = await fetcher.GetStringAsync(pageUri, pinnedAddress, cancellationToken);
             var document = await parser.ParseDocumentAsync(html, cancellationToken);
 
             foreach (var styleTag in document.QuerySelectorAll("style"))
@@ -270,7 +275,13 @@ public sealed class CssScanWorker(
 
                 try
                 {
-                    var css = await client.GetStringAsync(stylesheetUri, cancellationToken);
+                    var stylesheetAddress = await privateNetworkValidator.ResolveValidatedAddressAsync(stylesheetUri.Host, cancellationToken);
+                    if (stylesheetAddress is null)
+                    {
+                        continue;
+                    }
+
+                    var css = await fetcher.GetStringAsync(stylesheetUri, stylesheetAddress, cancellationToken);
                     collectedCss.AppendLine(css);
                 }
                 catch
@@ -283,42 +294,42 @@ public sealed class CssScanWorker(
         return collectedCss.ToString();
     }
 
-    private static ScanJobMetadata GetMetadata(string? metadataJson)
+    private static async Task<IPAddress> ResolveInitialPinnedAddressAsync(
+        Uri targetUri,
+        CssScanJobMetadata metadata,
+        IPrivateNetworkValidator privateNetworkValidator,
+        CancellationToken cancellationToken)
     {
-        return TryGetMetadata(metadataJson, out var metadata) ? metadata : new ScanJobMetadata(0, null);
+        if (metadata.PinnedIp is not null && IPAddress.TryParse(metadata.PinnedIp, out var fromMetadata))
+        {
+            return fromMetadata;
+        }
+
+        var resolved = await privateNetworkValidator.ResolveValidatedAddressAsync(targetUri.Host, cancellationToken);
+        if (resolved is null)
+        {
+            throw new InvalidOperationException("Target URL no longer resolves to a public IP.");
+        }
+
+        return resolved;
     }
 
-    private static bool TryGetMetadata(string? metadataJson, out ScanJobMetadata metadata)
+    private static CssScanJobMetadata DeserializeMetadata(string? metadataJson)
     {
-        metadata = new ScanJobMetadata(0, null);
         if (string.IsNullOrWhiteSpace(metadataJson))
         {
-            return false;
+            return new CssScanJobMetadata();
         }
 
         try
         {
-            var parsed = JsonSerializer.Deserialize<ScanJobMetadata>(metadataJson);
-            if (parsed is null)
-            {
-                return false;
-            }
-
-            metadata = parsed.Attempt < 0
-                ? new ScanJobMetadata(0, parsed.NextAttemptAtUtc)
-                : parsed;
-            return true;
+            return JsonSerializer.Deserialize<CssScanJobMetadata>(metadataJson) ?? new CssScanJobMetadata();
         }
         catch
         {
-            return false;
+            return new CssScanJobMetadata();
         }
     }
 
-    private static string SerializeMetadata(ScanJobMetadata metadata)
-    {
-        return JsonSerializer.Serialize(metadata);
-    }
-
-    private sealed record ScanJobMetadata(int Attempt, DateTimeOffset? NextAttemptAtUtc);
+    private sealed record CssScanJobMetadata(string? PinnedIp = null);
 }
