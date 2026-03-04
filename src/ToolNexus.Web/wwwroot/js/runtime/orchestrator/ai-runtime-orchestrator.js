@@ -47,10 +47,18 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
 
   const strategy = selectExecutionStrategy({ ...genomeProfile, mode, complexity });
   const appliedRuntimeClasses = applyAdaptiveRuntimeClasses(root, mode);
-  const densityAutobalancer = applyExecutionDensityAutobalancer(root, {
-    toolSlug: options.toolSlug ?? null,
-    emitTelemetry: options.emitTelemetry
-  });
+  const densityAutobalancer = options.disableDensityAutobalancer === true
+    ? {
+      disabled: true,
+      profile: 'disabled_by_policy',
+      toolbarCompressed: false,
+      editorBalanceActive: false,
+      destroy() {}
+    }
+    : applyExecutionDensityAutobalancer(root, {
+      toolSlug: options.toolSlug ?? null,
+      emitTelemetry: options.emitTelemetry
+    });
   const visualBrain = createExecutionVisualBrain(root, {
     toolSlug: options.toolSlug ?? null,
     emitTelemetry: options.emitTelemetry

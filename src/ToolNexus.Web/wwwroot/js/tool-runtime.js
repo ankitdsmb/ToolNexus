@@ -27,6 +27,7 @@ import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runt
 import { validateExecutionDensity as defaultExecutionDensityValidator, writeExecutionDensityReport as defaultWriteExecutionDensityReport } from './runtime/execution-density-validator.js';
 import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
 import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from './runtime/orchestrator/ai-runtime-orchestrator.js';
+import { applyRuntimePolicy as defaultApplyRuntimePolicy } from './runtime/policy/runtime-policy-actuator.js';
 import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtime-import-integrity.js';
 import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
 import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
@@ -279,6 +280,7 @@ export function createToolRuntime({
   writeExecutionDensityReport = defaultWriteExecutionDensityReport,
   applyExecutionIntelligence = defaultApplyExecutionIntelligence,
   applyAiRuntimeOrchestrator = defaultApplyAiRuntimeOrchestrator,
+  applyRuntimePolicy = defaultApplyRuntimePolicy,
   loadToolIndex = defaultLoadToolIndex,
   resolveToolFromIndex = defaultResolveToolFromIndex,
   resolveToolModuleFromIndex = defaultResolveToolModuleFromIndex,
@@ -307,6 +309,7 @@ export function createToolRuntime({
     runtimeBootTimeMs: 0
   };
   const runtimePerfSessions = new Map();
+  const runtimePolicyThrottleRegistry = new Map();
 
   const unsubscribeLifecycleRetryDiagnostics = () => {};
 
@@ -795,6 +798,29 @@ export function createToolRuntime({
     });
   }
 
+  function mergePolicySignalEntries(...entries) {
+    const merged = new Set();
+    for (const entry of entries) {
+      if (entry instanceof Set) {
+        for (const value of entry) {
+          const normalized = String(value ?? '').trim();
+          if (normalized) {
+            merged.add(normalized);
+          }
+        }
+      } else if (Array.isArray(entry)) {
+        for (const value of entry) {
+          const normalized = String(value ?? '').trim();
+          if (normalized) {
+            merged.add(normalized);
+          }
+        }
+      }
+    }
+
+    return [...merged];
+  }
+
   function exposeDiagnosticsApi() {
     if (typeof window === 'undefined') {
       return;
@@ -1015,6 +1041,39 @@ export function createToolRuntime({
       }
     });
 
+    const observedSignals = observability.getSnapshot().selfHealing ?? {};
+    const configuredSignals = window.ToolNexusRuntime?.policySignals ?? window.ToolNexusConfig?.runtimePolicySignals ?? {};
+    const runtimePolicySignals = {
+      safeModeTools: mergePolicySignalEntries(observedSignals.safeModeTools, configuredSignals.safeModeTools),
+      disabledEnhancements: mergePolicySignalEntries(observedSignals.disabledEnhancements, configuredSignals.disabledEnhancements),
+      throttledTools: mergePolicySignalEntries(observedSignals.throttledTools, configuredSignals.throttledTools)
+    };
+    const runtimePolicy = applyRuntimePolicy({
+      root,
+      toolSlug: slug,
+      now,
+      lastExecutedAt: runtimePolicyThrottleRegistry.get(slug),
+      throttleWindowMs: window.ToolNexusConfig?.runtimeThrottleWindowMs,
+      executionContext
+    }, runtimePolicySignals);
+
+    emit('runtime_policy_applied', {
+      toolSlug: slug,
+      metadata: {
+        safeModeEnabled: runtimePolicy.safeModeEnabled,
+        disableOrchestrator: runtimePolicy.disableOrchestrator,
+        disableDensityAutobalancer: runtimePolicy.disableDensityAutobalancer,
+        disableAdvancedRuntimeIntelligence: runtimePolicy.disableAdvancedRuntimeIntelligence,
+        executionThrottled: runtimePolicy.executionThrottled,
+        shouldThrottleExecution: runtimePolicy.shouldThrottleExecution,
+        throttleWindowMs: runtimePolicy.throttleWindowMs
+      }
+    });
+
+    if (!runtimePolicy.shouldThrottleExecution) {
+      runtimePolicyThrottleRegistry.set(slug, runtimeStartedAt);
+    }
+
     root[TOOL_RUNTIME_MOUNTED_KEY] = true;
     root[TOOL_RUNTIME_MOUNTED_SLUG_KEY] = slug;
 
@@ -1225,52 +1284,73 @@ export function createToolRuntime({
       });
     }
 
-    const executionIntelligence = applyExecutionIntelligence(root, {
-      toolSlug: slug,
-      emitTelemetry: emit
-    });
+    const shouldThrottleEnhancements = runtimePolicy.shouldThrottleExecution === true;
+    const disableIntelligence = runtimePolicy.disableAdvancedRuntimeIntelligence === true || shouldThrottleEnhancements;
+    const disableOrchestrator = runtimePolicy.disableOrchestrator === true || shouldThrottleEnhancements;
 
-    logger.info('[ExecutionIntelligence] mode selected.', {
-      slug,
-      mode: executionIntelligence.mode,
-      profile: executionIntelligence.profile
-    });
+    if (!disableIntelligence) {
+      const executionIntelligence = applyExecutionIntelligence(root, {
+        toolSlug: slug,
+        emitTelemetry: emit
+      });
 
-    const runtimeOrchestrator = applyAiRuntimeOrchestrator(root, {
-      toolSlug: slug,
-      emitTelemetry: emit
-    });
+      logger.info('[ExecutionIntelligence] mode selected.', {
+        slug,
+        mode: executionIntelligence.mode,
+        profile: executionIntelligence.profile
+      });
+    } else {
+      logger.info('[ExecutionIntelligence] disabled by runtime policy.', {
+        slug,
+        disabledByPolicy: runtimePolicy.disableAdvancedRuntimeIntelligence,
+        throttled: shouldThrottleEnhancements
+      });
+    }
 
-    const orchestratorVisualBrain = runtimeOrchestrator?.visualBrain;
-    const orchestratorFlowIntelligence = runtimeOrchestrator?.flowIntelligence;
-    const orchestratorDensityAutobalancer = runtimeOrchestrator?.densityAutobalancer;
-    executionContext.addCleanup(() => orchestratorVisualBrain?.destroy?.());
-    executionContext.addCleanup(() => orchestratorFlowIntelligence?.destroy?.());
-    executionContext.addCleanup(() => orchestratorDensityAutobalancer?.destroy?.());
+    if (!disableOrchestrator) {
+      const runtimeOrchestrator = applyAiRuntimeOrchestrator(root, {
+        toolSlug: slug,
+        emitTelemetry: emit,
+        disableDensityAutobalancer: runtimePolicy.disableDensityAutobalancer === true
+      });
 
-    logger.info('[RuntimeOrchestrator] adaptive execution profile selected.', {
-      slug,
-      genome: runtimeOrchestrator.genomeProfile?.genome,
-      chosenStrategy: runtimeOrchestrator.strategy,
-      appliedRuntimeClasses: runtimeOrchestrator.appliedRuntimeClasses,
-      densityProfile: runtimeOrchestrator.densityAutobalancer?.profile,
-      mode: runtimeOrchestrator.mode,
-      governance: runtimeOrchestrator.governanceProfile
-    });
+      const orchestratorVisualBrain = runtimeOrchestrator?.visualBrain;
+      const orchestratorFlowIntelligence = runtimeOrchestrator?.flowIntelligence;
+      const orchestratorDensityAutobalancer = runtimeOrchestrator?.densityAutobalancer;
+      executionContext.addCleanup(() => orchestratorVisualBrain?.destroy?.());
+      executionContext.addCleanup(() => orchestratorFlowIntelligence?.destroy?.());
+      executionContext.addCleanup(() => orchestratorDensityAutobalancer?.destroy?.());
 
-    logger.info('[ExecutionDensityAutobalancer] density profile selected.', {
-      slug,
-      densityProfile: runtimeOrchestrator.densityAutobalancer?.profile ?? 'not-applied'
-    });
-    logger.info('[ExecutionDensityAutobalancer] toolbar compression state.', {
-      slug,
-      toolbarCompressed: Boolean(runtimeOrchestrator.densityAutobalancer?.toolbarCompressed)
-    });
-    logger.info('[ExecutionDensityAutobalancer] editor balancing state.', {
-      slug,
-      editorBalanceActive: Boolean(runtimeOrchestrator.densityAutobalancer?.editorBalanceActive)
-    });
-    logger.info('PHASE X.3 DENSITY AUTOBALANCER ACTIVE');
+      logger.info('[RuntimeOrchestrator] adaptive execution profile selected.', {
+        slug,
+        genome: runtimeOrchestrator.genomeProfile?.genome,
+        chosenStrategy: runtimeOrchestrator.strategy,
+        appliedRuntimeClasses: runtimeOrchestrator.appliedRuntimeClasses,
+        densityProfile: runtimeOrchestrator.densityAutobalancer?.profile,
+        mode: runtimeOrchestrator.mode,
+        governance: runtimeOrchestrator.governanceProfile
+      });
+
+      logger.info('[ExecutionDensityAutobalancer] density profile selected.', {
+        slug,
+        densityProfile: runtimeOrchestrator.densityAutobalancer?.profile ?? 'not-applied'
+      });
+      logger.info('[ExecutionDensityAutobalancer] toolbar compression state.', {
+        slug,
+        toolbarCompressed: Boolean(runtimeOrchestrator.densityAutobalancer?.toolbarCompressed)
+      });
+      logger.info('[ExecutionDensityAutobalancer] editor balancing state.', {
+        slug,
+        editorBalanceActive: Boolean(runtimeOrchestrator.densityAutobalancer?.editorBalanceActive)
+      });
+      logger.info('PHASE X.3 DENSITY AUTOBALANCER ACTIVE');
+    } else {
+      logger.info('[RuntimeOrchestrator] disabled by runtime policy.', {
+        slug,
+        safeMode: runtimePolicy.safeModeEnabled,
+        throttled: shouldThrottleEnhancements
+      });
+    }
 
     scheduleNonCriticalTask(() => {
       Promise.resolve(writeExecutionDensityReport({
