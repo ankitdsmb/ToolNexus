@@ -8,6 +8,7 @@ using ToolNexus.Api.Diagnostics;
 using ToolNexus.Api.Filters;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Api.Logging;
+using ToolNexus.Api.Services.Reputation;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content;
@@ -101,6 +102,8 @@ builder.Services.Configure<ToolNexusLoggingOptions>(builder.Configuration.GetSec
 builder.Services.AddSingleton<IRuntimeClientLoggerService, RuntimeClientLoggerService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHostedService<EndpointDiagnosticsHostedService>();
+builder.Services.AddScoped<DeveloperReputationService>();
+builder.Services.AddScoped<ToolRatingService>();
 
 var app = builder.Build();
 
