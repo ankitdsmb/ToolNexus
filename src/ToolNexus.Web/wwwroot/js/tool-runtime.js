@@ -31,11 +31,11 @@ import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtim
 import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
 import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
 import { createToolStateMachine as defaultCreateToolStateMachine } from './runtime/tool-state-machine.js';
-import { manifestPhase } from './runtime-phases/manifest-phase.js';
-import { domPhase } from './runtime-phases/dom-phase.js';
-import { modulePhase } from './runtime-phases/module-phase.js';
-import { mountPhase } from './runtime-phases/mount-phase.js';
-import { recoveryPhase } from './runtime-phases/recovery-phase.js';
+import { manifestPhase } from './runtime/phases/manifest-phase.js';
+import { domPhase } from './runtime/phases/dom-phase.js';
+import { modulePhase } from './runtime/phases/module-phase.js';
+import { mountPhase } from './runtime/phases/mount-phase.js';
+import { recoveryPhase } from './runtime/phases/recovery-phase.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -1521,26 +1521,7 @@ export function createToolRuntime({
       return { module, lifecycleContract, importFailed, autoSelected: false };
     };
 
-    const bootstrapPhases = [
-      domPhase,
-      modulePhase,
-      mountPhase,
-      recoveryPhase
-    ];
-
-    const runBootstrapPhases = async (initialContext) => {
-      let context = initialContext;
-      for (const phase of bootstrapPhases) {
-        context = await phase(context);
-        if (context?.aborted || context?.strictBlocked) {
-          break;
-        }
-      }
-
-      return context;
-    };
-
-    phaseContext = await runBootstrapPhases({
+    phaseContext = {
       ...phaseContext,
       runtimeMode: runtimeResolution.mode,
       module: {},
@@ -1555,7 +1536,24 @@ export function createToolRuntime({
 
         return {};
       }
-    });
+    };
+
+    phaseContext = await domPhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await modulePhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await mountPhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await recoveryPhase(phaseContext);
 
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
