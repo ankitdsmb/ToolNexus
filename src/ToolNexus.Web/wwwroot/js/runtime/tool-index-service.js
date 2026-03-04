@@ -19,6 +19,7 @@ function normalizeToolEntry(toolId, descriptor) {
     ...descriptor,
     id: String(descriptor.id ?? toolId),
     module: typeof descriptor.module === 'string' ? descriptor.module : null,
+    pack: typeof descriptor.pack === 'string' ? descriptor.pack : null,
     abi: descriptor.abi == null ? null : String(descriptor.abi),
     warmupPriority: Number.isFinite(descriptor.warmupPriority) ? descriptor.warmupPriority : 0,
     permissions: Array.isArray(descriptor.permissions) ? descriptor.permissions : []

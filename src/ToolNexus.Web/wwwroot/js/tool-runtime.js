@@ -27,10 +27,13 @@ import { validateExecutionUiLaw as defaultExecutionUiLawValidator } from './runt
 import { validateExecutionDensity as defaultExecutionDensityValidator, writeExecutionDensityReport as defaultWriteExecutionDensityReport } from './runtime/execution-density-validator.js';
 import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
 import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from './runtime/orchestrator/ai-runtime-orchestrator.js';
+import { applyRuntimePolicy as defaultApplyRuntimePolicy } from './runtime/policy/runtime-policy-actuator.js';
 import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtime-import-integrity.js';
 import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
 import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
+import { resolveToolModuleFromPack } from './runtime/tool-pack/tool-pack-resolver.js';
 import { createToolStateMachine as defaultCreateToolStateMachine } from './runtime/tool-state-machine.js';
+import { createSchemaToolModule } from './runtime/schema-engine/schema-tool-engine.js';
 import { manifestPhase } from './runtime-phases/manifest-phase.js';
 import { domPhase } from './runtime-phases/dom-phase.js';
 import { modulePhase } from './runtime-phases/module-phase.js';
@@ -281,6 +284,7 @@ export function createToolRuntime({
   writeExecutionDensityReport = defaultWriteExecutionDensityReport,
   applyExecutionIntelligence = defaultApplyExecutionIntelligence,
   applyAiRuntimeOrchestrator = defaultApplyAiRuntimeOrchestrator,
+  applyRuntimePolicy = defaultApplyRuntimePolicy,
   loadToolIndex = defaultLoadToolIndex,
   resolveToolFromIndex = defaultResolveToolFromIndex,
   resolveToolModuleFromIndex = defaultResolveToolModuleFromIndex,
@@ -309,6 +313,7 @@ export function createToolRuntime({
     runtimeBootTimeMs: 0
   };
   const runtimePerfSessions = new Map();
+  const runtimePolicyThrottleRegistry = new Map();
 
   const unsubscribeLifecycleRetryDiagnostics = () => {};
 
@@ -797,6 +802,29 @@ export function createToolRuntime({
     });
   }
 
+  function mergePolicySignalEntries(...entries) {
+    const merged = new Set();
+    for (const entry of entries) {
+      if (entry instanceof Set) {
+        for (const value of entry) {
+          const normalized = String(value ?? '').trim();
+          if (normalized) {
+            merged.add(normalized);
+          }
+        }
+      } else if (Array.isArray(entry)) {
+        for (const value of entry) {
+          const normalized = String(value ?? '').trim();
+          if (normalized) {
+            merged.add(normalized);
+          }
+        }
+      }
+    }
+
+    return [...merged];
+  }
+
   function exposeDiagnosticsApi() {
     if (typeof window === 'undefined') {
       return;
@@ -1029,6 +1057,39 @@ export function createToolRuntime({
       }
     });
 
+    const observedSignals = observability.getSnapshot().selfHealing ?? {};
+    const configuredSignals = window.ToolNexusRuntime?.policySignals ?? window.ToolNexusConfig?.runtimePolicySignals ?? {};
+    const runtimePolicySignals = {
+      safeModeTools: mergePolicySignalEntries(observedSignals.safeModeTools, configuredSignals.safeModeTools),
+      disabledEnhancements: mergePolicySignalEntries(observedSignals.disabledEnhancements, configuredSignals.disabledEnhancements),
+      throttledTools: mergePolicySignalEntries(observedSignals.throttledTools, configuredSignals.throttledTools)
+    };
+    const runtimePolicy = applyRuntimePolicy({
+      root,
+      toolSlug: slug,
+      now,
+      lastExecutedAt: runtimePolicyThrottleRegistry.get(slug),
+      throttleWindowMs: window.ToolNexusConfig?.runtimeThrottleWindowMs,
+      executionContext
+    }, runtimePolicySignals);
+
+    emit('runtime_policy_applied', {
+      toolSlug: slug,
+      metadata: {
+        safeModeEnabled: runtimePolicy.safeModeEnabled,
+        disableOrchestrator: runtimePolicy.disableOrchestrator,
+        disableDensityAutobalancer: runtimePolicy.disableDensityAutobalancer,
+        disableAdvancedRuntimeIntelligence: runtimePolicy.disableAdvancedRuntimeIntelligence,
+        executionThrottled: runtimePolicy.executionThrottled,
+        shouldThrottleExecution: runtimePolicy.shouldThrottleExecution,
+        throttleWindowMs: runtimePolicy.throttleWindowMs
+      }
+    });
+
+    if (!runtimePolicy.shouldThrottleExecution) {
+      runtimePolicyThrottleRegistry.set(slug, runtimeStartedAt);
+    }
+
     root[TOOL_RUNTIME_MOUNTED_KEY] = true;
     root[TOOL_RUNTIME_MOUNTED_SLUG_KEY] = slug;
 
@@ -1240,52 +1301,73 @@ export function createToolRuntime({
       });
     }
 
-    const executionIntelligence = applyExecutionIntelligence(root, {
-      toolSlug: slug,
-      emitTelemetry: emit
-    });
+    const shouldThrottleEnhancements = runtimePolicy.shouldThrottleExecution === true;
+    const disableIntelligence = runtimePolicy.disableAdvancedRuntimeIntelligence === true || shouldThrottleEnhancements;
+    const disableOrchestrator = runtimePolicy.disableOrchestrator === true || shouldThrottleEnhancements;
 
-    logger.info('[ExecutionIntelligence] mode selected.', {
-      slug,
-      mode: executionIntelligence.mode,
-      profile: executionIntelligence.profile
-    });
+    if (!disableIntelligence) {
+      const executionIntelligence = applyExecutionIntelligence(root, {
+        toolSlug: slug,
+        emitTelemetry: emit
+      });
 
-    const runtimeOrchestrator = applyAiRuntimeOrchestrator(root, {
-      toolSlug: slug,
-      emitTelemetry: emit
-    });
+      logger.info('[ExecutionIntelligence] mode selected.', {
+        slug,
+        mode: executionIntelligence.mode,
+        profile: executionIntelligence.profile
+      });
+    } else {
+      logger.info('[ExecutionIntelligence] disabled by runtime policy.', {
+        slug,
+        disabledByPolicy: runtimePolicy.disableAdvancedRuntimeIntelligence,
+        throttled: shouldThrottleEnhancements
+      });
+    }
 
-    const orchestratorVisualBrain = runtimeOrchestrator?.visualBrain;
-    const orchestratorFlowIntelligence = runtimeOrchestrator?.flowIntelligence;
-    const orchestratorDensityAutobalancer = runtimeOrchestrator?.densityAutobalancer;
-    executionContext.addCleanup(() => orchestratorVisualBrain?.destroy?.());
-    executionContext.addCleanup(() => orchestratorFlowIntelligence?.destroy?.());
-    executionContext.addCleanup(() => orchestratorDensityAutobalancer?.destroy?.());
+    if (!disableOrchestrator) {
+      const runtimeOrchestrator = applyAiRuntimeOrchestrator(root, {
+        toolSlug: slug,
+        emitTelemetry: emit,
+        disableDensityAutobalancer: runtimePolicy.disableDensityAutobalancer === true
+      });
 
-    logger.info('[RuntimeOrchestrator] adaptive execution profile selected.', {
-      slug,
-      genome: runtimeOrchestrator.genomeProfile?.genome,
-      chosenStrategy: runtimeOrchestrator.strategy,
-      appliedRuntimeClasses: runtimeOrchestrator.appliedRuntimeClasses,
-      densityProfile: runtimeOrchestrator.densityAutobalancer?.profile,
-      mode: runtimeOrchestrator.mode,
-      governance: runtimeOrchestrator.governanceProfile
-    });
+      const orchestratorVisualBrain = runtimeOrchestrator?.visualBrain;
+      const orchestratorFlowIntelligence = runtimeOrchestrator?.flowIntelligence;
+      const orchestratorDensityAutobalancer = runtimeOrchestrator?.densityAutobalancer;
+      executionContext.addCleanup(() => orchestratorVisualBrain?.destroy?.());
+      executionContext.addCleanup(() => orchestratorFlowIntelligence?.destroy?.());
+      executionContext.addCleanup(() => orchestratorDensityAutobalancer?.destroy?.());
 
-    logger.info('[ExecutionDensityAutobalancer] density profile selected.', {
-      slug,
-      densityProfile: runtimeOrchestrator.densityAutobalancer?.profile ?? 'not-applied'
-    });
-    logger.info('[ExecutionDensityAutobalancer] toolbar compression state.', {
-      slug,
-      toolbarCompressed: Boolean(runtimeOrchestrator.densityAutobalancer?.toolbarCompressed)
-    });
-    logger.info('[ExecutionDensityAutobalancer] editor balancing state.', {
-      slug,
-      editorBalanceActive: Boolean(runtimeOrchestrator.densityAutobalancer?.editorBalanceActive)
-    });
-    logger.info('PHASE X.3 DENSITY AUTOBALANCER ACTIVE');
+      logger.info('[RuntimeOrchestrator] adaptive execution profile selected.', {
+        slug,
+        genome: runtimeOrchestrator.genomeProfile?.genome,
+        chosenStrategy: runtimeOrchestrator.strategy,
+        appliedRuntimeClasses: runtimeOrchestrator.appliedRuntimeClasses,
+        densityProfile: runtimeOrchestrator.densityAutobalancer?.profile,
+        mode: runtimeOrchestrator.mode,
+        governance: runtimeOrchestrator.governanceProfile
+      });
+
+      logger.info('[ExecutionDensityAutobalancer] density profile selected.', {
+        slug,
+        densityProfile: runtimeOrchestrator.densityAutobalancer?.profile ?? 'not-applied'
+      });
+      logger.info('[ExecutionDensityAutobalancer] toolbar compression state.', {
+        slug,
+        toolbarCompressed: Boolean(runtimeOrchestrator.densityAutobalancer?.toolbarCompressed)
+      });
+      logger.info('[ExecutionDensityAutobalancer] editor balancing state.', {
+        slug,
+        editorBalanceActive: Boolean(runtimeOrchestrator.densityAutobalancer?.editorBalanceActive)
+      });
+      logger.info('PHASE X.3 DENSITY AUTOBALANCER ACTIVE');
+    } else {
+      logger.info('[RuntimeOrchestrator] disabled by runtime policy.', {
+        slug,
+        safeMode: runtimePolicy.safeModeEnabled,
+        throttled: shouldThrottleEnhancements
+      });
+    }
 
     scheduleNonCriticalTask(() => {
       Promise.resolve(writeExecutionDensityReport({
@@ -1354,11 +1436,32 @@ export function createToolRuntime({
     const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
     const indexedToolDescriptor = resolveToolFromIndex(slug);
     const indexedModulePath = resolveToolModuleFromIndex(slug);
-    const modulePath = indexedModulePath || manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
+    const toolPackName = indexedToolDescriptor?.pack ?? manifest?.pack ?? null;
+    let resolvedPackDescriptor = null;
+    if (toolPackName) {
+      try {
+        resolvedPackDescriptor = await resolveToolModuleFromPack({ slug, packName: toolPackName });
+      } catch (error) {
+        logger.warn(`[ToolPack] Failed to resolve pack "${toolPackName}" for "${slug}".`, {
+          pack: toolPackName,
+          slug,
+          error: error?.message ?? String(error)
+        });
+      }
+    }
+    const modulePath = indexedModulePath
+      || manifest.modulePath
+      || resolvedPackDescriptor?.modulePath
+      || window.ToolNexusConfig?.runtimeModulePath;
     if (indexedToolDescriptor && typeof manifest === 'object' && manifest) {
       manifest.runtimeAbi = manifest.runtimeAbi ?? indexedToolDescriptor.abi ?? null;
       manifest.permissions = manifest.permissions ?? indexedToolDescriptor.permissions ?? [];
       manifest.tier = manifest.tier ?? indexedToolDescriptor.tier ?? null;
+      manifest.pack = manifest.pack ?? indexedToolDescriptor.pack ?? null;
+    }
+
+    if (typeof manifest === 'object' && manifest && !manifest.modulePath && resolvedPackDescriptor?.modulePath) {
+      manifest.modulePath = resolvedPackDescriptor.modulePath;
     }
     runtimeIdentity.uiMode = uiMode;
 
@@ -1394,6 +1497,21 @@ export function createToolRuntime({
       const { modulePath, reportStrictIntegrityViolation } = moduleContext;
       let module = {};
       let lifecycleContract = inspectLifecycleContract(module);
+      const isSchemaRuntime = String(manifest?.type ?? '').trim().toLowerCase() === 'schema';
+
+      if (isSchemaRuntime) {
+        module = createSchemaToolModule({ slug });
+        lifecycleContract = inspectLifecycleContract(module);
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE, 'schema_runtime_selected');
+        return {
+          module,
+          lifecycleContract,
+          importFailed: false,
+          autoSelected: false,
+          schemaSelected: true
+        };
+      }
+
       if (!modulePath) {
         setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_mode_no_module_path');
         return { module, lifecycleContract, importFailed: false, autoSelected: true };
@@ -1541,29 +1659,10 @@ export function createToolRuntime({
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
-      return { module, lifecycleContract, importFailed, autoSelected: false };
+      return { module, lifecycleContract, importFailed, autoSelected: false, schemaSelected: false };
     };
 
-    const bootstrapPhases = [
-      domPhase,
-      modulePhase,
-      mountPhase,
-      recoveryPhase
-    ];
-
-    const runBootstrapPhases = async (initialContext) => {
-      let context = initialContext;
-      for (const phase of bootstrapPhases) {
-        context = await phase(context);
-        if (context?.aborted || context?.strictBlocked) {
-          break;
-        }
-      }
-
-      return context;
-    };
-
-    phaseContext = await runBootstrapPhases({
+    phaseContext = {
       ...phaseContext,
       runtimeMode: runtimeResolution.mode,
       module: {},
@@ -1578,24 +1677,42 @@ export function createToolRuntime({
 
         return {};
       }
-    });
+    };
+
+    phaseContext = await domPhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await modulePhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await mountPhase(phaseContext);
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
+      return;
+    }
+
+    phaseContext = await recoveryPhase(phaseContext);
 
     if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
     }
 
-    const { module: loadedModule, lifecycleContract, importFailed, validation: domValidation } = phaseContext;
+    const { module: loadedModule, lifecycleContract, importFailed, validation: domValidation, schemaSelected = false } = phaseContext;
 
     const enforceCustomForTier = complexityTier >= 4;
     const templateIsLegacyOrMinimal = domValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
       || domValidation.detectedLayoutType === LAYOUT_TYPES.MINIMAL_LAYOUT;
     const shouldForceImportedLifecycle = Boolean(
-      modulePath
+      (schemaSelected || modulePath)
       && !importFailed
       && lifecycleContract?.compliant
       && domValidation.isValid
     );
-    const shouldUseAutoModule = !shouldForceImportedLifecycle
+    const shouldUseAutoModule = !schemaSelected
+      && !shouldForceImportedLifecycle
       && (importFailed || !modulePath || templateIsLegacyOrMinimal);
     if (shouldUseAutoModule) {
       if (importFailed) {
