@@ -1,6 +1,5 @@
-﻿namespace ToolNexus.ToolLibrary;
+namespace ToolNexus.ToolLibrary;
 
-public class Class1
+public static class AssemblyMarker
 {
-
 }
