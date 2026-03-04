@@ -59,6 +59,37 @@ const RUNTIME_TYPES = Object.freeze({
   CUSTOM: 'custom'
 });
 
+const DEFAULT_RUNTIME_PHASES = Object.freeze({
+  manifest: false,
+  dom: false,
+  module: false,
+  mount: false,
+  recovery: false
+});
+
+function ensureRuntimeHealthGlobals() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (!window.TOOLNEXUS_RUNTIME_PHASES) {
+    window.TOOLNEXUS_RUNTIME_PHASES = { ...DEFAULT_RUNTIME_PHASES };
+  }
+
+  if (typeof window.__TOOLNEXUS_RUNTIME_HEALTH !== 'function') {
+    window.__TOOLNEXUS_RUNTIME_HEALTH = function () {
+      const phasesExecuted = window.TOOLNEXUS_RUNTIME_PHASES ?? { ...DEFAULT_RUNTIME_PHASES };
+      return {
+        runtimeLoaded: true,
+        phasesExecuted,
+        manifestLoaded: phasesExecuted.manifest === true,
+        moduleImported: phasesExecuted.module === true,
+        toolMounted: phasesExecuted.mount === true
+      };
+    };
+  }
+}
+
 
 export function preflightRuntimeDom(root) {
   return {
@@ -2417,6 +2448,8 @@ export function validateRuntimeEntrypointContext({ doc = document, logger = cons
     console.error('[ToolNexus Runtime] Runtime bootstrap aborted due to script context validation failure.', entrypointValidation);
   }
 
+  ensureRuntimeHealthGlobals();
+
   const runtime = createToolRuntime();
 
   /*
@@ -2434,16 +2467,26 @@ export function validateRuntimeEntrypointContext({ doc = document, logger = cons
     }
   }
 
-  if (entrypointValidation.valid && runtime?.bootstrapToolRuntime && typeof document !== 'undefined' && document.getElementById('tool-root')) {
-    scheduleNonCriticalTask(() => {
-      runtime.bootstrapToolRuntime().catch((error) => {
+  async function bootstrapRuntimeEntrypoint() {
+    if (typeof document === 'undefined' || !document.querySelector('#tool-root') || !runtime?.bootstrapToolRuntime) {
+      return;
+    }
 
-        // FIX:
-        // runtimeLogger was undefined -> replaced with safe console fallback
-        console.warn('[ToolRuntime] bootstrap task failed safely.', {
-          message: error?.message ?? String(error)
-        });
+    try {
+      await runtime.bootstrapToolRuntime();
+    } catch (error) {
+      console.error('[ToolRuntime] Fatal runtime failure', error);
+    }
+  }
 
+  if (entrypointValidation.valid && typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        void bootstrapRuntimeEntrypoint();
+      }, { once: true });
+    } else {
+      scheduleNonCriticalTask(() => {
+        void bootstrapRuntimeEntrypoint();
       });
-    });
-  } 
+    }
+  }
