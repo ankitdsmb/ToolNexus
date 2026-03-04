@@ -26,7 +26,7 @@ describe('hybrid SSR tool shell runtime', () => {
 
     expect(shell).toContain('class="tool-seo');
     expect(shell).toContain('<h1>@Model.Tool.Title</h1>');
-    expect(shell).toContain('Model.Content?.Intro ?? Model.Tool.SeoDescription');
+    expect(shell).toContain('Model.Seo.Description');
     expect(shell).toContain('\"Examples\"');
   });
 

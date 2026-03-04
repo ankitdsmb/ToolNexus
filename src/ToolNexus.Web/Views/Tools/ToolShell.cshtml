@@ -116,7 +116,7 @@
             tool: {
                 slug: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Slug)),
                 title: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Title)),
-                seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.SeoDescription)),
+                seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Seo.Description)),
                 exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
                 clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions)),
                 actions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Actions)),
