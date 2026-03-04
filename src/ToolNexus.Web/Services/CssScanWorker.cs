@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
 using System.Net;
 using AngleSharp.Html.Parser;
 using Microsoft.EntityFrameworkCore;
@@ -12,20 +11,11 @@ namespace ToolNexus.Web.Services;
 
 public sealed class CssScanWorker(
     IServiceScopeFactory scopeFactory,
-    ILogger<CssScanWorker> logger,
-    IMetricsCollector metricsCollector) : BackgroundService
+    ILogger<CssScanWorker> logger) : BackgroundService
 {
     private const int MaxConcurrentScans = 3;
     private const int MaxPagesPerScan = 5;
-    private const int MaxAttempts = 3;
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(2);
-    private static readonly TimeSpan ScanTimeout = TimeSpan.FromSeconds(120);
-    private static readonly TimeSpan[] RetryBackoff =
-    [
-        TimeSpan.FromSeconds(2),
-        TimeSpan.FromSeconds(5),
-        TimeSpan.FromSeconds(10)
-    ];
 
     private readonly SemaphoreSlim _concurrencyGate = new(MaxConcurrentScans, MaxConcurrentScans);
 
@@ -50,12 +40,10 @@ public sealed class CssScanWorker(
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
-        var now = DateTimeOffset.UtcNow;
-
         var queueDepth = await db.CssScanJobs
             .Where(job => job.Status == "Pending" || job.Status == "Processing")
             .CountAsync(cancellationToken);
-        metricsCollector.SetCssScanQueueDepth(queueDepth);
+        logger.LogInformation("scan_queue_depth QueueDepth={QueueDepth}", queueDepth);
 
         var availableSlots = MaxConcurrentScans - CurrentLoad();
         if (availableSlots <= 0)
@@ -70,7 +58,6 @@ public sealed class CssScanWorker(
             .ToListAsync(cancellationToken);
 
         var runnableJobs = pendingJobs
-            .Where(job => !TryGetMetadata(job.JobMetadataJson, out var metadata) || metadata.NextAttemptAtUtc is null || metadata.NextAttemptAtUtc <= now)
             .Take(availableSlots)
             .ToList();
 
@@ -107,12 +94,11 @@ public sealed class CssScanWorker(
             var privateNetworkValidator = scope.ServiceProvider.GetRequiredService<IPrivateNetworkValidator>();
 
             var job = await db.CssScanJobs.SingleAsync(x => x.Id == jobId, cancellationToken);
-            var metadata = GetMetadata(job.JobMetadataJson);
-            var attempt = metadata.Attempt + 1;
 
-            var jobMetadata = DeserializeMetadata(job.JobMetadataJson);
             var baseUri = new Uri(job.Url);
-            var pinnedAddress = await ResolveInitialPinnedAddressAsync(baseUri, jobMetadata, privateNetworkValidator, cancellationToken);
+            var pinnedAddress = await ResolveInitialPinnedAddressAsync(baseUri, privateNetworkValidator, cancellationToken);
+
+            logger.LogInformation("scan_started JobId={JobId} Url={Url}", job.Id, job.Url);
 
             var crawl = await crawler.CrawlAsync(job.Url, maxPages: MaxPagesPerScan, cancellationToken: cancellationToken);
             var coverageResult = await coverage.Analyze(job.Url, cancellationToken);
@@ -153,7 +139,7 @@ public sealed class CssScanWorker(
                 });
             }
 
-            var artifactPath = await artifactStorage.SaveOptimizedCssAsync(job.Id, optimized.OptimizedCss, scanToken);
+            var artifactPath = await artifactStorage.SaveOptimizedCssAsync(job.Id, optimized.OptimizedCss, cancellationToken);
             result.Artifacts.Add(new CssArtifact
             {
                 Id = Guid.NewGuid(),
@@ -168,65 +154,27 @@ public sealed class CssScanWorker(
             db.CssScanResults.Add(result);
             job.Status = "Completed";
             job.ErrorMessage = null;
-            job.JobMetadataJson = SerializeMetadata(new ScanJobMetadata(0, null));
             job.CompletedAtUtc = DateTimeOffset.UtcNow;
             job.PagesScanned = crawl.PagesScanned;
             job.ScanDurationMs = (int)Math.Round(scanStopwatch.Elapsed.TotalMilliseconds);
             await db.SaveChangesAsync(cancellationToken);
 
-            metricsCollector.ObserveCssScanDuration(scanStopwatch.Elapsed.TotalMilliseconds);
-            logger.LogInformation("scan_completed EventName={EventName} JobId={JobId} Url={Url} Pages={Pages} Attempt={Attempt} DurationMs={DurationMs}", "scan_completed", jobId, job.Url, crawl.PagesScanned, attempt, job.ScanDurationMs);
+            logger.LogInformation("scan_completed JobId={JobId} Url={Url} Pages={Pages} DurationMs={DurationMs}", jobId, job.Url, crawl.PagesScanned, job.ScanDurationMs);
         }
         catch (Exception ex)
         {
-            var timedOut = ex is OperationCanceledException && !cancellationToken.IsCancellationRequested;
-
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
             var job = await db.CssScanJobs.SingleOrDefaultAsync(x => x.Id == jobId, cancellationToken);
             if (job is not null)
             {
-                var metadata = GetMetadata(job.JobMetadataJson);
-                var nextAttempt = metadata.Attempt + 1;
-
                 job.ScanDurationMs = (int)Math.Round(scanStopwatch.Elapsed.TotalMilliseconds);
 
-                if (nextAttempt < MaxAttempts)
-                {
-                    var retryDelay = RetryBackoff[Math.Min(nextAttempt - 1, RetryBackoff.Length - 1)];
-                    var nextAttemptAt = DateTimeOffset.UtcNow.Add(retryDelay);
-                    job.Status = "Pending";
-                    job.ErrorMessage = $"Attempt {nextAttempt}/{MaxAttempts} failed: {ex.Message}";
-                    job.JobMetadataJson = SerializeMetadata(new ScanJobMetadata(nextAttempt, nextAttemptAt));
-                    job.CompletedAtUtc = null;
+                job.Status = "Failed";
+                job.ErrorMessage = ex.Message;
+                job.CompletedAtUtc = DateTimeOffset.UtcNow;
 
-                    logger.LogWarning(ex,
-                        "scan_failed EventName={EventName} JobId={JobId} Attempt={Attempt} MaxAttempts={MaxAttempts} RetryingInSeconds={RetryInSeconds} TimedOut={TimedOut}",
-                        "scan_failed",
-                        jobId,
-                        nextAttempt,
-                        MaxAttempts,
-                        retryDelay.TotalSeconds,
-                        timedOut);
-                }
-                else
-                {
-                    job.Status = "Failed";
-                    job.ErrorMessage = timedOut
-                        ? $"CSS scan timed out after {ScanTimeout.TotalSeconds:0}s"
-                        : ex.Message;
-                    job.CompletedAtUtc = DateTimeOffset.UtcNow;
-                    job.JobMetadataJson = SerializeMetadata(new ScanJobMetadata(nextAttempt, null));
-
-                    metricsCollector.IncrementCssScanFailure();
-                    logger.LogError(ex,
-                        "scan_failed EventName={EventName} JobId={JobId} Attempt={Attempt} MaxAttempts={MaxAttempts} TimedOut={TimedOut}",
-                        "scan_failed",
-                        jobId,
-                        nextAttempt,
-                        MaxAttempts,
-                        timedOut);
-                }
+                logger.LogError(ex, "scan_failed JobId={JobId}", jobId);
 
                 await db.SaveChangesAsync(cancellationToken);
             }
@@ -296,15 +244,9 @@ public sealed class CssScanWorker(
 
     private static async Task<IPAddress> ResolveInitialPinnedAddressAsync(
         Uri targetUri,
-        CssScanJobMetadata metadata,
         IPrivateNetworkValidator privateNetworkValidator,
         CancellationToken cancellationToken)
     {
-        if (metadata.PinnedIp is not null && IPAddress.TryParse(metadata.PinnedIp, out var fromMetadata))
-        {
-            return fromMetadata;
-        }
-
         var resolved = await privateNetworkValidator.ResolveValidatedAddressAsync(targetUri.Host, cancellationToken);
         if (resolved is null)
         {
@@ -313,23 +255,4 @@ public sealed class CssScanWorker(
 
         return resolved;
     }
-
-    private static CssScanJobMetadata DeserializeMetadata(string? metadataJson)
-    {
-        if (string.IsNullOrWhiteSpace(metadataJson))
-        {
-            return new CssScanJobMetadata();
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<CssScanJobMetadata>(metadataJson) ?? new CssScanJobMetadata();
-        }
-        catch
-        {
-            return new CssScanJobMetadata();
-        }
-    }
-
-    private sealed record CssScanJobMetadata(string? PinnedIp = null);
 }
