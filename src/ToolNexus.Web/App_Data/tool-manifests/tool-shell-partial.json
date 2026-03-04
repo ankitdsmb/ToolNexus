@@ -1,0 +1,12 @@
+{
+  "Slug": "tool-shell-partial",
+  "ViewName": "ToolShellPartial",
+  "ModulePath": "/js/tools/tool-shell-partial.js",
+  "TemplatePath": "/tool-templates/tool-shell-partial.html",
+  "Dependencies": [],
+  "CssPath": null,
+  "Styles": [],
+  "Category": "",
+  "UiMode": "auto",
+  "ComplexityTier": 1
+}

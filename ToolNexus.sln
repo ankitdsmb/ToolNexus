@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11505.172 d18.3
+VisualStudioVersion = 18.3.11505.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Web", "src\ToolNexus.Web\ToolNexus.Web.csproj", "{11111111-1111-1111-1111-111111111111}"
 EndProject
@@ -23,14 +24,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Web.Tests", "tests\ToolNexus.Web.Tests\ToolNexus.Web.Tests.csproj", "{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.ConsoleRunner.Tests", "tests\ToolNexus.ConsoleRunner.Tests\ToolNexus.ConsoleRunner.Tests.csproj", "{57063FAD-B958-4FB8-A430-0EE28FBA2F62}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{110466B3-641E-448D-AC82-2F20FB1519EE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.Domain", "src\ToolNexus.Domain\ToolNexus.Domain.csproj", "{66450535-F632-4F85-B780-4028C09F7A52}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.ToolLibrary", "src\ToolNexus.ToolLibrary\ToolNexus.ToolLibrary.csproj", "{33874A3C-5FC1-4253-AB21-AAB8CC2B4F8B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolNexus.ToolLibrary.Tests", "tests\ToolNexus.ToolLibrary.Tests\ToolNexus.ToolLibrary.Tests.csproj", "{B3765CF3-B730-4CE8-A120-CE190D91C734}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,30 +71,15 @@ Global
 		{57063FAD-B958-4FB8-A430-0EE28FBA2F62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57063FAD-B958-4FB8-A430-0EE28FBA2F62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57063FAD-B958-4FB8-A430-0EE28FBA2F62}.Release|Any CPU.Build.0 = Release|Any CPU
-		{66450535-F632-4F85-B780-4028C09F7A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{66450535-F632-4F85-B780-4028C09F7A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{66450535-F632-4F85-B780-4028C09F7A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{66450535-F632-4F85-B780-4028C09F7A52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{33874A3C-5FC1-4253-AB21-AAB8CC2B4F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{33874A3C-5FC1-4253-AB21-AAB8CC2B4F8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{33874A3C-5FC1-4253-AB21-AAB8CC2B4F8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{33874A3C-5FC1-4253-AB21-AAB8CC2B4F8B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3765CF3-B730-4CE8-A120-CE190D91C734}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3765CF3-B730-4CE8-A120-CE190D91C734}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3765CF3-B730-4CE8-A120-CE190D91C734}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3765CF3-B730-4CE8-A120-CE190D91C734}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {19487236-8B9C-4125-B7E0-40B142B11B05}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4FEF86C0-1F74-47E1-A1EA-F7F48DE7E3FA} = {D2D6874F-8898-43B2-9BEB-7A0F1709A64A}
 		{57063FAD-B958-4FB8-A430-0EE28FBA2F62} = {D2D6874F-8898-43B2-9BEB-7A0F1709A64A}
-		{66450535-F632-4F85-B780-4028C09F7A52} = {110466B3-641E-448D-AC82-2F20FB1519EE}
-		{33874A3C-5FC1-4253-AB21-AAB8CC2B4F8B} = {110466B3-641E-448D-AC82-2F20FB1519EE}
-		{B3765CF3-B730-4CE8-A120-CE190D91C734} = {D2D6874F-8898-43B2-9BEB-7A0F1709A64A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {19487236-8B9C-4125-B7E0-40B142B11B05}
 	EndGlobalSection
 EndGlobal
