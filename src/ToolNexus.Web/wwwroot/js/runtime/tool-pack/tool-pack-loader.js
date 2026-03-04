@@ -3,7 +3,14 @@ import { isToolPackRegistered, registerToolPack } from './tool-pack-registry.js'
 const packLoadPromises = new Map();
 
 function normalizePackName(packName) {
-  return String(packName ?? '').trim();
+  const normalized = String(packName ?? '').trim().toLowerCase();
+  if (!normalized) {
+    return '';
+  }
+
+  return normalized.endsWith('-pack')
+    ? normalized.slice(0, -5)
+    : normalized;
 }
 
 export async function loadToolPack(packName) {
