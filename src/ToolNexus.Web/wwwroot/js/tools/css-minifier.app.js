@@ -34,6 +34,10 @@ class CssMinifierApp {
     if (this.dom.shortcutHint) this.dom.shortcutHint.textContent = 'Shortcuts: Ctrl/Cmd + Enter to analyze, Ctrl/Cmd + L to clear input';
     if (this.dom.outputHeading) this.dom.outputHeading.textContent = 'Optimized CSS Output';
     if (this.dom.runBtn.querySelector('.tool-btn__label')) this.dom.runBtn.querySelector('.tool-btn__label').textContent = 'Analyze & Optimize CSS';
+    if (this.dom.runBtn.hasAttribute('hidden')) this.dom.runBtn.removeAttribute('hidden');
+    if (this.dom.runBtn.getAttribute('aria-hidden') === 'true') this.dom.runBtn.removeAttribute('aria-hidden');
+    if (this.dom.runBtn.getAttribute('tabindex') === '-1') this.dom.runBtn.removeAttribute('tabindex');
+    if (!this.dom.runBtn.querySelector('.tool-btn__label')) this.dom.runBtn.textContent = 'Analyze & Optimize CSS';
     if (this.dom.copyBtn) this.dom.copyBtn.textContent = 'Copy Optimized CSS';
     if (this.dom.downloadBtn) this.dom.downloadBtn.textContent = 'Download optimized CSS';
   }

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:runtime && npm run test:js",
-    "test:js": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
+    "test:js": "node --experimental-vm-modules scripts/run-jest.mjs --coverage",
     "check:platform": "node scripts/platform-guard.mjs",
     "check:design-system": "node scripts/design-system-guard.mjs",
     "check:tool-ecosystem": "node scripts/tool-ecosystem-validate.mjs",
@@ -15,7 +15,7 @@
     "test:playwright:runtime": "playwright test tests/playwright/runtime",
     "test:playwright:smoke": "playwright test tests/playwright/smoke",
     "test:playwright:visual": "playwright test tests/playwright/screenshots",
-    "test:runtime": "vitest run tests/runtime",
+    "test:runtime": "node node_modules/vitest/vitest.mjs run tests/runtime",
     "env:setup": "bash ./scripts/setup-toolnexus.sh",
     "env:maintenance": "bash ./scripts/maintenance-toolnexus.sh full",
     "env:maintenance:quick": "bash ./scripts/maintenance-toolnexus.sh quick",
