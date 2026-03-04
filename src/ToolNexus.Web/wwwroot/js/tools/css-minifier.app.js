@@ -22,6 +22,7 @@ class CssMinifierApp {
     this.disposeHandlers = [];
     this.disposeKeyboard = null;
     this.autoTimer = 0;
+    this.latestArtifactId = null;
 
     if (!this.dom?.inputEditor || !this.dom?.outputEditor || !this.dom?.runBtn) return;
     this.initializeUi();
@@ -72,13 +73,13 @@ class CssMinifierApp {
     return 'Custom / Unknown';
   }
 
-  updateUsageReport(totalBytes, optimizedBytes) {
+  updateUsageReport(totalBytes, optimizedBytes, frameworkOverride = null) {
     const normalizedTotal = Math.max(totalBytes, 1);
     const estimatedUnusedBytes = Math.max(totalBytes - optimizedBytes, 0);
     const estimatedUsedBytes = normalizedTotal - estimatedUnusedBytes;
     const optimizationPercent = (estimatedUnusedBytes / normalizedTotal) * 100;
     const usedPercent = 100 - optimizationPercent;
-    const framework = this.detectFramework(this.dom.inputEditor?.value ?? '');
+    const framework = frameworkOverride ?? this.detectFramework(this.dom.inputEditor?.value ?? '');
     const speedHint = optimizationPercent > 40 ? 'High' : optimizationPercent > 20 ? 'Medium' : 'Low';
     const speedGainMin = Math.max(Math.round(optimizationPercent * 0.25), 3);
     const speedGainMax = Math.max(Math.round(optimizationPercent * 0.45), speedGainMin + 5);
@@ -100,9 +101,55 @@ class CssMinifierApp {
     }
   }
 
+  async runUrlScan(url) {
+    this.renderStatus('Submitting website scan…', 'info');
+    const response = await fetch('/api/tools/css/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload?.error ?? 'Unable to start scan.');
+    }
+
+    const { jobId } = await response.json();
+    if (!jobId) {
+      throw new Error('Server did not return a scan job id.');
+    }
+
+    this.renderStatus('Scan in progress…', 'info');
+
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 2000));
+      const pollResponse = await fetch(`/api/tools/css/result/${encodeURIComponent(jobId)}`);
+      if (!pollResponse.ok) continue;
+
+      const payload = await pollResponse.json();
+      if (payload.status === 'Completed' && payload.result) {
+        const { totalCss, usedCss, unusedCss, framework, artifactId } = payload.result;
+        this.latestArtifactId = artifactId ?? null;
+        this.updateUsageReport(totalCss ?? 0, usedCss ?? 0, framework ?? 'Unknown');
+        if (this.dom.outputEditor.value.trim().length === 0) {
+          this.dom.outputEditor.value = `/* Website scan complete for ${url}. Download optimized artifact to retrieve generated CSS. */`;
+        }
+        this.renderStatus('Website scan complete', 'success');
+        return;
+      }
+
+      if (payload.status === 'Failed') {
+        throw new Error(payload.error ?? 'Scan failed.');
+      }
+    }
+
+    throw new Error('Scan timed out. Please try again.');
+  }
+
   clearInput() {
     this.dom.inputEditor.value = '';
     this.dom.outputEditor.value = '';
+    this.latestArtifactId = null;
     if (this.dom.warnings) {
       this.dom.warnings.hidden = true;
       this.dom.warnings.innerHTML = '';
@@ -143,12 +190,13 @@ class CssMinifierApp {
     this.on(this.dom.scanUrlBtn, 'click', () => {
       const url = this.dom.websiteUrlInput?.value?.trim();
       if (!url) {
-        this.renderStatus('Enter a website URL to simulate a scan', 'error');
+        this.renderStatus('Enter a website URL to scan', 'error');
         return;
       }
 
-      this.renderStatus(`Website CSS scan ready for ${url}`, 'success');
-      this.updateUsageReport(getByteSize(this.dom.inputEditor.value), getByteSize(this.dom.outputEditor.value));
+      void this.runUrlScan(url).catch((error) => {
+        this.renderStatus(error.message || 'Scan failed', 'error');
+      });
     });
 
     this.on(this.dom.inputEditor, 'keyup', () => {
@@ -159,7 +207,25 @@ class CssMinifierApp {
       }, AUTO_MINIFY_DEBOUNCE_MS);
     });
 
-    this.on(this.dom.downloadBtn, 'click', () => {
+    this.on(this.dom.downloadBtn, 'click', async () => {
+      if (this.latestArtifactId) {
+        const response = await fetch('/api/tools/css/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artifactId: this.latestArtifactId })
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const anchor = document.createElement('a');
+          anchor.href = URL.createObjectURL(blob);
+          anchor.download = DOWNLOAD_FILE_NAME;
+          anchor.click();
+          URL.revokeObjectURL(anchor.href);
+          return;
+        }
+      }
+
       const output = this.dom.outputEditor.value;
       if (!output.trim()) return;
       const blob = new Blob([output], { type: 'text/css' });

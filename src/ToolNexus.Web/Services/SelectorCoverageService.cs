@@ -215,7 +215,7 @@ public sealed class SelectorCoverageService
     private static List<string> SplitCompoundParts(string selector)
     {
         return selector
-            .Split([' ', '>', '+', '~', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Split(new[] { ' ', '>', '+', '~', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .ToList();
     }
 

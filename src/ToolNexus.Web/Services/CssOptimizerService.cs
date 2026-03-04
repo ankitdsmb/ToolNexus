@@ -120,7 +120,7 @@ public sealed class CssOptimizerService
     private static IEnumerable<string> SplitSelectorParts(string selector)
     {
         return selector
-            .Split([' ', '>', '+', '~', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Split(new[] { ' ', '>', '+', '~', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(part => part.Trim());
     }
 

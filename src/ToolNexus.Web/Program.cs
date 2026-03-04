@@ -78,6 +78,17 @@ builder.Services.AddSingleton<IStructuredRequestLogger, StructuredRequestLogger>
 builder.Services.AddScoped<IAdminToolsViewModelService, AdminToolsViewModelService>();
 builder.Services.AddScoped<CssReportStorageService>();
 builder.Services.AddScoped<CssComparisonService>();
+builder.Services.AddScoped<CssScanCacheService>();
+builder.Services.AddScoped<CssCoverageService>();
+builder.Services.AddScoped<MultiPageCrawlerService>();
+builder.Services.AddScoped<SelectorCoverageService>();
+builder.Services.AddScoped<CssOptimizerService>();
+builder.Services.AddScoped<CssFrameworkDetector>();
+builder.Services.AddScoped<UrlSecurityValidator>();
+builder.Services.AddScoped<CssArtifactStorageService>();
+builder.Services.AddHttpClient();
+builder.Services.AddToolSecurity();
+builder.Services.AddHostedService<CssScanWorker>();
 
 var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
 if (!string.IsNullOrWhiteSpace(keyRingPath))
@@ -280,6 +291,7 @@ app.UseCors();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseToolSecurity();
 app.UseOutputCache();
 
 if (app.Environment.IsDevelopment())
