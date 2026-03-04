@@ -29,7 +29,7 @@ export function create(context) {
   return getToolPlatformKernel().registerTool({
     id: TOOL_ID,
     root,
-    init: () => createCssMinifierApp(root),
+    init: () => createCssMinifierApp(root, { executeRunTool: runTool }),
     destroy: (app) => app?.destroy?.()
   });
 }
@@ -60,5 +60,4 @@ export async function runTool(action, input, options = {}) {
     throw new Error(toUserErrorMessage(error));
   }
 }
-
 

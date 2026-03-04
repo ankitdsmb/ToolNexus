@@ -17,8 +17,11 @@ function getByteSize(value) {
 }
 
 class CssMinifierApp {
-  constructor(root) {
+  constructor(root, options = {}) {
     this.dom = getCssMinifierDom(root);
+    this.executeRunTool = typeof options.executeRunTool === 'function'
+      ? options.executeRunTool
+      : runCssMinifier;
     this.disposeHandlers = [];
     this.disposeKeyboard = null;
     this.autoTimer = 0;
@@ -166,7 +169,7 @@ class CssMinifierApp {
     this.renderStatus('Processing…', 'info');
 
     try {
-      const output = await runCssMinifier(action, input, {
+      const output = await this.executeRunTool(action, input, {
         preserveImportantComments: Boolean(this.dom.preserveToggle?.checked)
       });
       this.dom.outputEditor.value = output;
@@ -270,11 +273,11 @@ class CssMinifierApp {
   }
 }
 
-export function createCssMinifierApp(root) {
+export function createCssMinifierApp(root, options = {}) {
   if (!root) return null;
   if (APP_INSTANCES.has(root)) return APP_INSTANCES.get(root);
 
-  const app = new CssMinifierApp(root);
+  const app = new CssMinifierApp(root, options);
   APP_INSTANCES.set(root, app);
   return app;
 }
