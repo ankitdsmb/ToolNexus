@@ -6,9 +6,16 @@ namespace ToolNexus.Web.Services;
 public sealed class CssCoverageService
 {
     private const float TimeoutMilliseconds = 10_000;
+    private const int MaxPagesPerScan = 5;
 
-    public async Task<CssCoverageResult> Analyze(string url)
+    public async Task<CssCoverageResult> Analyze(string url, CancellationToken cancellationToken = default)
     {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsedUrl)
+            || (parsedUrl.Scheme != Uri.UriSchemeHttp && parsedUrl.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ArgumentException("A valid http/https URL is required.", nameof(url));
+        }
+
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -23,10 +30,7 @@ public sealed class CssCoverageService
 
         try
         {
-            var cdpSession = await page.Context.NewCDPSessionAsync(page);
-
-            await cdpSession.SendAsync("CSS.enable");
-            await cdpSession.SendAsync("DOM.enable");
+            cancellationToken.ThrowIfCancellationRequested();
 
             await page.GotoAsync(url, new PageGotoOptions
             {
@@ -41,16 +45,21 @@ public sealed class CssCoverageService
                 Timeout = TimeoutMilliseconds
             });
 
-            var stopTrackingResponse = await cdpSession.SendAsync("CSS.stopRuleUsageTracking");
+            var coverageEntries = await page.Coverage.StopCSSCoverageAsync();
+            var limitedEntries = coverageEntries.Take(MaxPagesPerScan).ToArray();
 
-            var (totalCss, usedCss) = CalculateRuleUsage(stopTrackingResponse);
+            var totalCss = limitedEntries.Sum(entry => entry.Text.Length);
+            var usedCss = limitedEntries.Sum(entry => CalculateUsedCharacters(entry.Ranges));
             var unusedCss = Math.Max(0, totalCss - usedCss);
+            var cssContent = string.Join('\n', limitedEntries.Select(entry => entry.Text));
 
             return new CssCoverageResult
             {
                 TotalCss = totalCss,
                 UsedCss = usedCss,
-                UnusedCss = unusedCss
+                UnusedCss = unusedCss,
+                CssContent = cssContent,
+                PagesScanned = Math.Min(1, MaxPagesPerScan)
             };
         }
         finally
@@ -89,5 +98,9 @@ public sealed class CssCoverageResult
 
     public int UsedCss { get; set; }
 
-    public int UnusedCss { get; set; }
+    public int UnusedCss { get; init; }
+
+    public int PagesScanned { get; init; }
+
+    public string CssContent { get; init; } = string.Empty;
 }
