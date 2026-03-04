@@ -130,6 +130,7 @@ export function applyAiRuntimeOrchestrator(root, options = {}) {
     strategy,
     appliedRuntimeClasses,
     runtimeProfile,
+    densityAutobalancer,
     visualBrain,
     flowIntelligence,
     passive: true

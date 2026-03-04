@@ -134,7 +134,8 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
       reason: 'runtime_widget_missing',
       profile: null,
       metrics: null,
-      classes: []
+      classes: [],
+      destroy: () => {}
     };
   }
 
@@ -145,7 +146,8 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
       profile: null,
       metrics: null,
       classes: Array.from(widget.classList),
-      widget
+      widget,
+      destroy: () => {}
     };
   }
 
@@ -211,6 +213,14 @@ export function applyExecutionDensityAutobalancer(root, options = {}) {
     editorBalanceActive,
     metrics,
     classes,
-    widget
+    widget,
+    destroy() {
+      if (!widget?.classList) {
+        return;
+      }
+
+      DENSITY_CLASSES.forEach((name) => widget.classList.remove(name));
+      widget.classList.remove('density-autobalanced', 'toolbar-compressed', 'editor-balance-active');
+    }
   };
 }

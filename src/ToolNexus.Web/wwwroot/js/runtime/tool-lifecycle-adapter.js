@@ -119,7 +119,7 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
     }
   } catch (error) {
     try {
-      await normalized.destroy();
+      await normalized.destroy?.();
     } catch (destroyError) {
       console.error(`[RuntimeLifecycle] Destroy rollback failed for "${slug}" after init failure.`, destroyError);
     }
