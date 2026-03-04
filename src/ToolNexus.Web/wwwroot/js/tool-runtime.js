@@ -31,6 +31,7 @@ import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtim
 import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
 import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
 import { createToolStateMachine as defaultCreateToolStateMachine } from './runtime/tool-state-machine.js';
+import { createSchemaToolModule } from './runtime/schema-engine/schema-tool-engine.js';
 import { manifestPhase } from './runtime-phases/manifest-phase.js';
 import { domPhase } from './runtime-phases/dom-phase.js';
 import { modulePhase } from './runtime-phases/module-phase.js';
@@ -1379,6 +1380,21 @@ export function createToolRuntime({
       const { modulePath, reportStrictIntegrityViolation } = moduleContext;
       let module = {};
       let lifecycleContract = inspectLifecycleContract(module);
+      const isSchemaRuntime = String(manifest?.type ?? '').trim().toLowerCase() === 'schema';
+
+      if (isSchemaRuntime) {
+        module = createSchemaToolModule({ slug });
+        lifecycleContract = inspectLifecycleContract(module);
+        setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_ACTIVE, 'schema_runtime_selected');
+        return {
+          module,
+          lifecycleContract,
+          importFailed: false,
+          autoSelected: false,
+          schemaSelected: true
+        };
+      }
+
       if (!modulePath) {
         setRuntimeResolution(RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT, 'auto_mode_no_module_path');
         return { module, lifecycleContract, importFailed: false, autoSelected: true };
@@ -1518,7 +1534,7 @@ export function createToolRuntime({
         lifecycleLogger.warn(`Module import failed for "${slug}"; trying legacy lifecycle.`, error);
       }
 
-      return { module, lifecycleContract, importFailed, autoSelected: false };
+      return { module, lifecycleContract, importFailed, autoSelected: false, schemaSelected: false };
     };
 
     const bootstrapPhases = [
@@ -1561,18 +1577,19 @@ export function createToolRuntime({
       return;
     }
 
-    const { module: loadedModule, lifecycleContract, importFailed, validation: domValidation } = phaseContext;
+    const { module: loadedModule, lifecycleContract, importFailed, validation: domValidation, schemaSelected = false } = phaseContext;
 
     const enforceCustomForTier = complexityTier >= 4;
     const templateIsLegacyOrMinimal = domValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
       || domValidation.detectedLayoutType === LAYOUT_TYPES.MINIMAL_LAYOUT;
     const shouldForceImportedLifecycle = Boolean(
-      modulePath
+      (schemaSelected || modulePath)
       && !importFailed
       && lifecycleContract?.compliant
       && domValidation.isValid
     );
-    const shouldUseAutoModule = !shouldForceImportedLifecycle
+    const shouldUseAutoModule = !schemaSelected
+      && !shouldForceImportedLifecycle
       && (importFailed || !modulePath || templateIsLegacyOrMinimal);
     if (shouldUseAutoModule) {
       if (importFailed) {
