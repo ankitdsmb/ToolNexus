@@ -109,6 +109,7 @@ public static class DependencyInjection
         services.AddScoped<IToolQualityScoreService, ToolQualityScoreService>();
         services.AddScoped<IRuntimeIncidentService, RuntimeIncidentService>();
         services.AddScoped<IAiCapabilityFactoryService, AiCapabilityFactoryService>();
+        services.AddScoped<IAiToolGeneratorService, AiToolGeneratorService>();
         services.AddScoped<IAiToolPackageImportService, AiToolPackageImportService>();
         services.AddScoped<DocumentConverterService>();
         services.AddSingleton<IStartupPhaseService, ManifestStartupValidator>();
