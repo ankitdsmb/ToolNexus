@@ -2,6 +2,7 @@ import { importRuntimeModule, validateRuntimeModulePath } from './runtime-import
 import { loadToolIndex, resolveTool } from './tool-index-service.js';
 import { runtimeModuleLoaderScheduler } from './module-loader-scheduler.js';
 import { validateToolCertification } from './tool-certification-policy.js';
+import { resolveToolModuleFromPack } from './tool-pack/tool-pack-resolver.js';
 
 const moduleCache = new Map();
 const loadPromises = new Map();
@@ -31,8 +32,18 @@ export async function loadToolModule(toolId, options = {}) {
   }
 
   const descriptor = resolveTool(slug);
-  if (!descriptor?.module) {
+  if (!descriptor) {
     throw new Error(`[ToolModuleLoader] Tool descriptor missing for "${slug}".`);
+  }
+
+  let resolvedModulePath = descriptor.module;
+  if (!resolvedModulePath && descriptor.pack) {
+    const packDescriptor = await resolveToolModuleFromPack({ slug, packName: descriptor.pack });
+    resolvedModulePath = packDescriptor?.modulePath ?? null;
+  }
+
+  if (!resolvedModulePath) {
+    throw new Error(`[ToolModuleLoader] Tool module missing for "${slug}".`);
   }
 
   const runtimeAbi = options.runtimeAbi ?? null;
@@ -51,12 +62,12 @@ export async function loadToolModule(toolId, options = {}) {
   const loadPromise = runtimeModuleLoaderScheduler.scheduleLoad(
     slug,
     async () => {
-      const validation = await validateRuntimeModulePath(descriptor.module);
+      const validation = await validateRuntimeModulePath(resolvedModulePath);
       if (!validation.valid) {
-        throw new Error(`[RuntimeImportIntegrity] Invalid modulePath: ${descriptor.module} (${validation.reason ?? 'unknown_reason'})`);
+        throw new Error(`[RuntimeImportIntegrity] Invalid modulePath: ${resolvedModulePath} (${validation.reason ?? 'unknown_reason'})`);
       }
 
-      const module = await importRuntimeModule(descriptor.module);
+      const module = await importRuntimeModule(resolvedModulePath);
       moduleCache.set(slug, module);
       return module;
     },

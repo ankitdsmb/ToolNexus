@@ -30,6 +30,7 @@ import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from 
 import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtime-import-integrity.js';
 import { loadToolIndex as defaultLoadToolIndex, resolveTool as defaultResolveToolFromIndex, resolveToolModule as defaultResolveToolModuleFromIndex } from './runtime/tool-index.js';
 import { loadToolModule as defaultLoadToolModule } from './runtime/tool-module-loader.js';
+import { resolveToolModuleFromPack } from './runtime/tool-pack/tool-pack-resolver.js';
 import { createToolStateMachine as defaultCreateToolStateMachine } from './runtime/tool-state-machine.js';
 import { manifestPhase } from './runtime-phases/manifest-phase.js';
 import { domPhase } from './runtime-phases/dom-phase.js';
@@ -1339,11 +1340,32 @@ export function createToolRuntime({
     const complexityTier = normalizeComplexityTier(manifest.complexityTier ?? window.ToolNexusConfig?.runtimeComplexityTier);
     const indexedToolDescriptor = resolveToolFromIndex(slug);
     const indexedModulePath = resolveToolModuleFromIndex(slug);
-    const modulePath = indexedModulePath || manifest.modulePath || window.ToolNexusConfig?.runtimeModulePath;
+    const toolPackName = indexedToolDescriptor?.pack ?? manifest?.pack ?? null;
+    let resolvedPackDescriptor = null;
+    if (toolPackName) {
+      try {
+        resolvedPackDescriptor = await resolveToolModuleFromPack({ slug, packName: toolPackName });
+      } catch (error) {
+        logger.warn(`[ToolPack] Failed to resolve pack "${toolPackName}" for "${slug}".`, {
+          pack: toolPackName,
+          slug,
+          error: error?.message ?? String(error)
+        });
+      }
+    }
+    const modulePath = indexedModulePath
+      || manifest.modulePath
+      || resolvedPackDescriptor?.modulePath
+      || window.ToolNexusConfig?.runtimeModulePath;
     if (indexedToolDescriptor && typeof manifest === 'object' && manifest) {
       manifest.runtimeAbi = manifest.runtimeAbi ?? indexedToolDescriptor.abi ?? null;
       manifest.permissions = manifest.permissions ?? indexedToolDescriptor.permissions ?? [];
       manifest.tier = manifest.tier ?? indexedToolDescriptor.tier ?? null;
+      manifest.pack = manifest.pack ?? indexedToolDescriptor.pack ?? null;
+    }
+
+    if (typeof manifest === 'object' && manifest && !manifest.modulePath && resolvedPackDescriptor?.modulePath) {
+      manifest.modulePath = resolvedPackDescriptor.modulePath;
     }
     runtimeIdentity.uiMode = uiMode;
 
