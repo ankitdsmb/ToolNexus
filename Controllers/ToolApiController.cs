@@ -11,10 +11,11 @@ public sealed class ToolApiController(
     CssAnalysisService cssAnalysisService,
     CssComparisonService cssComparisonService,
     CriticalCssService criticalCssService,
-    CssScanCacheService cssScanCacheService) : ControllerBase
+    CssScanCacheService cssScanCacheService,
+    IServiceProvider serviceProvider) : ControllerBase
 {
-    [HttpPost("css-analyze")]
-    public async Task<IActionResult> CssAnalyze([FromBody] CssAnalyzeRequest request, CancellationToken cancellationToken)
+    [HttpPost("css/analyze")]
+    public async Task<IActionResult> AnalyzeCss([FromBody] CssAnalyzeRequest request, CancellationToken cancellationToken)
     {
         if (!TryValidateHttpUrl(request?.Url, out var normalizedUrl))
         {
@@ -24,7 +25,11 @@ public sealed class ToolApiController(
         var cachedResult = await cssScanCacheService.GetCachedResult(normalizedUrl, cancellationToken);
         if (!string.IsNullOrWhiteSpace(cachedResult))
         {
-            return Content(cachedResult, "application/json");
+            var cachedAnalysis = JsonSerializer.Deserialize<CssAnalysisResult>(cachedResult);
+            if (cachedAnalysis is not null)
+            {
+                return Ok(ToAnalyzeResponse(cachedAnalysis));
+            }
         }
 
         var coverageResult = await cssCoverageService.Analyze(normalizedUrl, cancellationToken);
@@ -33,7 +38,49 @@ public sealed class ToolApiController(
         var serialized = JsonSerializer.Serialize(analysisResult);
         await cssScanCacheService.SaveResult(normalizedUrl, serialized, cancellationToken);
 
-        return Ok(analysisResult);
+        return Ok(ToAnalyzeResponse(analysisResult));
+    }
+
+    [HttpPost("css-analyze")]
+    public async Task<IActionResult> CssAnalyze([FromBody] CssAnalyzeRequest request, CancellationToken cancellationToken)
+        => await AnalyzeCss(request, cancellationToken);
+
+    [HttpPost("css/download")]
+    public async Task<IActionResult> DownloadOptimizedCss([FromBody] CssAnalyzeRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryValidateHttpUrl(request?.Url, out var normalizedUrl))
+        {
+            return BadRequest(new { error = "A valid http/https URL is required." });
+        }
+
+        var optimizerType = Type.GetType("ToolNexus.Web.Services.CssOptimizerService, ToolNexus.Web", throwOnError: false);
+        if (optimizerType is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService is not available." });
+        }
+
+        var optimizer = serviceProvider.GetService(optimizerType);
+        if (optimizer is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService is not configured." });
+        }
+
+        var optimizeMethod = optimizerType.GetMethod("Optimize", new[] { typeof(string), typeof(CancellationToken) });
+        if (optimizeMethod is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService.Optimize was not found." });
+        }
+
+        var optimizedCssTask = optimizeMethod.Invoke(optimizer, new object[] { normalizedUrl, cancellationToken }) as Task<string>;
+        if (optimizedCssTask is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "CssOptimizerService.Optimize returned an invalid result." });
+        }
+
+        var optimizedCss = await optimizedCssTask;
+        var cssBytes = System.Text.Encoding.UTF8.GetBytes(optimizedCss);
+
+        return File(cssBytes, "application/css", "optimized.css");
     }
 
     [HttpPost("critical-css")]
@@ -87,4 +134,15 @@ public sealed class ToolApiController(
     public sealed record CssAnalyzeRequest(string Url);
     public sealed record CriticalCssRequest(string Url);
     public sealed record CssCompareRequest(string UrlA, string UrlB);
+
+    private static object ToAnalyzeResponse(CssAnalysisResult analysisResult)
+        => new
+        {
+            usedCss = analysisResult.UsedCss,
+            unusedCss = analysisResult.UnusedCss,
+            optimizationPotential = analysisResult.TotalCss <= 0
+                ? 0
+                : Math.Round((double)analysisResult.UnusedCss / analysisResult.TotalCss, 2, MidpointRounding.AwayFromZero),
+            framework = analysisResult.FrameworkDetected
+        };
 }
