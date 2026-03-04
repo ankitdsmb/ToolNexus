@@ -34,7 +34,9 @@
     "integrity:js-governance": "node scripts/integrity/js-governance-drift.mjs",
     "integrity:governance": "node scripts/governance/governance-dashboard.mjs",
     "integrity:css-ownership": "node scripts/integrity/css-ownership.mjs",
-    "telemetry:coverage": "node scripts/telemetry/run-coverage-crawler.mjs"
+    "telemetry:coverage": "node scripts/telemetry/run-coverage-crawler.mjs",
+    "playwright:install:chromium": "bash ./scripts/deployment/install-playwright-chromium.sh",
+    "postbuild": "npm run playwright:install:chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
