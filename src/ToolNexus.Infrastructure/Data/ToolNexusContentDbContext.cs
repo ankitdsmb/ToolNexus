@@ -54,6 +54,10 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<EvolutionRecommendationEntity> EvolutionRecommendations => Set<EvolutionRecommendationEntity>();
     public DbSet<EvolutionSimulationReportEntity> EvolutionSimulationReports => Set<EvolutionSimulationReportEntity>();
     public DbSet<ArchitectDecisionEntity> ArchitectDecisions => Set<ArchitectDecisionEntity>();
+    public DbSet<CssScanJob> CssScanJobs => Set<CssScanJob>();
+    public DbSet<CssScanResult> CssScanResults => Set<CssScanResult>();
+    public DbSet<CssSelectorMetric> CssSelectorMetrics => Set<CssSelectorMetric>();
+    public DbSet<CssArtifact> CssArtifacts => Set<CssArtifact>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -254,6 +258,53 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         });
 
 
+
+        modelBuilder.Entity<CssScanJob>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Url).HasMaxLength(2048);
+            entity.Property(x => x.Status).HasMaxLength(32);
+            entity.Property(x => x.ErrorMessage).HasMaxLength(2000);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.StartedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CompletedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.Status);
+        });
+
+        modelBuilder.Entity<CssScanResult>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Framework).HasMaxLength(120);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasOne(x => x.Job)
+                .WithOne(x => x.Result)
+                .HasForeignKey<CssScanResult>(x => x.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CssSelectorMetric>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Selector).HasMaxLength(500);
+            entity.HasOne(x => x.Result)
+                .WithMany(x => x.SelectorMetrics)
+                .HasForeignKey(x => x.ResultId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CssArtifact>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ArtifactType).HasMaxLength(64);
+            entity.Property(x => x.FilePath).HasMaxLength(2000);
+            entity.Property(x => x.ContentType).HasMaxLength(128);
+            entity.Property(x => x.FileName).HasMaxLength(260);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.HasOne(x => x.Result)
+                .WithMany(x => x.Artifacts)
+                .HasForeignKey(x => x.ResultId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<AiToolPackageEntity>(entity =>
         {

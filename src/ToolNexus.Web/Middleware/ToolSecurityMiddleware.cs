@@ -5,12 +5,10 @@ namespace ToolNexus.Web.Middleware;
 
 public sealed class ToolSecurityMiddleware(RequestDelegate next)
 {
-    private static readonly HashSet<string> ProtectedPaths = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "/api/tools/css-analyze",
-        "/api/tools/css-compare",
-        "/api/tools/critical-css"
-    };
+    private static readonly string[] ProtectedPrefixes =
+    [
+        "/api/tools/css"
+    ];
 
     private static readonly string[] SuspiciousUserAgents =
     [
@@ -60,34 +58,44 @@ public sealed class ToolSecurityMiddleware(RequestDelegate next)
             return;
         }
 
-        var url = await ExtractScanUrlAsync(context.Request);
-        if (string.IsNullOrWhiteSpace(url)
-            || !Uri.TryCreate(url, UriKind.Absolute, out var parsedUri)
-            || (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps))
+        if (RequiresTargetUrlValidation(context.Request))
         {
-            await WriteViolation(context, StatusCodes.Status403Forbidden, "Invalid scan URL.");
-            return;
-        }
+            var url = await ExtractScanUrlAsync(context.Request);
+            if (string.IsNullOrWhiteSpace(url)
+                || !Uri.TryCreate(url, UriKind.Absolute, out var parsedUri)
+                || (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps))
+            {
+                await WriteViolation(context, StatusCodes.Status403Forbidden, "Invalid scan URL.");
+                return;
+            }
 
-        if (!domainScanLimiter.IsAllowed(parsedUri.Host))
-        {
-            await WriteViolation(context, StatusCodes.Status429TooManyRequests, "Domain scan limit exceeded. Maximum 5 scans per domain per hour.");
-            return;
-        }
+            if (!domainScanLimiter.IsAllowed(parsedUri.Host))
+            {
+                await WriteViolation(context, StatusCodes.Status429TooManyRequests, "Domain scan limit exceeded. Maximum 5 scans per domain per hour.");
+                return;
+            }
 
-        var safePublicUrl = await privateNetworkValidator.IsSafePublicUrlAsync(parsedUri.ToString(), context.RequestAborted);
-        if (!safePublicUrl)
-        {
-            logger.LogWarning("Blocked private-network or unresolved target URL for Host={Host}", parsedUri.Host);
-            await WriteViolation(context, StatusCodes.Status403Forbidden, "Target URL is not allowed.");
-            return;
+            var safePublicUrl = await privateNetworkValidator.IsSafePublicUrlAsync(parsedUri.ToString(), context.RequestAborted);
+            if (!safePublicUrl)
+            {
+                logger.LogWarning("Blocked private-network or unresolved target URL for Host={Host}", parsedUri.Host);
+                await WriteViolation(context, StatusCodes.Status403Forbidden, "Target URL is not allowed.");
+                return;
+            }
         }
 
         await next(context);
     }
 
     private static bool IsProtectedRoute(PathString path)
-        => ProtectedPaths.Contains(path.ToString());
+    {
+        var value = path.ToString();
+        return ProtectedPrefixes.Any(prefix => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool RequiresTargetUrlValidation(HttpRequest request)
+        => HttpMethods.IsPost(request.Method)
+           && request.Path.StartsWithSegments("/api/tools/css/analyze", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsSuspiciousUserAgent(string? userAgent)
     {
