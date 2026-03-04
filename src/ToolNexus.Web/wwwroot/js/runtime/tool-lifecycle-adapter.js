@@ -1,5 +1,7 @@
 import { createRuntimeMigrationLogger } from './runtime-migration-logger.js';
 import { normalizeToolExecution, guardInvalidLifecycleResult } from './tool-execution-normalizer.js';
+import { emitRuntimeEvent } from './telemetry/runtime-event-logger.js';
+import { TR_LIFECYCLE_INIT, TR_RUNTIME_ERROR } from './telemetry/runtime-event-types.js';
 
 const EMPTY_LIFECYCLE_RESULT = Object.freeze({
   mounted: false,
@@ -104,12 +106,14 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
     }
 
     const initStart = performance.now();
+    emitRuntimeEvent(TR_LIFECYCLE_INIT, { slug, phase: 'start' });
     try {
       await normalized.init();
     } finally {
       longTaskObserver?.disconnect();
     }
     const initDuration = performance.now() - initStart;
+    emitRuntimeEvent(TR_LIFECYCLE_INIT, { slug, phase: 'complete', durationMs: initDuration });
     if (window.__enableRuntimePerfTelemetry === true && context && typeof context === 'object') {
       context.__toolInitTimeMs = initDuration;
     }
@@ -118,6 +122,12 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
       console.warn('[ToolPerformance] Init exceeded budget', { slug, duration: initDuration, budget });
     }
   } catch (error) {
+    emitRuntimeEvent(TR_RUNTIME_ERROR, {
+      slug,
+      source: 'tool-lifecycle-adapter',
+      stage: 'init',
+      errorMessage: error?.message ?? String(error)
+    });
     try {
       await normalized.destroy?.();
     } catch (destroyError) {

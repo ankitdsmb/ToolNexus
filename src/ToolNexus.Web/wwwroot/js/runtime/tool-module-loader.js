@@ -72,7 +72,15 @@ export async function loadToolModule(toolId, options = {}) {
       return module;
     },
     { priority: Number.isFinite(options.priority) ? options.priority : descriptor.warmupPriority }
-  ).finally(() => {
+  ).catch((error) => {
+    emitRuntimeEvent(TR_RUNTIME_ERROR, {
+      slug,
+      source: 'tool-module-loader',
+      stage: 'module-import',
+      errorMessage: error?.message ?? String(error)
+    });
+    throw error;
+  }).finally(() => {
     loadPromises.delete(slug);
   });
 
