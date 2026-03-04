@@ -7,5 +7,8 @@ public interface IMetricsCollector
     void IncrementToolCrash(string toolSlug);
     void ObserveManifestLoadDuration(double milliseconds);
     void ObserveStartupPhaseDuration(string phaseName, double milliseconds);
+    void SetCssScanQueueDepth(int depth);
+    void ObserveCssScanDuration(double milliseconds);
+    void IncrementCssScanFailure();
     string ExportPrometheus();
 }

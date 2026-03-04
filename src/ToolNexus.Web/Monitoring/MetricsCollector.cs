@@ -11,8 +11,11 @@ public sealed class MetricsCollector : IMetricsCollector
     private readonly Histogram toolInitLatency = new(DefaultBuckets);
     private readonly Histogram manifestLoadDuration = new(DefaultBuckets);
     private readonly Histogram startupPhaseDuration = new(DefaultBuckets);
+    private readonly Histogram cssScanDuration = new(DefaultBuckets);
     private long toolMountCount;
     private long toolCrashCount;
+    private long cssScanQueueDepth;
+    private long cssScanFailureCount;
     private readonly ConcurrentDictionary<string, long> mountsByTool = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, long> crashesByTool = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, Histogram> startupPhaseByName = new(StringComparer.OrdinalIgnoreCase);
@@ -46,6 +49,21 @@ public sealed class MetricsCollector : IMetricsCollector
         phaseHistogram.Observe(milliseconds);
     }
 
+    public void SetCssScanQueueDepth(int depth)
+    {
+        Interlocked.Exchange(ref cssScanQueueDepth, Math.Max(0, depth));
+    }
+
+    public void ObserveCssScanDuration(double milliseconds)
+    {
+        cssScanDuration.Observe(milliseconds);
+    }
+
+    public void IncrementCssScanFailure()
+    {
+        Interlocked.Increment(ref cssScanFailureCount);
+    }
+
     public string ExportPrometheus()
     {
         var sb = new StringBuilder();
@@ -70,6 +88,15 @@ public sealed class MetricsCollector : IMetricsCollector
 
         AppendHistogram(sb, "toolnexus_manifest_load_duration_ms", "Manifest load duration in milliseconds.", manifestLoadDuration);
         AppendHistogram(sb, "toolnexus_startup_phase_duration_ms", "Startup phase duration in milliseconds.", startupPhaseDuration);
+        AppendHistogram(sb, "toolnexus_css_scan_duration_ms", "CSS scan duration in milliseconds.", cssScanDuration);
+
+        sb.AppendLine("# HELP toolnexus_css_scan_queue_depth Current CSS scan queue depth.");
+        sb.AppendLine("# TYPE toolnexus_css_scan_queue_depth gauge");
+        sb.AppendLine($"toolnexus_css_scan_queue_depth {Volatile.Read(ref cssScanQueueDepth).ToString(CultureInfo.InvariantCulture)}");
+
+        sb.AppendLine("# HELP toolnexus_css_scan_failure_total Total failed CSS scans.");
+        sb.AppendLine("# TYPE toolnexus_css_scan_failure_total counter");
+        sb.AppendLine($"toolnexus_css_scan_failure_total {Volatile.Read(ref cssScanFailureCount).ToString(CultureInfo.InvariantCulture)}");
 
         foreach (var phase in startupPhaseByName.OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase))
         {
