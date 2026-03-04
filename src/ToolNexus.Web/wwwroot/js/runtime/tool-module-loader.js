@@ -1,14 +1,26 @@
 import { importRuntimeModule, validateRuntimeModulePath } from './runtime-import-integrity.js';
-import { resolveTool, resolveToolModule } from './tool-index.js';
+import { loadToolIndex, resolveTool } from './tool-index-service.js';
+import { runtimeModuleLoaderScheduler } from './module-loader-scheduler.js';
+import { validateToolCertification } from './tool-certification-policy.js';
 
 const moduleCache = new Map();
 const loadPromises = new Map();
 
-export async function loadToolModule(toolId) {
+function ensureCompatibleAbi(descriptor, runtimeAbi) {
+  if (!descriptor?.abi || !runtimeAbi) {
+    return true;
+  }
+
+  return String(descriptor.abi) === String(runtimeAbi);
+}
+
+export async function loadToolModule(toolId, options = {}) {
   const slug = String(toolId ?? '').trim();
   if (!slug) {
     throw new Error('[ToolModuleLoader] toolId is required.');
   }
+
+  await loadToolIndex();
 
   if (moduleCache.has(slug)) {
     return moduleCache.get(slug);
@@ -19,24 +31,38 @@ export async function loadToolModule(toolId) {
   }
 
   const descriptor = resolveTool(slug);
-  const modulePath = resolveToolModule(slug);
-  if (!descriptor || !modulePath) {
+  if (!descriptor?.module) {
     throw new Error(`[ToolModuleLoader] Tool descriptor missing for "${slug}".`);
   }
 
-  const loadPromise = (async () => {
-    const validation = await validateRuntimeModulePath(modulePath);
-    if (!validation.valid) {
-      throw new Error(`[RuntimeImportIntegrity] Invalid modulePath: ${modulePath} (${validation.reason ?? 'unknown_reason'})`);
-    }
+  const runtimeAbi = options.runtimeAbi ?? null;
+  if (!ensureCompatibleAbi(descriptor, runtimeAbi)) {
+    throw new Error(`[ToolModuleLoader] ABI mismatch for "${slug}" (tool=${descriptor.abi}; runtime=${runtimeAbi}).`);
+  }
 
-    const module = await importRuntimeModule(modulePath);
-    moduleCache.set(slug, module);
+  const certValidation = validateToolCertification(slug, {
+    runtimeAbi,
+    allowedTiers: options.allowedCertificationTiers
+  });
+  if (!certValidation.valid) {
+    throw new Error(`[ToolModuleLoader] Certification validation failed for "${slug}": ${certValidation.reason}`);
+  }
+
+  const loadPromise = runtimeModuleLoaderScheduler.scheduleLoad(
+    slug,
+    async () => {
+      const validation = await validateRuntimeModulePath(descriptor.module);
+      if (!validation.valid) {
+        throw new Error(`[RuntimeImportIntegrity] Invalid modulePath: ${descriptor.module} (${validation.reason ?? 'unknown_reason'})`);
+      }
+
+      const module = await importRuntimeModule(descriptor.module);
+      moduleCache.set(slug, module);
+      return module;
+    },
+    { priority: Number.isFinite(options.priority) ? options.priority : descriptor.warmupPriority }
+  ).finally(() => {
     loadPromises.delete(slug);
-    return module;
-  })().catch((error) => {
-    loadPromises.delete(slug);
-    throw error;
   });
 
   loadPromises.set(slug, loadPromise);
