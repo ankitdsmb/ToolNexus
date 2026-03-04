@@ -1288,20 +1288,8 @@ export function createToolRuntime({
       return;
     }
 
-    };
-
-    phaseContext = await domPhase({
-      ...phaseContext,
-      prepareDom: safePrepareDomPhase
-    });
-
-    if (phaseContext.aborted) {
-      return;
-    }
-
-    const { mountPlan, validation, uiMode, complexityTier, modulePath, reportStrictIntegrityViolation } = phaseContext;
-
-    const safeResolveLifecycle = async () => {
+    const safeResolveLifecycle = async (moduleContext) => {
+      const { modulePath, reportStrictIntegrityViolation } = moduleContext;
       let module = {};
       let lifecycleContract = inspectLifecycleContract(module);
       if (!modulePath) {
@@ -1425,23 +1413,56 @@ export function createToolRuntime({
       return { module, lifecycleContract, importFailed, autoSelected: false };
     };
 
-    phaseContext = await modulePhase({
+    const bootstrapPhases = [
+      domPhase,
+      modulePhase,
+      mountPhase,
+      recoveryPhase
+    ];
+
+    const runBootstrapPhases = async (initialContext) => {
+      let context = initialContext;
+      for (const phase of bootstrapPhases) {
+        context = await phase(context);
+        if (context?.aborted || context?.strictBlocked) {
+          break;
+        }
+      }
+
+      return context;
+    };
+
+    phaseContext = await runBootstrapPhases({
       ...phaseContext,
-      resolveModule: safeResolveLifecycle
+      runtimeMode: runtimeResolution.mode,
+      module: {},
+      lifecycle: null,
+      prepareDom: safePrepareDomPhase,
+      resolveModule: safeResolveLifecycle,
+      mountLifecycle: safeMount,
+      recoverRuntime: async () => {
+        if (!isStrictModeEnabled() && ensureRootFallback(root, slug)) {
+          emit('mount_fallback_content', { toolSlug: slug, metadata: { phase: 'post-bootstrap' } });
+        }
+
+        return {};
+      }
     });
-    const { module: loadedModule, lifecycleContract, importFailed, strictBlocked } = phaseContext;
-    if (strictBlocked) {
+
+    if (phaseContext.aborted || phaseContext.strictBlocked) {
       return;
     }
 
+    const { module: loadedModule, lifecycleContract, importFailed, validation: domValidation } = phaseContext;
+
     const enforceCustomForTier = complexityTier >= 4;
-    const templateIsLegacyOrMinimal = validation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
-      || validation.detectedLayoutType === LAYOUT_TYPES.MINIMAL_LAYOUT;
+    const templateIsLegacyOrMinimal = domValidation.detectedLayoutType === LAYOUT_TYPES.LEGACY_LAYOUT
+      || domValidation.detectedLayoutType === LAYOUT_TYPES.MINIMAL_LAYOUT;
     const shouldForceImportedLifecycle = Boolean(
       modulePath
       && !importFailed
       && lifecycleContract?.compliant
-      && validation.isValid
+      && domValidation.isValid
     );
     const shouldUseAutoModule = !shouldForceImportedLifecycle
       && (importFailed || !modulePath || templateIsLegacyOrMinimal);
@@ -1845,21 +1866,6 @@ export function createToolRuntime({
       }
     };
 
-    phaseContext = await mountPhase({
-      ...phaseContext,
-      mountLifecycle: safeMount
-    });
-
-    phaseContext = await recoveryPhase({
-      ...phaseContext,
-      recoverRuntime: async () => {
-        if (!isStrictModeEnabled() && ensureRootFallback(root, slug)) {
-          emit('mount_fallback_content', { toolSlug: slug, metadata: { phase: 'post-bootstrap' } });
-        }
-
-        return {};
-      }
-    });
 
     emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
     runtimeMetrics.runtimeBootTimeMs = now() - runtimeStartedAt;
