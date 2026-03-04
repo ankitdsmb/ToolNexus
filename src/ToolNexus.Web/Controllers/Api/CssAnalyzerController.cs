@@ -21,10 +21,10 @@ public sealed class CssAnalyzerController(
             return BadRequest(new { error = "URL is required." });
         }
 
-        string normalizedUrl;
+        ValidatedUrl validatedUrl;
         try
         {
-            normalizedUrl = await urlSecurityValidator.ValidateAndNormalizeAsync(request.Url, cancellationToken);
+            validatedUrl = await urlSecurityValidator.ValidateAndPinAsync(request.Url, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -34,15 +34,16 @@ public sealed class CssAnalyzerController(
         var job = new CssScanJob
         {
             Id = Guid.NewGuid(),
-            Url = normalizedUrl,
+            Url = validatedUrl.NormalizedUrl,
             Status = "Pending",
+            JobMetadataJson = $"{{\"PinnedIp\":\"{validatedUrl.PinnedAddress}\"}}",
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
 
         dbContext.CssScanJobs.Add(job);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("scan_started JobId={JobId} Url={Url}", job.Id, normalizedUrl);
+        logger.LogInformation("scan_started JobId={JobId} Url={Url} PinnedIp={PinnedIp}", job.Id, validatedUrl.NormalizedUrl, validatedUrl.PinnedAddress);
         return Ok(new { jobId = job.Id, status = job.Status });
     }
 

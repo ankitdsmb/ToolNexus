@@ -1,8 +1,11 @@
 using System.Text;
+using System.Text.Json;
+using System.Net;
 using AngleSharp.Html.Parser;
 using Microsoft.EntityFrameworkCore;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
+using ToolNexus.Web.Security;
 
 namespace ToolNexus.Web.Services;
 
@@ -78,14 +81,18 @@ public sealed class CssScanWorker(
             var optimizer = scope.ServiceProvider.GetRequiredService<CssOptimizerService>();
             var frameworkDetector = scope.ServiceProvider.GetRequiredService<CssFrameworkDetector>();
             var artifactStorage = scope.ServiceProvider.GetRequiredService<CssArtifactStorageService>();
-            var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+            var privateNetworkValidator = scope.ServiceProvider.GetRequiredService<IPrivateNetworkValidator>();
 
             var job = await db.CssScanJobs.SingleAsync(x => x.Id == jobId, cancellationToken);
             logger.LogInformation("scan_started JobId={JobId} Url={Url}", jobId, job.Url);
 
+            var jobMetadata = DeserializeMetadata(job.JobMetadataJson);
+            var baseUri = new Uri(job.Url);
+            var pinnedAddress = await ResolveInitialPinnedAddressAsync(baseUri, jobMetadata, privateNetworkValidator, cancellationToken);
+
             var crawl = await crawler.CrawlAsync(job.Url, maxPages: MaxPagesPerScan, cancellationToken: cancellationToken);
             var coverageResult = await coverage.Analyze(job.Url, cancellationToken);
-            var cssPayload = await AggregateCssAsync(job.Url, crawl.Pages, httpClientFactory.CreateClient(), cancellationToken);
+            var cssPayload = await AggregateCssAsync(job.Url, crawl.Pages, pinnedAddress, privateNetworkValidator, cancellationToken);
             var selectorResult = await selectorCoverage.AnalyzeAsync(job.Url, cssPayload, cancellationToken);
             var allSelectors = selectorCoverage.ExtractSelectors(cssPayload);
             var usedSelectors = allSelectors.Except(selectorResult.UnusedSelectorList).ToHashSet(StringComparer.Ordinal);
@@ -162,16 +169,22 @@ public sealed class CssScanWorker(
         }
     }
 
-    private static async Task<string> AggregateCssAsync(string baseUrl, IEnumerable<string> pages, HttpClient client, CancellationToken cancellationToken)
+    private static async Task<string> AggregateCssAsync(
+        string baseUrl,
+        IEnumerable<string> pages,
+        IPAddress pinnedAddress,
+        IPrivateNetworkValidator privateNetworkValidator,
+        CancellationToken cancellationToken)
     {
         var parser = new HtmlParser();
         var collectedCss = new StringBuilder();
         var baseUri = new Uri(baseUrl);
+        var fetcher = new PinnedHttpFetcher(privateNetworkValidator);
 
         foreach (var pagePath in pages.Take(MaxPagesPerScan))
         {
             var pageUri = Uri.TryCreate(baseUri, pagePath, out var resolvedPage) ? resolvedPage : baseUri;
-            var html = await client.GetStringAsync(pageUri, cancellationToken);
+            var html = await fetcher.GetStringAsync(pageUri, pinnedAddress, cancellationToken);
             var document = await parser.ParseDocumentAsync(html, cancellationToken);
 
             foreach (var styleTag in document.QuerySelectorAll("style"))
@@ -194,7 +207,13 @@ public sealed class CssScanWorker(
 
                 try
                 {
-                    var css = await client.GetStringAsync(stylesheetUri, cancellationToken);
+                    var stylesheetAddress = await privateNetworkValidator.ResolveValidatedAddressAsync(stylesheetUri.Host, cancellationToken);
+                    if (stylesheetAddress is null)
+                    {
+                        continue;
+                    }
+
+                    var css = await fetcher.GetStringAsync(stylesheetUri, stylesheetAddress, cancellationToken);
                     collectedCss.AppendLine(css);
                 }
                 catch
@@ -206,4 +225,43 @@ public sealed class CssScanWorker(
 
         return collectedCss.ToString();
     }
+
+    private static async Task<IPAddress> ResolveInitialPinnedAddressAsync(
+        Uri targetUri,
+        CssScanJobMetadata metadata,
+        IPrivateNetworkValidator privateNetworkValidator,
+        CancellationToken cancellationToken)
+    {
+        if (metadata.PinnedIp is not null && IPAddress.TryParse(metadata.PinnedIp, out var fromMetadata))
+        {
+            return fromMetadata;
+        }
+
+        var resolved = await privateNetworkValidator.ResolveValidatedAddressAsync(targetUri.Host, cancellationToken);
+        if (resolved is null)
+        {
+            throw new InvalidOperationException("Target URL no longer resolves to a public IP.");
+        }
+
+        return resolved;
+    }
+
+    private static CssScanJobMetadata DeserializeMetadata(string? metadataJson)
+    {
+        if (string.IsNullOrWhiteSpace(metadataJson))
+        {
+            return new CssScanJobMetadata();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<CssScanJobMetadata>(metadataJson) ?? new CssScanJobMetadata();
+        }
+        catch
+        {
+            return new CssScanJobMetadata();
+        }
+    }
+
+    private sealed record CssScanJobMetadata(string? PinnedIp = null);
 }
