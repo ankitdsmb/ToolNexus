@@ -1,0 +1,66 @@
+@model ToolNexus.Web.Models.CssComparisonResult
+@{
+    var sharePath = $"/tools/css-compare/{Model.DomainA}-vs-{Model.DomainB}";
+    var shareUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{sharePath}";
+    var relatedPairs = new[]
+    {
+        ("shopify.com", "wordpress.com"),
+        ("amazon.com", "walmart.com"),
+        ("github.com", "gitlab.com")
+    };
+
+    static string BuildBar(int score)
+    {
+        var blocks = Math.Clamp((int)Math.Round(score / 10d), 0, 10);
+        return new string('█', blocks).PadRight(10, '░');
+    }
+
+    var winnerClassA = Model.Winner == Model.DomainA ? "border-success" : "border-secondary";
+    var winnerClassB = Model.Winner == Model.DomainB ? "border-success" : "border-secondary";
+}
+
+<section class="tool-page">
+    <header>
+        <h1>@Model.DomainA vs @Model.DomainB CSS Performance Comparison</h1>
+        <p>Compare CSS efficiency, framework usage and performance between @Model.DomainA and @Model.DomainB.</p>
+    </header>
+
+    <div class="card p-3 mb-3 @winnerClassA">
+        <h2>Website A: @Model.DomainA</h2>
+        <p><strong>Efficiency:</strong> @Model.EfficiencyA / 100</p>
+        <p><strong>Bar:</strong> <code>@BuildBar(Model.EfficiencyA)</code></p>
+        <p><strong>Framework:</strong> @Model.FrameworkA</p>
+    </div>
+
+    <div class="card p-3 mb-3 @winnerClassB">
+        <h2>Website B: @Model.DomainB</h2>
+        <p><strong>Efficiency:</strong> @Model.EfficiencyB / 100</p>
+        <p><strong>Bar:</strong> <code>@BuildBar(Model.EfficiencyB)</code></p>
+        <p><strong>Framework:</strong> @Model.FrameworkB</p>
+    </div>
+
+    <div class="alert alert-info" role="status">
+        <strong>🏆 Winner:</strong> @Model.Winner
+    </div>
+
+    <section class="mb-4">
+        <h3>Share this comparison</h3>
+        <p><a href="@sharePath">@sharePath</a></p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?url=@Uri.EscapeDataString(shareUrl)">Share on X</a>
+            <a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=@Uri.EscapeDataString(shareUrl)">Share on LinkedIn</a>
+        </div>
+    </section>
+
+    <section>
+        <h3>Related comparisons</h3>
+        <ul>
+            @foreach (var pair in relatedPairs)
+            {
+                <li>
+                    <a href="/tools/css-compare/@pair.Item1-vs-@pair.Item2">@pair.Item1 vs @pair.Item2</a>
+                </li>
+            }
+        </ul>
+    </section>
+</section>
