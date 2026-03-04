@@ -18,6 +18,7 @@ using ToolNexus.Web.Services;
 using ToolNexus.Web.Middleware;
 using ToolNexus.Web.Monitoring;
 using ToolNexus.Web.Runtime;
+using ToolNexus.Web.Pages.Marketplace;
 using ToolNexus.Infrastructure.Options;
 
 var startupStopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -87,6 +88,7 @@ builder.Services.AddScoped<CssOptimizerService>();
 builder.Services.AddScoped<CssFrameworkDetector>();
 builder.Services.AddScoped<UrlSecurityValidator>();
 builder.Services.AddScoped<CssArtifactStorageService>();
+builder.Services.AddScoped<MarketplaceService>();
 builder.Services.AddHttpClient();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddToolSecurity();
