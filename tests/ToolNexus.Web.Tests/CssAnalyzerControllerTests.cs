@@ -54,5 +54,5 @@ public sealed class CssAnalyzerControllerTests
     }
 
     private static CssAnalyzerController CreateController(ToolNexusContentDbContext dbContext)
-        => new(dbContext, new UrlSecurityValidator(), NullLogger<CssAnalyzerController>.Instance);
+        => new(dbContext, new UrlSecurityValidator(new PrivateNetworkValidator()), NullLogger<CssAnalyzerController>.Instance);
 }

@@ -87,6 +87,7 @@ builder.Services.AddScoped<CssFrameworkDetector>();
 builder.Services.AddScoped<UrlSecurityValidator>();
 builder.Services.AddScoped<CssArtifactStorageService>();
 builder.Services.AddHttpClient();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddToolSecurity();
 builder.Services.AddHostedService<CssScanWorker>();
 
