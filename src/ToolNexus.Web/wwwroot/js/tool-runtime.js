@@ -28,6 +28,11 @@ import { validateExecutionDensity as defaultExecutionDensityValidator, writeExec
 import { applyExecutionIntelligence as defaultApplyExecutionIntelligence } from './runtime/intelligence/execution-intelligence-engine.js';
 import { applyAiRuntimeOrchestrator as defaultApplyAiRuntimeOrchestrator } from './runtime/orchestrator/ai-runtime-orchestrator.js';
 import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtime-import-integrity.js';
+import { manifestPhase } from './runtime-phases/manifest-phase.js';
+import { domPhase } from './runtime-phases/dom-phase.js';
+import { modulePhase } from './runtime-phases/module-phase.js';
+import { mountPhase } from './runtime-phases/mount-phase.js';
+import { recoveryPhase } from './runtime-phases/recovery-phase.js';
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
@@ -918,7 +923,12 @@ export function createToolRuntime({
       }
     };
 
-    const { manifest, hasManifest } = await safeLoadManifest();
+    let phaseContext = await manifestPhase({
+      root,
+      slug,
+      resolveManifest: safeLoadManifest
+    });
+    const { manifest, hasManifest } = phaseContext;
 
     const executionContext = createToolExecutionContext({
       slug,
@@ -1021,6 +1031,7 @@ export function createToolRuntime({
       runtimeResolution.reason = reason;
     }
 
+    const safePrepareDomPhase = async () => {
     const capabilitiesAtStart = detectToolCapabilities({ slug, manifest, root });
     const mountPlan = safeDomMount(root, capabilitiesAtStart.mountMode);
 
@@ -1259,6 +1270,19 @@ export function createToolRuntime({
       return;
     }
 
+    };
+
+    phaseContext = await domPhase({
+      ...phaseContext,
+      prepareDom: safePrepareDomPhase
+    });
+
+    if (phaseContext.aborted) {
+      return;
+    }
+
+    const { mountPlan, validation, uiMode, complexityTier, modulePath, reportStrictIntegrityViolation } = phaseContext;
+
     const safeResolveLifecycle = async () => {
       let module = {};
       let lifecycleContract = inspectLifecycleContract(module);
@@ -1383,7 +1407,11 @@ export function createToolRuntime({
       return { module, lifecycleContract, importFailed, autoSelected: false };
     };
 
-    const { module: loadedModule, lifecycleContract, importFailed, strictBlocked } = await safeResolveLifecycle();
+    phaseContext = await modulePhase({
+      ...phaseContext,
+      resolveModule: safeResolveLifecycle
+    });
+    const { module: loadedModule, lifecycleContract, importFailed, strictBlocked } = phaseContext;
     if (strictBlocked) {
       return;
     }
@@ -1792,11 +1820,21 @@ export function createToolRuntime({
       }
     };
 
-    await safeMount();
+    phaseContext = await mountPhase({
+      ...phaseContext,
+      mountLifecycle: safeMount
+    });
 
-    if (!isStrictModeEnabled() && ensureRootFallback(root, slug)) {
-      emit('mount_fallback_content', { toolSlug: slug, metadata: { phase: 'post-bootstrap' } });
-    }
+    phaseContext = await recoveryPhase({
+      ...phaseContext,
+      recoverRuntime: async () => {
+        if (!isStrictModeEnabled() && ensureRootFallback(root, slug)) {
+          emit('mount_fallback_content', { toolSlug: slug, metadata: { phase: 'post-bootstrap' } });
+        }
+
+        return {};
+      }
+    });
 
     emit('bootstrap_complete', { toolSlug: slug, duration: now() - runtimeStartedAt });
     runtimeMetrics.runtimeBootTimeMs = now() - runtimeStartedAt;
