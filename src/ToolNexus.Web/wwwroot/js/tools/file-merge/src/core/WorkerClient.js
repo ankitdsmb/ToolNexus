@@ -25,4 +25,9 @@ export class WorkerClient {
       this.#pending.set(id, { resolve, reject });
     });
   }
+
+  dispose() {
+    this.#worker?.terminate?.();
+    this.#pending.clear();
+  }
 }
