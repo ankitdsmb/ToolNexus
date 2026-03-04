@@ -31,6 +31,8 @@ import { importRuntimeModule, validateRuntimeModulePath } from './runtime/runtim
 
 const RUNTIME_CLEANUP_KEY = '__toolNexusRuntimeCleanup';
 const RUNTIME_BOOT_KEY = '__toolNexusRuntimeBootPromise';
+const TOOL_RUNTIME_MOUNTED_KEY = '__toolRuntimeMounted';
+const TOOL_RUNTIME_MOUNTED_SLUG_KEY = '__toolRuntimeMountedSlug';
 const RUNTIME_RESOLUTION_MODES = Object.freeze({
   AUTO_EXPLICIT: 'auto_explicit',
   AUTO_FALLBACK: 'auto_fallback',
@@ -881,6 +883,12 @@ export function createToolRuntime({
 
     const registration = stateRegistry.register({ slug, root, compatibilityMode: 'normalizing' });
     const stateKey = registration.key;
+    if (root?.[TOOL_RUNTIME_MOUNTED_KEY] && root?.[TOOL_RUNTIME_MOUNTED_SLUG_KEY] === slug) {
+      runtimeMetrics.skippedDuplicateBoots += 1;
+      logger.warn(`Skipping duplicate mount attempt for "${slug}" on already mounted root.`);
+      return;
+    }
+
     if (registration.duplicate && registration.state?.mounted) {
       runtimeMetrics.skippedDuplicateBoots += 1;
       logger.warn(`Skipping duplicate mount attempt for "${slug}".`);
@@ -933,6 +941,9 @@ export function createToolRuntime({
         emitTelemetry: (eventName, payload = {}) => emit(eventName, payload)
       }
     });
+
+    root[TOOL_RUNTIME_MOUNTED_KEY] = true;
+    root[TOOL_RUNTIME_MOUNTED_SLUG_KEY] = slug;
 
     const runtimeResolution = {
       mode: RUNTIME_RESOLUTION_MODES.AUTO_EXPLICIT,
@@ -1144,6 +1155,13 @@ export function createToolRuntime({
       toolSlug: slug,
       emitTelemetry: emit
     });
+
+    const orchestratorVisualBrain = runtimeOrchestrator?.visualBrain;
+    const orchestratorFlowIntelligence = runtimeOrchestrator?.flowIntelligence;
+    const orchestratorDensityAutobalancer = runtimeOrchestrator?.densityAutobalancer;
+    executionContext.addCleanup(() => orchestratorVisualBrain?.destroy?.());
+    executionContext.addCleanup(() => orchestratorFlowIntelligence?.destroy?.());
+    executionContext.addCleanup(() => orchestratorDensityAutobalancer?.destroy?.());
 
     logger.info('[RuntimeOrchestrator] adaptive execution profile selected.', {
       slug,
@@ -1742,12 +1760,19 @@ export function createToolRuntime({
         const currentState = stateRegistry.get(stateKey);
         assertPostMount({ root, context: executionContext, slug, state: currentState, lifecycleResult: result });
         root[RUNTIME_CLEANUP_KEY] = async () => {
-          await executionContext.destroy();
-          stateRegistry.clear(stateKey);
-          assertPostDestroy(executionContext, slug, stateRegistry.get(stateKey));
+          try {
+            await executionContext.destroy();
+          } finally {
+            root[TOOL_RUNTIME_MOUNTED_KEY] = false;
+            delete root[TOOL_RUNTIME_MOUNTED_SLUG_KEY];
+            stateRegistry.clear(stateKey);
+            assertPostDestroy(executionContext, slug, stateRegistry.get(stateKey));
+          }
         };
         logger.info(`Tool runtime mounted successfully for "${slug}".`);
       } catch (error) {
+        root[TOOL_RUNTIME_MOUNTED_KEY] = false;
+        delete root[TOOL_RUNTIME_MOUNTED_SLUG_KEY];
         const lifecycleContract = inspectLifecycleContract(module);
         const classification = detectToolClassification({
           hasManifest,
