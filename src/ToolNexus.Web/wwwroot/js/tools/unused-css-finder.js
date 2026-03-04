@@ -57,7 +57,7 @@ function setLoading(target, isLoading, message = 'Analyzing CSS usage…') {
     : target.innerHTML;
 }
 
-export async function mount({ root }) {
+async function mountApp({ root }) {
   const inputZone = root?.querySelector?.('[data-tool-input]');
   const outputZone = root?.querySelector?.('[data-tool-output]');
 
@@ -228,6 +228,39 @@ export async function mount({ root }) {
       criticalButton.removeEventListener('click', onDownloadCritical);
       urlInput.removeEventListener('keydown', onUrlKeydown);
       competitorInput.removeEventListener('keydown', onCompetitorKeydown);
+    }
+  };
+}
+
+
+export function create(context = {}) {
+  const root = context?.root ?? context?.toolRoot;
+  if (!(root instanceof Element)) {
+    throw new Error('[unused-css-finder] invalid lifecycle root');
+  }
+
+  return { root, app: null };
+}
+
+export async function init(state) {
+  const lifecycleState = state?.root instanceof Element ? state : create(state);
+  lifecycleState.app = await mountApp({ root: lifecycleState.root });
+  return lifecycleState;
+}
+
+export function destroy(state) {
+  state?.app?.destroy?.();
+  if (state && typeof state === 'object') {
+    state.app = null;
+  }
+}
+
+export async function mount({ root }) {
+  const state = create({ root });
+  await init(state);
+  return {
+    destroy() {
+      destroy(state);
     }
   };
 }

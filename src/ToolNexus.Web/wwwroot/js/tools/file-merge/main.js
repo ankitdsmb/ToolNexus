@@ -12,10 +12,38 @@ import { SettingsPanel } from './src/ui/SettingsPanel.js';
 import { PreviewPanel } from './src/ui/PreviewPanel.js';
 import { StatsPanel } from './src/ui/StatsPanel.js';
 
-const state = { mergedContent: '', mergedType: 'text' };
+const runtimeState = {
+  root: null,
+  mergedContent: '',
+  mergedType: 'text',
+  workerClient: null,
+  handlers: []
+};
 
-function init() {
+function getRequiredElement(root, id) {
+  const element = root?.querySelector?.(`#${id}`);
+  if (!element) {
+    throw new Error(`[file-merge] missing required DOM node: #${id}`);
+  }
+
+  return element;
+}
+
+export function create(context = {}) {
+  const root = context?.root ?? context?.toolRoot ?? document;
+  runtimeState.root = root;
+  runtimeState.mergedContent = '';
+  runtimeState.mergedType = 'text';
+  runtimeState.handlers = [];
+
+  return runtimeState;
+}
+
+export async function init(state = runtimeState) {
+  const root = state?.root ?? document;
   const workerClient = new WorkerClient('/js/tools/file-merge/src/worker/mergeWorker.js');
+  state.workerClient = workerClient;
+
   const registry = new StrategyRegistry([
     new TextMergeStrategy(),
     new JsonMergeStrategy(),
@@ -26,42 +54,59 @@ function init() {
   const mergeEngine = new MergeEngine(registry);
 
   const upload = new UploadPanel({
-    dropzone: document.getElementById('dropzone'),
-    input: document.getElementById('fileInput'),
-    list: document.getElementById('fileList'),
+    dropzone: getRequiredElement(root, 'dropzone'),
+    input: getRequiredElement(root, 'fileInput'),
+    list: getRequiredElement(root, 'fileList'),
     onChange: () => {}
   });
 
   const settings = new SettingsPanel({
-    mergeMode: document.getElementById('mergeMode'),
-    jsonMode: document.getElementById('jsonMode'),
-    includeHeaders: document.getElementById('includeHeaders'),
-    separator: document.getElementById('separator'),
-    preserveOrder: document.getElementById('preserveOrder'),
-    conflictMode: document.getElementById('conflictMode'),
-    maxSize: document.getElementById('maxSizeMb')
+    mergeMode: getRequiredElement(root, 'mergeMode'),
+    jsonMode: getRequiredElement(root, 'jsonMode'),
+    includeHeaders: getRequiredElement(root, 'includeHeaders'),
+    separator: getRequiredElement(root, 'separator'),
+    preserveOrder: getRequiredElement(root, 'preserveOrder'),
+    conflictMode: getRequiredElement(root, 'conflictMode'),
+    maxSize: getRequiredElement(root, 'maxSizeMb')
   });
 
-  const preview = new PreviewPanel(document.getElementById('previewOutput'));
-  const stats = new StatsPanel(document.getElementById('mergeStats'));
+  const preview = new PreviewPanel(getRequiredElement(root, 'previewOutput'));
+  const stats = new StatsPanel(getRequiredElement(root, 'mergeStats'));
 
-  document.getElementById('mergeBtn').addEventListener('click', () => runMerge(upload, settings, mergeEngine, preview, stats, workerClient));
-  document.getElementById('copyBtn').addEventListener('click', async () => navigator.clipboard.writeText(state.mergedContent));
-  document.getElementById('downloadBtn').addEventListener('click', () => downloadResult(state.mergedContent));
+  const mergeButton = getRequiredElement(root, 'mergeBtn');
+  const copyButton = getRequiredElement(root, 'copyBtn');
+  const downloadButton = getRequiredElement(root, 'downloadBtn');
 
-  window.addEventListener('keydown', (event) => {
+  const handleMerge = () => runMerge(upload, settings, mergeEngine, preview, stats, workerClient, state);
+  const handleCopy = async () => navigator.clipboard.writeText(state.mergedContent);
+  const handleDownload = () => downloadResult(state.mergedContent, root);
+
+  mergeButton.addEventListener('click', handleMerge);
+  copyButton.addEventListener('click', handleCopy);
+  downloadButton.addEventListener('click', handleDownload);
+
+  const handleKeydown = (event) => {
     if (event.ctrlKey && event.key === 'Enter') {
       event.preventDefault();
-      runMerge(upload, settings, mergeEngine, preview, stats, workerClient);
+      handleMerge();
     }
     if (event.ctrlKey && event.key.toLowerCase() === 's') {
       event.preventDefault();
-      downloadResult(state.mergedContent);
+      handleDownload();
     }
-  });
+  };
+
+  window.addEventListener('keydown', handleKeydown);
+
+  state.handlers.push(
+    { element: mergeButton, event: 'click', handler: handleMerge },
+    { element: copyButton, event: 'click', handler: handleCopy },
+    { element: downloadButton, event: 'click', handler: handleDownload },
+    { element: window, event: 'keydown', handler: handleKeydown }
+  );
 }
 
-async function runMerge(upload, settings, mergeEngine, preview, stats, workerClient) {
+async function runMerge(upload, settings, mergeEngine, preview, stats, workerClient, state) {
   const files = upload.getFiles();
   if (!files.length) return;
 
@@ -83,10 +128,10 @@ async function runMerge(upload, settings, mergeEngine, preview, stats, workerCli
   stats.render(mergeStats);
 }
 
-function downloadResult(content) {
+function downloadResult(content, root) {
   if (!content) return;
-  const outputName = (document.getElementById('outputName').value || 'merged-output').trim();
-  const extension = document.getElementById('outputExtension').value;
+  const outputName = (getRequiredElement(root, 'outputName').value || 'merged-output').trim();
+  const extension = getRequiredElement(root, 'outputExtension').value;
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -96,4 +141,14 @@ function downloadResult(content) {
   URL.revokeObjectURL(url);
 }
 
-document.addEventListener('DOMContentLoaded', init);
+export function destroy(state = runtimeState) {
+  for (const { element, event, handler } of state.handlers ?? []) {
+    element?.removeEventListener?.(event, handler);
+  }
+
+  state.workerClient?.dispose?.();
+  state.handlers = [];
+  state.workerClient = null;
+  state.mergedContent = '';
+  state.mergedType = 'text';
+}

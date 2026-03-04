@@ -112,21 +112,33 @@ function createApp(root) {
   };
 }
 
-export function init(...args) {
+export function create(...args) {
   const { root } = resolveLifecycleInitRoot(args);
   if (!(root instanceof Element)) {
     throw new Error('[Lifecycle] invalid root');
   }
 
-  return {
-    root,
-    handle: getToolPlatformKernel().mountTool({
+  return { root };
+}
+
+export async function init(...args) {
+  const state = args[0] && typeof args[0] === 'object' && args[0].root instanceof Element
+    ? args[0]
+    : create(...args);
+
+  const { root } = state;
+  if (!(root instanceof Element)) {
+    throw new Error('[Lifecycle] invalid root');
+  }
+
+  state.handle = getToolPlatformKernel().mountTool({
       id: TOOL_ID,
       root,
       init: () => createApp(root),
       destroy: (app) => app?.destroy?.()
-    })
-  };
+    });
+
+  return state;
 }
 
 export function destroy(context) {
