@@ -1,5 +1,6 @@
 const SELECTORS = Object.freeze({
   page: '.tool-page[data-slug="css-minifier"]',
+  runtimeRoot: '#tool-root[data-tool-shell="true"], [data-tool-shell="true"]',
   actionSelect: '#actionSelect',
   inputEditor: '#inputEditor',
   outputEditor: '#outputEditor, #outputField',
@@ -24,7 +25,12 @@ const SELECTORS = Object.freeze({
 });
 
 export function getCssMinifierDom(root) {
-  if (!root?.matches?.(SELECTORS.page)) return null;
+  const supportsLegacyPage = root?.matches?.(SELECTORS.page);
+  const supportsRuntimeShell = root?.matches?.(SELECTORS.runtimeRoot)
+    || root?.closest?.(SELECTORS.runtimeRoot)
+    || root?.querySelector?.('[data-runtime-template-handoff]');
+
+  if (!supportsLegacyPage && !supportsRuntimeShell) return null;
 
   const toolbar = root.querySelector(SELECTORS.toolbar);
   let clearButton = root.querySelector('#cssMinifierClearBtn');
