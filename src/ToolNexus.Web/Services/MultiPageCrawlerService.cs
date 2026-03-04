@@ -30,7 +30,7 @@ public sealed class MultiPageCrawlerService
             Headless = true
         });
 
-        await using var context = await browser.NewContextAsync();
+        var context = await browser.NewContextAsync();
         context.SetDefaultNavigationTimeout(TimeoutMilliseconds);
         context.SetDefaultTimeout(TimeoutMilliseconds);
 
@@ -42,64 +42,75 @@ public sealed class MultiPageCrawlerService
 
         queue.Enqueue((NormalizeForNavigation(startUri), 0));
 
-        while (queue.Count > 0 && pages.Count < maxPagesLimit)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var (currentUri, depth) = queue.Dequeue();
-            var currentKey = NormalizeForLookup(currentUri);
-
-            if (!visited.Add(currentKey))
+            while (queue.Count > 0 && pages.Count < maxPagesLimit)
             {
-                continue;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            await using var page = await context.NewPageAsync();
+                var (currentUri, depth) = queue.Dequeue();
+                var currentKey = NormalizeForLookup(currentUri);
 
-            try
-            {
-                await page.GotoAsync(currentUri.ToString(), new PageGotoOptions
-                {
-                    WaitUntil = WaitUntilState.DOMContentLoaded,
-                    Timeout = TimeoutMilliseconds
-                });
-            }
-            catch
-            {
-                continue;
-            }
-
-            pages.Add(ToOutputPath(currentUri, origin));
-
-            if (depth >= maxDepthLimit || pages.Count >= maxPagesLimit)
-            {
-                continue;
-            }
-
-            var discoveredHrefs = await page.EvaluateAsync<string[]>(
-                "() => Array.from(document.querySelectorAll('a[href]'), anchor => anchor.getAttribute('href') ?? '')");
-
-            foreach (var href in discoveredHrefs)
-            {
-                if (string.IsNullOrWhiteSpace(href))
+                if (!visited.Add(currentKey))
                 {
                     continue;
                 }
 
-                if (!TryResolveInternalUrl(currentUri, origin, href, out var resolved))
+                var page = await context.NewPageAsync();
+
+                try
+                {
+                    await page.GotoAsync(currentUri.ToString(), new PageGotoOptions
+                    {
+                        WaitUntil = WaitUntilState.DOMContentLoaded,
+                        Timeout = TimeoutMilliseconds
+                    });
+
+                    pages.Add(ToOutputPath(currentUri, origin));
+
+                    if (depth >= maxDepthLimit || pages.Count >= maxPagesLimit)
+                    {
+                        continue;
+                    }
+
+                    var discoveredHrefs = await page.EvaluateAsync<string[]>(
+                        "() => Array.from(document.querySelectorAll('a[href]'), anchor => anchor.getAttribute('href') ?? '')");
+
+                    foreach (var href in discoveredHrefs)
+                    {
+                        if (string.IsNullOrWhiteSpace(href))
+                        {
+                            continue;
+                        }
+
+                        if (!TryResolveInternalUrl(currentUri, origin, href, out var resolved))
+                        {
+                            continue;
+                        }
+
+                        var resolvedKey = NormalizeForLookup(resolved);
+
+                        if (visited.Contains(resolvedKey))
+                        {
+                            continue;
+                        }
+
+                        queue.Enqueue((resolved, depth + 1));
+                    }
+                }
+                catch
                 {
                     continue;
                 }
-
-                var resolvedKey = NormalizeForLookup(resolved);
-
-                if (visited.Contains(resolvedKey))
+                finally
                 {
-                    continue;
+                    await page.CloseAsync();
                 }
-
-                queue.Enqueue((resolved, depth + 1));
             }
+        }
+        finally
+        {
+            await context.CloseAsync();
         }
 
         return new CrawlResult
