@@ -1,3 +1,5 @@
+import { createWorkerExecutionEngine } from '../workers/worker-execution-engine.js';
+
 function encodeBase64(value) {
   const text = String(value ?? '');
   const bytes = new TextEncoder().encode(text);
@@ -42,6 +44,42 @@ export function runSchemaOperations(schema, inputValues = {}) {
 
     state[toName] = result;
     currentValue = result;
+  }
+
+  return state;
+}
+
+export async function runSchemaOperationsAsync(schema, inputValues = {}, options = {}) {
+  const state = { ...inputValues };
+  const defaultInputName = schema.inputs[0]?.name;
+  const defaultOutputName = schema.outputs[0]?.name ?? 'result';
+  let currentValue = defaultInputName ? state[defaultInputName] : '';
+  const usingExternalEngine = Boolean(options.executionEngine);
+  const executionEngine = options.executionEngine
+    ?? createWorkerExecutionEngine({ enabled: options.useWorker !== false });
+
+  try {
+    for (const action of schema.actions) {
+      const fromName = action.from || defaultInputName;
+      const inputValue = fromName ? state[fromName] : currentValue;
+      const toName = action.to || defaultOutputName;
+
+      if (hasSchemaOperation(action.operation)) {
+        const handler = OPERATION_HANDLERS[action.operation];
+        const result = handler(inputValue, { state, action, schema });
+        state[toName] = result;
+        currentValue = result;
+        continue;
+      }
+
+      const { result } = await executionEngine.execute(action.operation, { value: inputValue });
+      state[toName] = result;
+      currentValue = result;
+    }
+  } finally {
+    if (!usingExternalEngine) {
+      executionEngine.dispose();
+    }
   }
 
   return state;
