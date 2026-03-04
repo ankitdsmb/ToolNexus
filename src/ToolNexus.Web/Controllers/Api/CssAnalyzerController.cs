@@ -24,7 +24,7 @@ public sealed class CssAnalyzerController(
         string normalizedUrl;
         try
         {
-            normalizedUrl = urlSecurityValidator.ValidateAndNormalize(request.Url);
+            normalizedUrl = await urlSecurityValidator.ValidateAndNormalizeAsync(request.Url, cancellationToken);
         }
         catch (Exception ex)
         {

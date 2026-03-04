@@ -1,11 +1,13 @@
 using System.Net;
-using System.Net.Sockets;
 
 namespace ToolNexus.Web.Security;
 
-public sealed class UrlSecurityValidator
+public sealed class UrlSecurityValidator(IPrivateNetworkValidator privateNetworkValidator)
 {
     public string ValidateAndNormalize(string? url)
+        => ValidateAndNormalizeAsync(url, CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<string> ValidateAndNormalizeAsync(string? url, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
@@ -22,36 +24,17 @@ public sealed class UrlSecurityValidator
             throw new InvalidOperationException("Localhost URLs are not allowed.");
         }
 
-        if (IPAddress.TryParse(uri.Host, out var parsedIp) && IsPrivateOrLoopback(parsedIp))
+        if (IPAddress.TryParse(uri.Host, out var parsedIp) && IpAddressPolicy.IsBlocked(parsedIp))
         {
-            throw new InvalidOperationException("Private or loopback IPs are not allowed.");
+            throw new InvalidOperationException("Loopback, link-local, and private IPs are not allowed.");
         }
 
-        var resolvedIps = Dns.GetHostAddresses(uri.Host);
-        if (resolvedIps.Any(IsPrivateOrLoopback))
+        var pinnedAddress = await privateNetworkValidator.ResolveValidatedAddressAsync(uri.Host, cancellationToken);
+        if (pinnedAddress is null)
         {
-            throw new InvalidOperationException("Resolved host points to private or loopback IPs.");
+            throw new InvalidOperationException("Resolved host points to loopback, link-local, or private IPs.");
         }
 
         return uri.ToString();
-    }
-
-    private static bool IsPrivateOrLoopback(IPAddress address)
-    {
-        if (IPAddress.IsLoopback(address))
-        {
-            return true;
-        }
-
-        if (address.AddressFamily != AddressFamily.InterNetwork)
-        {
-            return false;
-        }
-
-        var bytes = address.GetAddressBytes();
-        return bytes[0] == 10
-               || (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)
-               || (bytes[0] == 192 && bytes[1] == 168)
-               || (bytes[0] == 127);
     }
 }

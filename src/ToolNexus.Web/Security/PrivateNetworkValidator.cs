@@ -1,11 +1,11 @@
 using System.Net;
-using System.Net.Sockets;
 
 namespace ToolNexus.Web.Security;
 
 public interface IPrivateNetworkValidator
 {
     Task<bool> IsSafePublicUrlAsync(string url, CancellationToken cancellationToken);
+    Task<IPAddress?> ResolveValidatedAddressAsync(string host, CancellationToken cancellationToken);
 }
 
 public sealed class PrivateNetworkValidator : IPrivateNetworkValidator
@@ -24,65 +24,47 @@ public sealed class PrivateNetworkValidator : IPrivateNetworkValidator
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(uri.Host))
+        if (string.IsNullOrWhiteSpace(uri.Host) || LocalHostNames.Contains(uri.Host, StringComparer.OrdinalIgnoreCase))
         {
             return false;
         }
 
-        if (LocalHostNames.Contains(uri.Host, StringComparer.OrdinalIgnoreCase))
+        if (IPAddress.TryParse(uri.Host, out var directIp))
         {
-            return false;
+            return !IpAddressPolicy.IsBlocked(directIp);
         }
 
-        if (IPAddress.TryParse(uri.Host, out var directIp) && IsPrivateOrLoopback(directIp))
+        var resolved = await ResolveValidatedAddressAsync(uri.Host, cancellationToken);
+        return resolved is not null;
+    }
+
+    public async Task<IPAddress?> ResolveValidatedAddressAsync(string host, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(host) || LocalHostNames.Contains(host, StringComparer.OrdinalIgnoreCase))
         {
-            return false;
+            return null;
         }
 
         IPAddress[] addresses;
         try
         {
-            addresses = await Dns.GetHostAddressesAsync(uri.Host, cancellationToken);
+            addresses = await Dns.GetHostAddressesAsync(host, cancellationToken);
         }
         catch
         {
-            return false;
+            return null;
         }
 
         if (addresses.Length == 0)
         {
-            return false;
+            return null;
         }
 
-        return addresses.All(address => !IsPrivateOrLoopback(address));
-    }
-
-    private static bool IsPrivateOrLoopback(IPAddress address)
-    {
-        if (IPAddress.IsLoopback(address))
+        if (addresses.Any(IpAddressPolicy.IsBlocked))
         {
-            return true;
+            return null;
         }
 
-        if (address.AddressFamily == AddressFamily.InterNetworkV6)
-        {
-            return address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast;
-        }
-
-        if (address.AddressFamily != AddressFamily.InterNetwork)
-        {
-            return true;
-        }
-
-        var bytes = address.GetAddressBytes();
-
-        return bytes[0] switch
-        {
-            10 => true,
-            127 => true,
-            192 when bytes[1] == 168 => true,
-            172 when bytes[1] == 16 => true,
-            _ => false
-        };
+        return addresses[0];
     }
 }
