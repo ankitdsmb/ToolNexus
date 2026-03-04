@@ -261,31 +261,51 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
 
         modelBuilder.Entity<CssScanJob>(entity =>
         {
+            entity.ToTable("css_scan_jobs");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Url).HasMaxLength(2048);
-            entity.Property(x => x.Status).HasMaxLength(32);
-            entity.Property(x => x.ErrorMessage).HasMaxLength(2000);
-            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
-            entity.Property(x => x.StartedAtUtc).HasColumnType("timestamp with time zone");
-            entity.Property(x => x.CompletedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Url).HasColumnName("url").HasMaxLength(2048);
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(32);
+            entity.Property(x => x.ErrorMessage).HasColumnName("error_message").HasMaxLength(2000);
+            entity.Property(x => x.ScanDurationMs).HasColumnName("scan_duration_ms");
+            entity.Property(x => x.PagesScanned).HasColumnName("pages_scanned");
+            entity.Property(x => x.JobMetadataJson).HasColumnName("job_metadata_json").HasColumnType("jsonb");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.StartedAtUtc).HasColumnName("started_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CompletedAtUtc).HasColumnName("completed_at_utc").HasColumnType("timestamp with time zone");
             entity.HasIndex(x => x.Status);
         });
 
         modelBuilder.Entity<CssScanResult>(entity =>
         {
+            entity.ToTable("css_scan_results");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Framework).HasMaxLength(120);
-            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.JobId).HasColumnName("job_id");
+            entity.Property(x => x.TotalCssBytes).HasColumnName("total_css_bytes");
+            entity.Property(x => x.UsedCssBytes).HasColumnName("used_css_bytes");
+            entity.Property(x => x.UnusedCssBytes).HasColumnName("unused_css_bytes");
+            entity.Property(x => x.OptimizationPotential).HasColumnName("optimization_potential");
+            entity.Property(x => x.Framework).HasColumnName("framework").HasMaxLength(120);
+            entity.Property(x => x.FrameworkDetectionJson).HasColumnName("framework_detection_json").HasColumnType("jsonb");
+            entity.Property(x => x.OptimizedCss).HasColumnName("optimized_css");
+            entity.Property(x => x.ResultPayloadJson).HasColumnName("result_payload_json").HasColumnType("jsonb");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.HasOne(x => x.Job)
-                .WithOne(x => x.Result)
-                .HasForeignKey<CssScanResult>(x => x.JobId)
+                .WithMany(x => x.Results)
+                .HasForeignKey(x => x.JobId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => x.JobId).IsUnique();
         });
 
         modelBuilder.Entity<CssSelectorMetric>(entity =>
         {
+            entity.ToTable("css_selector_metrics");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Selector).HasMaxLength(500);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.ResultId).HasColumnName("result_id");
+            entity.Property(x => x.Selector).HasColumnName("selector").HasMaxLength(500);
+            entity.Property(x => x.IsUsed).HasColumnName("is_used");
             entity.HasOne(x => x.Result)
                 .WithMany(x => x.SelectorMetrics)
                 .HasForeignKey(x => x.ResultId)
@@ -294,12 +314,15 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
 
         modelBuilder.Entity<CssArtifact>(entity =>
         {
+            entity.ToTable("css_artifacts");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.ArtifactType).HasMaxLength(64);
-            entity.Property(x => x.FilePath).HasMaxLength(2000);
-            entity.Property(x => x.ContentType).HasMaxLength(128);
-            entity.Property(x => x.FileName).HasMaxLength(260);
-            entity.Property(x => x.CreatedAtUtc).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.ResultId).HasColumnName("result_id");
+            entity.Property(x => x.ArtifactType).HasColumnName("artifact_type").HasMaxLength(64);
+            entity.Property(x => x.FilePath).HasColumnName("file_path").HasMaxLength(2000);
+            entity.Property(x => x.ContentType).HasColumnName("content_type").HasMaxLength(128);
+            entity.Property(x => x.FileName).HasColumnName("file_name").HasMaxLength(260);
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.HasOne(x => x.Result)
                 .WithMany(x => x.Artifacts)
                 .HasForeignKey(x => x.ResultId)

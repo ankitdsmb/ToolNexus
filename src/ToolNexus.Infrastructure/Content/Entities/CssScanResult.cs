@@ -9,7 +9,9 @@ public sealed class CssScanResult
     public int UnusedCssBytes { get; set; }
     public double OptimizationPotential { get; set; }
     public string Framework { get; set; } = "Unknown";
+    public string? FrameworkDetectionJson { get; set; }
     public string? OptimizedCss { get; set; }
+    public string? ResultPayloadJson { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
 
     public CssScanJob? Job { get; set; }
