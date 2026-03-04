@@ -63,6 +63,10 @@
     {
       "slug": "yaml-to-json",
       "modulePath": "/js/tools/yaml-to-json.js"
+    },
+    {
+      "slug": "unused-css-finder",
+      "modulePath": "/js/tools/unused-css-finder.js"
     }
   ]
 }
