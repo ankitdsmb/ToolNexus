@@ -10,6 +10,7 @@ using ToolNexus.Api.Middleware;
 using ToolNexus.Api.Logging;
 using ToolNexus.Api.Services.AIGenerator;
 using ToolNexus.Api.Services.Reputation;
+using ToolNexus.Api.Services.SEO;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
 using ToolNexus.Infrastructure.Content;
