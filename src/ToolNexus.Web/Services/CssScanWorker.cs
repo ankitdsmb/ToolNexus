@@ -1,18 +1,31 @@
+using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using AngleSharp.Html.Parser;
 using Microsoft.EntityFrameworkCore;
 using ToolNexus.Infrastructure.Content.Entities;
 using ToolNexus.Infrastructure.Data;
+using ToolNexus.Web.Monitoring;
 
 namespace ToolNexus.Web.Services;
 
 public sealed class CssScanWorker(
     IServiceScopeFactory scopeFactory,
-    ILogger<CssScanWorker> logger) : BackgroundService
+    ILogger<CssScanWorker> logger,
+    IMetricsCollector metricsCollector) : BackgroundService
 {
     private const int MaxConcurrentScans = 3;
     private const int MaxPagesPerScan = 5;
+    private const int MaxAttempts = 3;
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan ScanTimeout = TimeSpan.FromSeconds(120);
+    private static readonly TimeSpan[] RetryBackoff =
+    [
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(5),
+        TimeSpan.FromSeconds(10)
+    ];
+
     private readonly SemaphoreSlim _concurrencyGate = new(MaxConcurrentScans, MaxConcurrentScans);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,6 +49,12 @@ public sealed class CssScanWorker(
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
+        var now = DateTimeOffset.UtcNow;
+
+        var queueDepth = await db.CssScanJobs
+            .Where(job => job.Status == "Pending" || job.Status == "Processing")
+            .CountAsync(cancellationToken);
+        metricsCollector.SetCssScanQueueDepth(queueDepth);
 
         var availableSlots = MaxConcurrentScans - CurrentLoad();
         if (availableSlots <= 0)
@@ -46,10 +65,15 @@ public sealed class CssScanWorker(
         var pendingJobs = await db.CssScanJobs
             .Where(job => job.Status == "Pending")
             .OrderBy(job => job.CreatedAtUtc)
-            .Take(availableSlots)
+            .Take(availableSlots * 3)
             .ToListAsync(cancellationToken);
 
-        foreach (var job in pendingJobs)
+        var runnableJobs = pendingJobs
+            .Where(job => !TryGetMetadata(job.JobMetadataJson, out var metadata) || metadata.NextAttemptAtUtc is null || metadata.NextAttemptAtUtc <= now)
+            .Take(availableSlots)
+            .ToList();
+
+        foreach (var job in runnableJobs)
         {
             job.Status = "Processing";
             job.StartedAtUtc = DateTimeOffset.UtcNow;
@@ -57,7 +81,7 @@ public sealed class CssScanWorker(
 
         await db.SaveChangesAsync(cancellationToken);
 
-        foreach (var job in pendingJobs)
+        foreach (var job in runnableJobs)
         {
             _ = Task.Run(() => ProcessJobAsync(job.Id, cancellationToken), cancellationToken);
         }
@@ -68,6 +92,7 @@ public sealed class CssScanWorker(
     private async Task ProcessJobAsync(Guid jobId, CancellationToken cancellationToken)
     {
         await _concurrencyGate.WaitAsync(cancellationToken);
+        var scanStopwatch = Stopwatch.StartNew();
         try
         {
             using var scope = scopeFactory.CreateScope();
@@ -81,12 +106,19 @@ public sealed class CssScanWorker(
             var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
             var job = await db.CssScanJobs.SingleAsync(x => x.Id == jobId, cancellationToken);
-            logger.LogInformation("scan_started JobId={JobId} Url={Url}", jobId, job.Url);
+            var metadata = GetMetadata(job.JobMetadataJson);
+            var attempt = metadata.Attempt + 1;
 
-            var crawl = await crawler.CrawlAsync(job.Url, maxPages: MaxPagesPerScan, cancellationToken: cancellationToken);
-            var coverageResult = await coverage.Analyze(job.Url, cancellationToken);
-            var cssPayload = await AggregateCssAsync(job.Url, crawl.Pages, httpClientFactory.CreateClient(), cancellationToken);
-            var selectorResult = await selectorCoverage.AnalyzeAsync(job.Url, cssPayload, cancellationToken);
+            using var scanTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            scanTimeoutCts.CancelAfter(ScanTimeout);
+            var scanToken = scanTimeoutCts.Token;
+
+            logger.LogInformation("scan_started EventName={EventName} JobId={JobId} Url={Url} Attempt={Attempt}", "scan_started", jobId, job.Url, attempt);
+
+            var crawl = await crawler.CrawlAsync(job.Url, maxPages: MaxPagesPerScan, cancellationToken: scanToken);
+            var coverageResult = await coverage.Analyze(job.Url, scanToken);
+            var cssPayload = await AggregateCssAsync(job.Url, crawl.Pages, httpClientFactory.CreateClient(), scanToken);
+            var selectorResult = await selectorCoverage.AnalyzeAsync(job.Url, cssPayload, scanToken);
             var allSelectors = selectorCoverage.ExtractSelectors(cssPayload);
             var usedSelectors = allSelectors.Except(selectorResult.UnusedSelectorList).ToHashSet(StringComparer.Ordinal);
             var optimized = optimizer.GenerateOptimizedCss(cssPayload, usedSelectors);
@@ -122,7 +154,7 @@ public sealed class CssScanWorker(
                 });
             }
 
-            var artifactPath = await artifactStorage.SaveOptimizedCssAsync(job.Id, optimized.OptimizedCss, cancellationToken);
+            var artifactPath = await artifactStorage.SaveOptimizedCssAsync(job.Id, optimized.OptimizedCss, scanToken);
             result.Artifacts.Add(new CssArtifact
             {
                 Id = Guid.NewGuid(),
@@ -136,25 +168,69 @@ public sealed class CssScanWorker(
 
             db.CssScanResults.Add(result);
             job.Status = "Completed";
+            job.ErrorMessage = null;
+            job.JobMetadataJson = SerializeMetadata(new ScanJobMetadata(0, null));
             job.CompletedAtUtc = DateTimeOffset.UtcNow;
+            job.PagesScanned = crawl.PagesScanned;
+            job.ScanDurationMs = (int)Math.Round(scanStopwatch.Elapsed.TotalMilliseconds);
             await db.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("scan_completed JobId={JobId} Url={Url} Pages={Pages}", jobId, job.Url, crawl.PagesScanned);
+            metricsCollector.ObserveCssScanDuration(scanStopwatch.Elapsed.TotalMilliseconds);
+            logger.LogInformation("scan_completed EventName={EventName} JobId={JobId} Url={Url} Pages={Pages} Attempt={Attempt} DurationMs={DurationMs}", "scan_completed", jobId, job.Url, crawl.PagesScanned, attempt, job.ScanDurationMs);
         }
         catch (Exception ex)
         {
+            var timedOut = ex is OperationCanceledException && !cancellationToken.IsCancellationRequested;
+
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ToolNexusContentDbContext>();
             var job = await db.CssScanJobs.SingleOrDefaultAsync(x => x.Id == jobId, cancellationToken);
             if (job is not null)
             {
-                job.Status = "Failed";
-                job.ErrorMessage = ex.Message;
-                job.CompletedAtUtc = DateTimeOffset.UtcNow;
+                var metadata = GetMetadata(job.JobMetadataJson);
+                var nextAttempt = metadata.Attempt + 1;
+
+                job.ScanDurationMs = (int)Math.Round(scanStopwatch.Elapsed.TotalMilliseconds);
+
+                if (nextAttempt < MaxAttempts)
+                {
+                    var retryDelay = RetryBackoff[Math.Min(nextAttempt - 1, RetryBackoff.Length - 1)];
+                    var nextAttemptAt = DateTimeOffset.UtcNow.Add(retryDelay);
+                    job.Status = "Pending";
+                    job.ErrorMessage = $"Attempt {nextAttempt}/{MaxAttempts} failed: {ex.Message}";
+                    job.JobMetadataJson = SerializeMetadata(new ScanJobMetadata(nextAttempt, nextAttemptAt));
+                    job.CompletedAtUtc = null;
+
+                    logger.LogWarning(ex,
+                        "scan_failed EventName={EventName} JobId={JobId} Attempt={Attempt} MaxAttempts={MaxAttempts} RetryingInSeconds={RetryInSeconds} TimedOut={TimedOut}",
+                        "scan_failed",
+                        jobId,
+                        nextAttempt,
+                        MaxAttempts,
+                        retryDelay.TotalSeconds,
+                        timedOut);
+                }
+                else
+                {
+                    job.Status = "Failed";
+                    job.ErrorMessage = timedOut
+                        ? $"CSS scan timed out after {ScanTimeout.TotalSeconds:0}s"
+                        : ex.Message;
+                    job.CompletedAtUtc = DateTimeOffset.UtcNow;
+                    job.JobMetadataJson = SerializeMetadata(new ScanJobMetadata(nextAttempt, null));
+
+                    metricsCollector.IncrementCssScanFailure();
+                    logger.LogError(ex,
+                        "scan_failed EventName={EventName} JobId={JobId} Attempt={Attempt} MaxAttempts={MaxAttempts} TimedOut={TimedOut}",
+                        "scan_failed",
+                        jobId,
+                        nextAttempt,
+                        MaxAttempts,
+                        timedOut);
+                }
+
                 await db.SaveChangesAsync(cancellationToken);
             }
-
-            logger.LogError(ex, "scan_failed JobId={JobId}", jobId);
         }
         finally
         {
@@ -206,4 +282,43 @@ public sealed class CssScanWorker(
 
         return collectedCss.ToString();
     }
+
+    private static ScanJobMetadata GetMetadata(string? metadataJson)
+    {
+        return TryGetMetadata(metadataJson, out var metadata) ? metadata : new ScanJobMetadata(0, null);
+    }
+
+    private static bool TryGetMetadata(string? metadataJson, out ScanJobMetadata metadata)
+    {
+        metadata = new ScanJobMetadata(0, null);
+        if (string.IsNullOrWhiteSpace(metadataJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            var parsed = JsonSerializer.Deserialize<ScanJobMetadata>(metadataJson);
+            if (parsed is null)
+            {
+                return false;
+            }
+
+            metadata = parsed.Attempt < 0
+                ? new ScanJobMetadata(0, parsed.NextAttemptAtUtc)
+                : parsed;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string SerializeMetadata(ScanJobMetadata metadata)
+    {
+        return JsonSerializer.Serialize(metadata);
+    }
+
+    private sealed record ScanJobMetadata(int Attempt, DateTimeOffset? NextAttemptAtUtc);
 }
