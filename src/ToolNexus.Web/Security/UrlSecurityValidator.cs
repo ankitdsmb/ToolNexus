@@ -8,6 +8,9 @@ public sealed class UrlSecurityValidator(IPrivateNetworkValidator privateNetwork
         => ValidateAndNormalizeAsync(url, CancellationToken.None).GetAwaiter().GetResult();
 
     public async Task<string> ValidateAndNormalizeAsync(string? url, CancellationToken cancellationToken)
+        => (await ValidateAndPinAsync(url, cancellationToken)).NormalizedUrl;
+
+    public async Task<ValidatedUrl> ValidateAndPinAsync(string? url, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
@@ -35,6 +38,8 @@ public sealed class UrlSecurityValidator(IPrivateNetworkValidator privateNetwork
             throw new InvalidOperationException("Resolved host points to loopback, link-local, or private IPs.");
         }
 
-        return uri.ToString();
+        return new ValidatedUrl(uri.ToString(), pinnedAddress);
     }
 }
+
+public sealed record ValidatedUrl(string NormalizedUrl, IPAddress PinnedAddress);
