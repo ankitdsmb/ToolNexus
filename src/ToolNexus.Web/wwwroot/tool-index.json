@@ -1,12 +1,20 @@
 {
-  "version": "1.0",
+  "version": "2026.03",
   "runtimeAbi": "2.0",
   "tools": {
     "css-minifier": {
       "module": "/js/tools/css-minifier.js",
       "abi": "2.0",
       "permissions": ["dom"],
-      "tier": "A"
+      "tier": "A",
+      "warmupPriority": 2,
+      "route": "/css-minifier",
+      "certification": {
+        "tier": "gold",
+        "signature": "sha256:toolnexus-css-minifier",
+        "maxMemory": "5mb",
+        "maxExecutionTime": 2000
+      }
     }
   }
 }
