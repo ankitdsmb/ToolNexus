@@ -53,6 +53,30 @@ const RUNTIME_TYPES = Object.freeze({
   CUSTOM: 'custom'
 });
 
+
+export function preflightRuntimeDom(root) {
+  return {
+    valid: Boolean(root && root.querySelector?.('[data-tool-content-host]')),
+    reason: root && root.querySelector?.('[data-tool-content-host]')
+      ? 'dom_ready'
+      : 'missing_tool_root_or_anchor'
+  };
+}
+
+export function classifyModuleImportFailure(error, { modulePath, validationReason } = {}) {
+  const syntaxRejected = error instanceof SyntaxError;
+  const classification = syntaxRejected
+    ? 'module_syntax_error'
+    : 'runtime_error';
+
+  return {
+    classification,
+    modulePath,
+    reason: validationReason ?? 'import_rejected',
+    errorMessage: error?.message ?? String(error)
+  };
+}
+
 function createRuntimeIdentityDescriptor({
   runtimeType = RUNTIME_TYPES.AUTO,
   uiMode = 'auto',
@@ -748,6 +772,29 @@ export function createToolRuntime({
     }
   }
 
+
+  function emitFailure(category, {
+    toolSlug,
+    modulePath = null,
+    phase,
+    errorMessage,
+    metadata = {}
+  } = {}) {
+    emit(category, {
+      toolSlug,
+      toolId: toolSlug,
+      modulePath,
+      phase,
+      errorMessage,
+      metadata: {
+        ...metadata,
+        modulePath,
+        phase,
+        errorMessage
+      }
+    });
+  }
+
   function exposeDiagnosticsApi() {
     if (typeof window === 'undefined') {
       return;
@@ -1093,6 +1140,17 @@ export function createToolRuntime({
     restoreSsrSnapshot(root, mountPlan);
     ensureToolShellAnchors(root);
 
+    const domPreflight = preflightRuntimeDom(root);
+    if (!domPreflight.valid) {
+      emitFailure('dom_contract_failure', {
+        toolSlug: slug,
+        phase: 'dom',
+        errorMessage: domPreflight.reason,
+        metadata: { reason: domPreflight.reason }
+      });
+      return { root, aborted: true };
+    }
+
     templateBinder(root, window.ToolNexusConfig ?? {});
 
     try {
@@ -1265,6 +1323,12 @@ export function createToolRuntime({
           error: error?.message ?? String(error),
           errorCategory: classifyRuntimeError({ stage: 'dependency', message: error?.message, eventName: 'dependency_failure' })
         });
+        emitFailure('dependency_loader_failure', {
+          toolSlug: slug,
+          modulePath: Array.isArray(manifest?.dependencies) ? (manifest.dependencies[0]?.src ?? null) : null,
+          phase: 'dependency',
+          errorMessage: error?.message ?? String(error)
+        });
         dependencyLogger.warn(`Dependency loading failed for "${slug}"; continuing execution.`, error);
       }
     };
@@ -1379,6 +1443,13 @@ export function createToolRuntime({
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
         importFailed = true;
         const contractInvalid = isModuleContractError(error);
+        const importFailure = classifyModuleImportFailure(error, {
+          modulePath,
+          validationReason: modulePathValidation.reason
+        });
+        const failureClassification = contractInvalid
+          ? 'module_contract_error'
+          : importFailure.classification;
         moduleContractInvalid = contractInvalid;
         setLastError('module-import', error, slug, { modulePath });
         const reasonPrefix = contractInvalid
@@ -1386,13 +1457,14 @@ export function createToolRuntime({
           : 'custom_module_import_failed';
         const importReason = `${reasonPrefix}:${error?.message ?? 'unknown_error'}`;
         setRuntimeResolution(RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED, importReason);
-        emit('module_import_failure', {
+        emitFailure('module_import_failure', {
           toolSlug: slug,
-          duration: now() - moduleImportStartedAt,
-          error: error?.message ?? String(error),
+          modulePath,
+          phase: 'module',
+          errorMessage: error?.message ?? String(error),
           metadata: {
-            modulePath,
-            classification: contractInvalid ? 'module_contract_error' : 'runtime_error',
+            reason: importFailure.reason,
+            classification: failureClassification,
             runtimeResolutionMode: RUNTIME_RESOLUTION_MODES.CUSTOM_FAILED,
             runtimeResolutionReason: importReason
           }
@@ -1404,6 +1476,15 @@ export function createToolRuntime({
             runtimeResolutionReason: importReason
           }
         });
+        console.error('[ToolNexus Runtime] Module import rejected', {
+          toolId: slug,
+          modulePath,
+          phase: 'module',
+          reason: importFailure.reason,
+          errorMessage: importFailure.errorMessage,
+          classification: failureClassification
+        });
+
         if (isDevelopmentRuntime()) {
           console.warn(`[ToolRuntime] Custom runtime import failed for "${slug}". Falling back to auto runtime.`, {
             modulePath,
@@ -1929,6 +2010,11 @@ export function createToolRuntime({
       root = getRoot();
     } catch (error) {
       logger.error(error?.message ?? String(error));
+      emitFailure('runtime_bootstrap_failure', {
+        toolSlug: 'unknown-tool',
+        phase: 'bootstrap',
+        errorMessage: error?.message ?? String(error)
+      });
       return;
     }
     registerDebugValidation(getRoot);
@@ -1949,6 +2035,11 @@ export function createToolRuntime({
       const slug = (root.dataset.toolSlug || '').trim();
       if (!slug) {
         logger.error('Missing tool slug on #tool-root.');
+        emitFailure('runtime_bootstrap_failure', {
+          toolSlug: 'unknown-tool',
+          phase: 'bootstrap',
+          errorMessage: 'missing_tool_slug'
+        });
         return;
       }
 
@@ -1969,6 +2060,11 @@ export function createToolRuntime({
         await safeMountTool({ root, slug });
       } catch (error) {
         setLastError('runtime', error, slug);
+        emitFailure('runtime_bootstrap_failure', {
+          toolSlug: slug,
+          phase: 'bootstrap',
+          errorMessage: error?.message ?? String(error)
+        });
         if (isStrictModeEnabled()) {
           throw error;
         }
@@ -2006,6 +2102,8 @@ export function createToolRuntime({
   };
 }
 
+}
+
 export async function loadManifest(slug) {
   const endpointTemplate = window.ToolNexusConfig?.manifestEndpoint;
   const manifestUrl = endpointTemplate
@@ -2037,9 +2135,30 @@ export function ensureStylesheet(cssPath) {
 
 export { defaultLifecycleAdapter as mountToolModule };
 
+
+export function validateRuntimeEntrypointContext({ doc = document, logger = console } = {}) {
+  if (typeof doc === 'undefined') {
+    return { valid: true, reason: 'non_dom_runtime' };
+  }
+
+  const currentScript = doc.currentScript;
+  if (currentScript && String(currentScript.type || '').trim().toLowerCase() !== 'module') {
+    const message = "ToolNexus runtime must be loaded using type='module'.";
+    logger?.error?.(`[ToolNexus Runtime] ${message}`);
+    return { valid: false, reason: 'classic_script_context', errorMessage: message };
+  }
+
+  return { valid: true, reason: 'module_context' };
+}
+
   // ---------------------------------------------------------
   // Runtime bootstrap (FIXED)
   // ---------------------------------------------------------
+
+  const entrypointValidation = validateRuntimeEntrypointContext();
+  if (!entrypointValidation.valid) {
+    console.error('[ToolNexus Runtime] Runtime bootstrap aborted due to script context validation failure.', entrypointValidation);
+  }
 
   const runtime = createToolRuntime();
 
@@ -2052,11 +2171,13 @@ export { defaultLifecycleAdapter as mountToolModule };
    * This restores compatibility without changing architecture.
    */
   if (typeof window !== 'undefined') {
-    window.ToolNexusRuntime ??= runtime;
-    window.ToolNexusRuntime.strict = true;
+    window.ToolNexusRuntime ??= runtime ?? {};
+    if (window.ToolNexusRuntime) {
+      window.ToolNexusRuntime.strict = true;
+    }
   }
 
-  if (typeof document !== 'undefined' && document.getElementById('tool-root')) {
+  if (entrypointValidation.valid && runtime?.bootstrapToolRuntime && typeof document !== 'undefined' && document.getElementById('tool-root')) {
     scheduleNonCriticalTask(() => {
       runtime.bootstrapToolRuntime().catch((error) => {
 

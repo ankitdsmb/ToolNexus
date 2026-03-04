@@ -10,9 +10,7 @@ export function createDependencyLoader({
   const logger = createRuntimeMigrationLogger({ channel: 'dependency' });
   const cache = new Map();
 
-  const scriptLoader = typeof loadScript === 'function'
-    ? loadScript
-    : (src) =>
+  const defaultScriptLoader = ({ src, module = false } = {}) =>
       new Promise((resolve, reject) => {
 
         const existing =
@@ -35,8 +33,10 @@ export function createDependencyLoader({
 
         const script = document.createElement('script');
         script.async = true;
+        script.type = module ? 'module' : 'text/javascript';
         script.src = src;
         script.dataset.runtimeDependency = src;
+        script.dataset.runtimeDependencyModule = module ? 'true' : 'false';
 
         script.addEventListener(
           'load',
@@ -59,6 +59,10 @@ export function createDependencyLoader({
 
         document.head.appendChild(script);
       });
+
+  const scriptLoader = typeof loadScript === 'function'
+    ? (entry) => loadScript(entry?.src, entry)
+    : (entry) => defaultScriptLoader(entry);
 
   const cssLoader = typeof loadCss === 'function'
     ? loadCss
@@ -112,6 +116,7 @@ export function createDependencyLoader({
     if (typeof dependency === 'string') {
       return {
         src: dependency,
+        module: false,
         ready: null,
         key: dependency
       };
@@ -121,6 +126,7 @@ export function createDependencyLoader({
       const src = typeof dependency.src === 'string' ? dependency.src : null;
       return {
         src,
+        module: dependency.module === true,
         ready: typeof dependency.ready === 'function' ? dependency.ready : null,
         key: src ?? `ready:${dependency.name ?? 'inline'}`
       };
@@ -178,7 +184,7 @@ export function createDependencyLoader({
     });
 
     const pending =
-      (src.endsWith('.css') ? cssLoader(src) : scriptLoader(src))
+      (src.endsWith('.css') ? cssLoader(src) : scriptLoader(entry))
         .then(() => {
           return ensureDependencyReady(entry, toolSlug);
         })
@@ -203,6 +209,14 @@ export function createDependencyLoader({
           emit('dependency_script_load_failure', {
             toolSlug,
             error: error?.message ?? String(error),
+            metadata: { dependency: src }
+          });
+
+          emit('dependency_loader_failure', {
+            toolSlug,
+            error: error?.message ?? String(error),
+            phase: 'dependency',
+            modulePath: src,
             metadata: { dependency: src }
           });
 
