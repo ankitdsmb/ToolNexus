@@ -33,16 +33,17 @@
     "integrity:ci": "node scripts/integrity/ci-enforce.mjs",
     "integrity:js-governance": "node scripts/integrity/js-governance-drift.mjs",
     "integrity:governance": "node scripts/governance/governance-dashboard.mjs",
-    "integrity:css-ownership": "node scripts/integrity/css-ownership.mjs"
+    "integrity:css-ownership": "node scripts/integrity/css-ownership.mjs",
+    "telemetry:coverage": "node scripts/telemetry/run-coverage-crawler.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "fast-glob": "^3.3.3",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
-    "vitest": "^4.0.18",
-    "fast-glob": "^3.3.3",
-    "playwright": "^1.55.0"
+    "playwright": "^1.55.0",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "monaco-editor": "^0.55.1",
