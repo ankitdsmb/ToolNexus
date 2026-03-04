@@ -39,7 +39,7 @@ function validateLegacyRuntimeModulePath(modulePath, { onStrictViolation } = {})
     && !/^https?:\/\//i.test(value)
     && !/^javascript:/i.test(value);
   if (valid) {
-    return true;
+    return { valid: true };
   }
 
   const message = `[RuntimeImportIntegrity] Invalid modulePath: ${modulePath}`;
@@ -51,11 +51,11 @@ function validateLegacyRuntimeModulePath(modulePath, { onStrictViolation } = {})
   if (mode === 'enforce-strict') {
     console.error(message);
     onStrictViolation?.(message);
-    return false;
+    return { valid: false, reason: 'invalid_module_path' };
   }
 
   console.warn(message);
-  return true;
+  return { valid: true, reason: 'invalid_module_path_warn' };
 }
 
 function toCandidates(module) {
@@ -131,7 +131,7 @@ export async function bootstrapLegacyTool({
   manifest,
   modulePath,
   importModule = async (modulePath) => {
-    const validation = await validateLegacyRuntimeModulePath(modulePath);
+    const validation = validateLegacyRuntimeModulePath(modulePath);
 
     if (!validation.valid) {
       console.warn('[RuntimeImportIntegrity] Validation failed', { modulePath, ...validation });
@@ -148,7 +148,8 @@ export async function bootstrapLegacyTool({
   let workingModule = module;
 
   if (!workingModule && modulePath) {
-    if (!validateLegacyRuntimeModulePath(modulePath)) {
+    const legacyPathValidation = validateLegacyRuntimeModulePath(modulePath);
+    if (!legacyPathValidation.valid) {
       return { mounted: false, mode: 'legacy.import-integrity-blocked' };
     }
 
