@@ -8,6 +8,7 @@ using ToolNexus.Api.Diagnostics;
 using ToolNexus.Api.Filters;
 using ToolNexus.Api.Middleware;
 using ToolNexus.Api.Logging;
+using ToolNexus.Api.Services.AIGenerator;
 using ToolNexus.Api.Services.Reputation;
 using ToolNexus.Application;
 using ToolNexus.Application.Services;
@@ -104,6 +105,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHostedService<EndpointDiagnosticsHostedService>();
 builder.Services.AddScoped<DeveloperReputationService>();
 builder.Services.AddScoped<ToolRatingService>();
+builder.Services.AddScoped<ToolSchemaGenerator>();
+builder.Services.AddScoped<ToolManifestGenerator>();
+builder.Services.AddScoped<AiToolGeneratorService>();
 
 var app = builder.Build();
 
