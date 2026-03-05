@@ -1273,21 +1273,41 @@ async function safeMountTool({ root, slug }) {
       }
     });
 
-    const observedSignals = observability.getSnapshot().selfHealing ?? {};
-    const configuredSignals = window.ToolNexusRuntime?.policySignals ?? window.ToolNexusConfig?.runtimePolicySignals ?? {};
-    const runtimePolicySignals = {
-      safeModeTools: mergePolicySignalEntries(observedSignals.safeModeTools, configuredSignals.safeModeTools),
-      disabledEnhancements: mergePolicySignalEntries(observedSignals.disabledEnhancements, configuredSignals.disabledEnhancements),
-      throttledTools: mergePolicySignalEntries(observedSignals.throttledTools, configuredSignals.throttledTools)
-    };
-    const runtimePolicy = applyRuntimePolicy({
-      root,
-      toolSlug: slug,
-      now,
-      lastExecutedAt: runtimePolicyThrottleRegistry.get(slug),
-      throttleWindowMs: window.ToolNexusConfig?.runtimeThrottleWindowMs,
-      executionContext
-    }, runtimePolicySignals);
+    let runtimePolicy;
+    try {
+      const observabilitySnapshot = typeof observability?.getSnapshot === 'function'
+        ? observability.getSnapshot()
+        : {};
+      const observedSignals = observabilitySnapshot?.selfHealing ?? {};
+      const configuredSignals = window.ToolNexusRuntime?.policySignals ?? window.ToolNexusConfig?.runtimePolicySignals ?? {};
+      const runtimePolicySignals = {
+        safeModeTools: mergePolicySignalEntries(observedSignals.safeModeTools, configuredSignals.safeModeTools),
+        disabledEnhancements: mergePolicySignalEntries(observedSignals.disabledEnhancements, configuredSignals.disabledEnhancements),
+        throttledTools: mergePolicySignalEntries(observedSignals.throttledTools, configuredSignals.throttledTools)
+      };
+      runtimePolicy = applyRuntimePolicy({
+        root,
+        toolSlug: slug,
+        now,
+        lastExecutedAt: runtimePolicyThrottleRegistry.get(slug),
+        throttleWindowMs: window.ToolNexusConfig?.runtimeThrottleWindowMs,
+        executionContext
+      }, runtimePolicySignals);
+    } catch (error) {
+      const errorMessage = error?.message ?? String(error);
+      console.error('[ToolRuntime] Pre-DOM setup failed', { slug, error: errorMessage });
+      emitRuntimeEvent(TR_RUNTIME_ERROR, {
+        slug,
+        source: 'tool-runtime',
+        stage: 'pre-dom-setup',
+        errorMessage
+      });
+      abortRuntime('Pre-DOM setup failed before dom phase.', {
+        toolSlug: slug,
+        phase: 'dom',
+        cause: error
+      });
+    }
 
     emit('runtime_policy_applied', {
       toolSlug: slug,
@@ -2479,6 +2499,7 @@ async function safeMountTool({ root, slug }) {
       try {
         await safeMountTool({ root, slug });
       } catch (error) {
+        console.error('[ToolRuntime] Bootstrap failed', { slug, error: error?.message ?? String(error) });
         setLastError('runtime', error, slug);
         emitFailure('runtime_bootstrap_failure', {
           toolSlug: slug,
