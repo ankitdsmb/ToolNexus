@@ -1,4 +1,4 @@
-const DEFAULT_ENDPOINT = '/api/admin/runtime/incidents';
+const DEFAULT_ENDPOINT = '/api/runtime/incidents';
 const DEFAULT_LOG_ENDPOINT = null;
 const DEFAULT_DEBOUNCE_MS = 1500;
 const DEFAULT_MAX_BATCH_SIZE = 20;
