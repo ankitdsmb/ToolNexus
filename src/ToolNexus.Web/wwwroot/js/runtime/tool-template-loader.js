@@ -124,6 +124,11 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
   if (cached) {
     const target = resolveRootHandoffTarget(root, slug);
     target.innerHTML = sanitizeTemplateMarkup(cached);
+    console.info('[ToolRuntime] Template mounted', {
+      slug,
+      templatePath: templatePath || `/tool-templates/${encodeURIComponent(slug)}.html`,
+      mountHost: '[data-tool-content-host]'
+    });
     console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
     console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
     return cached;
@@ -152,6 +157,11 @@ export async function loadToolTemplate(slug, root, { fetchImpl = fetch, template
   templateCache.set(slug, template);
   const target = resolveRootHandoffTarget(root, slug);
   target.innerHTML = sanitizeTemplateMarkup(template);
+  console.info('[ToolRuntime] Template mounted', {
+    slug,
+    templatePath: resolvedTemplatePath,
+    mountHost: '[data-tool-content-host]'
+  });
   console.info('[RuntimeOwnership] shell anchors preserved', { slug, target: '[data-tool-shell]' });
   console.info('[RuntimeOwnership] no mutation performed', { slug, operation: 'zone-clearing-skipped' });
 

@@ -82,7 +82,9 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
   const normalized = normalizeToolExecution(module, capabilities, { slug, root, context });
   const devMode = isDevIsolationModeEnabled();
   const budget = getPerformanceBudgetMs();
+  console.info('[ToolRuntime] Lifecycle create() starting', { slug });
   await normalized.create();
+  console.info('[ToolRuntime] Lifecycle create() complete', { slug });
 
   try {
     if (devMode && context && typeof context === 'object') {
@@ -107,11 +109,13 @@ async function mountNormalizedLifecycle({ module, slug, root, manifest, context,
 
     const initStart = performance.now();
     emitRuntimeEvent(TR_LIFECYCLE_INIT, { slug, phase: 'start' });
+    console.info('[ToolRuntime] Lifecycle init() starting', { slug });
     try {
       await normalized.init();
     } finally {
       longTaskObserver?.disconnect();
     }
+    console.info('[ToolRuntime] Lifecycle init() complete', { slug });
     const initDuration = performance.now() - initStart;
     emitRuntimeEvent(TR_LIFECYCLE_INIT, { slug, phase: 'complete', durationMs: initDuration });
     if (window.__enableRuntimePerfTelemetry === true && context && typeof context === 'object') {
@@ -195,6 +199,11 @@ export async function mountToolLifecycle({ module, slug, root, manifest, context
     logger.error(`No lifecycle contract found for "${slug}".`);
   } else {
     logger.info(`Mounted normalized lifecycle for "${slug}" via ${normalizedResult.mode}.`);
+    console.info('[ToolRuntime] Lifecycle mounted', {
+      slug,
+      mode: normalizedResult.mode,
+      mounted: normalizedResult.mounted
+    });
   }
 
   return normalizedResult;
