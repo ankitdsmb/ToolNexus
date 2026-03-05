@@ -3,7 +3,6 @@ import { dependencyLoader as defaultDependencyLoader } from '/js/runtime/depende
 import { loadToolTemplate as defaultTemplateLoader } from '/js/runtime/tool-template-loader.js';
 import { mountToolLifecycle as defaultLifecycleAdapter, legacyAutoInit as defaultLegacyAutoInit, inspectLifecycleContract } from '/js/runtime/tool-lifecycle-adapter.js';
 import { bindTemplateData as defaultTemplateBinder } from '/js/runtime/tool-template-binder.js';
-import { bootstrapLegacyTool as defaultLegacyBootstrap } from '/js/runtime/legacy-tool-bootstrap.js';
 import { validateToolDom as defaultDomContractValidator } from '/js/runtime/tool-dom-contract-validator.js';
 import { adaptToolDom as defaultDomAdapter } from '/js/runtime/tool-dom-adapter.js';
 import { LAYOUT_TYPES } from '/js/runtime/tool-dom-contract.js';
@@ -11,7 +10,6 @@ import { createRuntimeMigrationLogger } from '/js/runtime/runtime-migration-logg
 import { detectToolCapabilities as defaultDetectToolCapabilities } from '/js/runtime/tool-capability-matrix.js';
 import { safeDomMount as defaultSafeDomMount } from '/js/runtime/safe-dom-mount.js';
 import { createToolExecutionContext as defaultCreateToolExecutionContext } from '/js/runtime/tool-execution-context.js';
-import { legacyExecuteTool as defaultLegacyExecuteTool, releaseLegacyInitialization as defaultReleaseLegacyInitialization } from '/js/runtime/legacy-execution-bridge.js';
 import { createToolStateRegistry as defaultCreateToolStateRegistry } from '/js/runtime/tool-state-registry.js';
 import { createRuntimeObservability as defaultCreateRuntimeObservability } from '/js/runtime/runtime-observability.js';
 import { classifyRuntimeError } from '/js/runtime/error-classification-engine.js';
@@ -68,6 +66,42 @@ const DEFAULT_RUNTIME_PHASES = Object.freeze({
 });
 
 const RUNTIME_DIAGNOSTIC_VERSION = 'runtime-v2';
+
+let legacyBootstrapModulePromise;
+let legacyExecutionBridgeModulePromise;
+const LEGACY_BOOTSTRAP_MODULE_URL = new URL('./runtime/legacy-tool-bootstrap.js', import.meta.url).href;
+const LEGACY_EXECUTION_BRIDGE_MODULE_URL = new URL('./runtime/legacy-execution-bridge.js', import.meta.url).href;
+
+async function loadLegacyBootstrapModule() {
+  if (!legacyBootstrapModulePromise) {
+    legacyBootstrapModulePromise = import(LEGACY_BOOTSTRAP_MODULE_URL);
+  }
+
+  return legacyBootstrapModulePromise;
+}
+
+async function defaultLegacyBootstrap(...args) {
+  const module = await loadLegacyBootstrapModule();
+  return module.bootstrapLegacyTool(...args);
+}
+
+async function loadLegacyExecutionBridgeModule() {
+  if (!legacyExecutionBridgeModulePromise) {
+    legacyExecutionBridgeModulePromise = import(LEGACY_EXECUTION_BRIDGE_MODULE_URL);
+  }
+
+  return legacyExecutionBridgeModulePromise;
+}
+
+async function defaultLegacyExecuteTool(...args) {
+  const module = await loadLegacyExecutionBridgeModule();
+  return module.legacyExecuteTool(...args);
+}
+
+async function defaultReleaseLegacyInitialization(...args) {
+  const module = await loadLegacyExecutionBridgeModule();
+  return module.releaseLegacyInitialization(...args);
+}
 
 function buildRuntimeDiagnosticsState() {
   return {
@@ -1209,7 +1243,7 @@ async function safeMountTool({ root, slug }) {
       }
     };
 
-    console.info('[ToolRuntime] manifest phase starting', { slug });
+    console.info('[ToolRuntime] Phase: manifest', { slug });
     let phaseContext = await manifestPhase({
       root,
       slug,
@@ -1877,7 +1911,7 @@ async function safeMountTool({ root, slug }) {
     };
 
     try {
-      console.info('[ToolRuntime] dom phase starting', { slug });
+      console.info('[ToolRuntime] Phase: dom', { slug });
       phaseContext = await domPhase(phaseContext);
       markRuntimePhase('dom');
       runtimeLog('[ToolRuntime] DOM contract validated', { slug });
@@ -1885,7 +1919,7 @@ async function safeMountTool({ root, slug }) {
         abortRuntime('DOM phase aborted runtime pipeline.', { toolSlug: slug, phase: 'dom' });
       }
 
-      console.info('[ToolRuntime] module phase starting', { slug });
+      console.info('[ToolRuntime] Phase: module', { slug });
       phaseContext = await modulePhase(phaseContext);
       markRuntimePhase('module');
       runtimeHealth.moduleImported = Boolean(
@@ -1897,7 +1931,7 @@ async function safeMountTool({ root, slug }) {
         abortRuntime('Module phase aborted runtime pipeline.', { toolSlug: slug, phase: 'module' });
       }
 
-      console.info('[ToolRuntime] mount phase starting', { slug });
+      console.info('[ToolRuntime] Phase: mount', { slug });
       phaseContext = await mountPhase(phaseContext);
       markRuntimePhase('mount');
       runtimeHealth.toolMounted = Boolean(phaseContext?.lifecycle?.mounted);
