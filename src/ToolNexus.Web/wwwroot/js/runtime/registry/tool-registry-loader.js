@@ -133,7 +133,15 @@ export async function loadToolRegistry() {
   setCachedToolRegistryPromise(loadPromise);
 
   try {
-    return await loadPromise;
+    const loadedRegistry = await loadPromise;
+    return loadedRegistry && typeof loadedRegistry === 'object'
+      ? loadedRegistry
+      : setCachedToolRegistry({});
+  } catch (error) {
+    console.warn('[ToolRegistryLoader] Registry load promise rejected; returning empty object fallback.', {
+      message: error?.message ?? String(error)
+    });
+    return setCachedToolRegistry({});
   } finally {
     setCachedToolRegistryPromise(null);
   }
