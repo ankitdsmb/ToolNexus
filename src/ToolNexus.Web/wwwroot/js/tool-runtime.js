@@ -90,6 +90,20 @@ function ensureRuntimeHealthGlobals() {
   }
 }
 
+function resetRuntimePhaseDiagnostics() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.TOOLNEXUS_RUNTIME_PHASES = {
+    manifest: false,
+    dom: false,
+    module: false,
+    mount: false,
+    recovery: false
+  };
+}
+
 
 export function preflightRuntimeDom(root) {
   return {
@@ -1056,7 +1070,7 @@ export function createToolRuntime({
     return 'transitional';
   }
 
-  async function safeMountTool({ root, slug }) {
+async function safeMountTool({ root, slug }) {
     const runtimeStartedAt = now();
     runtimeMetrics.bootstrapCount += 1;
     emit('bootstrap_start', { toolSlug: slug });
@@ -1130,6 +1144,7 @@ export function createToolRuntime({
       }
     };
 
+    console.info('[ToolRuntime] manifest phase starting', { slug });
     let phaseContext = await manifestPhase({
       root,
       slug,
@@ -1138,7 +1153,7 @@ export function createToolRuntime({
     markRuntimePhase('manifest');
     const { manifest, hasManifest } = phaseContext;
     runtimeHealth.manifestLoaded = hasManifest === true;
-    runtimeLog('[ToolRuntime] Manifest loaded', { slug, hasManifest: runtimeHealth.manifestLoaded });
+    runtimeLog('[ToolRuntime] Manifest loaded', { slug, hasManifest: runtimeHealth.manifestLoaded, manifest });
     emitRuntimeEvent(TR_MANIFEST_LOADED, {
       slug,
       hasManifest,
@@ -1791,37 +1806,46 @@ export function createToolRuntime({
       }
     };
 
-    phaseContext = await domPhase(phaseContext);
-    markRuntimePhase('dom');
-    runtimeLog('[ToolRuntime] DOM contract validated', { slug });
-    if (phaseContext.aborted || phaseContext.strictBlocked) {
-      return;
-    }
+    try {
+      console.info('[ToolRuntime] dom phase starting', { slug });
+      phaseContext = await domPhase(phaseContext);
+      markRuntimePhase('dom');
+      runtimeLog('[ToolRuntime] DOM contract validated', { slug });
+      if (phaseContext.aborted || phaseContext.strictBlocked) {
+        return;
+      }
 
-    phaseContext = await modulePhase(phaseContext);
-    markRuntimePhase('module');
-    runtimeHealth.moduleImported = Boolean(
-      (phaseContext.modulePath || phaseContext.schemaSelected)
-      && phaseContext.importFailed !== true
-    );
-    runtimeLog('[ToolRuntime] Module imported', { slug, moduleImported: runtimeHealth.moduleImported });
-    if (phaseContext.aborted || phaseContext.strictBlocked) {
-      return;
-    }
+      console.info('[ToolRuntime] module phase starting', { slug });
+      phaseContext = await modulePhase(phaseContext);
+      markRuntimePhase('module');
+      runtimeHealth.moduleImported = Boolean(
+        (phaseContext.modulePath || phaseContext.schemaSelected)
+        && phaseContext.importFailed !== true
+      );
+      runtimeLog('[ToolRuntime] Module imported', { slug, moduleImported: runtimeHealth.moduleImported, module: phaseContext.module });
+      if (phaseContext.aborted || phaseContext.strictBlocked) {
+        return;
+      }
 
-    phaseContext = await mountPhase(phaseContext);
-    markRuntimePhase('mount');
-    runtimeHealth.toolMounted = Boolean(phaseContext?.lifecycle?.mounted);
-    runtimeLog('[ToolRuntime] Lifecycle mounted', { slug, mounted: runtimeHealth.toolMounted });
-    if (phaseContext.aborted || phaseContext.strictBlocked) {
-      return;
-    }
+      console.info('[ToolRuntime] mount phase starting', { slug });
+      phaseContext = await mountPhase(phaseContext);
+      markRuntimePhase('mount');
+      runtimeHealth.toolMounted = Boolean(phaseContext?.lifecycle?.mounted);
+      runtimeLog('[ToolRuntime] Lifecycle mounted', { slug, mounted: runtimeHealth.toolMounted });
+      if (phaseContext.aborted || phaseContext.strictBlocked) {
+        return;
+      }
 
-    phaseContext = await recoveryPhase(phaseContext);
-    markRuntimePhase('recovery');
+      console.info('[ToolRuntime] recovery phase starting', { slug });
+      phaseContext = await recoveryPhase(phaseContext);
+      markRuntimePhase('recovery');
 
-    if (phaseContext.aborted || phaseContext.strictBlocked) {
-      return;
+      if (phaseContext.aborted || phaseContext.strictBlocked) {
+        return;
+      }
+    } catch (error) {
+      console.error('[ToolRuntime] Runtime failure', error);
+      throw error;
     }
 
     runtimeLog('[ToolRuntime] Tool ready', { slug });
@@ -2289,6 +2313,7 @@ export function createToolRuntime({
     runtimePhases.module = false;
     runtimePhases.mount = false;
     runtimePhases.recovery = false;
+    resetRuntimePhaseDiagnostics();
     syncRuntimeDiagnosticsGlobals();
 
     let root;
@@ -2406,7 +2431,13 @@ export async function loadManifest(slug) {
     throw new Error(`Manifest request failed (${response.status}).`);
   }
 
-  return response.json();
+  const manifest = await response.json();
+  console.info('[ToolRuntime] Manifest response', {
+    slug,
+    manifestUrl,
+    manifest
+  });
+  return manifest;
 }
 
 export function ensureStylesheet(cssPath) {
@@ -2485,8 +2516,6 @@ export function validateRuntimeEntrypointContext({ doc = document, logger = cons
         void bootstrapRuntimeEntrypoint();
       }, { once: true });
     } else {
-      scheduleNonCriticalTask(() => {
-        void bootstrapRuntimeEntrypoint();
-      });
+      void bootstrapRuntimeEntrypoint();
     }
   }
