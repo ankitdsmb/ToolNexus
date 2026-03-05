@@ -67,10 +67,35 @@ const DEFAULT_RUNTIME_PHASES = Object.freeze({
   recovery: false
 });
 
+const RUNTIME_DIAGNOSTIC_VERSION = 'runtime-v2';
+
+function buildRuntimeDiagnosticsState() {
+  return {
+    started: false,
+    phases: { ...DEFAULT_RUNTIME_PHASES },
+    errors: [],
+    version: RUNTIME_DIAGNOSTIC_VERSION
+  };
+}
+
 function ensureRuntimeHealthGlobals() {
   if (typeof window === 'undefined') {
     return;
   }
+
+  if (!window.TOOLNEXUS_RUNTIME || typeof window.TOOLNEXUS_RUNTIME !== 'object') {
+    window.TOOLNEXUS_RUNTIME = buildRuntimeDiagnosticsState();
+  }
+
+  window.TOOLNEXUS_RUNTIME.started = Boolean(window.TOOLNEXUS_RUNTIME.started);
+  window.TOOLNEXUS_RUNTIME.phases = {
+    ...DEFAULT_RUNTIME_PHASES,
+    ...(window.TOOLNEXUS_RUNTIME.phases ?? {})
+  };
+  if (!Array.isArray(window.TOOLNEXUS_RUNTIME.errors)) {
+    window.TOOLNEXUS_RUNTIME.errors = [];
+  }
+  window.TOOLNEXUS_RUNTIME.version = RUNTIME_DIAGNOSTIC_VERSION;
 
   if (!window.TOOLNEXUS_RUNTIME_PHASES) {
     window.TOOLNEXUS_RUNTIME_PHASES = { ...DEFAULT_RUNTIME_PHASES };
@@ -78,13 +103,10 @@ function ensureRuntimeHealthGlobals() {
 
   if (typeof window.__TOOLNEXUS_RUNTIME_HEALTH !== 'function') {
     window.__TOOLNEXUS_RUNTIME_HEALTH = function () {
-      const phasesExecuted = window.TOOLNEXUS_RUNTIME_PHASES ?? { ...DEFAULT_RUNTIME_PHASES };
       return {
-        runtimeLoaded: true,
-        phasesExecuted,
-        manifestLoaded: phasesExecuted.manifest === true,
-        moduleImported: phasesExecuted.module === true,
-        toolMounted: phasesExecuted.mount === true
+        started: Boolean(window.TOOLNEXUS_RUNTIME?.started),
+        phases: { ...(window.TOOLNEXUS_RUNTIME?.phases ?? { ...DEFAULT_RUNTIME_PHASES }) },
+        errors: [...(window.TOOLNEXUS_RUNTIME?.errors ?? [])]
       };
     };
   }
@@ -102,6 +124,23 @@ function resetRuntimePhaseDiagnostics() {
     mount: false,
     recovery: false
   };
+
+  ensureRuntimeHealthGlobals();
+  window.TOOLNEXUS_RUNTIME.started = false;
+  window.TOOLNEXUS_RUNTIME.phases = { ...DEFAULT_RUNTIME_PHASES };
+  window.TOOLNEXUS_RUNTIME.errors = [];
+}
+
+function appendRuntimeDiagnosticError(errorEntry) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  ensureRuntimeHealthGlobals();
+  window.TOOLNEXUS_RUNTIME.errors.push({
+    timestamp: new Date().toISOString(),
+    ...errorEntry
+  });
 }
 
 
@@ -384,7 +423,15 @@ export function createToolRuntime({
       return;
     }
 
+    ensureRuntimeHealthGlobals();
     window.TOOLNEXUS_RUNTIME_PHASES = {
+      manifest: runtimePhases.manifest,
+      dom: runtimePhases.dom,
+      module: runtimePhases.module,
+      mount: runtimePhases.mount,
+      recovery: runtimePhases.recovery
+    };
+    window.TOOLNEXUS_RUNTIME.phases = {
       manifest: runtimePhases.manifest,
       dom: runtimePhases.dom,
       module: runtimePhases.module,
@@ -419,6 +466,26 @@ export function createToolRuntime({
       metadata,
       timestamp: new Date().toISOString()
     };
+
+    appendRuntimeDiagnosticError({
+      toolSlug: slug ?? 'unknown-tool',
+      phase: stage,
+      message: lastError.message,
+      stack: error?.stack ?? null
+    });
+  }
+
+  function abortRuntime(message, { toolSlug = 'unknown-tool', phase = 'bootstrap', cause } = {}) {
+    const error = cause instanceof Error ? cause : new Error(message);
+    const incidentMessage = cause?.message ?? message;
+    console.error(`[ToolRuntime] ${message}`, cause ?? '');
+    emitFailure('runtime_bootstrap_failure', {
+      toolSlug,
+      phase,
+      errorMessage: incidentMessage
+    });
+    setLastError(phase, error, toolSlug, { cause: incidentMessage });
+    throw error;
   }
 
   function showRuntimeCrashOverlay(root, details = {}) {
@@ -457,7 +524,10 @@ export function createToolRuntime({
 
   function renderContractError(root, errors) {
     if (!root) {
-      return;
+      abortRuntime('Root resolution returned empty #tool-root reference.', {
+        toolSlug: 'unknown-tool',
+        phase: 'bootstrap'
+      });
     }
 
     const shell = root.matches?.('[data-tool-shell]') ? root : root.querySelector?.('[data-tool-shell]');
@@ -926,12 +996,9 @@ export function createToolRuntime({
 
     syncRuntimeDiagnosticsGlobals();
     window.__TOOLNEXUS_RUNTIME_HEALTH = () => ({
-      runtimeLoaded: runtimeHealth.runtimeLoaded,
-      phasesExecuted: { ...runtimePhases },
-      manifestLoaded: runtimeHealth.manifestLoaded,
-      moduleImported: runtimeHealth.moduleImported,
-      toolMounted: runtimeHealth.toolMounted,
-      lastError
+      started: Boolean(window.TOOLNEXUS_RUNTIME?.started),
+      phases: { ...(window.TOOLNEXUS_RUNTIME?.phases ?? { ...DEFAULT_RUNTIME_PHASES }) },
+      errors: [...(window.TOOLNEXUS_RUNTIME?.errors ?? [])]
     });
 
     const toolNexus = (window.ToolNexus ??= {});
@@ -1088,14 +1155,12 @@ async function safeMountTool({ root, slug }) {
     const stateKey = registration.key;
     if (root?.[TOOL_RUNTIME_MOUNTED_KEY] && root?.[TOOL_RUNTIME_MOUNTED_SLUG_KEY] === slug) {
       runtimeMetrics.skippedDuplicateBoots += 1;
-      logger.warn(`Skipping duplicate mount attempt for "${slug}" on already mounted root.`);
-      return;
+      abortRuntime(`Duplicate mount attempt detected for "${slug}" on mounted root.`, { toolSlug: slug, phase: 'mount' });
     }
 
     if (registration.duplicate && registration.state?.mounted) {
       runtimeMetrics.skippedDuplicateBoots += 1;
-      logger.warn(`Skipping duplicate mount attempt for "${slug}".`);
-      return;
+      abortRuntime(`Duplicate runtime registration detected for "${slug}".`, { toolSlug: slug, phase: 'mount' });
     }
 
     stateRegistry.setPhase(stateKey, 'initializing');
@@ -1617,7 +1682,7 @@ async function safeMountTool({ root, slug }) {
     };
 
     if (!validateRuntimeSlug(slug, { onStrictViolation: reportStrictIntegrityViolation })) {
-      return;
+      abortRuntime('Runtime slug validation failed.', { toolSlug: slug, phase: 'manifest' });
     }
 
     const safeResolveLifecycle = async (moduleContext) => {
@@ -1685,6 +1750,11 @@ async function safeMountTool({ root, slug }) {
 
         runtimeMetrics.moduleImportTimeMs = now() - moduleImportStartedAt;
         lifecycleContract = inspectLifecycleContract(module);
+        const missingLifecycleExports = ['create', 'init', 'destroy'].filter((methodName) => typeof module?.[methodName] !== 'function');
+        if (missingLifecycleExports.length > 0) {
+          console.error('[ToolRuntime] Invalid lifecycle contract', { slug, modulePath, missingLifecycleExports });
+          throw new Error(`Invalid lifecycle contract: missing ${missingLifecycleExports.join(', ')}`);
+        }
         emit('lifecycle_contract_evaluated', {
           toolSlug: slug,
           metadata: lifecycleContract
@@ -1812,7 +1882,7 @@ async function safeMountTool({ root, slug }) {
       markRuntimePhase('dom');
       runtimeLog('[ToolRuntime] DOM contract validated', { slug });
       if (phaseContext.aborted || phaseContext.strictBlocked) {
-        return;
+        abortRuntime('DOM phase aborted runtime pipeline.', { toolSlug: slug, phase: 'dom' });
       }
 
       console.info('[ToolRuntime] module phase starting', { slug });
@@ -1824,7 +1894,7 @@ async function safeMountTool({ root, slug }) {
       );
       runtimeLog('[ToolRuntime] Module imported', { slug, moduleImported: runtimeHealth.moduleImported, module: phaseContext.module });
       if (phaseContext.aborted || phaseContext.strictBlocked) {
-        return;
+        abortRuntime('Module phase aborted runtime pipeline.', { toolSlug: slug, phase: 'module' });
       }
 
       console.info('[ToolRuntime] mount phase starting', { slug });
@@ -1833,7 +1903,7 @@ async function safeMountTool({ root, slug }) {
       runtimeHealth.toolMounted = Boolean(phaseContext?.lifecycle?.mounted);
       runtimeLog('[ToolRuntime] Lifecycle mounted', { slug, mounted: runtimeHealth.toolMounted });
       if (phaseContext.aborted || phaseContext.strictBlocked) {
-        return;
+        abortRuntime('Mount phase aborted runtime pipeline.', { toolSlug: slug, phase: 'mount' });
       }
 
       console.info('[ToolRuntime] recovery phase starting', { slug });
@@ -1841,7 +1911,7 @@ async function safeMountTool({ root, slug }) {
       markRuntimePhase('recovery');
 
       if (phaseContext.aborted || phaseContext.strictBlocked) {
-        return;
+        abortRuntime('Recovery phase aborted runtime pipeline.', { toolSlug: slug, phase: 'recovery' });
       }
     } catch (error) {
       console.error('[ToolRuntime] Runtime failure', error);
@@ -2302,8 +2372,10 @@ async function safeMountTool({ root, slug }) {
     logger.info(`Bootstrap completed for "${slug}".`);
   }
 
+  }
+
   async function bootstrapToolRuntime() {
-    runtimeLog('[ToolRuntime] Bootstrap starting');
+    runtimeLog('[ToolRuntime] Bootstrapping runtime');
     runtimeHealth.runtimeLoaded = true;
     runtimeHealth.manifestLoaded = false;
     runtimeHealth.moduleImported = false;
@@ -2315,24 +2387,28 @@ async function safeMountTool({ root, slug }) {
     runtimePhases.recovery = false;
     resetRuntimePhaseDiagnostics();
     syncRuntimeDiagnosticsGlobals();
+    ensureRuntimeHealthGlobals();
+    window.TOOLNEXUS_RUNTIME.started = true;
 
     let root;
     try {
       root = getRoot();
     } catch (error) {
       logger.error(error?.message ?? String(error));
-      emitFailure('runtime_bootstrap_failure', {
+      emitRuntimeEvent(TR_RUNTIME_ERROR, { source: 'tool-runtime', stage: 'bootstrap', errorMessage: error?.message ?? String(error) });
+      abortRuntime('Root resolution failed during bootstrap.', {
         toolSlug: 'unknown-tool',
         phase: 'bootstrap',
-        errorMessage: error?.message ?? String(error)
+        cause: error
       });
-      emitRuntimeEvent(TR_RUNTIME_ERROR, { source: 'tool-runtime', stage: 'bootstrap', errorMessage: error?.message ?? String(error) });
-      return;
     }
     registerDebugValidation(getRoot);
     exposeDiagnosticsApi();
     if (!root) {
-      return;
+      abortRuntime('Root resolution returned empty #tool-root reference.', {
+        toolSlug: 'unknown-tool',
+        phase: 'bootstrap'
+      });
     }
 
     if (root[RUNTIME_BOOT_KEY]) {
@@ -2346,13 +2422,10 @@ async function safeMountTool({ root, slug }) {
 
       const slug = (root.dataset.toolSlug || '').trim();
       if (!slug) {
-        logger.error('Missing tool slug on #tool-root.');
-        emitFailure('runtime_bootstrap_failure', {
+        abortRuntime('Runtime bootstrap aborted: missing tool slug on #tool-root.', {
           toolSlug: 'unknown-tool',
-          phase: 'bootstrap',
-          errorMessage: 'missing_tool_slug'
+          phase: 'bootstrap'
         });
-        return;
       }
 
       logger.info(`Bootstrapping tool runtime for "${slug}".`);
@@ -2415,7 +2488,6 @@ async function safeMountTool({ root, slug }) {
   };
 }
 
-}
 
 export async function loadManifest(slug) {
   const endpointTemplate = window.ToolNexusConfig?.manifestEndpoint;
@@ -2481,41 +2553,54 @@ export function validateRuntimeEntrypointContext({ doc = document, logger = cons
 
   ensureRuntimeHealthGlobals();
 
-  const runtime = createToolRuntime();
-
-  /*
-   * IMPORTANT FIX
-   * ---------------------------------------------------------
-   * Some lifecycle modules and legacy tools still rely on
-   * global runtime access.
-   *
-   * This restores compatibility without changing architecture.
-   */
-  if (typeof window !== 'undefined') {
-    window.ToolNexusRuntime ??= runtime ?? {};
-    if (window.ToolNexusRuntime) {
-      window.ToolNexusRuntime.strict = true;
-    }
-  }
-
-  async function bootstrapRuntimeEntrypoint() {
-    if (typeof document === 'undefined' || !document.querySelector('#tool-root') || !runtime?.bootstrapToolRuntime) {
+  async function autoBootstrapRuntime() {
+    if (typeof document === 'undefined') {
       return;
     }
 
-    try {
-      await runtime.bootstrapToolRuntime();
-    } catch (error) {
-      console.error('[ToolRuntime] Fatal runtime failure', error);
+    const root = document.querySelector('#tool-root');
+    if (!root) {
+      const error = new Error('Runtime bootstrap aborted: root missing');
+      console.error('[ToolRuntime] Root element missing (#tool-root)');
+      appendRuntimeDiagnosticError({
+        toolSlug: 'unknown-tool',
+        phase: 'bootstrap',
+        message: error.message,
+        stack: error.stack
+      });
+      return;
     }
+
+    const runtime = createToolRuntime();
+
+    if (typeof window !== 'undefined') {
+      window.ToolNexusRuntime ??= runtime ?? {};
+      if (window.ToolNexusRuntime) {
+        window.ToolNexusRuntime.strict = true;
+      }
+    }
+
+    if (!runtime || typeof runtime.bootstrapToolRuntime !== 'function') {
+      const error = new Error('Runtime controller creation failed');
+      console.error('[ToolRuntime] Runtime controller creation failed', { runtime });
+      appendRuntimeDiagnosticError({
+        toolSlug: (root.dataset.toolSlug || '').trim() || 'unknown-tool',
+        phase: 'bootstrap',
+        message: error.message,
+        stack: error.stack
+      });
+      throw error;
+    }
+
+    await runtime.bootstrapToolRuntime();
   }
 
   if (entrypointValidation.valid && typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
-        void bootstrapRuntimeEntrypoint();
+        void autoBootstrapRuntime();
       }, { once: true });
     } else {
-      void bootstrapRuntimeEntrypoint();
+      void autoBootstrapRuntime();
     }
   }
