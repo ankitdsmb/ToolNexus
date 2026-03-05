@@ -138,12 +138,18 @@ function ensureRuntimeHealthGlobals() {
   if (typeof window.__TOOLNEXUS_RUNTIME_HEALTH !== 'function') {
     window.__TOOLNEXUS_RUNTIME_HEALTH = function () {
       return {
+        rootSlug: document.querySelector('#tool-root')?.dataset?.toolSlug,
+        phases: { ...(window.TOOLNEXUS_RUNTIME_PHASES ?? { ...DEFAULT_RUNTIME_PHASES }) },
+        runtimeStarted: Boolean(window.__TOOLNEXUS_RUNTIME_STARTED__),
+        lastError: window.__TOOLNEXUS_RUNTIME_ERROR__ ?? null,
         started: Boolean(window.TOOLNEXUS_RUNTIME?.started),
-        phases: { ...(window.TOOLNEXUS_RUNTIME?.phases ?? { ...DEFAULT_RUNTIME_PHASES }) },
         errors: [...(window.TOOLNEXUS_RUNTIME?.errors ?? [])]
       };
     };
   }
+
+  window.__TOOLNEXUS_RUNTIME_STARTED__ = Boolean(window.__TOOLNEXUS_RUNTIME_STARTED__);
+  window.__TOOLNEXUS_RUNTIME_ERROR__ = window.__TOOLNEXUS_RUNTIME_ERROR__ ?? null;
 }
 
 function resetRuntimePhaseDiagnostics() {
@@ -163,6 +169,8 @@ function resetRuntimePhaseDiagnostics() {
   window.TOOLNEXUS_RUNTIME.started = false;
   window.TOOLNEXUS_RUNTIME.phases = { ...DEFAULT_RUNTIME_PHASES };
   window.TOOLNEXUS_RUNTIME.errors = [];
+  window.__TOOLNEXUS_RUNTIME_STARTED__ = false;
+  window.__TOOLNEXUS_RUNTIME_ERROR__ = null;
 }
 
 function appendRuntimeDiagnosticError(errorEntry) {
@@ -507,6 +515,18 @@ export function createToolRuntime({
       message: lastError.message,
       stack: error?.stack ?? null
     });
+
+    if (typeof window !== 'undefined') {
+      ensureRuntimeHealthGlobals();
+      window.__TOOLNEXUS_RUNTIME_ERROR__ = {
+        stage,
+        slug: slug ?? 'unknown-tool',
+        message: lastError.message,
+        stack: error?.stack ?? null,
+        metadata,
+        timestamp: lastError.timestamp
+      };
+    }
   }
 
   function abortRuntime(message, { toolSlug = 'unknown-tool', phase = 'bootstrap', cause } = {}) {
@@ -1259,22 +1279,23 @@ async function safeMountTool({ root, slug }) {
       source: phaseContext?.source ?? 'unknown'
     });
 
-    const executionContext = createToolExecutionContext({
-      slug,
-      root,
-      manifest,
-      adapters: {
-        useUnifiedToolControl: (options = {}) => useUnifiedControlAdapter(root, {
-          slug,
-          manifest,
-          ...options
-        }),
-        emitTelemetry: (eventName, payload = {}) => emit(eventName, payload)
-      }
-    });
-
+    let executionContext;
     let runtimePolicy;
     try {
+      executionContext = createToolExecutionContext({
+        slug,
+        root,
+        manifest,
+        adapters: {
+          useUnifiedToolControl: (options = {}) => useUnifiedControlAdapter(root, {
+            slug,
+            manifest,
+            ...options
+          }),
+          emitTelemetry: (eventName, payload = {}) => emit(eventName, payload)
+        }
+      });
+
       const observabilitySnapshot = typeof observability?.getSnapshot === 'function'
         ? observability.getSnapshot()
         : {};
@@ -1295,13 +1316,18 @@ async function safeMountTool({ root, slug }) {
       }, runtimePolicySignals);
     } catch (error) {
       const errorMessage = error?.message ?? String(error);
-      console.error('[ToolRuntime] Pre-DOM setup failed', { slug, error: errorMessage });
+      console.error('[ToolRuntime] Pre-DOM setup failed', {
+        slug,
+        error: errorMessage,
+        stack: error?.stack
+      });
       emitRuntimeEvent(TR_RUNTIME_ERROR, {
         slug,
         source: 'tool-runtime',
-        stage: 'pre-dom-setup',
+        stage: 'pre-dom',
         errorMessage
       });
+      setLastError('pre-dom', error, slug);
       abortRuntime('Pre-DOM setup failed before dom phase.', {
         toolSlug: slug,
         phase: 'dom',
@@ -1960,7 +1986,7 @@ async function safeMountTool({ root, slug }) {
         abortRuntime('Mount phase aborted runtime pipeline.', { toolSlug: slug, phase: 'mount' });
       }
 
-      console.info('[ToolRuntime] recovery phase starting', { slug });
+      console.info('[ToolRuntime] Phase: recovery', { slug });
       phaseContext = await recoveryPhase(phaseContext);
       markRuntimePhase('recovery');
 
@@ -2443,6 +2469,7 @@ async function safeMountTool({ root, slug }) {
     syncRuntimeDiagnosticsGlobals();
     ensureRuntimeHealthGlobals();
     window.TOOLNEXUS_RUNTIME.started = true;
+    window.__TOOLNEXUS_RUNTIME_STARTED__ = true;
 
     let root;
     try {
