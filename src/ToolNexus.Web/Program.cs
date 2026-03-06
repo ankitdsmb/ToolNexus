@@ -89,6 +89,7 @@ builder.Services.AddScoped<CssFrameworkDetector>();
 builder.Services.AddScoped<UrlSecurityValidator>();
 builder.Services.AddScoped<CssArtifactStorageService>();
 builder.Services.AddScoped<MarketplaceService>();
+builder.Services.AddScoped<DocsService>();
 builder.Services.AddHttpClient();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddToolSecurity();
