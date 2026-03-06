@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "ToolNexus Docs Layout";
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/docs-layout.css" asp-append-version="true" />
+}
+
+<div class="docs-layout" data-docs-layout>
+    <button class="docs-layout__menu-toggle" type="button" data-docs-menu-toggle aria-controls="docs-sidebar" aria-expanded="false">
+        ☰ Docs Menu
+    </button>
+
+    <aside class="docs-layout__sidebar" id="docs-sidebar" aria-label="Documentation navigation">
+        <div class="docs-layout__sidebar-inner">
+            <p class="docs-layout__eyebrow">ToolNexus Docs</p>
+            <nav>
+                <ul class="docs-layout__nav-list">
+                    <li><a href="#why-we-built-this">Why we built this</a></li>
+                    <li><a href="#runtime-model">Runtime model</a></li>
+                    <li><a href="#adding-a-tool">Adding a new tool</a></li>
+                    <li><a href="#safety-rules">Safety rules</a></li>
+                    <li><a href="#faq">Quick FAQ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="docs-layout__content" aria-label="Main documentation content">
+        <article class="docs-prose">
+            <h1 id="why-we-built-this">ToolNexus docs, from someone building it daily</h1>
+            <p>
+                We built ToolNexus because we got tired of bouncing between random utilities that all felt like one-off demos.
+                The goal here is simple: a stable tool runtime where every tool looks consistent, behaves predictably, and is easy to extend.
+            </p>
+            <p>
+                This page is the base docs layout we use when we want something close to GitHub docs: navigation on the left,
+                reading area in the center, and a quick table of contents on the right.
+            </p>
+
+            <h2 id="runtime-model">Runtime model</h2>
+            <p>
+                Every tool gets loaded through the same shell so we can enforce shared UX, telemetry, and guardrails.
+                You can treat each tool like a plugin with a contract instead of a custom app.
+            </p>
+            <pre><code class="language-json">{
+  "slug": "json-formatter",
+  "template": "wwwroot/tool-templates/json-formatter.html",
+  "category": "Data",
+  "runtime": "tool-shell"
+}</code></pre>
+
+            <h2 id="adding-a-tool">Adding a new tool</h2>
+            <p>
+                The shortest path is: add a manifest, add a template, then register any backend endpoint only if the tool truly needs it.
+                Most format/transform utilities stay fully client-side.
+            </p>
+            <ol>
+                <li>Create a manifest in <code>App_Data/tool-manifests</code>.</li>
+                <li>Add the HTML template in <code>wwwroot/tool-templates</code>.</li>
+                <li>Check rendering in ToolShell and validate keyboard + mobile behavior.</li>
+            </ol>
+
+            <h2 id="safety-rules">Safety rules</h2>
+            <p>
+                If input can hit a network or filesystem boundary, validate early and fail loud.
+                "Works locally" is not the same as "safe in prod".
+            </p>
+            <pre><code class="language-csharp">if (!urlSecurityValidator.IsAllowed(inputUrl))
+{
+    return BadRequest("The URL failed security policy checks.");
+}</code></pre>
+
+            <h2 id="faq">Quick FAQ</h2>
+            <p><strong>Why sticky sidebars?</strong> Because docs are usually long and nobody enjoys losing context while scrolling.</p>
+            <p><strong>Why a mobile collapse menu?</strong> Left nav on small screens burns too much horizontal space.</p>
+            <p><strong>Why this writing style?</strong> Internal docs should sound like engineers talking to engineers.</p>
+        </article>
+    </main>
+
+    <aside class="docs-layout__toc" aria-label="Table of contents">
+        <div class="docs-layout__toc-inner">
+            <p class="docs-layout__eyebrow">On this page</p>
+            <nav>
+                <ul class="docs-layout__toc-list" data-docs-toc>
+                    <li><a href="#why-we-built-this">Why we built this</a></li>
+                    <li><a href="#runtime-model">Runtime model</a></li>
+                    <li><a href="#adding-a-tool">Adding a new tool</a></li>
+                    <li><a href="#safety-rules">Safety rules</a></li>
+                    <li><a href="#faq">Quick FAQ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const layout = document.querySelector('[data-docs-layout]');
+            const toggle = document.querySelector('[data-docs-menu-toggle]');
+            if (!layout || !toggle) return;
+
+            toggle.addEventListener('click', () => {
+                const isOpen = layout.classList.toggle('is-sidebar-open');
+                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        })();
+    </script>
+}
