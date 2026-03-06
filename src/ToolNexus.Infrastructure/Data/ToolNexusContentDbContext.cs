@@ -61,6 +61,9 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<CssArtifact> CssArtifacts => Set<CssArtifact>();
     public DbSet<ToolSubmissionEntity> ToolSubmissions => Set<ToolSubmissionEntity>();
     public DbSet<ContactMessageEntity> ContactMessages => Set<ContactMessageEntity>();
+    public DbSet<ChangelogEntryEntity> ChangelogEntries => Set<ChangelogEntryEntity>();
+    public DbSet<RoadmapItemEntity> RoadmapItems => Set<RoadmapItemEntity>();
+    public DbSet<FeedbackEntity> Feedback => Set<FeedbackEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -197,6 +200,22 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.TimestampUtc).HasColumnType("timestamp with time zone");
         });
 
+        modelBuilder.Entity<RoadmapItemEntity>(entity =>
+        {
+            entity.ToTable("roadmap_items");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Title).HasMaxLength(160).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(1500).IsRequired();
+            entity.Property(x => x.Category).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Priority).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Votes).HasDefaultValue(0);
+            entity.Property(x => x.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.Status);
+            entity.HasIndex(x => x.CreatedAt);
+        });
+
 
         modelBuilder.Entity<AuditEventEntity>(entity =>
         {
@@ -261,6 +280,23 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         });
 
 
+
+        modelBuilder.Entity<FeedbackEntity>(entity =>
+        {
+            entity.ToTable("feedback");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(120);
+            entity.Property(x => x.Email).HasColumnName("email").HasMaxLength(254);
+            entity.Property(x => x.Category).HasColumnName("category").HasMaxLength(40);
+            entity.Property(x => x.Message).HasColumnName("message").HasMaxLength(4000);
+            entity.Property(x => x.ScreenshotUrl).HasColumnName("screenshot_url").HasMaxLength(2048);
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).HasDefaultValue(FeedbackStatus.New);
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.CreatedAt);
+            entity.HasIndex(x => x.Status);
+        });
 
         modelBuilder.Entity<CssScanJob>(entity =>
         {
@@ -367,6 +403,24 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.HasIndex(x => x.Status);
             entity.Property(x => x.Status).HasDefaultValue(ToolSubmissionStatus.Pending);
             entity.Property(x => x.SubmittedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+
+        modelBuilder.Entity<ChangelogEntryEntity>(entity =>
+        {
+            entity.ToTable("changelog_entries");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Version).HasColumnName("version").HasMaxLength(32);
+            entity.Property(x => x.Title).HasColumnName("title").HasMaxLength(160);
+            entity.Property(x => x.Description).HasColumnName("description");
+            entity.Property(x => x.Tag).HasColumnName("tag").HasMaxLength(24);
+            entity.Property(x => x.ReleaseDate).HasColumnName("release_date").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.ReleaseDate);
+            entity.HasIndex(x => x.Version);
+            entity.HasIndex(x => x.Tag);
         });
 
         modelBuilder.Entity<AiToolPackageEntity>(entity =>
