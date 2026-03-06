@@ -60,6 +60,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<CssSelectorMetric> CssSelectorMetrics => Set<CssSelectorMetric>();
     public DbSet<CssArtifact> CssArtifacts => Set<CssArtifact>();
     public DbSet<ToolSubmissionEntity> ToolSubmissions => Set<ToolSubmissionEntity>();
+    public DbSet<FeedbackEntity> Feedback => Set<FeedbackEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -260,6 +261,23 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
         });
 
 
+
+        modelBuilder.Entity<FeedbackEntity>(entity =>
+        {
+            entity.ToTable("feedback");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(120);
+            entity.Property(x => x.Email).HasColumnName("email").HasMaxLength(254);
+            entity.Property(x => x.Category).HasColumnName("category").HasMaxLength(40);
+            entity.Property(x => x.Message).HasColumnName("message").HasMaxLength(4000);
+            entity.Property(x => x.ScreenshotUrl).HasColumnName("screenshot_url").HasMaxLength(2048);
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).HasDefaultValue(FeedbackStatus.New);
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.CreatedAt);
+            entity.HasIndex(x => x.Status);
+        });
 
         modelBuilder.Entity<CssScanJob>(entity =>
         {

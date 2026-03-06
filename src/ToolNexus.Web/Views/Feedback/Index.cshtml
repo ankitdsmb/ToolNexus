@@ -1,0 +1,63 @@
+@model ToolNexus.Web.Controllers.FeedbackSubmissionPageViewModel
+
+<section class="tool-page" style="max-width: 760px; margin: 2rem auto;">
+    <header style="margin-bottom: 1.5rem;">
+        <h1>Share feedback</h1>
+        <p>
+            We built ToolNexus because we needed faster little utilities in our own workflow.
+            This page is where you can tell us what feels rough, what broke, or what would actually help you ship faster.
+        </p>
+        <p>
+            Short or long notes both work. If something crashed, a screenshot URL helps us reproduce it quicker.
+        </p>
+    </header>
+
+    @if (TempData["FeedbackSuccess"] is string successMessage)
+    {
+        <div role="status" style="padding: 0.75rem 1rem; border: 1px solid #2f855a; border-radius: 8px; margin-bottom: 1rem;">
+            @successMessage
+        </div>
+    }
+
+    <div asp-validation-summary="ModelOnly" style="color: #e53e3e; margin-bottom: 1rem;"></div>
+
+    <form method="post" asp-action="Index" novalidate style="display: grid; gap: 0.9rem;">
+        @Html.AntiForgeryToken()
+
+        <div>
+            <label asp-for="Form.Name"></label>
+            <input asp-for="Form.Name" style="width: 100%;" />
+            <span asp-validation-for="Form.Name" style="color: #e53e3e;"></span>
+        </div>
+
+        <div>
+            <label asp-for="Form.Email"></label>
+            <input asp-for="Form.Email" style="width: 100%;" />
+            <span asp-validation-for="Form.Email" style="color: #e53e3e;"></span>
+        </div>
+
+        <div>
+            <label asp-for="Form.Category"></label>
+            <select asp-for="Form.Category" asp-items="Model.CategoryOptions" style="width: 100%;">
+                <option value="">Select a category</option>
+            </select>
+            <span asp-validation-for="Form.Category" style="color: #e53e3e;"></span>
+        </div>
+
+        <div>
+            <label asp-for="Form.Message"></label>
+            <textarea asp-for="Form.Message" rows="8" style="width: 100%;"></textarea>
+            <span asp-validation-for="Form.Message" style="color: #e53e3e;"></span>
+        </div>
+
+        <div>
+            <label asp-for="Form.ScreenshotUrl"></label>
+            <input asp-for="Form.ScreenshotUrl" style="width: 100%;" placeholder="https://..." />
+            <span asp-validation-for="Form.ScreenshotUrl" style="color: #e53e3e;"></span>
+        </div>
+
+        <div>
+            <button type="submit">Send feedback</button>
+        </div>
+    </form>
+</section>
