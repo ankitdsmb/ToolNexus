@@ -1,0 +1,16 @@
+@model ToolNexus.Web.Models.DocsPageViewModel
+@using ToolNexus.Web.Rendering
+
+@{
+    ViewData["Title"] = $"{Model.Title} | Docs";
+}
+
+<article class="static-page page-shell" aria-label="@Model.Title">
+    <header class="static-page__header">
+        <h1>@Model.Title</h1>
+    </header>
+
+    <section class="static-page__section prose">
+        @MarkdownDocRenderer.Render(Model.Markdown)
+    </section>
+</article>

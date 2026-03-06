@@ -1,0 +1,26 @@
+@model ToolNexus.Web.Models.DocsIndexViewModel
+
+@{
+    ViewData["Title"] = "Docs";
+}
+
+<section class="static-page page-shell" aria-label="Documentation index">
+    <header class="static-page__header">
+        <h1>Docs</h1>
+        <p>Short notes on how this platform actually works under the hood.</p>
+    </header>
+
+    @if (Model.Pages.Count == 0)
+    {
+        <p>No docs found yet.</p>
+    }
+    else
+    {
+        <ul class="static-page__link-list">
+            @foreach (var doc in Model.Pages)
+            {
+                <li><a href="/docs/@(doc.Slug)">@doc.Title</a></li>
+            }
+        </ul>
+    }
+</section>
