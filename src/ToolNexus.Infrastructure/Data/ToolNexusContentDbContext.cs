@@ -60,6 +60,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<CssSelectorMetric> CssSelectorMetrics => Set<CssSelectorMetric>();
     public DbSet<CssArtifact> CssArtifacts => Set<CssArtifact>();
     public DbSet<ToolSubmissionEntity> ToolSubmissions => Set<ToolSubmissionEntity>();
+    public DbSet<ContactMessageEntity> ContactMessages => Set<ContactMessageEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -329,6 +330,24 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
                 .WithMany(x => x.Artifacts)
                 .HasForeignKey(x => x.ResultId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        modelBuilder.Entity<ContactMessageEntity>(entity =>
+        {
+            entity.ToTable("contact_messages");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(120);
+            entity.Property(x => x.Email).HasColumnName("email").HasMaxLength(180);
+            entity.Property(x => x.Subject).HasColumnName("subject").HasMaxLength(180);
+            entity.Property(x => x.Message).HasColumnName("message").HasMaxLength(4000);
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(24);
+            entity.HasIndex(x => x.CreatedAt);
+            entity.HasIndex(x => x.Status);
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.Status).HasDefaultValue(ContactMessageStatus.New);
         });
 
         modelBuilder.Entity<ToolSubmissionEntity>(entity =>
