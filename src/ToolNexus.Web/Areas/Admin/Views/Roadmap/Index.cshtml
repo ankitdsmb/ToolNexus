@@ -1,0 +1,91 @@
+@model ToolNexus.Web.Areas.Admin.Models.RoadmapAdminViewModel
+@{
+    ViewData["Title"] = "Roadmap";
+}
+
+<div class="card mb-4">
+    <div class="card-header"><h3 class="card-title mb-0">Create roadmap item</h3></div>
+    <div class="card-body">
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <div class="col-md-6">
+                <label class="form-label">Title</label>
+                <input class="form-control" name="Title" required maxlength="160" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <input class="form-control" name="Category" value="Platform" required maxlength="80" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Priority</label>
+                <select class="form-select" name="Priority">
+                    <option>Low</option>
+                    <option selected>Medium</option>
+                    <option>High</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="Status">
+                    <option selected>Planned</option>
+                    <option>In Progress</option>
+                    <option>Completed</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="Description" rows="3" maxlength="1500" required></textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Create roadmap item</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3 class="card-title mb-0">Manage roadmap items</h3></div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Votes</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Category</td>
+                    <td>@item.Priority</td>
+                    <td>@item.Votes</td>
+                    <td>
+                        <form asp-action="ChangeStatus" asp-route-id="@item.Id" method="post" class="d-flex gap-2">
+                            @Html.AntiForgeryToken()
+                            <select class="form-select form-select-sm" name="Status">
+                                <option selected="@(item.Status == "Planned")">Planned</option>
+                                <option selected="@(item.Status == "In Progress")">In Progress</option>
+                                <option selected="@(item.Status == "Completed")">Completed</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                        </form>
+                    </td>
+                    <td style="min-width:320px;">
+                        <form asp-action="UpdateDescription" asp-route-id="@item.Id" method="post" class="d-flex gap-2">
+                            @Html.AntiForgeryToken()
+                            <textarea class="form-control form-control-sm" name="Description" rows="2" maxlength="1500">@item.Description</textarea>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

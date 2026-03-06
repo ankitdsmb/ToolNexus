@@ -1,0 +1,83 @@
+@model ToolNexus.Web.Models.RoadmapPageViewModel
+@{
+    ViewData["Title"] = "Public Roadmap";
+}
+
+<section class="container py-5">
+    <h1>Public roadmap</h1>
+    <p class="text-muted">This is the real list we're working through. Not a shiny pitch deck version. If you're using the platform and something matters to you, vote it up.</p>
+
+    <div class="mb-4 p-3 border rounded bg-light">
+        <h2 class="h5">How we use this page</h2>
+        <p class="mb-2">Planned means we scoped it and want to ship it. In Progress means code is moving. Completed means it is live in production.</p>
+        <p class="mb-0">We usually ship smaller pieces first, so an item can move in stages even if the headline stays the same.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <h2 class="h4">Planned</h2>
+            @if (!Model.Planned.Any())
+            {
+                <p class="text-muted">Nothing parked here right now.</p>
+            }
+            @foreach (var item in Model.Planned)
+            {
+                <article class="card mb-3">
+                    <div class="card-body">
+                        <h3 class="h5">@item.Title</h3>
+                        <p>@item.Description</p>
+                        <p class="small text-muted mb-2">Category: @item.Category · Status: @item.Status · Priority: @item.Priority</p>
+                        <form asp-controller="Roadmap" asp-action="Vote" asp-route-id="@item.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Vote (@item.Votes)</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <h2 class="h4">In Progress</h2>
+            @if (!Model.InProgress.Any())
+            {
+                <p class="text-muted">Nothing in-flight at this exact moment.</p>
+            }
+            @foreach (var item in Model.InProgress)
+            {
+                <article class="card mb-3 border-primary">
+                    <div class="card-body">
+                        <h3 class="h5">@item.Title</h3>
+                        <p>@item.Description</p>
+                        <p class="small text-muted mb-2">Category: @item.Category · Status: @item.Status · Priority: @item.Priority</p>
+                        <form asp-controller="Roadmap" asp-action="Vote" asp-route-id="@item.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Vote (@item.Votes)</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <h2 class="h4">Completed</h2>
+            @if (!Model.Completed.Any())
+            {
+                <p class="text-muted">We're still filling this out.</p>
+            }
+            @foreach (var item in Model.Completed)
+            {
+                <article class="card mb-3 border-success">
+                    <div class="card-body">
+                        <h3 class="h5">@item.Title</h3>
+                        <p>@item.Description</p>
+                        <p class="small text-muted mb-2">Category: @item.Category · Status: @item.Status · Priority: @item.Priority</p>
+                        <form asp-controller="Roadmap" asp-action="Vote" asp-route-id="@item.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Vote (@item.Votes)</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>
