@@ -1,0 +1,50 @@
+@model IReadOnlyList<ToolNexus.Infrastructure.Content.Entities.ChangelogEntryEntity>
+@{
+    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    ViewData["Title"] = "Changelog | ToolNexus";
+    ViewData["Description"] = "What changed in ToolNexus, in plain English. New tools, fixes, and cleanup work.";
+    ViewData["CanonicalUrl"] = $"{baseUrl}/changelog";
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/changelog.css" asp-append-version="true" />
+}
+
+<section class="changelog-page" aria-labelledby="changelog-title">
+    <header class="changelog-page__header">
+        <p class="changelog-page__eyebrow">Release notes</p>
+        <h1 id="changelog-title">ToolNexus changelog</h1>
+        <p>
+            This is the running log for what we ship.
+            If something changed in behavior, speed, or tooling, it should show up here.
+        </p>
+    </header>
+
+    @if (!Model.Any())
+    {
+        <article class="changelog-empty">
+            <h2>No entries yet</h2>
+            <p>
+                I just wired this page up, so release notes start with the next deployment.
+                Once updates go out, you'll see versioned notes here instead of digging through commits.
+            </p>
+        </article>
+    }
+    else
+    {
+        <div class="changelog-list">
+            @foreach (var entry in Model)
+            {
+                <article class="changelog-item" data-tag="@entry.Tag.ToLowerInvariant()">
+                    <div class="changelog-item__meta">
+                        <span class="changelog-item__version">@entry.Version</span>
+                        <span class="changelog-item__date">@entry.ReleaseDate.ToString("MMM dd, yyyy")</span>
+                        <span class="changelog-item__tag">@entry.Tag</span>
+                    </div>
+                    <h2>@entry.Title</h2>
+                    <p>@entry.Description</p>
+                </article>
+            }
+        </div>
+    }
+</section>
