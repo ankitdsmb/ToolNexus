@@ -1,66 +1,51 @@
 @{
-    ViewData["Title"] = "Privacy | ToolNexus";
-    ViewData["Description"] = "Review the ToolNexus privacy policy, including data handling, storage practices, and your responsibilities when using tools.";
+    ViewData["Title"] = "Privacy Policy | ToolNexus";
+    ViewData["Description"] = "Read how ToolNexus handles privacy and data in plain language, including what is collected and what to avoid sharing.";
     ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/privacy";
-    ViewData["Keywords"] = "ToolNexus privacy policy, developer tools data policy";
+    ViewData["Keywords"] = "ToolNexus privacy policy, developer data handling, platform privacy";
 }
 
 <article class="static-page legal-page page-shell" aria-label="ToolNexus privacy policy">
     <header class="static-page__header">
-        <h1>Privacy</h1>
-        <p>ToolNexus is designed for fast utility workflows with clear privacy expectations.</p>
+        <h1>Privacy Policy</h1>
+        <p>Short version: I don't want your private data, and you should not treat ToolNexus as a vault. This page explains exactly what happens around data.</p>
     </header>
 
     <nav class="static-page__section static-page__nav" aria-label="Privacy quick links">
-        <h2>Privacy resources</h2>
+        <h2>Related legal pages</h2>
         <ul class="static-page__link-list">
-            <li><a href="/disclaimer">Read legal disclaimer</a></li>
-            <li><a href="/contact-us">Contact us about privacy questions</a></li>
-            <li><a href="/tools">Browse tools before sharing data</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/cookie-policy">Cookie Policy</a></li>
+            <li><a href="/contact-us">Privacy questions</a></li>
         </ul>
     </nav>
 
     <section class="static-page__section">
-        <h2>Data you provide</h2>
-        <p>Input data you submit is used to execute requested tool actions and return outputs. Avoid submitting confidential, regulated, or sensitive personal information unless you fully understand associated risks.</p>
+        <h2>What data is used</h2>
+        <p>Tool input is used to perform the action you requested, like formatting or conversion. If you paste text into a tool, that text is processed so the output can be generated.</p>
+        <p>Operational data may also be collected, such as page hits, tool usage counts, error rates, and response timing. This helps debug issues and keep the platform stable.</p>
     </section>
 
     <section class="static-page__section">
-        <h2>Operational telemetry</h2>
-        <p>We may collect operational metrics such as request volume, latency, and anonymized usage events to maintain reliability, improve performance, and detect abuse.</p>
+        <h2>What not to upload</h2>
+        <p>Please do not paste passwords, private keys, API tokens, medical records, or customer secrets.</p>
+        <p>If you need to test with real-world structures, use redacted or synthetic samples.</p>
     </section>
 
     <section class="static-page__section">
-        <h2>Storage and retention</h2>
-        <p>Temporary processing artifacts may be retained for caching, diagnostics, and service protection. Retention windows are limited to operational needs and system security requirements.</p>
+        <h2>How long data is kept</h2>
+        <p>Where temporary server-side records exist for reliability or abuse prevention, retention is limited and tied to operational needs.</p>
+        <p>We do not sell your data or build personal profiles for ad targeting.</p>
     </section>
 
     <section class="static-page__section">
-        <h2>Third-party services</h2>
-        <p>ToolNexus may use trusted infrastructure providers for hosting and delivery. These providers process infrastructure metadata under their own security and compliance controls.</p>
+        <h2>Security and third parties</h2>
+        <p>ToolNexus uses standard infrastructure providers for hosting and delivery. Those providers may process technical metadata needed to run the service.</p>
+        <p>No system is perfect, so treat this platform like any normal developer utility: useful, but not a place for highly sensitive information.</p>
     </section>
 
     <section class="static-page__section">
-        <h2>Privacy FAQ</h2>
-        <div class="static-page__faq-list" itemscope itemtype="https://schema.org/FAQPage">
-            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <h3 itemprop="name">Does ToolNexus store my tool input forever?</h3>
-                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">No. Processing artifacts are retained only for short-lived operational and security requirements.</span></p>
-            </article>
-            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <h3 itemprop="name">Should I submit confidential records?</h3>
-                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Avoid submitting confidential or regulated data unless your security and compliance teams have approved this workflow.</span></p>
-            </article>
-        </div>
-    </section>
-
-    <section class="static-page__section">
-        <h2>Practical privacy checklist for engineers</h2>
-        <ul>
-            <li>Mask secrets, tokens, and customer identifiers before pasting data.</li>
-            <li>Use synthetic payloads for demos and troubleshooting whenever possible.</li>
-            <li>Review organizational policy before processing regulated records.</li>
-        </ul>
-        <p>For low-risk testing, start in <a href="/tools/json-formatter">JSON Formatter</a> or <a href="/tools/yaml-to-json">YAML to JSON</a> with sample data.</p>
+        <h2>Your controls</h2>
+        <p>You control what you submit. The easiest privacy win is simple: only share the minimum data needed for the task.</p>
     </section>
 </article>

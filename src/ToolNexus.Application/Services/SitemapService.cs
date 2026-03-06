@@ -12,6 +12,9 @@ public sealed class SitemapService(IToolCatalogService toolCatalogService, ITool
             $"{baseUrl}/",
             $"{baseUrl}/tools",
             $"{baseUrl}/about",
+            $"{baseUrl}/privacy",
+            $"{baseUrl}/terms",
+            $"{baseUrl}/cookie-policy",
             $"{baseUrl}/disclaimer",
             $"{baseUrl}/contact-us"
         };
