@@ -1,0 +1,61 @@
+@model IReadOnlyList<ToolNexus.Infrastructure.Content.Entities.FeedbackEntity>
+@using ToolNexus.Infrastructure.Content.Entities
+@{
+    ViewData["Title"] = "Feedback";
+}
+
+<h2>Feedback</h2>
+<p class="text-secondary">This is the raw inbox from builders using the platform. We try to close the loop fast, even when the answer is "not yet."</p>
+
+<div class="table-responsive">
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th style="width: 170px;">Created (UTC)</th>
+                <th style="width: 120px;">Category</th>
+                <th style="width: 200px;">From</th>
+                <th>Message</th>
+                <th style="width: 230px;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="5" class="text-secondary">No feedback yet.</td></tr>
+            }
+            else
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.CreatedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td><span class="badge bg-secondary-lt text-secondary-fg">@item.Category</span></td>
+                        <td>
+                            <div>@item.Name</div>
+                            <a href="mailto:@item.Email" class="small">@item.Email</a>
+                        </td>
+                        <td style="white-space: pre-wrap;">
+                            @item.Message
+                            @if (!string.IsNullOrWhiteSpace(item.ScreenshotUrl))
+                            {
+                                <div class="mt-1"><a href="@item.ScreenshotUrl" target="_blank" rel="noopener">Attached screenshot</a></div>
+                            }
+                        </td>
+                        <td>
+                            <form asp-action="UpdateStatus" asp-route-id="@item.Id" method="post" class="d-flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <select class="form-select form-select-sm" name="status">
+                                    <option selected="@(item.Status == FeedbackStatus.New)">@FeedbackStatus.New</option>
+                                    <option selected="@(item.Status == FeedbackStatus.UnderReview)">@FeedbackStatus.UnderReview</option>
+                                    <option selected="@(item.Status == FeedbackStatus.Planned)">@FeedbackStatus.Planned</option>
+                                    <option selected="@(item.Status == FeedbackStatus.Completed)">@FeedbackStatus.Completed</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

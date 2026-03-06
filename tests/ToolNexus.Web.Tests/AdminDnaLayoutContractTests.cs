@@ -24,6 +24,12 @@ public sealed class AdminDnaLayoutContractTests
         Assert.Contains(">Runtime Operations<", layout, StringComparison.Ordinal);
         Assert.Contains(">Quality<", layout, StringComparison.Ordinal);
         Assert.Contains(">Analytics<", layout, StringComparison.Ordinal);
+        Assert.Contains(">Admin<", layout, StringComparison.Ordinal);
+        Assert.Contains(">Feedback<", layout, StringComparison.Ordinal);
+        Assert.Contains(">Roadmap<", layout, StringComparison.Ordinal);
+        Assert.Contains(">Changelog<", layout, StringComparison.Ordinal);
+        Assert.Contains(">Docs<", layout, StringComparison.Ordinal);
+        Assert.Contains(">Messages<", layout, StringComparison.Ordinal);
         Assert.Contains(">Feature Flags<", layout, StringComparison.Ordinal);
         Assert.Contains(">Users &amp; Access<", layout, StringComparison.Ordinal);
         Assert.Contains(">System Maintenance<", layout, StringComparison.Ordinal);
