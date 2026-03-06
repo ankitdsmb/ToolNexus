@@ -70,6 +70,18 @@ public sealed class HomeController(IToolCatalogService toolCatalogService, ISite
         return View();
     }
 
+    [HttpGet("/terms")]
+    public IActionResult Terms()
+    {
+        return View();
+    }
+
+    [HttpGet("/cookie-policy")]
+    public IActionResult CookiePolicy()
+    {
+        return View();
+    }
+
     [HttpGet("/sitemap.xml")]
     [OutputCache(Duration = 3600)]
     public async Task<ContentResult> Sitemap(CancellationToken cancellationToken)
