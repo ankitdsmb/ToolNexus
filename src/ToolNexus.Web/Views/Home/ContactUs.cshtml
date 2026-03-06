@@ -1,141 +1,63 @@
+@model ToolNexus.Web.Models.ContactUsViewModel
 @{
     ViewData["Title"] = "Contact Us | ToolNexus";
-    ViewData["Description"] = "Contact ToolNexus with feedback, feature requests, or support questions through our secure frontend-only contact form.";
+    ViewData["Description"] = "Send a message to the ToolNexus team. We store each request so we can triage and respond from the admin dashboard.";
     ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/contact-us";
-    ViewData["Keywords"] = "contact ToolNexus, ToolNexus support, feedback";
+    ViewData["Keywords"] = "ToolNexus contact, support, feature request";
 }
 
 <article class="static-page contact-page page-shell" aria-label="Contact ToolNexus">
     <header class="static-page__header">
         <h1>Contact Us</h1>
-        <p id="contactHelp">Share feedback, report issues, or suggest tools. This form is frontend-only and does not submit to a backend.</p>
+        <p id="contactHelp">I built ToolNexus because I got tired of juggling random one-off converters in ten different tabs. If something breaks in your flow, send it here and I’ll see it in the ops dashboard.</p>
+        <p>Good messages usually include one concrete input, what you expected, and what came back instead. That is enough for us to reproduce most bugs quickly.</p>
     </header>
 
-    <nav class="static-page__section static-page__nav" aria-label="Contact quick links">
-        <h2>Need something else?</h2>
-        <ul class="static-page__link-list">
-            <li><a href="/tools">Explore all developer tools</a></li>
-            <li><a href="/about">Learn about ToolNexus</a></li>
-            <li><a href="/privacy">Review privacy details</a></li>
-        </ul>
-    </nav>
+    @if (Model.Submitted)
+    {
+        <div class="alert alert-success" role="status">
+            Message received. It is now stored in our support queue and visible to admins in the dashboard.
+        </div>
+    }
 
-    <form id="contactForm" class="contact-form contact-form--elite" novalidate aria-describedby="contactHelp">
+    <form method="post" class="contact-form contact-form--elite" novalidate aria-describedby="contactHelp">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="field-error mb-3"></div>
+
         <div class="contact-form__grid contact-form__grid--elite">
             <div class="floating-field">
-                <input id="name" name="name" type="text" required maxlength="80" autocomplete="name" placeholder=" " />
-                <label for="name">Name</label>
-                <small class="field-error" data-error-for="name"></small>
+                <input asp-for="Name" autocomplete="name" placeholder=" " />
+                <label asp-for="Name">Name</label>
+                <small class="field-error"><span asp-validation-for="Name"></span></small>
             </div>
 
             <div class="floating-field">
-                <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" placeholder=" " />
-                <label for="email">Email</label>
-                <small class="field-error" data-error-for="email"></small>
+                <input asp-for="Email" autocomplete="email" placeholder=" " />
+                <label asp-for="Email">Email</label>
+                <small class="field-error"><span asp-validation-for="Email"></span></small>
             </div>
 
             <div class="floating-field floating-field--full">
-                <input id="subject" name="subject" type="text" required maxlength="120" placeholder=" " />
-                <label for="subject">Subject</label>
-                <small class="field-error" data-error-for="subject"></small>
+                <input asp-for="Subject" placeholder=" " />
+                <label asp-for="Subject">Subject</label>
+                <small class="field-error"><span asp-validation-for="Subject"></span></small>
             </div>
         </div>
 
         <div class="floating-field floating-field--textarea">
-            <textarea id="message" name="message" required maxlength="2000" rows="8" placeholder=" "></textarea>
-            <label for="message">Message</label>
-            <div class="contact-form__meta-row">
-                <small class="field-error" data-error-for="message"></small>
-                <small id="messageCounter" class="char-counter" aria-live="polite">0 / 2000</small>
-            </div>
+            <textarea asp-for="Message" rows="8" placeholder=" "></textarea>
+            <label asp-for="Message">Message</label>
+            <small class="field-error"><span asp-validation-for="Message"></span></small>
         </div>
 
         <button type="submit" class="tool-btn tool-btn--primary contact-form__submit">Send Message</button>
-        <p class="contact-form__security">Your draft stays in your browser. No server-side storage in this demo.</p>
-        <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>
+        <p class="contact-form__security">This now persists to our database (table: <code>contact_messages</code>) so we can actually track and close the loop.</p>
     </form>
 
     <section class="static-page__section">
-        <h2>Before you send a support request</h2>
-        <p>Include the tool name, what you expected, and what happened instead. A short reproducible input example helps engineering teams isolate issues faster.</p>
-        <p>If the issue involves transformed data, include whether you used tools like <a href="/tools/json-formatter">JSON Formatter</a> or <a href="/tools/base64-decode">Base64 Decode</a> first.</p>
-    </section>
-
-    <section class="static-page__section">
-        <h2>Contact FAQ</h2>
-        <div class="static-page__faq-list" itemscope itemtype="https://schema.org/FAQPage">
-            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <h3 itemprop="name">What details make bug reports useful?</h3>
-                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Share tool slug, exact steps, expected output, and actual output. That usually provides enough signal for triage.</span></p>
-            </article>
-            <article class="static-page__faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <h3 itemprop="name">Can I request a new utility?</h3>
-                <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. Describe your workflow and input/output needs so we can evaluate whether it fits the current tool model.</span></p>
-            </article>
-        </div>
+        <h2>What this inbox is good for</h2>
+        <p>Bug reports, weird edge-case payloads, and requests for new utility tools.</p>
+        <p>If you can share a tiny sample JSON/XML/text input, do it. It usually cuts triage time in half.</p>
     </section>
 </article>
 
-@section Scripts {
-<script>
-  const form = document.getElementById('contactForm');
-  const status = document.getElementById('contactStatus');
-  const counter = document.getElementById('messageCounter');
-
-  const validators = {
-    name: (value) => value.trim().length >= 2 ? '' : 'Enter at least 2 characters.',
-    email: (value) => /.+@@.+\..+/.test(value) ? '' : 'Enter a valid email address.',
-    subject: (value) => value.trim().length >= 3 ? '' : 'Subject should be at least 3 characters.',
-    message: (value) => value.trim().length >= 10 ? '' : 'Message should be at least 10 characters.'
-  };
-
-  const setError = (fieldId, messageText) => {
-    const errorEl = form?.querySelector(`[data-error-for="${fieldId}"]`);
-    const input = document.getElementById(fieldId);
-    if (!errorEl || !input) return !messageText;
-
-    errorEl.textContent = messageText;
-    input.setAttribute('aria-invalid', messageText ? 'true' : 'false');
-    input.closest('.floating-field')?.classList.toggle('is-invalid', !!messageText);
-    return !messageText;
-  };
-
-  const validateField = (fieldId) => {
-    const input = document.getElementById(fieldId);
-    if (!input) return true;
-    const validator = validators[fieldId];
-    const errorMessage = validator ? validator(input.value || '') : '';
-    return setError(fieldId, errorMessage);
-  };
-
-  ['name', 'email', 'subject', 'message'].forEach((fieldId) => {
-    const input = document.getElementById(fieldId);
-    input?.addEventListener('input', () => {
-      validateField(fieldId);
-      if (fieldId === 'message' && counter) {
-        counter.textContent = `${input.value.length} / 2000`;
-      }
-    });
-  });
-
-  form?.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const isValid = ['name', 'email', 'subject', 'message'].every(validateField);
-    if (!isValid) {
-      status.textContent = 'Please resolve the inline validation errors and try again.';
-      status.classList.remove('success');
-      status.classList.add('error');
-      return;
-    }
-
-    status.textContent = 'Message sent successfully. Thanks for helping improve ToolNexus.';
-    status.classList.remove('error');
-    status.classList.add('success', 'is-pop');
-
-    window.setTimeout(() => status.classList.remove('is-pop'), 500);
-    form.reset();
-    counter.textContent = '0 / 2000';
-  });
-</script>
-}
