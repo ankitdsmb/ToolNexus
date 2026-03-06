@@ -155,7 +155,8 @@ function createAdminNavigationCommands() {
     nav('admin:analytics-slow', 'Admin · Analytics Slow Tools', 'Jump directly to slow tool insights.', '/admin/analytics?drilldown=slow-tools', 'admin analytics slow tools filter jump'),
     nav('admin:execution', 'Admin · Execution Monitoring', 'Open execution monitoring module.', '/admin/execution-monitoring', 'admin execution monitoring open module'),
     nav('admin:execution-incidents', 'Admin · Execution Incidents', 'Jump to incident timeline.', '/admin/execution-monitoring?focus=incidents', 'admin execution incidents filter jump'),
-    nav('admin:history', 'Admin · Change History', 'Open audited changes list.', '/admin/changehistory', 'admin change history open module')
+    nav('admin:history', 'Admin · Change History', 'Open audited changes list.', '/admin/changehistory', 'admin change history open module'),
+    nav('admin:contact-messages', 'Admin · Contact Messages', 'Open incoming contact form submissions.', '/admin/contact-messages', 'admin contact messages support inbox')
   ];
 }
 

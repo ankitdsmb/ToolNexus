@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ToolNexus.Infrastructure.Data;
@@ -12,9 +13,11 @@ using ToolNexus.Infrastructure.Data;
 namespace ToolNexus.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ToolNexusContentDbContext))]
-    partial class ToolNexusContentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260306203024_AddChangelogEntries")]
+    partial class AddChangelogEntries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -938,16 +941,6 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                     b.ToTable("capability_registry", (string)null);
                 });
 
-
-            modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ContactMessageEntity", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
             modelBuilder.Entity("ToolNexus.Infrastructure.Content.Entities.ChangelogEntryEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -961,44 +954,6 @@ namespace ToolNexus.Infrastructure.Data.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(180)
-                        .HasColumnType("character varying(180)")
-                        .HasColumnName("email");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("message");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("status")
-                        .HasDefaultValue("new");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasMaxLength(180)
-                        .HasColumnType("character varying(180)")
-                        .HasColumnName("subject");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("contact_messages", (string)null);
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text")

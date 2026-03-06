@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Terms of Service | ToolNexus";
+    ViewData["Description"] = "Read the ToolNexus terms of service in plain language, including responsibilities, data handling expectations, and acceptable use.";
+    ViewData["CanonicalUrl"] = $"{Context.Request.Scheme}://{Context.Request.Host}/terms";
+    ViewData["Keywords"] = "ToolNexus terms of service, tool usage rules, developer terms";
+}
+
+<article class="static-page legal-page page-shell" aria-label="ToolNexus terms of service">
+    <header class="static-page__header">
+        <h1>Terms of Service</h1>
+        <p>This is the practical version of our rules. I built ToolNexus for fast developer workflows, so these terms are here to keep things safe and predictable for everyone.</p>
+    </header>
+
+    <nav class="static-page__section static-page__nav" aria-label="Terms quick links">
+        <h2>Related legal pages</h2>
+        <ul class="static-page__link-list">
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/cookie-policy">Cookie Policy</a></li>
+            <li><a href="/contact-us">Contact us</a></li>
+        </ul>
+    </nav>
+
+    <section class="static-page__section">
+        <h2>Using ToolNexus</h2>
+        <p>You can use ToolNexus for personal or commercial work as long as it is legal and responsible. The platform is meant for productivity tasks like formatting, converting, and validating data.</p>
+        <p>Please do not use the tools for abuse, scraping attacks, malware workflows, or anything that can hurt other users or the platform.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Your responsibility for inputs and outputs</h2>
+        <p>You are responsible for what you paste into a tool and how you use the result. Always review output before shipping it to production.</p>
+        <p>Example: if you minify JSON here and then deploy it, that final deployment decision is still yours, not ours.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Data and privacy expectations</h2>
+        <p>Most tools are designed to run directly in your browser. Some platform-level telemetry and operational logs may still be collected to keep the service healthy and secure.</p>
+        <p>Do not submit secrets, credentials, or regulated personal data unless your team has approved that workflow.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Service availability</h2>
+        <p>I try to keep ToolNexus fast and available, but uptime is not guaranteed. Features can change, improve, or be removed over time.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Liability (plain version)</h2>
+        <p>ToolNexus is provided as-is. We are not liable for losses or damages caused by using the platform, including output errors, downtime, or workflow interruptions.</p>
+    </section>
+
+    <section class="static-page__section">
+        <h2>Updates to these terms</h2>
+        <p>If these terms change, this page will be updated. Continued use of ToolNexus means you accept the latest version.</p>
+    </section>
+</article>

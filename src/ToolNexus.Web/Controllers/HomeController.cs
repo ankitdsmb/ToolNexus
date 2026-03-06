@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using ToolNexus.Web.Models;
 using ToolNexus.Application.Services;
+using ToolNexus.Infrastructure.Content.Entities;
+using ToolNexus.Infrastructure.Data;
 
 namespace ToolNexus.Web.Controllers;
 
-public sealed class HomeController(IToolCatalogService toolCatalogService, ISitemapService sitemapService) : Controller
+public sealed class HomeController(IToolCatalogService toolCatalogService, ISitemapService sitemapService, ToolNexusContentDbContext contentDbContext) : Controller
 {
     [HttpGet("/")]
     [OutputCache(Duration = 300)]
@@ -31,11 +33,51 @@ public sealed class HomeController(IToolCatalogService toolCatalogService, ISite
     [HttpGet("/contact-us")]
     public IActionResult ContactUs()
     {
-        return View();
+        return View(new ContactUsViewModel());
+    }
+
+    [HttpPost("/contact-us")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ContactUs(ContactUsViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var message = new ContactMessageEntity
+        {
+            Name = model.Name.Trim(),
+            Email = model.Email.Trim(),
+            Subject = model.Subject.Trim(),
+            Message = model.Message.Trim(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            Status = ContactMessageStatus.New
+        };
+
+        contentDbContext.ContactMessages.Add(message);
+        await contentDbContext.SaveChangesAsync(cancellationToken);
+
+        return View(new ContactUsViewModel
+        {
+            Submitted = true
+        });
     }
 
     [HttpGet("/privacy")]
     public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    [HttpGet("/terms")]
+    public IActionResult Terms()
+    {
+        return View();
+    }
+
+    [HttpGet("/cookie-policy")]
+    public IActionResult CookiePolicy()
     {
         return View();
     }

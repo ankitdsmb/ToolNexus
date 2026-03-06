@@ -1,0 +1,44 @@
+@model IReadOnlyList<ToolNexus.Infrastructure.Content.Entities.ContactMessageEntity>
+@{
+    ViewData["Title"] = "Contact Messages";
+}
+
+<h2>Contact Messages</h2>
+<p class="text-secondary">Recent messages submitted from the public contact page.</p>
+
+<div class="table-responsive">
+    <table class="table table-sm align-middle">
+        <thead>
+        <tr>
+            <th style="width: 110px;">Id</th>
+            <th style="width: 170px;">Created (UTC)</th>
+            <th style="width: 100px;">Status</th>
+            <th style="width: 180px;">Name</th>
+            <th style="width: 220px;">Email</th>
+            <th style="width: 220px;">Subject</th>
+            <th>Message</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="7" class="text-secondary">No contact messages yet.</td></tr>
+        }
+        else
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.CreatedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td><span class="badge bg-secondary-lt text-secondary-fg">@item.Status</span></td>
+                    <td>@item.Name</td>
+                    <td>@item.Email</td>
+                    <td>@item.Subject</td>
+                    <td style="white-space: pre-wrap;">@item.Message</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>
