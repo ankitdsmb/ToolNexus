@@ -60,6 +60,7 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
     public DbSet<CssSelectorMetric> CssSelectorMetrics => Set<CssSelectorMetric>();
     public DbSet<CssArtifact> CssArtifacts => Set<CssArtifact>();
     public DbSet<ToolSubmissionEntity> ToolSubmissions => Set<ToolSubmissionEntity>();
+    public DbSet<RoadmapItemEntity> RoadmapItems => Set<RoadmapItemEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -194,6 +195,22 @@ public sealed class ToolNexusContentDbContext(DbContextOptions<ToolNexusContentD
             entity.Property(x => x.EntityType).HasMaxLength(120);
             entity.Property(x => x.EntityId).HasMaxLength(120);
             entity.Property(x => x.TimestampUtc).HasColumnType("timestamp with time zone");
+        });
+
+        modelBuilder.Entity<RoadmapItemEntity>(entity =>
+        {
+            entity.ToTable("roadmap_items");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Title).HasMaxLength(160).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(1500).IsRequired();
+            entity.Property(x => x.Category).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Priority).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Votes).HasDefaultValue(0);
+            entity.Property(x => x.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasIndex(x => x.Status);
+            entity.HasIndex(x => x.CreatedAt);
         });
 
 
