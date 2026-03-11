@@ -1,0 +1,20 @@
+@model ToolNexus.Web.Models.ToolShellLayoutViewModel
+
+<article class="tool-shell-page tool-shell-page--workspace workspace-shell page-shell upgread_tool_shell_page tool-shell-page--execution-first"
+         data-upgread="surface"
+         data-runtime-priority="execution-first"
+         data-runtime-layout="modern"
+         aria-label="Tool runtime page">
+
+    @* SSR contract marker *@
+    <h1>@Model.Page.Tool.Title</h1>
+
+    <section class="tool-shell-page__workspace workspace-shell__runtime-zone"
+             aria-label="Runtime workspace"
+             data-workspace-zone="runtime">
+
+        @await Html.PartialAsync("ToolShellPartial", Model.Page)
+    </section>
+
+    @await Html.PartialAsync("_ToolDocsPanel", Model.Docs)
+</article>

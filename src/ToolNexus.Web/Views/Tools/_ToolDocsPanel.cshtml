@@ -1,0 +1,35 @@
+@model ToolNexus.Web.Models.ToolDocsPanelViewModel
+
+<aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose control-recession shell-passive-mode upgread_tool_docs_rail"
+       data-upgread="surface"
+       data-tool-docs="true"
+       data-nosnippet="false"
+       data-workspace-zone="context"
+       aria-label="Tool documentation"
+       data-reference-layer="secondary">
+
+    @foreach (var section in Model.Sections)
+    {
+        <section class="tool-md-section"
+                 data-doc-section="@section.Plugin"
+                 data-doc-priority="@(section.IsPrimary ? "primary" : "secondary")">
+
+            @if (section.IsPrimary)
+            {
+                <h3>@section.Label</h3>
+                <div class="tool-md-content">
+                    @await Html.PartialAsync(ToolNexus.Web.Runtime.ToolContextPlugins.ToPartialPath(section.Plugin), Model.Page)
+                </div>
+            }
+            else
+            {
+                <details class="runtime-doc-disclosure">
+                    <summary>@section.Label</summary>
+                    <div class="runtime-doc-disclosure__body tool-md-content">
+                        @await Html.PartialAsync(ToolNexus.Web.Runtime.ToolContextPlugins.ToPartialPath(section.Plugin), Model.Page)
+                    </div>
+                </details>
+            }
+        </section>
+    }
+</aside>

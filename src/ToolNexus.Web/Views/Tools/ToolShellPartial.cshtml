@@ -1,6 +1,21 @@
 @model ToolPageViewModel
 @{
     Layout = null;
+
+    var editor = new ToolNexus.Web.Models.ToolEditorPanelViewModel
+    {
+        ToolTitle = Model.Tool.Title,
+        SeoDescription = Model.Seo.Description
+    };
+
+    var workflow = new ToolNexus.Web.Models.ToolWorkflowPanelViewModel
+    {
+        Output = ToolNexus.Web.Models.ToolOutputPanelViewModel.Empty,
+        Console = new ToolNexus.Web.Models.ToolConsolePanelViewModel
+        {
+            ToolTitle = Model.Tool.Title
+        }
+    };
 }
 
 @* Runtime contract: DO NOT CHANGE anchor attributes *@
@@ -15,68 +30,8 @@
          data-execution-flow="input-action-result-reference">
 
     <div class="tool-workspace" data-workspace="true" data-layout="split">
-        <header class="tool-workspace-header"
-                data-tool-context="true"
-                data-tool-header="true"
-                aria-label="Tool execution context">
-            <div>
-                <h2 class="tool-workspace-header__title">@Model.Tool.Title</h2>
-                <p class="tool-workspace-header__description">@Model.Seo.Description</p>
-            </div>
-            <div class="tool-workspace-header__meta tn-tool-header">
-                <span class="tool-context-pill tool-context-pill--authority">Authority: Unified Runtime</span>
-                <span class="tool-context-pill">Runtime: Auto Resolve</span>
-                <span class="tool-context-pill">Lifecycle: Ready</span>
-            </div>
-        </header>
-
-        <section class="execution-toolbar" data-execution-toolbar="true" aria-label="Execution toolbar"></section>
-
-        <div class="execution-workspace-stack">
-            <section class="execution-status-shell">
-                <div data-tool-status="true"
-                     data-runtime-status-primary="true"
-                     class="tool-execution-status runtime-metrics-row tn-runtime-skeleton"
-                     role="status">
-                    <span class="tn-skeleton-chip"></span>
-                    <span>Ready · Initializing execution intelligence…</span>
-                </div>
-                <section class="execution-timeline" data-execution-timeline="true" aria-label="Execution timeline"></section>
-            </section>
-
-            <section class="workspace-mobile-statusbar" data-mobile-statusbar="true" aria-label="Tool runtime status">
-                <strong class="workspace-mobile-statusbar__title">@Model.Tool.Title</strong>
-                <span class="workspace-mobile-statusbar__chip" data-mobile-status-chip="true">idle</span>
-            </section>
-
-            <footer data-tool-followup="true"
-                    data-tool-actions="true"
-                    class="tool-execution-panel tn-toolbar-skeleton"
-                    data-command-dock="true"
-                    aria-label="Follow-up actions"></footer>
-
-            <section data-tool-content-host="true"
-                     class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode upgread_tool_content_host"
-                     data-upgread="surface"
-                     aria-label="Tool content host"
-                     data-execution-surface="unified">
-
-                <section class="execution-surface" data-execution-surface-host="true">
-                    <section class="workspace-input" data-tool-input="true" aria-label="Tool input extension slot"></section>
-
-                    <section class="workspace-output-panel" aria-label="Tool output workspace">
-                        <section class="result-actions" data-result-actions="true" aria-label="Result actions"></section>
-                        <section class="workspace-output" data-tool-output="true" aria-label="Tool output extension slot"></section>
-                    </section>
-                </section>
-
-                <section data-runtime-template-handoff="true"
-                         data-runtime-template-mount-target="content-host"
-                         class="tool-runtime-template-handoff"
-                         aria-label="Tool runtime template handoff">
-                </section>
-            </section>
-        </div>
+        @await Html.PartialAsync("_ToolEditorPanel", editor)
+        @await Html.PartialAsync("_ToolWorkflowPanel", workflow)
 
         <aside class="workspace-knowledge-rail" data-related-tools-rail="true" aria-label="Knowledge and related tools rail"></aside>
 

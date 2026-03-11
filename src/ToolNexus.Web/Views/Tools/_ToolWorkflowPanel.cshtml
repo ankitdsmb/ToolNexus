@@ -1,0 +1,23 @@
+@model ToolNexus.Web.Models.ToolWorkflowPanelViewModel
+
+<div class="execution-workspace-stack">
+    @await Html.PartialAsync("_ToolConsolePanel", Model.Console)
+
+    <section data-tool-content-host="true"
+             class="tool-runtime-content-host workspace-dominance execution-surface-anchor control-recession shell-passive-mode upgread_tool_content_host"
+             data-upgread="surface"
+             aria-label="Tool content host"
+             data-execution-surface="unified">
+
+        <section class="execution-surface" data-execution-surface-host="true">
+            <section class="workspace-input" data-tool-input="true" aria-label="Tool input extension slot"></section>
+            @await Html.PartialAsync("_ToolOutputPanel", Model.Output)
+        </section>
+
+        <section data-runtime-template-handoff="true"
+                 data-runtime-template-mount-target="content-host"
+                 class="tool-runtime-template-handoff"
+                 aria-label="Tool runtime template handoff">
+        </section>
+    </section>
+</div>

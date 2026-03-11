@@ -1,0 +1,23 @@
+@model ToolNexus.Web.Models.ToolConsolePanelViewModel
+
+<section class="execution-status-shell">
+    <div data-tool-status="true"
+         data-runtime-status-primary="true"
+         class="tool-execution-status runtime-metrics-row tn-runtime-skeleton"
+         role="status">
+        <span class="tn-skeleton-chip"></span>
+        <span>Ready · Initializing execution intelligence…</span>
+    </div>
+    <section class="execution-timeline" data-execution-timeline="true" aria-label="Execution timeline"></section>
+</section>
+
+<section class="workspace-mobile-statusbar" data-mobile-statusbar="true" aria-label="Tool runtime status">
+    <strong class="workspace-mobile-statusbar__title">@Model.ToolTitle</strong>
+    <span class="workspace-mobile-statusbar__chip" data-mobile-status-chip="true">idle</span>
+</section>
+
+<footer data-tool-followup="true"
+        data-tool-actions="true"
+        class="tool-execution-panel tn-toolbar-skeleton"
+        data-command-dock="true"
+        aria-label="Follow-up actions"></footer>

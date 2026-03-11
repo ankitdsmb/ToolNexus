@@ -76,6 +76,7 @@ public sealed class ToolShellSeoContractTests
     {
         var viewsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "ToolNexus.Web", "Views", "Tools"));
         var shellSource = File.ReadAllText(Path.Combine(viewsRoot, "ToolShell.cshtml"));
+        var shellLayoutSource = File.ReadAllText(Path.Combine(viewsRoot, "_ToolShellLayout.cshtml"));
         var shellPartialSource = File.ReadAllText(Path.Combine(viewsRoot, "ToolShellPartial.cshtml"));
 
         Assert.Equal(1, CountOccurrences(shellSource, "<h1>"));
@@ -83,8 +84,8 @@ public sealed class ToolShellSeoContractTests
         Assert.Contains("data-tool-root=\"true\"", shellPartialSource);
         Assert.Contains("data-tool-slug=\"@Model.Tool.Slug\"", shellPartialSource);
 
-        var runtimeRootIndex = shellSource.IndexOf("@await Html.PartialAsync(\"ToolShellPartial\"", StringComparison.Ordinal);
-        var seoIndex = shellSource.IndexOf("class=\"tool-seo", StringComparison.Ordinal);
+        var runtimeRootIndex = shellLayoutSource.IndexOf("@await Html.PartialAsync(\"ToolShellPartial\"", StringComparison.Ordinal);
+        var seoIndex = shellLayoutSource.IndexOf("class=\"tool-seo", StringComparison.Ordinal);
         Assert.True(runtimeRootIndex < seoIndex);
 
         var plugins = new[]
