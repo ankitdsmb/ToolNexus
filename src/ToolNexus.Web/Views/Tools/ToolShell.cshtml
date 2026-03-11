@@ -62,66 +62,44 @@
 @await Html.PartialAsync("_ToolShellLayout", layout)
 
 @section Scripts {
-    <script>
-        document.addEventListener('click', function (event) {
-            const toggle = event.target.closest?.('[data-tool-fullscreen-toggle="true"]');
-            if (!toggle) {
-                return;
-            }
-
-            const shell = document.querySelector('.tool-shell-page[data-runtime-layout="modern"]');
-            if (!shell) {
-                return;
-            }
-
-            const expanded = shell.classList.toggle('tool-shell-page--fullscreen');
-            toggle.setAttribute('aria-pressed', expanded ? 'true' : 'false');
-            toggle.textContent = expanded ? 'Exit fullscreen' : 'Expand workspace';
-        });
-
-        window.ToolNexusConfig = {
-            apiBaseUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ApiBaseUrl)),
-            toolExecutionPathPrefix: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToolExecutionPathPrefix)),
-            runtimeModulePath: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeModulePath)),
-            manifestEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ManifestEndpoint)),
-            tool: {
-                slug: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Slug)),
-                title: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Title)),
-                seoDescription: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Seo.Description)),
-                exampleInput: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ExampleInput)),
-                clientSafeActions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.ClientSafeActions)),
-                actions: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.Actions)),
-                operationSchema: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tool.OperationSchema))
-            },
-            runtimeUiMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeUiMode)),
-            runtimeComplexityTier: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RuntimeComplexityTier)),
-            runtimeEnvironment: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                            Context.RequestServices
-                                    .GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>()
-                                    .EnvironmentName)),
-            runtimeTemplateMountMode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                            configuration["RuntimeOptions:TemplateMountMode"] ?? "content-host")),
-            isAdmin: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IsAdminPreview)),
-            runtimeLogEndpoint: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint)),
-            runtimeRoutes: {
-                clientLogEndpoints: [@Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogEndpoint))]
-            }
-        };
-
-        window.ToolNexusLogging = {
-            minimumLevel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                        configuration["LoggingOptions:RuntimeLogLevel"] ??
-                        configuration["LoggingOptions:MinimumLevel"] ??
-                                "Information")),
-            runtimeDebugEnabled: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                            configuration.GetValue<bool>("LoggingOptions:RuntimeDebugEnabled"))),
-            enableRuntimeLogCapture: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(runtimeLogCaptureEnabled))
-        };
-
-        window.ToolNexus = window.ToolNexus || {};
-        window.ToolNexus.correlationId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.TraceIdentifier));
-        window.ToolNexusTelemetryEnabled = window.ToolNexusTelemetryEnabled === true;
-    </script>
-
+    <script type="application/json" id="toolnexus-config">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+                                                        {
+                                                            apiBaseUrl = Model.ApiBaseUrl,
+                                                            toolExecutionPathPrefix = Model.ToolExecutionPathPrefix,
+                                                            runtimeModulePath = Model.RuntimeModulePath,
+                                                            manifestEndpoint = Model.ManifestEndpoint,
+                                                            tool = new
+                                                            {
+                                                                slug = Model.Tool.Slug,
+                                                                title = Model.Tool.Title,
+                                                                seoDescription = Model.Seo.Description,
+                                                                exampleInput = Model.Tool.ExampleInput,
+                                                                clientSafeActions = Model.Tool.ClientSafeActions,
+                                                                actions = Model.Tool.Actions,
+                                                                operationSchema = Model.Tool.OperationSchema
+                                                            },
+                                                            runtimeUiMode = Model.RuntimeUiMode,
+                                                            runtimeComplexityTier = Model.RuntimeComplexityTier,
+                                                            runtimeEnvironment = Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>().EnvironmentName,
+                                                            runtimeTemplateMountMode = configuration["RuntimeOptions:TemplateMountMode"] ?? "content-host",
+                                                            isAdmin = Model.IsAdminPreview,
+                                                            runtimeLogEndpoint,
+                                                            runtimeRoutes = new
+                                                            {
+                                                                clientLogEndpoints = new[] { runtimeLogEndpoint }
+                                                            }
+                                                        }))</script>
+    <script type="application/json" id="toolnexus-logging">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+                                                         {
+                                                             minimumLevel = configuration["LoggingOptions:RuntimeLogLevel"] ?? configuration["LoggingOptions:MinimumLevel"] ?? "Information",
+                                                             runtimeDebugEnabled = configuration.GetValue<bool>("LoggingOptions:RuntimeDebugEnabled"),
+                                                             enableRuntimeLogCapture = runtimeLogCaptureEnabled
+                                                         }))</script>
+    <script type="application/json" id="toolnexus-runtime">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+                                                         {
+                                                             correlationId = Context.TraceIdentifier
+                                                         }))</script>
+    <script type="module" src="~/js/tool-shell-bootstrap.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/tool-shell-page.js" asp-append-version="true"></script>
     <script type="module" src="/js/tool-runtime.js"></script>
 }
