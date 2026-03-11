@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using ToolNexus.Application.Abstractions;
 using ToolNexus.Application.Services;
+using ToolNexus.Application.Services.Discovery;
 using ToolNexus.Application.Services.Policies;
 using ToolNexus.Infrastructure.Caching;
 using ToolNexus.Infrastructure.Content;
@@ -47,6 +48,7 @@ public static class DependencyInjection
 
         services.AddSingleton<JsonFileToolManifestRepository>();
         services.AddSingleton<IToolManifestRepository, DbToolManifestRepository>();
+        services.AddScoped<IToolSearchDocumentRepository, EfToolSearchDocumentRepository>();
         services.AddScoped<IToolDefinitionRepository, EfToolDefinitionRepository>();
         services.AddScoped<IToolContentRepository, EfToolContentRepository>();
         services.AddScoped<IToolContentEditorRepository, EfToolContentEditorRepository>();
