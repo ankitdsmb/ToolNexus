@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToolNexus.Api.Authentication;
+using ToolNexus.Application.Contracts;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 
@@ -86,13 +87,13 @@ public sealed class ToolsController(
         if (result.NotFound)
         {
             logger.LogInformation("Tool not found for slug {Slug} and action {Action}.", slug, action);
-            return NotFound(result);
+            return NotFound(ToApiResponse(result));
         }
 
         if (!result.Success)
         {
             logger.LogWarning("Tool execution failed for slug {Slug} and action {Action}. Error: {Error}", slug, action, result.Error);
-            return BadRequest(result);
+            return BadRequest(ToApiResponse(result));
         }
 
         if (manifestGovernance.FindBySlug(slug)?.IsDeprecated == true)
@@ -100,8 +101,12 @@ public sealed class ToolsController(
             Response.Headers.Append("X-Tool-Deprecated", "true");
         }
 
-        return Ok(result);
+        return Ok(ToApiResponse(result));
     }
+
+
+    private static ToolExecutionResponse ToApiResponse(ToolExecutionResultDto result) =>
+        new(result.Success, result.Output, result.Error, result.NotFound, result.Insight);
 
     public sealed record ExecuteToolRequest(
         [Required] string Input,

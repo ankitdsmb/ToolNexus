@@ -1,9 +1,9 @@
-using ToolNexus.Application.Models;
+using ToolNexus.Application.Contracts;
 
 namespace ToolNexus.Application.Services;
 
 public interface IToolContentService
 {
-    Task<ToolContent?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+    Task<ToolContentDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<string>> GetAllSlugsAsync(CancellationToken cancellationToken = default);
 }

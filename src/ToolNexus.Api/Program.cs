@@ -103,6 +103,7 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
 builder.Services.Configure<ToolNexusLoggingOptions>(builder.Configuration.GetSection(ToolNexusLoggingOptions.SectionName));
 builder.Services.AddSingleton<IRuntimeClientLoggerService, RuntimeClientLoggerService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IRequestExecutionContext, HttpRequestExecutionContext>();
 builder.Services.AddHostedService<EndpointDiagnosticsHostedService>();
 builder.Services.AddScoped<DeveloperReputationService>();
 builder.Services.AddScoped<ToolRatingService>();

@@ -21,7 +21,7 @@ public sealed class ToolsController(
     {
         var tools = toolCatalogService.GetAllTools();
         var categories = toolCatalogService.GetAllCategories();
-        return View(new ToolIndexViewModel { Tools = tools, Categories = categories });
+        return View(new ToolIndexViewModel { Tools = tools.Select(x => x.ToViewModel()).ToArray(), Categories = categories });
     }
 
 
@@ -93,7 +93,9 @@ public sealed class ToolsController(
 
         if (toolCatalogService.CategoryExists(categorySegment))
         {
-            var tools = toolCatalogService.GetByCategory(categorySegment);
+            var tools = toolCatalogService.GetByCategory(categorySegment)
+                .Select(x => x.ToViewModel())
+                .ToArray();
             return View("Category", new ToolCategoryViewModel { Category = categorySegment, Tools = tools });
         }
 
@@ -103,7 +105,8 @@ public sealed class ToolsController(
             return NotFound();
         }
 
-        var content = await toolContentService.GetBySlugAsync(tool.Slug, cancellationToken);
+        var contentDto = await toolContentService.GetBySlugAsync(tool.Slug, cancellationToken);
+        var content = contentDto?.ToViewModel();
         var canonicalUrl = $"{Request.Scheme}://{Request.Host}/tools/{Uri.EscapeDataString(tool.Slug)}";
         var seo = new ToolSeoMetadata
         {
@@ -148,7 +151,7 @@ public sealed class ToolsController(
         var apiPathPrefix = ResolveToolExecutionPathPrefix(apiSettings.Value.ToolExecutionPathPrefix);
         var viewModel = new ToolPageViewModel
         {
-            Tool = tool,
+            Tool = tool.ToViewModel(),
             ApiBaseUrl = apiBaseUrl,
             ToolExecutionPathPrefix = apiPathPrefix,
             Seo = seo,
@@ -204,7 +207,7 @@ public sealed class ToolsController(
         return normalized.TrimEnd('/');
     }
 
-    private static string BuildJsonLd(Application.Models.ToolDescriptor tool, Application.Models.ToolContent? content, string canonicalUrl)
+    private static string BuildJsonLd(ToolNexus.Application.Contracts.ToolCatalogItemDto tool, ToolNexus.Web.Models.ToolContentViewModel? content, string canonicalUrl)
     {
         var graph = new List<Dictionary<string, object?>>
         {

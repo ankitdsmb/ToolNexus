@@ -60,7 +60,7 @@ public static class DependencyInjection
 
         services.AddToolExecutionPipeline();
         services.AddSingleton(TimeProvider.System);
-        services.AddHttpContextAccessor();
+        services.AddSingleton<IRequestExecutionContext, NullRequestExecutionContext>();
         services.AddSingleton<IToolExecutionEventService, NoOpToolExecutionEventService>();
         services.AddScoped<IToolService, ToolService>();
         services.AddSingleton<IToolInsightService, ToolInsightService>();

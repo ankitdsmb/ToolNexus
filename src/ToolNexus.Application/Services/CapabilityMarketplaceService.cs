@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ToolNexus.Application.Contracts;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Options;
 using ToolNexus.Application.Services.Pipeline;
@@ -100,7 +101,7 @@ public sealed class CapabilityMarketplaceService(
     private static string BuildCapabilityId(string toolSlug, string version)
         => $"cap:{toolSlug}:{version}";
 
-    private static CapabilityInstallationState ResolveInstallationState(ToolDescriptor tool, ToolExecutionPolicyModel policy)
+    private static CapabilityInstallationState ResolveInstallationState(ToolCatalogItemDto tool, ToolExecutionPolicyModel policy)
     {
         if (tool.IsDeprecated)
         {
@@ -129,7 +130,7 @@ public sealed class CapabilityMarketplaceService(
             _ => CapabilityActivationState.Inactive
         };
 
-    private static CapabilityUiRenderingType ResolveUiRenderingType(ToolDescriptor tool)
+    private static CapabilityUiRenderingType ResolveUiRenderingType(ToolCatalogItemDto tool)
     {
         if (tool.OperationSchema is not null)
         {
@@ -141,7 +142,7 @@ public sealed class CapabilityMarketplaceService(
             : CapabilityUiRenderingType.Custom;
     }
 
-    private static CapabilityComplexityTier ResolveComplexityTier(ToolDescriptor tool)
+    private static CapabilityComplexityTier ResolveComplexityTier(ToolCatalogItemDto tool)
     {
         if (tool.IsCpuIntensive)
         {
@@ -153,7 +154,7 @@ public sealed class CapabilityMarketplaceService(
             : CapabilityComplexityTier.Basic;
     }
 
-    private static IReadOnlyCollection<string> ResolvePermissions(ToolDescriptor tool)
+    private static IReadOnlyCollection<string> ResolvePermissions(ToolCatalogItemDto tool)
     {
         if (tool.RequiresAuthentication)
         {

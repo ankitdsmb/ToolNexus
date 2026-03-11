@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using ToolNexus.Application.Models;
+using ToolNexus.Application.Contracts;
 using ToolNexus.Application.Options;
 
 namespace ToolNexus.Application.Services;
@@ -21,7 +21,7 @@ public sealed class CachingToolCatalogService(
         entry.Size = 1;
     }
 
-    public IReadOnlyCollection<ToolDescriptor> GetAllTools()
+    public IReadOnlyCollection<ToolCatalogItemDto> GetAllTools()
         => cache.GetOrCreate(AllToolsKey, entry =>
         {
             ConfigureEntry(entry);
@@ -35,10 +35,10 @@ public sealed class CachingToolCatalogService(
             return inner.GetAllCategories();
         })!;
 
-    public ToolDescriptor? GetBySlug(string slug)
+    public ToolCatalogItemDto? GetBySlug(string slug)
         => GetAllTools().FirstOrDefault(x => x.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
 
-    public IReadOnlyCollection<ToolDescriptor> GetByCategory(string category)
+    public IReadOnlyCollection<ToolCatalogItemDto> GetByCategory(string category)
     {
         var key = $"{CategoryPrefix}{category.ToLowerInvariant()}";
         return cache.GetOrCreate(key, entry =>
