@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
@@ -259,6 +261,23 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+
+    public static IServiceCollection AddApiResponseCompression(this IServiceCollection services)
+    {
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+        });
+
+        services.Configure<BrotliCompressionProviderOptions>(o =>
+            o.Level = CompressionLevel.Fastest);
+        services.Configure<GzipCompressionProviderOptions>(o =>
+            o.Level = CompressionLevel.Fastest);
+
+        return services;
+    }
     public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
     {
         var options = configuration.GetSection(ApiCorsOptions.SectionName).Get<ApiCorsOptions>() ?? new ApiCorsOptions();

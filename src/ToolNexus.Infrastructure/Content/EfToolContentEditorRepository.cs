@@ -90,17 +90,25 @@ public sealed class EfToolContentEditorRepository(
 
         await Task.WhenAll(relatedOptionsTask, featuresTask, stepsTask, examplesTask, faqTask, useCasesTask, relatedToolsTask);
 
+        var features = await featuresTask;
+        var steps = await stepsTask;
+        var examples = await examplesTask;
+        var faq = await faqTask;
+        var useCases = await useCasesTask;
+        var relatedTools = await relatedToolsTask;
+        var relatedOptions = await relatedOptionsTask;
+
         return new ToolContentEditorGraph(
             tool.Id,
             tool.Slug,
             tool.Name,
-            featuresTask.Result,
-            stepsTask.Result,
-            examplesTask.Result,
-            faqTask.Result,
-            useCasesTask.Result,
-            relatedToolsTask.Result,
-            relatedOptionsTask.Result,
+            features,
+            steps,
+            examples,
+            faq,
+            useCases,
+            relatedTools,
+            relatedOptions,
             ConcurrencyTokenCodec.Encode(contentMeta.RowVersion));
     }
 

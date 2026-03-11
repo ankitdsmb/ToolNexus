@@ -16,7 +16,7 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) 
         var alertsTask = repository.GetAnomaliesByDateAsync(today, cancellationToken);
         await Task.WhenAll(snapshotsTask, alertsTask);
 
-        var snapshots = snapshotsTask.Result;
+        var snapshots = await snapshotsTask;
 
         var todayRows = snapshots.Where(x => x.Date == today && x.TotalExecutions > 0).ToList();
         var totalExecutionsToday = todayRows.Sum(x => x.TotalExecutions);
@@ -55,7 +55,9 @@ public sealed class AdminAnalyticsService(IAdminAnalyticsRepository repository) 
             })
             .ToList();
 
-        return new AdminAnalyticsDashboard(totalExecutionsToday, successRate, avgDuration, activeToolsCount, topTools, slowTools, trend, alertsTask.Result);
+        var alerts = await alertsTask;
+
+        return new AdminAnalyticsDashboard(totalExecutionsToday, successRate, avgDuration, activeToolsCount, topTools, slowTools, trend, alerts);
     }
 
     public async Task<AdminAnalyticsDrilldownResult> GetDrilldownAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)

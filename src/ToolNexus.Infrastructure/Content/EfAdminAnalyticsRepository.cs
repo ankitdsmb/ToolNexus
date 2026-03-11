@@ -21,18 +21,18 @@ public sealed class EfAdminAnalyticsRepository(
 
         var rows = await dbContext.DailyToolMetrics
             .AsNoTracking()
-            .Select(x => new { x.ToolSlug, x.DateUtc, x.TotalExecutions, x.SuccessCount, x.AvgDurationMs })
-            .ToListAsync(cancellationToken);
-
-        return rows
             .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate)
+            .OrderBy(x => x.DateUtc)
+            .ThenBy(x => x.ToolSlug)
             .Select(x => new DailyToolMetricsSnapshot(
                 x.ToolSlug,
                 DateOnly.FromDateTime(x.DateUtc.UtcDateTime),
                 x.TotalExecutions,
                 x.SuccessCount,
                 x.AvgDurationMs))
-            .ToList();
+            .ToListAsync(cancellationToken);
+
+        return rows;
     }
 
     public async Task<(IReadOnlyList<DailyToolMetricsSnapshot> Items, int TotalItems)> QueryAsync(AdminAnalyticsQuery query, CancellationToken cancellationToken)
@@ -44,39 +44,32 @@ public sealed class EfAdminAnalyticsRepository(
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var allRows = await dbContext.DailyToolMetrics
+        var filteredQuery = dbContext.DailyToolMetrics
             .AsNoTracking()
-            .Select(x => new { x.ToolSlug, x.DateUtc, x.TotalExecutions, x.SuccessCount, x.AvgDurationMs })
-            .ToListAsync(cancellationToken);
-
-        var filteredRows = allRows
             .Where(x => x.DateUtc >= startDate && x.DateUtc <= endDate);
 
         if (!string.IsNullOrWhiteSpace(query.ToolSlug))
         {
-            filteredRows = filteredRows.Where(x => x.ToolSlug == query.ToolSlug);
+            filteredQuery = filteredQuery.Where(x => x.ToolSlug == query.ToolSlug);
         }
 
-        var totalItems = filteredRows.Count();
+        var totalItems = await filteredQuery.CountAsync(cancellationToken);
         var offset = (query.Page - 1) * query.PageSize;
 
-        var rows = filteredRows
+        var items = await filteredQuery
             .OrderByDescending(x => x.DateUtc)
             .ThenBy(x => x.ToolSlug)
             .Skip(offset)
             .Take(query.PageSize)
-            .ToList();
-
-        var items = rows
             .Select(x => new DailyToolMetricsSnapshot(
                 x.ToolSlug,
                 DateOnly.FromDateTime(x.DateUtc.UtcDateTime),
                 x.TotalExecutions,
                 x.SuccessCount,
                 x.AvgDurationMs))
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        return ((IReadOnlyList<DailyToolMetricsSnapshot>)items, totalItems);
+        return (items, totalItems);
     }
 
     public async Task ReplaceAnomaliesForDateAsync(DateOnly date, IReadOnlyList<ToolAnomalySnapshot> anomalies, CancellationToken cancellationToken)

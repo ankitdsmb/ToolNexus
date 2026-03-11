@@ -90,6 +90,7 @@ builder.Services
     .AddSecurity(builder.Configuration)
     .AddObservability(builder.Configuration)
     .AddRateLimiting(builder.Configuration)
+    .AddApiResponseCompression()
     .AddApiCors(builder.Configuration);
 
 
@@ -102,6 +103,9 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
 
 builder.Services.Configure<ToolNexusLoggingOptions>(builder.Configuration.GetSection(ToolNexusLoggingOptions.SectionName));
 builder.Services.AddSingleton<IRuntimeClientLoggerService, RuntimeClientLoggerService>();
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("external-runtime")
+    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IRequestExecutionContext, HttpRequestExecutionContext>();
 builder.Services.AddHostedService<EndpointDiagnosticsHostedService>();
@@ -114,6 +118,7 @@ builder.Services.AddScoped<ToolNexus.Api.Services.AIGenerator.AiToolGeneratorSer
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseResponseCompression();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<CorrelationEnrichmentMiddleware>();
