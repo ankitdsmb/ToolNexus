@@ -14,7 +14,7 @@ public sealed class HomeController(IToolCatalogService toolCatalogService, ISite
     [OutputCache(Duration = 300)]
     public IActionResult Index()
     {
-        var featured = toolCatalogService.GetAllTools().Take(6).ToList();
+        var featured = toolCatalogService.GetAllTools().Select(x => x.ToViewModel()).Take(6).ToList();
         return View(new HomeViewModel { FeaturedTools = featured });
     }
 

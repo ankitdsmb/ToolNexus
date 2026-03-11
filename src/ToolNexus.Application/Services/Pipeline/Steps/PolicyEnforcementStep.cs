@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services;
 using ToolNexus.Application.Services.Policies;
@@ -6,7 +5,7 @@ using static ToolNexus.Application.Services.Pipeline.UniversalExecutionEngine;
 
 namespace ToolNexus.Application.Services.Pipeline.Steps;
 
-public sealed class PolicyEnforcementStep(IHttpContextAccessor accessor, IApiKeyValidator apiKeyValidator, IToolExecutionRateGuard rateGuard) : IToolExecutionStep
+public sealed class PolicyEnforcementStep(IRequestExecutionContext requestContext, IApiKeyValidator apiKeyValidator, IToolExecutionRateGuard rateGuard) : IToolExecutionStep
 {
     public int Order => 200;
 
@@ -39,17 +38,17 @@ public sealed class PolicyEnforcementStep(IHttpContextAccessor accessor, IApiKey
             return await Deny(context, next, cancellationToken, "Tool rate limit exceeded.", "policy_denied", "rate_limited");
         }
 
-        var method = accessor.HttpContext?.Request.Method;
+        var method = requestContext.Method;
         if (!string.IsNullOrWhiteSpace(method) &&
-            ((HttpMethods.IsGet(method) && !policy.AllowedHttpMethods.HasFlag(ToolHttpMethodPolicy.Get)) ||
-             (HttpMethods.IsPost(method) && !policy.AllowedHttpMethods.HasFlag(ToolHttpMethodPolicy.Post))))
+            ((string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase) && !policy.AllowedHttpMethods.HasFlag(ToolHttpMethodPolicy.Get)) ||
+             (string.Equals(method, "POST", StringComparison.OrdinalIgnoreCase) && !policy.AllowedHttpMethods.HasFlag(ToolHttpMethodPolicy.Post))))
         {
             return await Deny(context, next, cancellationToken, "HTTP method is not allowed for this tool.", "policy_denied", "http_method_denied");
         }
 
         if (!policy.AllowAnonymous)
         {
-            var key = accessor.HttpContext?.Request.Headers["X-API-KEY"].FirstOrDefault();
+            var key = requestContext.ApiKey;
             if (string.IsNullOrWhiteSpace(key) || !apiKeyValidator.IsValid(key.AsSpan()))
             {
                 return await Deny(context, next, cancellationToken, "API key is required.", "policy_denied", "api_key_required");
@@ -78,5 +77,4 @@ public sealed class PolicyEnforcementStep(IHttpContextAccessor accessor, IApiKey
         await next(context, cancellationToken);
         return context.Response!;
     }
-
 }

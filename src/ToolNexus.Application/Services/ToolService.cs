@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using ToolNexus.Application.Contracts;
 using ToolNexus.Application.Models;
 using ToolNexus.Application.Services.Insights;
 using ToolNexus.Application.Services.Pipeline;
@@ -10,14 +11,14 @@ public sealed class ToolService(
     IToolInsightService insightService,
     ILogger<ToolService> logger) : IToolService
 {
-    public async Task<ToolExecutionResponse> ExecuteAsync(
+    public async Task<ToolExecutionResultDto> ExecuteAsync(
         ToolExecutionRequest request,
         CancellationToken cancellationToken = default)
     {
         var validationError = Validate(request);
         if (validationError is not null)
         {
-            return validationError;
+            return ToExecutionResult(validationError);
         }
 
         var normalizedSlug = request!.Slug.Trim().ToLowerInvariant();
@@ -40,7 +41,7 @@ public sealed class ToolService(
                 request.Options,
                 logger);
 
-            return response with { Insight = insight };
+            return ToExecutionResult(response with { Insight = insight });
         }
         catch (Exception ex)
         {
@@ -50,11 +51,12 @@ public sealed class ToolService(
                 normalizedSlug,
                 normalizedAction);
 
-            return new ToolExecutionResponse(
+            return new ToolExecutionResultDto(
                 false,
                 string.Empty,
                 "Tool execution failed unexpectedly.",
-                false);
+                false,
+                null);
         }
     }
 
@@ -81,6 +83,10 @@ public sealed class ToolService(
             return null;
         }
     }
+
+
+    private static ToolExecutionResultDto ToExecutionResult(ToolExecutionResponse response) =>
+        new(response.Success, response.Output, response.Error, response.NotFound, response.Insight);
 
     private static ToolExecutionResponse? Validate(ToolExecutionRequest? request)
     {

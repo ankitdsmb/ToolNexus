@@ -1,12 +1,12 @@
-using ToolNexus.Application.Models;
+using ToolNexus.Application.Contracts;
 
 namespace ToolNexus.Application.Services;
 
 public interface IToolCatalogService
 {
-    IReadOnlyCollection<ToolDescriptor> GetAllTools();
+    IReadOnlyCollection<ToolCatalogItemDto> GetAllTools();
     IReadOnlyCollection<string> GetAllCategories();
-    ToolDescriptor? GetBySlug(string slug);
-    IReadOnlyCollection<ToolDescriptor> GetByCategory(string category);
+    ToolCatalogItemDto? GetBySlug(string slug);
+    IReadOnlyCollection<ToolCatalogItemDto> GetByCategory(string category);
     bool CategoryExists(string category);
 }
