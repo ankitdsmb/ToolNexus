@@ -4,9 +4,6 @@ namespace ToolNexus.Web.Security;
 
 public sealed class UrlSecurityValidator(IPrivateNetworkValidator privateNetworkValidator)
 {
-    public string ValidateAndNormalize(string? url)
-        => ValidateAndNormalizeAsync(url, CancellationToken.None).GetAwaiter().GetResult();
-
     public async Task<string> ValidateAndNormalizeAsync(string? url, CancellationToken cancellationToken)
         => (await ValidateAndPinAsync(url, cancellationToken)).NormalizedUrl;
 

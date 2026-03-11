@@ -92,6 +92,8 @@ builder.Services.AddScoped<MarketplaceService>();
 builder.Services.AddScoped<DocsService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("external-runtime")
+    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddToolSecurity();
