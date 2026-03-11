@@ -20,6 +20,26 @@
         ["RelatedTools"] = "Related Tools"
     };
 
+    var docs = new ToolNexus.Web.Models.ToolDocsPanelViewModel
+    {
+        Page = Model,
+        Sections = contextPlugins
+            .Select(plugin => new ToolNexus.Web.Models.ToolDocsSectionViewModel
+            {
+                Plugin = plugin,
+                Label = contextPluginLabels[plugin],
+                IsPrimary = plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase) ||
+                            plugin.Equals("QuickStart", StringComparison.OrdinalIgnoreCase)
+            })
+            .ToArray()
+    };
+
+    var layout = new ToolNexus.Web.Models.ToolShellLayoutViewModel
+    {
+        Page = Model,
+        Docs = docs
+    };
+
     var configuration = Context.RequestServices.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
     var runtimeLogCaptureEnabled = configuration.GetValue<bool>("LoggingOptions:EnableRuntimeLogCapture", true);
     var runtimeLogEndpoint = runtimeLogCaptureEnabled
@@ -39,60 +59,7 @@
     }
 }
 
-<article class="tool-shell-page tool-shell-page--workspace workspace-shell page-shell upgread_tool_shell_page tool-shell-page--execution-first"
-         data-upgread="surface"
-         data-runtime-priority="execution-first"
-         data-runtime-layout="modern"
-         aria-label="Tool runtime page">
-
-    @* SSR contract marker *@
-    <h1>@Model.Tool.Title</h1>
-
-    <section class="tool-shell-page__workspace workspace-shell__runtime-zone"
-             aria-label="Runtime workspace"
-             data-workspace-zone="runtime">
-
-        @await Html.PartialAsync("ToolShellPartial", Model)
-    </section>
-
-    <aside class="tool-seo tool-shell-page__docs workspace-shell__context-rail tool-article-prose control-recession shell-passive-mode upgread_tool_docs_rail"
-           data-upgread="surface"
-           data-tool-docs="true"
-           data-nosnippet="false"
-           data-workspace-zone="context"
-           aria-label="Tool documentation"
-           data-reference-layer="secondary">
-
-        @foreach (var plugin in contextPlugins)
-        {
-            var isPrimaryDocSection =
-            plugin.Equals("Overview", StringComparison.OrdinalIgnoreCase) ||
-            plugin.Equals("QuickStart", StringComparison.OrdinalIgnoreCase);
-
-            <section class="tool-md-section"
-                     data-doc-section="@plugin"
-                     data-doc-priority="@(isPrimaryDocSection ? "primary" : "secondary")">
-
-                @if (isPrimaryDocSection)
-                {
-                    <h3>@contextPluginLabels[plugin]</h3>
-                    <div class="tool-md-content">
-                        @await Html.PartialAsync(ToolNexus.Web.Runtime.ToolContextPlugins.ToPartialPath(plugin), Model)
-                    </div>
-                }
-                else
-                {
-                    <details class="runtime-doc-disclosure">
-                        <summary>@contextPluginLabels[plugin]</summary>
-                        <div class="runtime-doc-disclosure__body tool-md-content">
-                            @await Html.PartialAsync(ToolNexus.Web.Runtime.ToolContextPlugins.ToPartialPath(plugin), Model)
-                        </div>
-                    </details>
-                }
-            </section>
-        }
-    </aside>
-</article>
+@await Html.PartialAsync("_ToolShellLayout", layout)
 
 @section Scripts {
     <script>

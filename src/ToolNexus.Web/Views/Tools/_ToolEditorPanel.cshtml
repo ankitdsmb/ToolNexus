@@ -1,0 +1,18 @@
+@model ToolNexus.Web.Models.ToolEditorPanelViewModel
+
+<header class="tool-workspace-header"
+        data-tool-context="true"
+        data-tool-header="true"
+        aria-label="Tool execution context">
+    <div>
+        <h2 class="tool-workspace-header__title">@Model.ToolTitle</h2>
+        <p class="tool-workspace-header__description">@Model.SeoDescription</p>
+    </div>
+    <div class="tool-workspace-header__meta tn-tool-header">
+        <span class="tool-context-pill tool-context-pill--authority">Authority: Unified Runtime</span>
+        <span class="tool-context-pill">Runtime: Auto Resolve</span>
+        <span class="tool-context-pill">Lifecycle: Ready</span>
+    </div>
+</header>
+
+<section class="execution-toolbar" data-execution-toolbar="true" aria-label="Execution toolbar"></section>
