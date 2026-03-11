@@ -66,6 +66,8 @@ public static class DependencyInjection
         services.AddSingleton<IToolInsightService, ToolInsightService>();
         services.AddScoped<IOrchestrationService, OrchestrationService>();
         services.AddSingleton<ToolCatalogService>();
+        services.AddScoped<IToolSearchService, TokenizedSearchIndex>();
+        services.AddScoped<DiscoveryService>();
         services.AddMemoryCache();
         services.AddSingleton<IToolCatalogService>(sp =>
             new CachingToolCatalogService(
