@@ -92,17 +92,33 @@ function initCardTilt() {
   cards.forEach((card) => {
     card.style.transformStyle = 'preserve-3d';
 
-    card.addEventListener('pointermove', (event) => {
+    let frameRequested = false;
+    let lastEvent = null;
+
+    const renderTilt = () => {
+      frameRequested = false;
+      if (!lastEvent) return;
+
       const rect = card.getBoundingClientRect();
-      const px = (event.clientX - rect.left) / rect.width;
-      const py = (event.clientY - rect.top) / rect.height;
+      const px = (lastEvent.clientX - rect.left) / rect.width;
+      const py = (lastEvent.clientY - rect.top) / rect.height;
       const rotateY = clamp((px - 0.5) * 8, -5, 5);
       const rotateX = clamp((0.5 - py) * 8, -5, 5);
 
       card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+    };
+
+    card.addEventListener('pointermove', (event) => {
+      lastEvent = event;
+      if (frameRequested) return;
+
+      frameRequested = true;
+      requestAnimationFrame(renderTilt);
     });
 
     card.addEventListener('pointerleave', () => {
+      frameRequested = false;
+      lastEvent = null;
       card.style.transform = '';
     });
   });

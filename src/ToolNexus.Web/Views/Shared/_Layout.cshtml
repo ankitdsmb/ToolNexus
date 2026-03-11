@@ -119,25 +119,11 @@
     <script type="module" src="~/js/version-manager.js" asp-append-version="true"></script>
     <script type="module" src="~/js/command-palette-loader.js" asp-append-version="true"></script>
     <script type="module" src="~/js/header-state.js" asp-append-version="true"></script>
-    <script type="module">
-        if (document.querySelector('[data-tool-group], .tools-index')) {
-            import('/js/tools-grid.js');
-        }
-
-        const hasRuntimeShell = Boolean(document.querySelector('#tool-root[data-tool-root="true"]'));
-        if (document.querySelector('.tool-page') && !hasRuntimeShell) {
-            import('/js/tool-page.js');
-        }
-
-        if (document.querySelector('[data-reveal], [data-dynamic-stat]')) {
-            import('/js/motion-system.js');
-            import('/js/dynamic-widget-engine.js');
-        }
-    </script>
+    <script type="module" src="~/js/page-module-loader.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
     <script type="module" src="~/js/shell-controller.js" asp-append-version="true"></script>
-    <script src="~/js/spa-navigation-engine.js" defer></script>
+    <script type="module" src="~/js/spa-navigation-engine.js" asp-append-version="true"></script>
 
 </body>
 </html>

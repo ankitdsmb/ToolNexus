@@ -95,16 +95,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        (() => {
-            const layout = document.querySelector('[data-docs-layout]');
-            const toggle = document.querySelector('[data-docs-menu-toggle]');
-            if (!layout || !toggle) return;
-
-            toggle.addEventListener('click', () => {
-                const isOpen = layout.classList.toggle('is-sidebar-open');
-                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            });
-        })();
-    </script>
+    <script type="module" src="~/js/docs-layout.js" asp-append-version="true"></script>
 }
