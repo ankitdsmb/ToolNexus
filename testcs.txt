@@ -1,4 +1,1 @@
-"Database": {
-  "Provider": "Postgres",
-  "ConnectionString": "postgresql://neondb_owner:npg_GutFYk0aZ5jK@ep-jolly-field-aezmdq7i-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-}
+Host=127.0.0.1;Port=5432;Database=toolnexus;Username=toolnexus;Password=toolnexus;SSL Mode=Disable
