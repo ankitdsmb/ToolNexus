@@ -60,6 +60,15 @@ export async function runTool(action, input) {
   return payload;
 }
 
+function resolveRoot(context) {
+  if (context?.handle?.id === TOOL_ID && context.handle?.root instanceof Element) {
+    return context.handle.root;
+  }
+
+  const { root } = resolveLifecycleInitRoot([context]);
+  return root;
+}
+
 function createApp(root) {
   const input = root.querySelector('#inputEditor');
   const output = root.querySelector('#outputViewer');
@@ -112,23 +121,45 @@ function createApp(root) {
   };
 }
 
-export function init(...args) {
+export function create(context) {
+  const root = resolveRoot(context);
+  if (!root) {
+    return null;
+  }
+
+  return getToolPlatformKernel().registerTool({
+    id: TOOL_ID,
+    root,
+    init: () => createApp(root),
+    destroy: (app) => app?.destroy?.()
+  });
+}
+
+export async function init(...args) {
   const { root } = resolveLifecycleInitRoot(args);
   if (!(root instanceof Element)) {
     throw new Error('[Lifecycle] invalid root');
   }
 
+  const handle = create(root);
+  if (!handle) {
+    return { mounted: false };
+  }
+
+  await handle?.init?.();
+
   return {
-    root,
-    handle: getToolPlatformKernel().mountTool({
-      id: TOOL_ID,
-      root,
-      init: () => createApp(root),
-      destroy: (app) => app?.destroy?.()
-    })
+    mounted: true,
+    cleanup: () => handle.destroy(),
+    handle
   };
 }
 
 export function destroy(context) {
-  context?.handle?.destroy?.();
+  const root = resolveRoot(context);
+  if (!root) {
+    return;
+  }
+
+  getToolPlatformKernel().destroyToolById(TOOL_ID, root);
 }
