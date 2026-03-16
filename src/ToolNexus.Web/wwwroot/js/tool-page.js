@@ -157,6 +157,7 @@ async function init() {
   setOutputState(false);
   setRunningState(false);
   applyEditorTheme();
+  initializeActionMetadata();
   bindEvents();
   renderUxLists();
   renderWorkflowIntelligence();
@@ -194,7 +195,8 @@ async function initializeEditors() {
       minimap: { enabled: false },
       fontSize: 13,
       scrollBeyondLastLine: false,
-      roundedSelection: false
+      roundedSelection: false,
+      ariaLabel: 'Tool Input Editor'
     });
 
     outputEditor = monacoRuntime.editor.create(outputEditorSurface, {
@@ -205,7 +207,8 @@ async function initializeEditors() {
       minimap: { enabled: false },
       fontSize: 13,
       scrollBeyondLastLine: false,
-      roundedSelection: false
+      roundedSelection: false,
+      ariaLabel: 'Tool Output Editor'
     });
 
     return;
@@ -326,6 +329,7 @@ function bindEvents() {
 
     try {
       await navigator.clipboard.writeText(output);
+      flashButtonSuccess(copyBtn, 'Copied!');
       showToast('Copied to clipboard.', 'success');
     } catch {
       showToast('Copy failed.', 'error');
@@ -688,6 +692,42 @@ function hydratePreferences() {
   if (wrapToggle instanceof HTMLInputElement && typeof preference.wrap === 'boolean') {
     wrapToggle.checked = preference.wrap;
   }
+}
+
+function flashButtonSuccess(button, successLabel) {
+  if (!button) return;
+  const labelNode = button.querySelector('.tool-btn__label');
+
+  if (!labelNode) {
+    // If no dedicated label span, just use the animation and toast to avoid destroying icons/DOM.
+    button.classList.add('is-acknowledged');
+    setTimeout(() => button.classList.remove('is-acknowledged'), 1000);
+    return;
+  }
+
+  const originalLabel = labelNode.textContent;
+  button.classList.add('is-acknowledged');
+  labelNode.textContent = successLabel;
+
+  setTimeout(() => {
+    button.classList.remove('is-acknowledged');
+    labelNode.textContent = originalLabel;
+  }, 1000);
+}
+
+function initializeActionMetadata() {
+  const metadata = [
+    { btn: copyBtn, label: 'Copy output', hint: '(Ctrl+C)' },
+    { btn: downloadBtn, label: 'Download output', hint: '' },
+    { btn: shareBtn, label: 'Share configuration', hint: '(Ctrl+Shift+S)' }
+  ];
+
+  metadata.forEach(({ btn, label, hint }) => {
+    if (!btn) return;
+    const full = `${label} ${hint}`.trim();
+    btn.title = full;
+    btn.setAttribute('aria-label', full);
+  });
 }
 
 function showToast(message, type = 'info') {
@@ -1056,6 +1096,7 @@ async function createShareLink() {
 
   try {
     await navigator.clipboard.writeText(nextUrl.toString());
+    flashButtonSuccess(shareBtn, 'Linked!');
     showToast('Shareable link copied.', 'success');
   } catch {
     showToast('Unable to copy link.', 'error');
