@@ -50,6 +50,7 @@ export class JsonFormatterUi {
     this.inputEditor = this.monaco.editor.create(this.dom.jsonEditor, {
       ...shared,
       model: this.inputModel,
+      ariaLabel: 'JSON Input Editor',
       readOnly: false,
       glyphMargin: true
     });
@@ -57,6 +58,7 @@ export class JsonFormatterUi {
     this.outputEditor = this.monaco.editor.create(this.dom.outputEditor, {
       ...shared,
       model: this.outputModel,
+      ariaLabel: 'JSON Output Editor',
       readOnly: true
     });
 

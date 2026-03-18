@@ -12,6 +12,8 @@ function inferActionIntent(node) {
   const label = `${node.textContent || ''} ${node.getAttribute('aria-label') || ''}`.trim().toLowerCase();
   if (/copy|clipboard/.test(label)) return 'copy';
   if (/download|export|save/.test(label)) return 'download';
+  if (/clear|reset|remove/.test(label)) return 'clear';
+  if (/share/.test(label)) return 'share';
   return '';
 }
 function inferActionIcon(node) {
@@ -117,11 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.requestAnimationFrame(() => action.classList.add('is-acknowledged'));
     window.setTimeout(() => action.classList.remove('is-acknowledged'), 120);
 
-    if (intent === 'copy') {
-      showToast('Copied to clipboard.', 'success');
-    } else if (intent === 'download') {
-      showToast('Download started.', 'success');
-    }
   };
 
   const statusNode = runtime.querySelector('[data-tool-status="true"], .tn-unified-tool-control__status, #resultStatus, .result-indicator');

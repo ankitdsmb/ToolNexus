@@ -175,7 +175,8 @@ export function createJsonFormatterApp(root) {
           console.debug('[json-formatter] Monaco editor.create(input) start');
           state.inputEditor = state.monaco.editor.create(dom.jsonEditor, {
             ...shared,
-            model: state.inputModel
+            model: state.inputModel,
+            ariaLabel: 'JSON Input Editor'
           });
           console.debug('[json-formatter] Monaco editor.create(input) complete');
 
@@ -183,6 +184,7 @@ export function createJsonFormatterApp(root) {
           state.outputEditor = state.monaco.editor.create(dom.outputEditor, {
             ...shared,
             model: state.outputModel,
+            ariaLabel: 'JSON Output Editor',
             readOnly: true
           });
           console.debug('[json-formatter] Monaco editor.create(output) complete');
