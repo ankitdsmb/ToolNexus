@@ -190,6 +190,7 @@ async function initializeEditors() {
     inputEditor = monacoRuntime.editor.create(inputEditorSurface, {
       value: inputTextArea.value || '',
       language: 'json',
+      ariaLabel: 'Tool Input Editor',
       automaticLayout: true,
       minimap: { enabled: false },
       fontSize: 13,
@@ -201,6 +202,7 @@ async function initializeEditors() {
       value: '',
       language: 'json',
       readOnly: true,
+      ariaLabel: 'Tool Output Editor',
       automaticLayout: true,
       minimap: { enabled: false },
       fontSize: 13,
@@ -327,6 +329,7 @@ function bindEvents() {
     try {
       await navigator.clipboard.writeText(output);
       showToast('Copied to clipboard.', 'success');
+      acknowledgeButton(copyBtn);
     } catch {
       showToast('Copy failed.', 'error');
     }
@@ -348,6 +351,7 @@ function bindEvents() {
     URL.revokeObjectURL(anchor.href);
 
     showToast('Download started.', 'info');
+    acknowledgeButton(downloadBtn);
   });
 
   shareBtn?.addEventListener('click', createShareLink);
@@ -688,6 +692,13 @@ function hydratePreferences() {
   if (wrapToggle instanceof HTMLInputElement && typeof preference.wrap === 'boolean') {
     wrapToggle.checked = preference.wrap;
   }
+}
+
+function acknowledgeButton(btn) {
+  if (!btn) return;
+  btn.classList.remove('is-acknowledged');
+  window.requestAnimationFrame(() => btn.classList.add('is-acknowledged'));
+  setTimeout(() => btn.classList.remove('is-acknowledged'), 120);
 }
 
 function showToast(message, type = 'info') {
@@ -1057,6 +1068,7 @@ async function createShareLink() {
   try {
     await navigator.clipboard.writeText(nextUrl.toString());
     showToast('Shareable link copied.', 'success');
+    acknowledgeButton(shareBtn);
   } catch {
     showToast('Unable to copy link.', 'error');
   }
