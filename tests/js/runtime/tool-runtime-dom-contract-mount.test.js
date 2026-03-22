@@ -11,6 +11,7 @@ function createShellMarkup() {
         <section data-tool-output="true"></section>
       </section>
       <footer data-tool-followup="true"></footer>
+      <section data-tool-content-host="true"></section>
     </section>
   `;
 }
