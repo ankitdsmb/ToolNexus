@@ -3,6 +3,7 @@ import { uiStateManager } from './ui-state-manager.js';
 const SELECTORS = {
   modal: '#commandPaletteModal',
   input: '#commandPaletteInput',
+  clear: '[data-command-clear]',
   list: '#commandPaletteList',
   close: '[data-command-close]',
   action: '.command-palette__action'
@@ -38,7 +39,10 @@ function createCommandPalette() {
         <button class="command-palette__close" type="button" data-command-close aria-label="Close command palette">✕</button>
       </header>
       <label class="u-sr-only" for="commandPaletteInput">Search tools</label>
-      <input id="commandPaletteInput" class="command-palette__input" type="text" placeholder="Search tools and actions..." autocomplete="off" />
+      <div class="command-palette__input-wrap">
+        <input id="commandPaletteInput" class="command-palette__input" type="text" placeholder="Search tools and actions..." autocomplete="off" />
+        <button class="command-palette__clear" type="button" data-command-clear aria-label="Clear search" hidden>✕</button>
+      </div>
       <p class="command-palette__helper">Use ↑ ↓ to navigate, Enter to run, Esc to dismiss.</p>
       <div class="command-palette__list-wrap">
         <ul id="commandPaletteList" class="command-palette__list" role="listbox"></ul>
@@ -56,6 +60,7 @@ function queryElements() {
   state.elements = {
     modal,
     input: modal.querySelector(SELECTORS.input),
+    clear: modal.querySelector(SELECTORS.clear),
     list: modal.querySelector(SELECTORS.list)
   };
 
@@ -241,7 +246,11 @@ function renderList() {
 
   const visible = state.filtered.slice(0, MAX_ITEMS);
   if (!visible.length) {
-    list.innerHTML = '<li class="command-palette__empty">No matching tools found.</li>';
+    list.innerHTML = `
+      <li class="command-palette__empty">
+        <p>No matching tools found.</p>
+        <p class="command-palette__empty-hint">Try searching for 'JSON', 'SQL', or 'Base64'.</p>
+      </li>`;
     return;
   }
 
@@ -269,6 +278,11 @@ function filterCommands(query) {
   state.filtered = normalized
     ? state.commands.filter((command) => command.searchText.includes(normalized))
     : [...state.commands];
+
+  const { clear } = queryElements();
+  if (clear) {
+    clear.hidden = !normalized;
+  }
 
   state.activeIndex = 0;
   renderList();
@@ -326,6 +340,18 @@ function onModalClick(event) {
     return;
   }
 
+  const clearTarget = event.target.closest(SELECTORS.clear);
+  if (clearTarget) {
+    event.preventDefault();
+    const { input } = queryElements();
+    if (input) {
+      input.value = '';
+      filterCommands('');
+      input.focus();
+    }
+    return;
+  }
+
   const action = event.target.closest(SELECTORS.action);
   if (action) {
     event.preventDefault();
@@ -335,6 +361,26 @@ function onModalClick(event) {
 
 function onModalKeydown(event) {
   if (!state.open) return;
+
+  if (event.key === 'Tab') {
+    const { modal } = queryElements();
+    const focusable = Array.from(modal.querySelectorAll('button:not([disabled]), input:not([disabled])'))
+      .filter((el) => el.tabIndex !== -1 && (el.offsetWidth > 0 || el.offsetHeight > 0));
+
+    if (focusable.length > 0) {
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    return;
+  }
 
   if (event.key === 'Escape') {
     event.preventDefault();
