@@ -132,3 +132,7 @@ export function init(...args) {
 export function destroy(context) {
   context?.handle?.destroy?.();
 }
+
+export function create(root) {
+  return init({ root });
+}
