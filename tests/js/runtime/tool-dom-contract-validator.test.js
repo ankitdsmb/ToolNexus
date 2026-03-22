@@ -22,6 +22,7 @@ describe('tool DOM contract validator', () => {
         <section data-tool-status="true"></section>
         <section data-tool-output="true"></section>
         <footer data-tool-followup="true"></footer>
+        <section data-tool-content-host="true"></section>
       </section>
     `;
 

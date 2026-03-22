@@ -30,7 +30,16 @@ describe('tool runtime lifecycle hygiene', () => {
     const runtime = createToolRuntime({
       loadManifest: async () => ({ slug: 'cleanup-tool', dependencies: [], modulePath: '/mock/cleanup.js' }),
       templateLoader: async (_slug, root) => {
-        root.innerHTML = '<div class="tool-page"><textarea id="inputEditor"></textarea><textarea id="outputField"></textarea></div>';
+        root.innerHTML = `
+          <section data-tool-shell="true">
+            <header data-tool-context="true"></header>
+            <section data-tool-input="true"></section>
+            <section data-tool-status="true"></section>
+            <section data-tool-output="true"></section>
+            <footer data-tool-followup="true"></footer>
+            <section data-tool-content-host="true"></section>
+          </section>
+        `;
       },
       templateBinder: () => {},
       dependencyLoader: { loadDependencies: async () => undefined },

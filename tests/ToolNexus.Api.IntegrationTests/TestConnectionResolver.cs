@@ -14,6 +14,12 @@ public sealed class TestConnectionResolver : ITestConnectionResolver
 
     public TestConnectionResolution Resolve()
     {
+        var envConnection = Environment.GetEnvironmentVariable("TOOLNEXUS_DB_CONNECTION");
+        if (!string.IsNullOrWhiteSpace(envConnection))
+        {
+            return new TestConnectionResolution(true, "PostgreSQL", envConnection, "EnvironmentVariable:TOOLNEXUS_DB_CONNECTION");
+        }
+
         var path = Path.Combine(_repositoryRoot, ConnectionFileName);
         if (!File.Exists(path))
         {
